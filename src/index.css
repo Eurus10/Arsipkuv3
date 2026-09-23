@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #12141D;
+    color: #F1F5F9;
+  }
+  
+  h1, h2, h3, .font-heading {
+    font-family: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+}
+
+/* Custom minimal dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #12141D;
+}
+::-webkit-scrollbar-thumb {
+  background: #272E42;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3B4562;
+}
+
+/* Remove spin buttons from number inputs when requested */
+input[type="number"].no-spin-button,
+.no-spin-button::-webkit-outer-spin-button,
+.no-spin-button::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+input[type="number"].no-spin-button {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+/* Animated Chevron Pointer — Info Butir Soal */
+@keyframes infoChevronMove {
+  0% {
+    opacity: 0.25;
+    transform: translateX(-3px);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateX(2px);
+  }
+
+  100% {
+    opacity: 0.25;
+    transform: translateX(-3px);
+  }
+}
+
+.info-chevron {
+  display: inline-block;
+  animation: infoChevronMove 1.4s ease-in-out infinite;
+}
+
+.info-chevron:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+.info-chevron:nth-child(3) {
+  animation-delay: 0.36s;
+}

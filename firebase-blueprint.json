@@ -1,0 +1,176 @@
+{
+  "entities": {
+    "DocumentItem": {
+      "title": "DocumentItem",
+      "description": "Entitas arsip dokumen digital SDIT Al Fikri (Administrasi, Bank Soal, Arsip Sertifikat, Arsip Rapor)",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifikator unik dokumen"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["administrasi", "soal", "sertifikat", "rapor"],
+          "description": "Kategori utama berkas dokumen arsip"
+        },
+        "title": {
+          "type": "string",
+          "description": "Nama atau judul dokumen arsip"
+        },
+        "category": {
+          "type": "string",
+          "description": "Kategori spesifik dokumen"
+        },
+        "classLevel": {
+          "type": "string",
+          "description": "Tingkat jenjang kelas (Kelas 1 s/d Kelas 6, atau Umum / Guru)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Mata pelajaran terkait"
+        },
+        "examType": {
+          "type": "string",
+          "description": "Jenis evaluasi / ujian (STS, SAS, SAT, dsb)"
+        },
+        "recipient": {
+          "type": "string",
+          "description": "Penerima sertifikat"
+        },
+        "certificateNumber": {
+          "type": "string",
+          "description": "Nomor piagam/sertifikat"
+        },
+        "semester": {
+          "type": "string",
+          "description": "Semester rapor (Semester 1 / Semester 2)"
+        },
+        "schoolYear": {
+          "type": "string",
+          "description": "Tahun pelajaran"
+        },
+        "driveUrl": {
+          "type": "string",
+          "description": "Tautan link Google Drive dokumen arsip"
+        },
+        "note": {
+          "type": "string",
+          "description": "Catatan tambahan arsip"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Waktu dokumen dibuat (ISO string)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu dokumen diperbarui (ISO string)"
+        }
+      },
+      "required": ["id", "type", "title", "schoolYear", "driveUrl"]
+    },
+    "SchoolYearsSetting": {
+      "title": "SchoolYearsSetting",
+      "description": "Pengaturan daftar tahun pelajaran",
+      "type": "object",
+      "properties": {
+        "years": {
+          "type": "array",
+          "description": "Daftar tahun pelajaran yang tersimpan"
+        }
+      },
+      "required": ["years"]
+    },
+    "SchoolTemplatesSetting": {
+      "title": "SchoolTemplatesSetting",
+      "description": "Pengaturan daftar link unduh template (Analisis Soal, Rapor, Kop Soal)",
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "description": "Daftar template unduhan yang tersimpan"
+        }
+      },
+      "required": ["templates"]
+    },
+    "ExamUploadConfig": {
+      "title": "ExamUploadConfig",
+      "description": "Pengaturan folder Google Drive pengumpulan soal ujian guru",
+      "type": "object",
+      "properties": {
+        "driveFolderUrl": {
+          "type": "string",
+          "description": "Tautan folder Google Drive tempat guru mengunggah soal ujian"
+        },
+        "title": {
+          "type": "string",
+          "description": "Judul portal pengumpulan soal"
+        },
+        "description": {
+          "type": "string",
+          "description": "Deskripsi petunjuk pengumpulan soal"
+        },
+        "activePeriod": {
+          "type": "string",
+          "description": "Periode ujian yang sedang aktif"
+        }
+      },
+      "required": ["driveFolderUrl"]
+    },
+    "ExamSubmissionItem": {
+      "title": "ExamSubmissionItem",
+      "description": "Data setoran naskah soal ujian yang dikirim oleh guru",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID unik setoran"
+        },
+        "teacherName": {
+          "type": "string",
+          "description": "Nama guru pengampu yang mengirimkan soal"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Mata pelajaran"
+        },
+        "classLevel": {
+          "type": "string",
+          "description": "Tingkat kelas"
+        },
+        "examType": {
+          "type": "string",
+          "description": "Jenis ujian (STS, SAS, SAT, dsb)"
+        },
+        "schoolYear": {
+          "type": "string",
+          "description": "Tahun pelajaran"
+        },
+        "driveUrl": {
+          "type": "string",
+          "description": "Tautan berkas soal di Google Drive"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["menunggu", "diterima", "revisi"],
+          "description": "Status verifikasi soal oleh panitia / admin"
+        }
+      },
+      "required": ["id", "teacherName", "subject", "classLevel", "examType", "schoolYear", "driveUrl"]
+    }
+  },
+  "firestore": {
+    "/documents/{documentId}": {
+      "schema": "DocumentItem",
+      "description": "Koleksi seluruh arsip digital sekolah"
+    },
+    "/exam_submissions/{submissionId}": {
+      "schema": "ExamSubmissionItem",
+      "description": "Koleksi setoran berkas soal ujian dari guru"
+    },
+    "/settings/{settingId}": {
+      "schema": "SchoolYearsSetting",
+      "description": "Dokumen konfigurasi dan pengaturan arsip (school_years, download_templates, exam_upload_config)"
+    }
+  }
+}

@@ -1,0 +1,141 @@
+Berikut adalah analisis terperinci mengenai struktur template gambar yang Anda berikan:
+
+---
+
+### Analisis Struktur Template "DAFTAR NILAI PESERTA DIDIK"
+
+Template ini dirancang untuk pencatatan nilai siswa dengan struktur yang jelas dan terorganisir, membagi informasi menjadi tiga bagian utama: Header/KOP Informasi, Tabel Data Utama, dan Blok Tanda Tangan.
+
+#### 1. Header / KOP Sekolah & Judul Utama
+
+Bagian atas template berisi informasi identitas dokumen dan sekolah, serta judul utama.
+
+*   **Judul Utama:**
+    *   **Teks:** "DAFTAR NILAI PESERTA DIDIK"
+    *   **Penempatan:** Terpusat di bagian atas halaman, menggunakan font berukuran lebih besar dan tebal, mengindikasikan judul utama dokumen.
+*   **Blok Informasi Kiri (Detail Sekolah/Kelas):**
+    *   **MATA PELAJARAN:** Baris ini kosong setelah titik dua, menunggu pengisian nama mata pelajaran. (Teks: "MATA PELAJARAN :")
+    *   **NAMA SEKOLAH:** Menampilkan nama sekolah. (Teks: "NAMA SEKOLAH : SDIT AL FIKRI")
+    *   **KELAS/SEMESTER:** Menunjukkan informasi kelas dan semester. (Teks: "KELAS/SEMESTER : 2C / Ganjil")
+    *   **TAHUN PELAJARAN:** Menunjukkan rentang tahun akademik. (Teks: "TAHUN PELAJARAN : 2026-2027")
+    *   **Tata Letak:** Semua label (Mata Pelajaran, Nama Sekolah, dll.) sejajar kiri, diikuti oleh titik dua dan nilai informasi yang sejajar dengan label.
+*   **Blok Informasi Kanan (Detail Administrasi/Lokasi):**
+    *   **NSS / NPSN:** Menampilkan nomor statistik sekolah dan nomor pokok sekolah nasional. (Teks: "NSS / NPSN : 102280302038 / 20614083")
+    *   **KECAMATAN:** Menunjukkan nama kecamatan lokasi sekolah. (Teks: "KECAMATAN : TIGARAKSA")
+    *   **KABUPATEN:** Menunjukkan nama kabupaten lokasi sekolah. (Teks: "KABUPATEN : TANGERANG")
+    *   **PROVINSI:** Menunjukkan nama provinsi lokasi sekolah. (Teks: "PROVINSI : BANTEN")
+    *   **Tata Letak:** Mirip dengan blok kiri, label sejajar kiri, diikuti oleh titik dua dan nilai informasi.
+*   **Warna & Font:** Seluruh teks pada bagian header ini berwarna hitam, menggunakan font serif standar (kemungkinan Times New Roman atau sejenisnya). Tidak ada latar belakang berwarna atau border eksplisit pada bagian ini.
+
+#### 2. Tabel Data Utama (Tabel Nilai Siswa)
+
+Ini adalah bagian inti dari template, yang berisi daftar siswa dan kolom-kolom untuk memasukkan nilai.
+
+*   **Tata Letak Keseluruhan Tabel:**
+    *   Sebuah tabel persegi panjang dengan border hitam tebal di bagian luar header dan border hitam tipis untuk grid data internal.
+    *   Terdiri dari **12 kolom** data dan **29 baris** (2 baris header dan 27 baris data siswa).
+
+*   **Struktur Header Tabel:**
+    Header tabel memiliki dua baris yang dikombinasikan dengan penggabungan sel (merging cells) untuk mengelompokkan kategori nilai. Seluruh area header ini memiliki latar belakang **kuning solid** dan teks berwarna **hitam tebal**, dengan semua teks rata tengah secara horizontal dan vertikal. Border sel di header lebih tebal dibandingkan border sel data.
+
+    *   **Baris Header 1 (Level Utama):**
+        *   **NO:** Kolom nomor urut. Sel ini digabungkan secara vertikal menutupi dua baris header.
+        *   **NAMA PESERTA DIDIK:** Kolom untuk nama siswa. Sel ini digabungkan secara vertikal menutupi dua baris header. Lebar kolom ini adalah yang terluas untuk menampung nama lengkap.
+        *   **NILAI:** Kategori utama untuk nilai per bab. Sel ini digabungkan secara horizontal menutupi empat kolom sub-nilai di bawahnya.
+        *   **HARIAN/PR:** Kategori utama untuk nilai harian atau pekerjaan rumah. Sel ini digabungkan secara horizontal menutupi tiga kolom sub-nilai di bawahnya.
+        *   **STS2:** Kolom untuk nilai Penilaian Tengah Semester (ke-2). Sel ini digabungkan secara vertikal menutupi dua baris header.
+        *   **SAS2:** Kolom untuk nilai Penilaian Akhir Semester (ke-2). Sel ini digabungkan secara vertikal menutupi dua baris header.
+        *   **JUMLAH:** Kolom untuk total nilai. Sel ini digabungkan secara vertikal menutupi dua baris header.
+
+    *   **Baris Header 2 (Level Sub-kategori):**
+        *   *(Kolom NO, NAMA PESERTA DIDIK, STS2, SAS2, JUMLAH tidak ada di baris ini karena telah digabungkan dari baris pertama).*
+        *   **Di bawah 'NILAI' (4 sub-kolom):**
+            *   **BAB___:** Terdapat empat sel dengan label "BAB" diikuti underscore, mengindikasikan nilai untuk Bab 1, Bab 2, Bab 3, dan Bab 4.
+        *   **Di bawah 'HARIAN/PR' (3 sub-kolom):**
+            *   **1:** Mengindikasikan nilai harian/PR ke-1.
+            *   **2:** Mengindikasikan nilai harian/PR ke-2.
+            *   **3:** Mengindikasikan nilai harian/PR ke-3.
+
+*   **Kolom Data (Setelah Header):**
+    Berdasarkan struktur header, tabel memiliki kolom-kolom berikut untuk setiap baris siswa:
+    1.  **NO:** Nomor urut siswa (angka 1-27). Penempatan teks rata kanan.
+    2.  **NAMA PESERTA DIDIK:** Nama lengkap siswa. Penempatan teks rata kiri.
+    3.  **NILAI (BAB 1):** Sel kosong untuk nilai Bab 1.
+    4.  **NILAI (BAB 2):** Sel kosong untuk nilai Bab 2.
+    5.  **NILAI (BAB 3):** Sel kosong untuk nilai Bab 3.
+    6.  **NILAI (BAB 4):** Sel kosong untuk nilai Bab 4.
+    7.  **HARIAN/PR (1):** Sel kosong untuk nilai harian/PR ke-1.
+    8.  **HARIAN/PR (2):** Sel kosong untuk nilai harian/PR ke-2.
+    9.  **HARIAN/PR (3):** Sel kosong untuk nilai harian/PR ke-3.
+    10. **STS2:** Sel kosong untuk nilai STS2.
+    11. **SAS2:** Sel kosong untuk nilai SAS2.
+    12. **JUMLAH:** Sel kosong untuk total nilai.
+
+*   **Baris Data:**
+    *   Terdapat **27 baris** untuk data peserta didik (dari nomor 1 hingga 27).
+    *   **Warna & Border:** Seluruh baris data memiliki latar belakang putih dan border garis hitam tipis. Border vertikal antara kolom "NO" dan "NAMA PESERTA DIDIK" tampak sedikit lebih tebal, mungkin untuk memisahkan kolom identifikasi utama.
+    *   **Isi Sel Data:** Kolom "NO" dan "NAMA PESERTA DIDIK" telah terisi, sedangkan semua kolom nilai (NILAI, HARIAN/PR, STS2, SAS2, JUMLAH) dibiarkan kosong, menandakan bahwa template ini siap untuk diisi data.
+
+*   **Formula/Rekap (Implied):**
+    *   Kolom "JUMLAH" secara implisit menunjukkan adanya perhitungan rekapitulasi. Diasumsikan bahwa nilai di kolom "JUMLAH" akan diisi dengan hasil penjumlahan dari seluruh kolom nilai sebelumnya (NILAI BAB 1-4, HARIAN/PR 1-3, STS2, dan SAS2) untuk setiap peserta didik. Tidak ada formula eksplisit yang ditampilkan, namun fungsinya sebagai rekapitulasi nilai akhir.
+
+#### 3. Blok Tanda Tangan (TTD)
+
+Bagian bawah template didedikasikan untuk persetujuan dan pengesahan, dengan dua blok tanda tangan yang sejajar.
+
+*   **Blok Tanda Tangan Kiri (Kepala Sekolah):**
+    *   **MENGETAHUI,**: Teks penanda peran persetujuan, rata tengah.
+    *   **KEPALA SEKOLAH**: Teks peran, rata tengah, dengan jarak vertikal yang cukup di atasnya untuk tanda tangan.
+    *   **H. M. HALIM MUSTOMI, S.Pd.** : Nama dan gelar kepala sekolah, rata tengah, ditebalkan (bold), dan digarisbawahi (underlined).
+*   **Blok Tanda Tangan Kanan (Guru Kelas):**
+    *   **TIGARAKSA, .......................... 20......**: Penanda tempat dan tanggal. "TIGARAKSA" adalah nama kota, diikuti oleh garis putus-putus untuk mengisi tanggal, bulan, dan tahun. Rata kiri.
+    *   **GURU KELAS**: Teks peran, rata tengah, dengan jarak vertikal yang cukup di atasnya untuk tanda tangan.
+    *   **NESI APRIYANTI, S.Pd.** : Nama dan gelar guru kelas, rata tengah, ditebalkan (bold), dan digarisbawahi (underlined).
+*   **Warna & Font:** Semua teks di bagian tanda tangan berwarna hitam, menggunakan font serif standar. Tidak ada border atau latar belakang berwarna.
+
+---
+
+### Ringkasan Struktur Tabel Lengkap:
+
+**Header Informasi Atas (Non-Tabel):**
+*   **Judul:** "DAFTAR NILAI PESERTA DIDIK" (Tengah, Besar, Tebal)
+*   **Detail Kiri:** MATA PELAJARAN, NAMA SEKOLAH, KELAS/SEMESTER, TAHUN PELAJARAN
+*   **Detail Kanan:** NSS / NPSN, KECAMATAN, KABUPATEN, PROVINSI
+
+**Tabel Data Utama:**
+
+*   **Dimensi:** 12 Kolom x 29 Baris (2 Header + 27 Data)
+*   **Warna Sel:** Header kuning, Data putih
+*   **Borders:** Header border tebal, Data border tipis
+*   **Alignment Teks:**
+    *   Header: Rata tengah semua
+    *   Data Kolom NO: Rata kanan
+    *   Data Kolom NAMA PESERTA DIDIK: Rata kiri
+    *   Data Kolom Nilai: (Diasumsikan rata tengah jika terisi)
+
+*   **Struktur Header Kolom (Baris 1 & 2):**
+    | Baris 1 / Baris 2 | NO (gabung 2 baris) | NAMA PESERTA DIDIK (gabung 2 baris) | NILAI (gabung 4 kolom) | HARIAN/PR (gabung 3 kolom) | STS2 (gabung 2 baris) | SAS2 (gabung 2 baris) | JUMLAH (gabung 2 baris) |
+    | :---------------- | :------------------ | :---------------------------------- | :--------------------- | :------------------------- | :-------------------- | :-------------------- | :---------------------- |
+    | Baris 2           |                     |                                     | BAB___ \| BAB___ \| BAB___ \| BAB___ | 1 \| 2 \| 3                |                       |                       |                         |
+
+*   **Kolom Data Detail (per baris siswa):**
+    1.  NO
+    2.  NAMA PESERTA DIDIK
+    3.  Nilai BAB 1
+    4.  Nilai BAB 2
+    5.  Nilai BAB 3
+    6.  Nilai BAB 4
+    7.  Harian/PR 1
+    8.  Harian/PR 2
+    9.  Harian/PR 3
+    10. STS2
+    11. SAS2
+    12. JUMLAH (hasil rekapitulasi)
+
+**Blok Tanda Tangan Bawah (Non-Tabel):**
+*   **Kiri:** MENGETAHUI, KEPALA SEKOLAH, H. M. HALIM MUSTOMI, S.Pd. (Tengah, Nama tebal & garis bawah)
+*   **Kanan:** TIGARAKSA, .......................... 20......, GURU KELAS, NESI APRIYANTI, S.Pd. (Tanggal rata kiri, Peran tengah, Nama tebal & garis bawah)
+
+---
+
+Template ini memiliki desain yang bersih dan fungsional, menggunakan warna kuning untuk menyorot header, grid yang jelas untuk entri data, dan penataan yang terstruktur untuk informasi administratif dan otorisasi.

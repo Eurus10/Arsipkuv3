@@ -1,0 +1,86 @@
+Berikut adalah analisis terperinci mengenai struktur template gambar yang diberikan:
+
+---
+
+**Analisis Template DATA USIA KELAS 1A TAHUN PELAJARAN 2026-2027**
+
+Template ini menampilkan data usia siswa kelas 1A per bulan untuk tahun pelajaran 2026-2027 dalam format tabel.
+
+**1. KOP Sekolah (Letterhead):**
+*   **Tidak Ada:** Pada gambar template ini, tidak ditemukan adanya struktur KOP (Kepala Surat) sekolah. Ini berarti tidak ada informasi standar seperti nama sekolah, alamat, logo, nomor telepon, atau elemen lain yang biasanya terdapat pada KOP resmi. Template ini dimulai langsung dengan judul data.
+
+**2. Judul Dokumen:**
+*   **Judul Utama:** Terdapat judul utama yaitu "DATA USIA KELAS 1A".
+    *   **Font:** Teks berwarna hitam, kemungkinan menggunakan font sans-serif standar (misalnya Arial, Helvetica, atau Calibri).
+    *   **Ukuran:** Lebih besar dari teks lain dalam dokumen, menunjukkan hirarki sebagai judul utama.
+    *   **Penempatan:** Terpusat (center-aligned) di bagian atas dokumen, di atas tabel.
+*   **Sub-judul/Periode:** Di bawah judul utama, terdapat sub-judul "TAHUN PELAJARAN 2026-2027".
+    *   **Font:** Teks berwarna hitam, kemungkinan font yang sama dengan judul utama tetapi dengan ukuran yang sedikit lebih kecil.
+    *   **Penempatan:** Terpusat (center-aligned) di bawah judul utama.
+
+**3. Struktur Tabel Lengkap:**
+Tabel ini memiliki **17 Kolom** dan **25 Baris** (1 baris header + 24 baris data siswa).
+
+*   **Baris Header (Baris 1):**
+    *   Baris ini adalah baris pertama dari tabel, yang berisi judul untuk setiap kolom data. Seluruh baris header ini memiliki **warna latar belakang kuning cerah (#FFFF00)**.
+    *   **Kolom-kolom Header:**
+        1.  **No.** (Nomor Urut): Kolom paling kiri, berisi nomor urut siswa.
+        2.  **Nama Siswa:** Berisi nama lengkap siswa.
+        3.  **Tempat Lahir:** Berisi lokasi kelahiran siswa.
+        4.  **Tanggal Lahir:** Berisi tanggal lahir siswa dalam format tanggal lengkap (DD Bulan YYYY).
+        5.  **Juli:** Judul kolom untuk usia siswa pada bulan Juli.
+        6.  **Agustus:** Judul kolom untuk usia siswa pada bulan Agustus.
+        7.  **September:** Judul kolom untuk usia siswa pada bulan September.
+        8.  **Oktober:** Judul kolom untuk usia siswa pada bulan Oktober.
+        9.  **November:** Judul kolom untuk usia siswa pada bulan November.
+        10. **Desember:** Judul kolom untuk usia siswa pada bulan Desember.
+        11. **Januari:** Judul kolom untuk usia siswa pada bulan Januari.
+        12. **Februari:** Judul kolom untuk usia siswa pada bulan Februari.
+        13. **Maret:** Judul kolom untuk usia siswa pada bulan Maret.
+        14. **April:** Judul kolom untuk usia siswa pada bulan April.
+        15. **Mei:** Judul kolom untuk usia siswa pada bulan Mei.
+        16. **Juni:** Judul kolom untuk usia siswa pada bulan Juni.
+    *   **Penjajaran Teks Header:** Semua teks dalam sel header terpusat (center-aligned) secara horizontal.
+
+*   **Baris Data (Baris 2 hingga 25):**
+    *   Terdapat 24 baris data, masing-masing mewakili satu siswa.
+    *   **Warna Latar Belakang:** Seluruh baris data memiliki **warna latar belakang putih (#FFFFFF)** (standar tanpa pengisian).
+    *   **Struktur Kolom Data:**
+        1.  **No.:** Angka berurutan dari 1 hingga 24. (Tipe Data: Numerik/Integer)
+        2.  **Nama Siswa:** Teks nama siswa, contoh: "ABQARY AFKARIANSYAH". (Tipe Data: Teks)
+        3.  **Tempat Lahir:** Teks tempat lahir, contoh: "Tangerang", "Purworejo", "Cirebon". (Tipe Data: Teks)
+        4.  **Tanggal Lahir:** Tanggal lahir siswa, contoh: "13 Februari 2018". (Tipe Data: Tanggal)
+        5.  **Juli s.d. Juni (Kolom Usia):** Usia siswa pada bulan terkait. Formatnya adalah "X tahun Y bulan", contoh: "8 tahun 4 bulan", "9 tahun 0 bulan". (Tipe Data: Teks representasi usia, hasil perhitungan)
+    *   **Penjajaran Teks Data:**
+        *   Kolom "No." kemungkinan terpusat (center-aligned).
+        *   Kolom "Nama Siswa" kemungkinan rata kiri (left-aligned).
+        *   Kolom "Tempat Lahir" dan "Tanggal Lahir" kemungkinan rata kiri atau terpusat (left/center-aligned).
+        *   Kolom usia (Juli hingga Juni) kemungkinan terpusat (center-aligned).
+
+**4. Sub-kolom:**
+*   Secara formal, tidak ada struktur sub-kolom yang eksplisit dalam arti ada header kedua yang lebih rendah. Namun, secara fungsional, kolom "Juli" hingga "Juni" dapat dianggap sebagai serangkaian sub-kolom di bawah konsep "Usia per Bulan" meskipun label "Usia per Bulan" itu sendiri tidak ditampilkan sebagai header gabungan yang membentang di atasnya. Setiap bulan adalah kolom data usia yang terpisah.
+
+**5. Formula/Rekap:**
+*   **Formula Perhitungan Usia:** Setiap sel pada kolom bulan (Juli hingga Juni) berisi hasil perhitungan usia siswa. Formula yang digunakan adalah `Usia = Tanggal Acuan Bulan Tertentu - Tanggal Lahir Siswa`.
+    *   **Tanggal Acuan:** Untuk setiap kolom bulan (misalnya Juli), tanggal acuan adalah suatu tanggal di akhir bulan tersebut di tahun pelajaran (misalnya 31 Juli 2026). Perhitungan ini dilakukan untuk setiap siswa di setiap bulan.
+    *   **Format Output:** Hasil perhitungan usia ditampilkan dalam format teks yang konsisten: "X tahun Y bulan". Contoh: "8 tahun 4 bulan", "9 tahun 0 bulan".
+*   **Rekapitulasi:** Tidak ada sel rekapitulasi (misalnya total usia rata-rata, usia termuda/tertua, dsb.) yang terlihat dalam template ini. Ini murni merupakan daftar data individual.
+
+**6. Baris TTD (Tanda Tangan):**
+*   **Tidak Ada:** Tidak ditemukan adanya baris khusus untuk tanda tangan atau pengesahan (misalnya "Mengetahui," "Dibuat Oleh," dsb.) di bagian bawah dokumen atau tabel.
+
+**7. Warna Sel:**
+*   **Header:** Latar belakang kuning cerah (#FFFF00) dengan teks hitam.
+*   **Data:** Latar belakang putih (#FFFFFF) (default) dengan teks hitam.
+
+**8. Border (Batas Sel):**
+*   **Semua Sel:** Seluruh sel dalam tabel, baik header maupun data, memiliki border (garis batas) yang jelas dan tipis berwarna hitam. Ini menciptakan tampilan grid yang rapi dan terstruktur.
+*   **Border Luar:** Terdapat border yang mengelilingi seluruh tabel.
+
+**9. Tata Letak (Layout):**
+*   **Judul:** Terpusat di bagian atas halaman, di atas tabel.
+*   **Tabel:** Terletak di bawah judul. Lebar tabel disesuaikan untuk menampung semua kolom data. Tabel ini cenderung mengisi lebar halaman secara horizontal, dengan kolom-kolom usia (bulan) memiliki lebar yang relatif seragam dan ringkas.
+*   **Orientasi:** Data disajikan secara horizontal, di mana setiap baris mewakili satu siswa dan setiap kolom (setelah informasi dasar siswa) mewakili usia siswa pada bulan tertentu.
+*   **Kerapihan:** Penjajaran teks dan penggunaan border menunjukkan tata letak yang raorganisir dan mudah dibaca.
+
+---

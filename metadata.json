@@ -1,0 +1,6 @@
+{
+  "name": "Arsip Digital SDIT Al Fikri",
+  "description": "Portal pencarian dan arsip digital SDIT Al Fikri terhubung dengan Google Drive: Administrasi Guru, Bank Soal, Unduh Template Dokumen & Folder Soal, Tracking Pengumpulan & Cetak Soal, Sertifikat, dan E-Rapor STS Kurikulum Merdeka.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

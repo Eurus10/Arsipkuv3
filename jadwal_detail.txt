@@ -1,0 +1,155 @@
+Tentu, mari kita bedah struktur template gambar jadwal pelajaran ini secara sangat rinci:
+
+---
+
+### **Analisis Struktur Template Jadwal Pelajaran SDIT AL FIKRI Tahun Pelajaran 2026-2027**
+
+Template ini merupakan sebuah jadwal pelajaran mingguan yang disusun dalam format tabel, dengan berbagai elemen administratif dan visual yang terstruktur.
+
+#### **1. KOP Sekolah (School Header/Logo)**
+*   **Lokasi:** Terletak di bagian kiri atas halaman, sedikit tumpang tindih dengan kolom pertama tabel.
+*   **Bentuk:** Sebuah stempel/logo melingkar berwarna biru tua.
+*   **Konten Tekstual:**
+    *   "SEKOLAH ISLAM TERPADU" (Lingkar luar bagian atas)
+    *   "SDIT" (Pusat atas)
+    *   "AL FIKRI" (Pusat bawah)
+    *   "KEC. TIGARAKSA" (Lingkar luar bagian bawah kiri)
+    *   "TANGERANG" (Lingkar luar bagian bawah kanan)
+*   **Warna:** Tulisan putih dengan latar belakang biru tua pada stempel.
+*   **Fungsi:** Mengidentifikasi lembaga pendidikan yang menerbitkan jadwal ini, memberikan kesan resmi dan otentikasi.
+
+#### **2. Judul Utama (Main Title)**
+*   **Lokasi:** Terpusat di bagian atas halaman, di atas keseluruhan struktur tabel.
+*   **Struktur Baris:** Terdiri dari tiga baris terpisah:
+    1.  **JADWAL PELAJARAN**
+    2.  **SDIT AL FIKRI**
+    3.  **TAHUN PELAJARAN 2026-2027**
+*   **Format Teks:**
+    *   Semua teks menggunakan huruf kapital (uppercase).
+    *   Teks tebal (bold).
+    *   Rata tengah (centered) untuk setiap baris.
+*   **Font:** Teks judul menggunakan font serif (mirip Times New Roman) yang terkesan formal.
+*   **Fungsi:** Memberikan informasi utama mengenai dokumen ini, yaitu jadwal pelajaran untuk sekolah dan tahun ajaran tertentu.
+
+#### **3. Struktur Tabel Lengkap**
+
+Tabel ini adalah inti dari template, yang menampilkan jadwal pelajaran.
+
+*   **Tata Letak Keseluruhan Tabel:**
+    *   Tabel memiliki 12 baris data (termasuk baris ISTIRAHAT dan SHALAT DZUHUR) dan 9 kolom (KELAS, NO., WAKTU, dan 6 kolom hari).
+    *   Seluruh tabel dibingkai dengan garis border tipis berwarna hitam.
+    *   Seluruh sel dalam tabel memiliki garis border tipis berwarna hitam yang jelas, memisahkan setiap elemen data.
+
+*   **Warna Sel dan Teks:**
+    *   **Header Utama Kolom & Baris:** Latar belakang biru muda, teks hitam tebal.
+    *   **Sel Spesifik (Aktivitas Bersama/Penting):** Latar belakang biru muda, teks hitam tebal. Ini berlaku untuk sel "SHALAT DHUHA", "ISTIRAHAT", dan "SHALAT DZUHUR".
+    *   **Sel Data Pelajaran/Aktivitas Reguler:** Latar belakang putih, teks hitam standar (tidak tebal).
+    *   **Teks "KELAS A":** Latar belakang putih (seluruh kolom A), teks hitam tebal, ukuran font lebih besar.
+*   **Alignment Teks:**
+    *   Sebagian besar teks header (kolom dan baris) adalah rata tengah (centered).
+    *   Teks dalam sel data pelajaran/aktivitas juga rata tengah (centered).
+
+---
+
+#### **4. Header Kolom Tabel**
+
+Header kolom terbagi menjadi dua tingkatan:
+
+*   **Header Utama (Baris 1 & 2 dari Header Tabel):**
+    *   **KELAS:** Header ini adalah sel vertikal yang menggabungkan (merge) dua baris header atas, dan juga secara implisit terkait dengan sel "A" di bawahnya yang membentang ke bawah.
+    *   **NO.:** Header ini adalah sel vertikal yang menggabungkan (merge) dua baris header atas.
+    *   **WAKTU:** Header ini adalah sel vertikal yang menggabungkan (merge) dua baris header atas.
+    *   **HARI:** Header ini adalah sel horizontal yang menggabungkan (merge) enam kolom (untuk Senin hingga Sabtu) di baris pertama header tabel. Di bawahnya, setiap hari memiliki kolomnya sendiri.
+    *   **Format:** Semua teks dalam header utama ini adalah huruf kapital, tebal, rata tengah, dengan latar belakang biru muda.
+
+*   **Sub-Header Hari (Baris 3 dari Header Tabel, di bawah "HARI"):**
+    *   **SENIN**
+    *   **SELASA**
+    *   **RABU**
+    *   **KAMIS**
+    *   **JUM'AT**
+    *   **SABTU**
+    *   **Format:** Semua teks adalah huruf kapital, tebal, rata tengah, dengan latar belakang biru muda.
+
+---
+
+#### **5. Kolom Metadata Samping Kiri (Row Headers)**
+
+Kolom-kolom ini berfungsi sebagai identifikasi untuk setiap baris jadwal:
+
+*   **Kolom "KELAS":**
+    *   Header: "KELAS" (bold, centered, light blue background).
+    *   Isi: Huruf kapital "A" yang sangat besar dan tebal, diletakkan di tengah secara vertikal dan horizontal. Sel ini secara visual membentang dari baris data pertama (No. 1) hingga baris data terakhir (No. 11), menunjukkan bahwa jadwal ini berlaku untuk Kelas A.
+*   **Kolom "NO.":**
+    *   Header: "NO." (bold, centered, light blue background).
+    *   Isi: Angka 1 hingga 11, masing-masing dalam sel terpisah, menunjukkan urutan periode/blok waktu. Teks rata tengah.
+*   **Kolom "WAKTU":**
+    *   Header: "WAKTU" (bold, centered, light blue background).
+    *   Isi: Rentang waktu dalam format "HH.MM - HH.MM" (contoh: 07.00 - 07.30), masing-masing dalam sel terpisah. Teks rata tengah.
+
+---
+
+#### **6. Baris-Baris Data (Isi Jadwal)**
+
+Ini adalah bagian utama tabel yang berisi detail pelajaran atau aktivitas per hari dan per periode waktu.
+
+*   **Pelajaran Reguler:** Nama mata pelajaran (contoh: MATEMATIKA, B. ARAB, PJOK, B. INDONESIA, PEND. PANCASILA, PENGAJIAN, FIQIH, AKIDAH AKHLAK, PAI, TAHFIDZ, HAFALAN DO'A & HADIST, SENI BUDAYA, PRAMUKA/TAEKWONDO/VOKAL). Teks hitam standar, rata tengah, latar belakang putih.
+
+*   **Sel dengan Penggabungan (Merger) Vertikal:**
+    *   **UPACARA (Senin, No. 1-2):** Menggabungkan 2 sel secara vertikal.
+    *   **SHALAT DHUHA (Selasa, Kamis, Jum'at, No. 1-2):** Menggabungkan 2 sel secara vertikal. Latar belakang biru muda, teks tebal.
+    *   **B. ARAB (Selasa, No. 3-4):** Menggabungkan 2 sel secara vertikal.
+    *   **PJOK (Rabu, No. 3-4):** Menggabungkan 2 sel secara vertikal.
+    *   **B. INDONESIA (Kamis, No. 3-4):** Menggabungkan 2 sel secara vertikal.
+    *   **FIQIH (Jum'at, No. 4-5):** Menggabungkan 2 sel secara vertikal.
+    *   **PRAMUKA/TAEKWONDO/VOKAL (Sabtu, No. 1-5):** Menggabungkan 5 sel secara vertikal.
+    *   **AKIDAH AKHLAK (Senin, Selasa, No. 7-9):** Menggabungkan 3 sel secara vertikal.
+    *   **PAI (Rabu, No. 7-9):** Menggabungkan 3 sel secara vertikal.
+    *   **TAHFIDZ (Kamis, No. 7-8):** Menggabungkan 2 sel secara vertikal.
+    *   **SENI BUDAYA (Jum'at, No. 7-8):** Menggabungkan 2 sel secara vertikal.
+
+*   **Sel dengan Penggabungan (Merger) Horizontal:**
+    *   **ISTIRAHAT (No. 6, Seluruh Hari):** Menggabungkan semua sel dari kolom Senin hingga Sabtu. Latar belakang biru muda, teks tebal, rata tengah. Ini menunjukkan waktu istirahat bersama untuk semua kelas/hari.
+    *   **SHALAT DZUHUR (No. 11, Seluruh Hari):** Menggabungkan semua sel dari kolom Senin hingga Sabtu. Latar belakang biru muda, teks tebal, rata tengah. Ini menunjukkan waktu shalat Dzuhur bersama.
+
+*   **Sel Kosong/Tidak Ada Aktivitas:**
+    *   Ditandai dengan tanda hubung tunggal ("-"). Ini menunjukkan bahwa pada periode waktu dan hari tersebut tidak ada aktivitas yang dijadwalkan (contoh: Sabtu No. 7-11, Senin No. 10, dll.).
+
+---
+
+#### **7. Formula/Rekap**
+*   Dalam template ini, tidak ada formula matematis atau rekapitulasi data yang terlihat. Ini adalah dokumen jadwal statis yang menyajikan informasi secara langsung.
+
+---
+
+#### **8. Area Tanda Tangan (Signature Area)**
+
+Terdapat dua area tanda tangan di bagian bawah halaman:
+
+*   **Tanda Tangan Kiri (Kepala Sekolah):**
+    *   **Lokasi:** Bawah kiri, di bawah kolom "KELAS", "NO.", dan "WAKTU" tabel.
+    *   **Isi:**
+        *   Sebuah garis kosong untuk tanda tangan.
+        *   Sebuah stempel KOP sekolah (mirip dengan yang di atas, namun mungkin lebih kecil atau sebagian terpotong) yang menimpa garis tanda tangan.
+        *   Nama terang: **H. M. HALIM MUSTOMI, S.Pd.** (tebal, digarisbawahi).
+    *   **Fungsi:** Menunjukkan persetujuan dan pengesahan resmi dari Kepala Sekolah.
+
+*   **Tanda Tangan Kanan (Wali Kelas):**
+    *   **Lokasi:** Bawah kanan, di bawah kolom "KAMIS", "JUM'AT", dan "SABTU" tabel.
+    *   **Isi:**
+        *   Label: **WALI KELAS** (huruf kapital, tebal, rata tengah).
+        *   Sebuah garis kosong untuk tanda tangan.
+        *   Nama terang: **YENI ASTRIANI, S.Pd** (tebal, digarisbawahi).
+    *   **Fungsi:** Menunjukkan persetujuan dan tanggung jawab dari Wali Kelas yang bersangkutan.
+
+---
+
+#### **9. Tata Letak (Layout)**
+*   **Hierarkis:** Informasi disajikan secara hierarkis, dimulai dari identitas institusi (KOP & Judul), kemudian detail jadwal (tabel), dan diakhiri dengan otentikasi (tanda tangan).
+*   **Terpusat & Rapi:** Judul utama dan tabel utama terpusat di halaman. Penggunaan garis border yang konsisten dan warna yang membedakan header membantu menjaga kerapian dan keterbacaan.
+*   **Penggunaan Ruang:** Meskipun padat dengan informasi, ada cukup ruang putih (whitespace) di sekitar elemen utama (judul, tabel, tanda tangan) untuk mencegah tampilan terlalu ramai.
+*   **Asimetris (Parsial):** KOP sekolah di kiri atas dan tanda tangan di kiri bawah memberikan sedikit asimetris dibandingkan tanda tangan Wali Kelas yang di kanan. Namun, secara keseluruhan, tata letak tabel cukup seimbang.
+
+---
+
+Demikian analisis rinci mengenai semua struktur, elemen visual, dan tata letak yang ada pada template jadwal pelajaran ini.
