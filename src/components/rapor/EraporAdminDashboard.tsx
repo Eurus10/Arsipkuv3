@@ -22,6 +22,9 @@ import {
   BarChart3,
   ExternalLink,
   ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
 } from 'lucide-react';
 import {
   fetchEraporDashboardSummary,
@@ -44,7 +47,22 @@ interface EraporAdminDashboardProps {
   showNotification?: (message: string, type?: 'success' | 'info') => void;
 }
 
-type ViewMode = 'table' | 'tree';
+type ViewMode = 'compact' | 'flat' | 'tree';
+
+export interface RombelSummaryItem {
+  classId: string;
+  className: string;
+  grade: number;
+  homeroomTeacherName?: string;
+  totalStudents: number;
+  totalSubjects: number;
+  completedSubjects: number;
+  inProgressSubjects: number;
+  notStartedSubjects: number;
+  avgProgress: number;
+  status: MonitoringStatus;
+  subjects: ClassSubjectTreeItem['subjects'];
+}
 
 export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
   onBack,
@@ -62,8 +80,9 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  // Filters & Views
+  const [viewMode, setViewMode] = useState<ViewMode>('compact');
+  const [expandedClassIds, setExpandedClassIds] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'all' | MonitoringStatus>('all');
   const [classFilter, setClassFilter] = useState<string>('all');
@@ -230,6 +249,131 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
     }
     return { completed, inProgress, notStarted, total: monitoringRows.length };
   }, [monitoringRows]);
+
+  // Aggregate Rombel Summaries for Compact Per-Class View
+  const rombelSummaries = useMemo<RombelSummaryItem[]>(() => {
+    return classTree
+      .map((cls) => {
+        const totalSubjects = cls.subjects.length;
+        let completedSubjects = 0;
+        let inProgressSubjects = 0;
+        let notStartedSubjects = 0;
+        let totalProgressSum = 0;
+
+        for (const s of cls.subjects) {
+          if (s.status === 'completed') completedSubjects++;
+          else if (s.status === 'in_progress') inProgressSubjects++;
+          else notStartedSubjects++;
+          totalProgressSum += s.progressPercentage;
+        }
+
+        const avgProgress =
+          totalSubjects > 0 ? Math.round(totalProgressSum / totalSubjects) : 0;
+
+        let status: MonitoringStatus = 'not_started';
+        if (totalSubjects > 0 && completedSubjects === totalSubjects) {
+          status = 'completed';
+        } else if (completedSubjects > 0 || inProgressSubjects > 0) {
+          status = 'in_progress';
+        }
+
+        return {
+          classId: cls.classId,
+          className: cls.className,
+          grade: cls.grade,
+          homeroomTeacherName: cls.homeroomTeacherName,
+          totalStudents: cls.totalStudents,
+          totalSubjects,
+          completedSubjects,
+          inProgressSubjects,
+          notStartedSubjects,
+          avgProgress,
+          status,
+          subjects: cls.subjects,
+        };
+      })
+      .sort((a, b) => a.className.localeCompare(b.className, undefined, { numeric: true }));
+  }, [classTree]);
+
+  // Filtered Rombel Summaries
+  const filteredRombelList = useMemo(() => {
+    return rombelSummaries.filter((rombel) => {
+      if (classFilter !== 'all' && rombel.className !== classFilter) {
+        return false;
+      }
+      if (statusFilter !== 'all' && rombel.status !== statusFilter) {
+        return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchClass = rombel.className.toLowerCase().includes(q);
+        const matchTeacher = (rombel.homeroomTeacherName || '').toLowerCase().includes(q);
+        const matchSubject = rombel.subjects.some(
+          (s) =>
+            s.subjectName.toLowerCase().includes(q) ||
+            s.teacherName.toLowerCase().includes(q) ||
+            (s.subjectCode || '').toLowerCase().includes(q)
+        );
+        return matchClass || matchTeacher || matchSubject;
+      }
+      return true;
+    });
+  }, [rombelSummaries, classFilter, statusFilter, searchQuery]);
+
+  // Status counts per rombel
+  const rombelStatusCounts = useMemo(() => {
+    let completed = 0;
+    let inProgress = 0;
+    let notStarted = 0;
+    for (const r of rombelSummaries) {
+      if (r.status === 'completed') completed++;
+      else if (r.status === 'in_progress') inProgress++;
+      else notStarted++;
+    }
+    return { completed, inProgress, notStarted, total: rombelSummaries.length };
+  }, [rombelSummaries]);
+
+  // Expand / collapse handlers
+  const toggleClassExpand = (classId: string) => {
+    setExpandedClassIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(classId)) {
+        next.delete(classId);
+      } else {
+        next.add(classId);
+      }
+      return next;
+    });
+  };
+
+  const handleExpandAll = () => {
+    const allIds = new Set(filteredRombelList.map((r) => r.classId));
+    setExpandedClassIds(allIds);
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedClassIds(new Set());
+  };
+
+  // Helper to filter inner subjects of an expanded rombel when searching
+  const getDisplayedSubjects = (rombel: RombelSummaryItem) => {
+    if (!searchQuery.trim()) return rombel.subjects;
+    const q = searchQuery.toLowerCase();
+    const matches = rombel.subjects.filter(
+      (s) =>
+        s.subjectName.toLowerCase().includes(q) ||
+        s.teacherName.toLowerCase().includes(q) ||
+        (s.subjectCode || '').toLowerCase().includes(q)
+    );
+    if (
+      matches.length === 0 &&
+      (rombel.className.toLowerCase().includes(q) ||
+        (rombel.homeroomTeacherName || '').toLowerCase().includes(q))
+    ) {
+      return rombel.subjects;
+    }
+    return matches;
+  };
 
   return (
     <div className="relative min-h-[calc(100vh-2rem)] text-slate-100 font-sans selection:bg-amber-400/30 selection:text-amber-100">
@@ -471,27 +615,42 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.03] p-0.5">
                     <button
                       type="button"
-                      onClick={() => setViewMode('table')}
+                      onClick={() => setViewMode('compact')}
                       className={`h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                        viewMode === 'table'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
+                        viewMode === 'compact'
+                          ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
                           : 'text-slate-400 hover:text-white'
                       }`}
+                      title="Tampilan ringkas per rombel dengan rincian mapel interaktif"
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>Ringkas Rombel</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('flat')}
+                      className={`h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                        viewMode === 'flat'
+                          ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Daftar panjang seluruh mata pelajaran"
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
-                      <span>Tabel Monitoring</span>
+                      <span>Semua Mapel</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setViewMode('tree')}
                       className={`h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                         viewMode === 'tree'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
+                          ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
                           : 'text-slate-400 hover:text-white'
                       }`}
+                      title="Tampilan kartu grid per rombel"
                     >
-                      <Layers className="w-3.5 h-3.5" />
-                      <span>Per Rombel</span>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Kartu Grid</span>
                     </button>
                   </div>
                 </div>
@@ -508,7 +667,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                       : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:text-white'
                   }`}
                 >
-                  Semua Status ({statusCounts.total})
+                  Semua Status ({viewMode === 'compact' ? rombelStatusCounts.total : statusCounts.total})
                 </button>
                 <button
                   type="button"
@@ -520,7 +679,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   }`}
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Selesai ({statusCounts.completed})</span>
+                  <span>Selesai ({viewMode === 'compact' ? rombelStatusCounts.completed : statusCounts.completed})</span>
                 </button>
                 <button
                   type="button"
@@ -532,7 +691,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   }`}
                 >
                   <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Sedang Berjalan ({statusCounts.inProgress})</span>
+                  <span>Sedang Berjalan ({viewMode === 'compact' ? rombelStatusCounts.inProgress : statusCounts.inProgress})</span>
                 </button>
                 <button
                   type="button"
@@ -544,13 +703,395 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   }`}
                 >
                   <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Belum Diisi ({statusCounts.notStarted})</span>
+                  <span>Belum Diisi ({viewMode === 'compact' ? rombelStatusCounts.notStarted : statusCounts.notStarted})</span>
                 </button>
               </div>
+
+              {/* Sub-toolbar for Compact Mode */}
+              {viewMode === 'compact' && (
+                <div className="flex items-center justify-between gap-3 pt-2 text-xs flex-wrap border-t border-white/[0.05]">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <span className="text-slate-200 font-bold">
+                      {filteredRombelList.length} Rombel Terpantau
+                    </span>
+                    <span className="hidden sm:inline text-[11px] text-slate-500">
+                      • Klik baris atau tombol "Lihat Mapel" untuk melihat detail
+                    </span>
+                  </div>
+
+                  {filteredRombelList.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleExpandAll}
+                        className="px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                        title="Buka rincian mapel untuk semua rombel"
+                      >
+                        <ChevronDown className="w-3 h-3 text-amber-400" />
+                        <span>Buka Semua Mapel</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCollapseAll}
+                        className="px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                        title="Tutup semua rincian mapel"
+                      >
+                        <ChevronUp className="w-3 h-3 text-slate-400" />
+                        <span>Tutup Semua</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* View Mode 1: Table View */}
-            {viewMode === 'table' && (
+            {/* View Mode 1: Compact Table per Rombel with Expandable Subject Details */}
+            {viewMode === 'compact' && (
+              <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl shadow-xl overflow-hidden">
+                <div className="overflow-x-auto custom-scrollbar">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/[0.08] bg-white/[0.03] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                        <th className="py-3 px-4 w-36">Kelas / Rombel</th>
+                        <th className="py-3 px-4">Wali Kelas</th>
+                        <th className="py-3 px-4 text-center">Jumlah Siswa</th>
+                        <th className="py-3 px-4 text-center">Kelengkapan Mapel</th>
+                        <th className="py-3 px-4 min-w-[160px]">Rerata Progres</th>
+                        <th className="py-3 px-4 text-center">Status Rombel</th>
+                        <th className="py-3 px-4 text-right">Rincian Mapel</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.05] text-xs">
+                      {filteredRombelList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="py-12 text-center text-slate-500">
+                            Tidak ada data rombel yang sesuai kriteria pencarian / filter.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredRombelList.map((rombel) => {
+                          const isExpanded = expandedClassIds.has(rombel.classId);
+                          const displayedSubjects = getDisplayedSubjects(rombel);
+
+                          return (
+                            <React.Fragment key={rombel.classId}>
+                              <tr
+                                onClick={() => toggleClassExpand(rombel.classId)}
+                                className={`hover:bg-white/[0.03] transition-colors cursor-pointer group ${
+                                  isExpanded ? 'bg-white/[0.02]' : ''
+                                }`}
+                              >
+                                {/* Kelas / Rombel */}
+                                <td className="py-3.5 px-4 whitespace-nowrap">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-amber-400/15 border border-amber-400/25 text-amber-300 flex items-center justify-center font-black text-xs shrink-0 group-hover:scale-105 transition-transform">
+                                      {rombel.grade || rombel.className[0]}
+                                    </div>
+                                    <div>
+                                      <span className="font-extrabold text-white text-sm block">
+                                        Kelas {rombel.className}
+                                      </span>
+                                      <span className="text-[10px] text-slate-400">
+                                        Jenjang {rombel.grade || rombel.className[0]}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Wali Kelas */}
+                                <td className="py-3.5 px-4">
+                                  <div className="flex items-center gap-2">
+                                    {rombel.homeroomTeacherName ? (
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="font-semibold text-slate-200">
+                                          {rombel.homeroomTeacherName}
+                                        </span>
+                                        <span className="px-1.5 py-0.5 rounded-md border border-emerald-400/20 bg-emerald-400/[0.08] text-[9px] font-bold text-emerald-300">
+                                          Wali Kelas
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-500 italic">Belum Ditugaskan</span>
+                                    )}
+                                  </div>
+                                </td>
+
+                                {/* Jumlah Siswa */}
+                                <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                  <span className="inline-flex items-center gap-1.5 font-bold text-slate-200">
+                                    <Users className="w-3.5 h-3.5 text-slate-400" />
+                                    <span>{rombel.totalStudents} Siswa</span>
+                                  </span>
+                                </td>
+
+                                {/* Kelengkapan Mapel */}
+                                <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                                      rombel.completedSubjects === rombel.totalSubjects && rombel.totalSubjects > 0
+                                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                                        : rombel.completedSubjects > 0
+                                        ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
+                                        : 'bg-slate-800 border border-white/[0.08] text-slate-400'
+                                    }`}
+                                  >
+                                    <BookOpen className="w-3.5 h-3.5" />
+                                    <span>
+                                      {rombel.completedSubjects} / {rombel.totalSubjects} Selesai
+                                    </span>
+                                  </span>
+                                </td>
+
+                                {/* Rerata Progres */}
+                                <td className="py-3.5 px-4 min-w-[160px]">
+                                  <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between text-[11px] font-bold">
+                                      <span
+                                        className={
+                                          rombel.status === 'completed'
+                                            ? 'text-emerald-300'
+                                            : rombel.status === 'in_progress'
+                                            ? 'text-amber-300'
+                                            : 'text-slate-500'
+                                        }
+                                      >
+                                        {rombel.avgProgress}%
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 font-normal">Rerata</span>
+                                    </div>
+                                    <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                      <div
+                                        className={`h-full rounded-full transition-all duration-500 ${
+                                          rombel.status === 'completed'
+                                            ? 'bg-emerald-400'
+                                            : rombel.status === 'in_progress'
+                                            ? 'bg-amber-400'
+                                            : 'bg-slate-700'
+                                        }`}
+                                        style={{ width: `${rombel.avgProgress}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Status Rombel */}
+                                <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                      rombel.status === 'completed'
+                                        ? 'border border-emerald-400/25 bg-emerald-500/[0.10] text-emerald-300'
+                                        : rombel.status === 'in_progress'
+                                        ? 'border border-amber-400/25 bg-amber-500/[0.10] text-amber-300'
+                                        : 'border border-rose-400/25 bg-rose-500/[0.10] text-rose-300'
+                                    }`}
+                                  >
+                                    {rombel.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
+                                    {rombel.status === 'in_progress' && <Clock className="w-3 h-3" />}
+                                    {rombel.status === 'not_started' && <AlertCircle className="w-3 h-3" />}
+                                    <span>
+                                      {rombel.status === 'completed'
+                                        ? 'Selesai'
+                                        : rombel.status === 'in_progress'
+                                        ? 'Proses'
+                                        : 'Belum'}
+                                    </span>
+                                  </span>
+                                </td>
+
+                                {/* Aksi: Buka / Tutup Mapel */}
+                                <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleClassExpand(rombel.classId);
+                                    }}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                      isExpanded
+                                        ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/20'
+                                        : 'bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-slate-300 hover:text-white'
+                                    }`}
+                                  >
+                                    <span>
+                                      {isExpanded ? 'Tutup Mapel' : `Lihat Mapel (${rombel.subjects.length})`}
+                                    </span>
+                                    {isExpanded ? (
+                                      <ChevronUp className="w-3.5 h-3.5" />
+                                    ) : (
+                                      <ChevronDown className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                </td>
+                              </tr>
+
+                              {/* Expanded Row for Subject Details */}
+                              {isExpanded && (
+                                <tr className="bg-slate-900/60 border-b border-white/[0.08]">
+                                  <td colSpan={7} className="p-3 sm:p-4 md:p-5">
+                                    <div className="rounded-2xl border border-white/[0.08] bg-slate-950/80 p-4 space-y-3 shadow-inner">
+                                      <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-white/[0.06]">
+                                        <div className="flex items-center gap-2">
+                                          <BookOpen className="w-4 h-4 text-amber-400" />
+                                          <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                                            Rincian {displayedSubjects.length} Mata Pelajaran — Kelas {rombel.className}
+                                          </h4>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-xs text-slate-400">
+                                          <span>
+                                            Selesai:{' '}
+                                            <strong className="text-emerald-300">{rombel.completedSubjects}</strong>
+                                          </span>
+                                          <span>•</span>
+                                          <span>
+                                            Proses:{' '}
+                                            <strong className="text-amber-300">{rombel.inProgressSubjects}</strong>
+                                          </span>
+                                          <span>•</span>
+                                          <span>
+                                            Belum:{' '}
+                                            <strong className="text-rose-300">{rombel.notStartedSubjects}</strong>
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <div className="border border-white/[0.07] rounded-xl overflow-hidden">
+                                        <table className="w-full text-left text-xs">
+                                          <thead className="bg-white/[0.02] border-b border-white/[0.06] text-[10px] uppercase font-bold text-slate-400">
+                                            <tr>
+                                              <th className="py-2.5 px-3">Mata Pelajaran</th>
+                                              <th className="py-2.5 px-3">Guru Pengampu</th>
+                                              <th className="py-2.5 px-3 text-center">Siswa Dinilai</th>
+                                              <th className="py-2.5 px-3 min-w-[130px]">Progres</th>
+                                              <th className="py-2.5 px-3 text-center">Status</th>
+                                              <th className="py-2.5 px-3 text-right">Aksi</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-white/[0.04]">
+                                            {displayedSubjects.length === 0 ? (
+                                              <tr>
+                                                <td colSpan={6} className="py-6 text-center text-slate-500">
+                                                  Tidak ada mata pelajaran yang cocok dengan pencarian di kelas ini.
+                                                </td>
+                                              </tr>
+                                            ) : (
+                                              displayedSubjects.map((subj) => (
+                                                <tr
+                                                  key={subj.subjectId}
+                                                  className="hover:bg-white/[0.02] transition-colors"
+                                                >
+                                                  {/* Subject */}
+                                                  <td className="py-2.5 px-3 font-semibold text-white">
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span>{subj.subjectName}</span>
+                                                      {subj.subjectCode && (
+                                                        <span className="text-[10px] text-slate-400 font-mono">
+                                                          ({subj.subjectCode})
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                  </td>
+
+                                                  {/* Teacher */}
+                                                  <td className="py-2.5 px-3">
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span
+                                                        className={
+                                                          subj.teacherId
+                                                            ? 'text-slate-200 font-medium'
+                                                            : 'text-rose-300 italic'
+                                                        }
+                                                      >
+                                                        {subj.teacherName}
+                                                      </span>
+                                                      {subj.assignmentType === 'homeroom_teacher' && (
+                                                        <span className="px-1.5 py-0.2 rounded border border-emerald-400/20 bg-emerald-400/[0.08] text-[9px] font-bold text-emerald-300">
+                                                          Wali Kelas
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                  </td>
+
+                                                  {/* Scored Students */}
+                                                  <td className="py-2.5 px-3 text-center">
+                                                    <span className="font-bold text-white">{subj.scoredStudents}</span>
+                                                    <span className="text-slate-500"> / {subj.totalStudents}</span>
+                                                  </td>
+
+                                                  {/* Progress Bar */}
+                                                  <td className="py-2.5 px-3">
+                                                    <div className="flex items-center gap-2">
+                                                      <div className="flex-1 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                                        <div
+                                                          className={`h-full rounded-full ${
+                                                            subj.status === 'completed'
+                                                              ? 'bg-emerald-400'
+                                                              : subj.status === 'in_progress'
+                                                              ? 'bg-amber-400'
+                                                              : 'bg-slate-700'
+                                                          }`}
+                                                          style={{ width: `${subj.progressPercentage}%` }}
+                                                        />
+                                                      </div>
+                                                      <span className="text-[10px] font-bold text-slate-300 w-8 text-right">
+                                                        {subj.progressPercentage}%
+                                                      </span>
+                                                    </div>
+                                                  </td>
+
+                                                  {/* Status Badge */}
+                                                  <td className="py-2.5 px-3 text-center">
+                                                    <span
+                                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                                                        subj.status === 'completed'
+                                                          ? 'bg-emerald-400/15 text-emerald-300'
+                                                          : subj.status === 'in_progress'
+                                                          ? 'bg-amber-400/15 text-amber-300'
+                                                          : 'bg-rose-400/15 text-rose-300'
+                                                      }`}
+                                                    >
+                                                      {subj.status === 'completed'
+                                                        ? 'Selesai'
+                                                        : subj.status === 'in_progress'
+                                                        ? 'Proses'
+                                                        : 'Belum'}
+                                                    </span>
+                                                  </td>
+
+                                                  {/* Action Button */}
+                                                  <td className="py-2.5 px-3 text-right">
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => handlePreviewAsTeacher(subj.teacherId)}
+                                                      disabled={!subj.teacherId}
+                                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-amber-400/[0.15] hover:border-amber-400/35 hover:text-amber-200 text-slate-300 text-[11px] font-bold transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                                                      title="Buka lembar penilaian guru ini"
+                                                    >
+                                                      <Eye className="w-3 h-3" />
+                                                      <span>Buka Rapor</span>
+                                                    </button>
+                                                  </td>
+                                                </tr>
+                                              ))
+                                            )}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* View Mode 2: Flat Table for All Subjects */}
+            {viewMode === 'flat' && (
               <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl shadow-xl overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left border-collapse">
