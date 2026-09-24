@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import type { Express, Request, Response } from 'express';
 
@@ -44,8 +45,15 @@ const gateway: GatewayState = {
   printers: [],
 };
 
-const queueDir = path.join(process.cwd(), '.print-queue');
-if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
+const getQueueDir = () => {
+  const dir = path.join(os.tmpdir(), 'sdit-print-queue');
+  try {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  } catch {
+    // Ignore error in serverless environment
+  }
+  return dir;
+};
 
 const DEFAULT_INTERNAL_KEY = 'sdit-print-gateway-key-2026';
 const getGatewayToken = () => String(process.env.PRINT_GATEWAY_TOKEN || DEFAULT_INTERNAL_KEY).trim();
@@ -124,6 +132,7 @@ function cleanupJobs() {
   }
 
   try {
+    const queueDir = getQueueDir();
     for (const entry of fs.readdirSync(queueDir)) {
       const fullPath = path.join(queueDir, entry);
       const stat = fs.statSync(fullPath);
