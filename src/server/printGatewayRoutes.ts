@@ -1,10 +1,14 @@
 import crypto from 'crypto';
+import fs from 'fs';
 import path from 'path';
 import type { Express, Request, Response } from 'express';
 
-export type PrintJob = {
+type PrintJobStatus = 'WAITING' | 'PROCESSING' | 'SENT' | 'READY' | 'FAILED';
+type PrintJobMode = 'print' | 'preview';
+
+type PrintJob = {
   id: string;
-  mode: 'print' | 'preview';
+  mode: PrintJobMode;
   fileName: string;
   fileDataBase64: string;
   printer: string;
@@ -13,29 +17,26 @@ export type PrintJob = {
   scale: string;
   copies: number;
   pageRange: string;
-  status: 'WAITING' | 'PROCESSING' | 'SENT' | 'READY' | 'FAILED';
+  status: PrintJobStatus;
   message: string;
   createdAt: number;
   updatedAt: number;
-  claimedAt?: number | null;
-  resultDataBase64?: string | null;
+  claimedAt?: number;
+  resultDataBase64?: string;
 };
 
 type GatewayState = {
   online: boolean;
   gatewayName: string;
   lastSeenAt: number | null;
-  printers: Array<{
-    id: string;
-    name: string;
-    type?: string;
-    status?: string;
-  }>;
+  printers: Array<{ id: string; name: string; type: string; status: string }>;
 };
 
-// In-Memory Print Queue (Ephemeral untuk testing / zero-config gateway)
-const jobs = new Map<string, PrintJob>();
+const MAX_FILE_BYTES = 20 * 1024 * 1024;
+const JOB_TTL_MS = 30 * 60 * 1000;
+const CLAIM_TIMEOUT_MS = 5 * 60 * 1000;
 
+const jobs = new Map<string, PrintJob>();
 const gateway: GatewayState = {
   online: false,
   gatewayName: 'Laptop Gateway SDIT',
@@ -43,359 +44,218 @@ const gateway: GatewayState = {
   printers: [],
 };
 
-const MAX_FILE_BYTES = 20 * 1024 * 1024;
-const JOB_TTL_MS = 30 * 60 * 1000;
-const CLAIM_TIMEOUT_MS = 5 * 60 * 1000;
+const queueDir = path.join(process.cwd(), '.print-queue');
+if (!fs.existsSync(queueDir)) fs.mkdirSync(queueDir, { recursive: true });
 
-function normalizeBase64(value: unknown): string {
+const getGatewayToken = () => String(process.env.PRINT_GATEWAY_TOKEN || '').trim();
+
+function requireGatewayToken(req: Request, res: Response, next: () => void) {
+  const configured = getGatewayToken();
+  if (!configured) {
+    return res.status(503).json({ status: 'error', message: 'PRINT_GATEWAY_TOKEN belum dikonfigurasi di server.' });
+  }
+
+  const received = String(req.headers['x-print-gateway-token'] || '').trim();
+  if (!received || received !== configured) {
+    return res.status(401).json({ status: 'error', message: 'Token Print Gateway tidak valid.' });
+  }
+
+  next();
+}
+
+function normalizeBase64(value: unknown) {
   if (typeof value !== 'string') return '';
   return value.replace(/^data:[^;]+;base64,/, '').trim();
 }
 
-function estimateBytes(base64: string): number {
-  if (!base64) return 0;
+function estimateBase64Bytes(base64: string) {
   const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
-  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+  return Math.floor((base64.length * 3) / 4) - padding;
 }
 
-function safeFileName(value: unknown): string {
-  const name = path.basename(String(value || 'dokumen.pdf'));
-  return name.replace(/[^a-zA-Z0-9._()\- ]/g, '_').slice(0, 180) || 'dokumen.pdf';
+function safeFileName(name: string) {
+  const base = path.basename(String(name || 'dokumen'));
+  return base.replace(/[^a-zA-Z0-9._()\- ]/g, '_').slice(0, 180) || 'dokumen';
+}
+
+function createJob(input: any): PrintJob {
+  const dataBase64 = normalizeBase64(input.dataBase64);
+  const bytes = estimateBase64Bytes(dataBase64);
+
+  if (!dataBase64) throw new Error('Data dokumen kosong.');
+  if (bytes > MAX_FILE_BYTES) throw new Error('Ukuran dokumen terlalu besar. Maksimal 20 MB.');
+
+  const mode: PrintJobMode = input.mode === 'preview' ? 'preview' : 'print';
+  const copies = Math.min(99, Math.max(1, Number(input.copies) || 1));
+  const pageRange = String(input.pageRange || 'Semua').trim() || 'Semua';
+
+  return {
+    id: crypto.randomUUID(),
+    mode,
+    fileName: safeFileName(input.fileName),
+    fileDataBase64: dataBase64,
+    printer: String(input.printer || '').trim(),
+    paper: String(input.paper || 'A4'),
+    orientation: String(input.orientation || 'portrait'),
+    scale: String(input.scale || 'fit'),
+    copies,
+    pageRange,
+    status: 'WAITING',
+    message: mode === 'preview' ? 'Menunggu Print Gateway untuk menyiapkan preview.' : 'Menunggu Print Gateway.',
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
 }
 
 function cleanupJobs() {
   const now = Date.now();
-  for (const [id, job] of jobs.entries()) {
-    if (now - job.updatedAt > JOB_TTL_MS) {
-      jobs.delete(id);
-    } else if (job.status === 'PROCESSING' && job.claimedAt && now - job.claimedAt > CLAIM_TIMEOUT_MS) {
+  for (const [id, job] of jobs) {
+    if (now - job.updatedAt > JOB_TTL_MS) jobs.delete(id);
+    else if (job.status === 'PROCESSING' && job.claimedAt && now - job.claimedAt > CLAIM_TIMEOUT_MS) {
       job.status = 'WAITING';
       job.message = 'Gateway sebelumnya terputus. Job dikembalikan ke antrean.';
-      job.claimedAt = null;
+      job.claimedAt = undefined;
       job.updatedAt = now;
     }
+  }
+
+  try {
+    for (const entry of fs.readdirSync(queueDir)) {
+      const fullPath = path.join(queueDir, entry);
+      const stat = fs.statSync(fullPath);
+      if (now - stat.mtimeMs > JOB_TTL_MS) fs.rmSync(fullPath, { recursive: true, force: true });
+    }
+  } catch {
+    // Cleanup is best-effort only.
   }
 }
 
 setInterval(cleanupJobs, 60_000).unref();
 
 export function registerPrintGatewayRoutes(app: Express) {
-  /*
-  |--------------------------------------------------------------------------
-  | 1. GATEWAY STATUS
-  |--------------------------------------------------------------------------
-  */
-  const handleGatewayStatus = (_req: Request, res: Response) => {
+  app.get('/api/print/gateway/status', (_req, res) => {
+    const online = Boolean(gateway.lastSeenAt && Date.now() - gateway.lastSeenAt < 20_000);
+    gateway.online = online;
+
+    res.json({
+      status: 'ok',
+      online,
+      gatewayName: gateway.gatewayName,
+      lastSeenAt: gateway.lastSeenAt ? new Date(gateway.lastSeenAt).toISOString() : null,
+      printers: online ? gateway.printers : [],
+    });
+  });
+
+  app.post('/api/print/jobs', (req, res) => {
     try {
-      const online = gateway.lastSeenAt !== null && Date.now() - gateway.lastSeenAt < 25_000;
-      gateway.online = online;
-
-      return res.status(200).json({
-        status: 'ok',
-        online,
-        gatewayName: gateway.gatewayName,
-        lastSeenAt: gateway.lastSeenAt ? new Date(gateway.lastSeenAt).toISOString() : null,
-        lastSeenSecondsAgo: gateway.lastSeenAt ? Math.round((Date.now() - gateway.lastSeenAt) / 1000) : null,
-        printers: online ? gateway.printers : [],
-        capabilities: {
-          libreOffice: true,
-          sumatraPdf: true,
-        },
-      });
-    } catch (error: any) {
-      console.error('[PRINT GATEWAY ERROR] handleGatewayStatus:', error);
-      return res.status(500).json({ status: 'error', message: error?.message || 'Gagal membaca status gateway.' });
-    }
-  };
-
-  app.get('/api/print/gateway/status', handleGatewayStatus);
-  app.get('/print/gateway/status', handleGatewayStatus);
-  app.get('/api/print/status', handleGatewayStatus);
-  app.get('/print/status', handleGatewayStatus);
-
-  /*
-  |--------------------------------------------------------------------------
-  | 2. CREATE PRINT JOB (Frontend -> Server)
-  |--------------------------------------------------------------------------
-  */
-  const handleCreateJob = (req: Request, res: Response) => {
-    try {
-      const body = req.body || {};
-      const fileDataBase64 = normalizeBase64(body.dataBase64 || body.fileData || body.fileDataBase64);
-
-      if (!fileDataBase64) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Data dokumen kosong.',
-        });
+      const job = createJob(req.body);
+      if (job.mode === 'print' && !job.printer) {
+        return res.status(400).json({ status: 'error', message: 'Printer belum dipilih.' });
       }
 
-      const size = estimateBytes(fileDataBase64);
-      if (size > MAX_FILE_BYTES) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Ukuran dokumen terlalu besar. Maksimal 20 MB.',
-        });
-      }
-
-      const mode = body.mode === 'preview' ? 'preview' : 'print';
-      const printer = String(body.printer || '').trim();
-
-      if (mode === 'print' && !printer) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Printer belum dipilih.',
-        });
-      }
-
-      const jobId = crypto.randomUUID();
-      const job: PrintJob = {
-        id: jobId,
-        mode,
-        fileName: safeFileName(body.fileName),
-        fileDataBase64,
-        printer,
-        paper: String(body.paper || 'A4'),
-        orientation: String(body.orientation || 'portrait'),
-        scale: String(body.scale || 'fit'),
-        copies: Math.min(99, Math.max(1, Number(body.copies) || 1)),
-        pageRange: String(body.pageRange || 'Semua').trim() || 'Semua',
-        status: 'WAITING',
-        message: mode === 'preview' ? 'Menunggu gateway membuat preview.' : 'Menunggu antrean laptop gateway.',
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        claimedAt: null,
-        resultDataBase64: null,
-      };
-
-      jobs.set(jobId, job);
-      console.log(`[PRINT API] Job dibuat: ${job.id} | ${job.fileName} | Printer: ${job.printer}`);
-
-      return res.status(200).json({
-        status: 'ok',
-        jobId,
-        mode: job.mode,
-        message: mode === 'preview' ? 'Permintaan preview diterima.' : 'Print job masuk ke antrean.',
-      });
-    } catch (error: any) {
-      console.error('[PRINT API ERROR] handleCreateJob:', error);
-      return res.status(500).json({
-        status: 'error',
-        message: error?.message || 'Gagal membuat print job.',
-      });
-    }
-  };
-
-  app.post('/api/print/jobs', handleCreateJob);
-  app.post('/print/jobs', handleCreateJob);
-  app.post('/api/print/submit', handleCreateJob);
-  app.post('/print/submit', handleCreateJob);
-
-  /*
-  |--------------------------------------------------------------------------
-  | 3. GET JOB STATUS (Frontend -> Server)
-  |--------------------------------------------------------------------------
-  */
-  const handleGetJob = (req: Request, res: Response) => {
-    try {
-      cleanupJobs();
-      const jobId = String(req.params.id || '').trim();
-      const job = jobs.get(jobId);
-
-      if (!job) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'Print job tidak ditemukan atau sudah kedaluwarsa.',
-        });
-      }
-
-      return res.status(200).json({
+      jobs.set(job.id, job);
+      res.json({
         status: 'ok',
         jobId: job.id,
         mode: job.mode,
-        fileName: job.fileName,
-        printer: job.printer,
-        statusJob: job.status,
-        message: job.message,
-        statusMessage: job.message,
-        createdAt: job.createdAt,
-        updatedAt: job.updatedAt,
-        resultDataBase64: job.resultDataBase64 || null,
-        job: {
-          id: job.id,
-          fileName: job.fileName,
-          printer: job.printer,
-          status: job.status,
-          statusMessage: job.message,
-          createdAt: job.createdAt,
-          updatedAt: job.updatedAt,
-        },
+        message: job.mode === 'preview' ? 'Permintaan preview diterima.' : 'Print job masuk ke antrean.',
       });
     } catch (error: any) {
-      console.error('[PRINT API ERROR] handleGetJob:', error);
-      return res.status(500).json({
-        status: 'error',
-        message: error?.message || 'Gagal memeriksa status job.',
-      });
+      res.status(400).json({ status: 'error', message: error?.message || 'Gagal membuat print job.' });
     }
-  };
+  });
 
-  app.get('/api/print/jobs/:id', handleGetJob);
-  app.get('/print/jobs/:id', handleGetJob);
-  app.get('/api/print/job/:id', handleGetJob);
-  app.get('/print/job/:id', handleGetJob);
+  app.get('/api/print/jobs/:id', (req, res) => {
+    const job = jobs.get(req.params.id);
+    if (!job) return res.status(404).json({ status: 'error', message: 'Print job tidak ditemukan atau sudah kedaluwarsa.' });
 
-  /*
-  |--------------------------------------------------------------------------
-  | 4. LAPTOP HEARTBEAT (Gateway Laptop -> Server)
-  |--------------------------------------------------------------------------
-  */
-  const handleHeartbeat = (req: Request, res: Response) => {
-    try {
-      gateway.online = true;
-      gateway.lastSeenAt = Date.now();
-      gateway.gatewayName = String(req.body?.gatewayName || 'Laptop Gateway SDIT');
-      gateway.printers = Array.isArray(req.body?.printers) ? req.body.printers : [];
+    res.json({
+      status: 'ok',
+      jobId: job.id,
+      mode: job.mode,
+      fileName: job.fileName,
+      printer: job.printer,
+      statusJob: job.status,
+      message: job.message,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+      resultDataBase64: job.resultDataBase64 || null,
+    });
+  });
 
-      return res.status(200).json({
-        status: 'ok',
-        message: 'Gateway terhubung.',
-        serverTime: new Date().toISOString(),
-      });
-    } catch (error: any) {
-      console.error('[PRINT GATEWAY ERROR] handleHeartbeat:', error);
-      return res.status(500).json({
-        status: 'error',
-        message: error?.message || 'Gagal memproses heartbeat.',
-      });
+  app.post('/api/print/gateway/heartbeat', requireGatewayToken, (req, res) => {
+    gateway.online = true;
+    gateway.gatewayName = String(req.body?.gatewayName || 'Laptop Gateway SDIT');
+    gateway.lastSeenAt = Date.now();
+    gateway.printers = Array.isArray(req.body?.printers) ? req.body.printers : [];
+
+    res.json({ status: 'ok', serverTime: new Date().toISOString() });
+  });
+
+  app.get('/api/print/gateway/pending', requireGatewayToken, (req, res) => {
+    const now = Date.now();
+    const pending = Array.from(jobs.values())
+      .filter((job) => {
+        if (job.status === 'WAITING') return true;
+        return job.status === 'PROCESSING' && job.claimedAt && now - job.claimedAt > CLAIM_TIMEOUT_MS;
+      })
+      .sort((a, b) => a.createdAt - b.createdAt)[0];
+
+    if (!pending) {
+      return res.json({ status: 'ok', jobs: [] });
     }
-  };
 
-  app.post('/api/print/gateway/heartbeat', handleHeartbeat);
-  app.post('/print/gateway/heartbeat', handleHeartbeat);
+    pending.status = 'PROCESSING';
+    pending.claimedAt = now;
+    pending.updatedAt = now;
+    pending.message = pending.mode === 'preview'
+      ? 'Print Gateway sedang menyiapkan preview.'
+      : `Print Gateway sedang memproses ${pending.fileName}.`;
 
-  /*
-  |--------------------------------------------------------------------------
-  | 5. LAPTOP GET PENDING JOB (Gateway Laptop -> Server)
-  |--------------------------------------------------------------------------
-  */
-  const handleGetPending = (_req: Request, res: Response) => {
-    try {
-      cleanupJobs();
-      const now = Date.now();
-      const pendingJob = Array.from(jobs.values())
-        .filter((job) => {
-          if (job.status === 'WAITING') return true;
-          return job.status === 'PROCESSING' && job.claimedAt && now - job.claimedAt > CLAIM_TIMEOUT_MS;
-        })
-        .sort((a, b) => a.createdAt - b.createdAt)[0];
+    res.json({
+      status: 'ok',
+      jobs: [{
+        id: pending.id,
+        mode: pending.mode,
+        fileName: pending.fileName,
+        fileData: pending.fileDataBase64,
+        printer: pending.printer,
+        paper: pending.paper,
+        orientation: pending.orientation,
+        scale: pending.scale,
+        copies: pending.copies,
+        pageRange: pending.pageRange,
+      }],
+    });
+  });
 
-      if (!pendingJob) {
-        return res.status(200).json({
-          status: 'ok',
-          jobs: [],
-        });
-      }
+  app.post('/api/print/gateway/update-job', requireGatewayToken, (req, res) => {
+    const job = jobs.get(String(req.body?.jobId || ''));
+    if (!job) return res.status(404).json({ status: 'error', message: 'Print job tidak ditemukan.' });
 
-      pendingJob.status = 'PROCESSING';
-      pendingJob.claimedAt = now;
-      pendingJob.updatedAt = now;
-      pendingJob.message =
-        pendingJob.mode === 'preview'
-          ? 'Laptop Gateway sedang menyiapkan preview.'
-          : `Laptop Gateway sedang memproses pencetakan ${pendingJob.fileName}.`;
-
-      console.log(`[PRINT GATEWAY] Job diklaim gateway: ${pendingJob.id} | ${pendingJob.fileName}`);
-
-      return res.status(200).json({
-        status: 'ok',
-        jobs: [
-          {
-            id: pendingJob.id,
-            mode: pendingJob.mode,
-            fileName: pendingJob.fileName,
-            fileData: pendingJob.fileDataBase64,
-            printer: pendingJob.printer,
-            paper: pendingJob.paper,
-            orientation: pendingJob.orientation,
-            scale: pendingJob.scale,
-            copies: pendingJob.copies,
-            pageRange: pendingJob.pageRange,
-          },
-        ],
-      });
-    } catch (error: any) {
-      console.error('[PRINT GATEWAY ERROR] handleGetPending:', error);
-      return res.status(500).json({
-        status: 'error',
-        message: error?.message || 'Gagal mengambil antrean job.',
-      });
+    const nextStatus = String(req.body?.status || '').toUpperCase() as PrintJobStatus;
+    const allowed: PrintJobStatus[] = ['WAITING', 'PROCESSING', 'SENT', 'READY', 'FAILED'];
+    if (!allowed.includes(nextStatus)) {
+      return res.status(400).json({ status: 'error', message: 'Status print job tidak valid.' });
     }
-  };
 
-  app.get('/api/print/gateway/pending', handleGetPending);
-  app.get('/print/gateway/pending', handleGetPending);
+    job.status = nextStatus;
+    job.message = String(req.body?.message || job.message);
+    job.updatedAt = Date.now();
+    if (nextStatus !== 'PROCESSING') job.claimedAt = undefined;
 
-  /*
-  |--------------------------------------------------------------------------
-  | 6. LAPTOP UPDATE JOB STATUS (Gateway Laptop -> Server)
-  |--------------------------------------------------------------------------
-  */
-  const handleUpdateJob = (req: Request, res: Response) => {
-    try {
-      const jobId = String(req.body?.jobId || '').trim();
-      const job = jobs.get(jobId);
-
-      if (!job) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'Print job tidak ditemukan.',
-        });
+    const resultDataBase64 = normalizeBase64(req.body?.resultDataBase64);
+    if (resultDataBase64) {
+      if (estimateBase64Bytes(resultDataBase64) > MAX_FILE_BYTES * 2) {
+        return res.status(400).json({ status: 'error', message: 'Hasil preview terlalu besar.' });
       }
-
-      const nextStatus = String(req.body?.status || '').toUpperCase() as PrintJob['status'];
-      const allowed = ['WAITING', 'PROCESSING', 'SENT', 'READY', 'FAILED'];
-
-      if (!allowed.includes(nextStatus)) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Status print job tidak valid.',
-        });
-      }
-
-      job.status = nextStatus;
-      job.message = String(req.body?.message || job.message);
-      job.updatedAt = Date.now();
-      if (nextStatus !== 'PROCESSING') {
-        job.claimedAt = null;
-      }
-
-      if (req.body?.resultDataBase64) {
-        const preview = normalizeBase64(req.body.resultDataBase64);
-        if (estimateBytes(preview) <= MAX_FILE_BYTES * 2) {
-          job.resultDataBase64 = preview;
-        }
-      }
-
-      // Bersihkan data base64 setelah dokumen selesai dicetak atau gagal
-      if (nextStatus === 'SENT' || nextStatus === 'FAILED') {
-        job.fileDataBase64 = '';
-      }
-
-      console.log(`[PRINT GATEWAY] Job status update: ${job.id} -> ${job.status} (${job.message})`);
-
-      return res.status(200).json({
-        status: 'ok',
-      });
-    } catch (error: any) {
-      console.error('[PRINT GATEWAY ERROR] handleUpdateJob:', error);
-      return res.status(500).json({
-        status: 'error',
-        message: error?.message || 'Gagal memperbarui status job.',
-      });
+      job.resultDataBase64 = resultDataBase64;
     }
-  };
 
-  app.post('/api/print/gateway/update-job', handleUpdateJob);
-  app.post('/print/gateway/update-job', handleUpdateJob);
+    if (nextStatus === 'SENT' || nextStatus === 'FAILED') {
+      job.fileDataBase64 = '';
+    }
+
+    res.json({ status: 'ok' });
+  });
 }

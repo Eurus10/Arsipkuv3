@@ -4,7 +4,6 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { GoogleGenAI } from '@google/genai';
-import { registerPrintGatewayRoutes } from '../src/server/printGatewayRoutes';
 const nationalCurriculumSD = {
   "source": {
     "documentTitle": "KEPUTUSAN KEPALA BADAN STANDAR, KURIKULUM, DAN ASESMEN PENDIDIKAN KEMENTERIAN PENDIDIKAN DASAR DAN MENENGAH NOMOR 046/H/KR/2025 TENTANG CAPAIAN PEMBELAJARAN PADA PENDIDIKAN ANAK USIA DINI, JENJANG PENDIDIKAN DASAR, DAN JENJANG PENDIDIKAN MENENGAH",
@@ -5587,37 +5586,328 @@ OUTPUT HARUS BERUPA JSON VALID PERSIS DENGAN FORMAT BERIKUT (TANPA MARKDOWN TAMB
 });
 
 // ========================================================
-// 5. ENDPOINT: PRINT GATEWAY & SPOOLER (CENTRALIZED)
+// 5. ENDPOINT: PRINT GATEWAY & SPOOLER (IN-MEMORY QUEUE)
 // ========================================================
-registerPrintGatewayRoutes(app);
 
-// ========================================================
-// 6. ENDPOINT: HEALTH CHECK
-// ========================================================
-const handleHealthCheck = (_req: express.Request, res: express.Response) => {
-  return res.status(200).json({
-    status: 'ok',
-    service: 'SDIT Al Fikri Evaluation Service',
-    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
-    timestamp: new Date().toISOString(),
-  });
+interface PrintJobRecord {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileData: string; // base64
+  fileSize: number;
+  printer: string;
+  paper: 'A4' | 'F4' | 'A5' | 'Letter';
+  orientation: 'portrait' | 'landscape';
+  scale: 'fit' | 'actual' | 'fill';
+  copies: number;
+  pageRange: string;
+  duplex?: 'simplex' | 'duplex_long' | 'duplex_short';
+  color?: 'monochrome' | 'color';
+  status: 'WAITING' | 'PROCESSING' | 'SENT' | 'FAILED';
+  statusMessage?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface ConversionRecord {
+  id: string;
+  fileName: string;
+  fileData: string; // base64
+  pdfData?: string; // converted base64
+  status: 'WAITING' | 'PROCESSING' | 'DONE' | 'FAILED';
+  error?: string;
+  createdAt: number;
+}
+
+// In-Memory state: no Supabase needed, low memory footprint, auto-cleans old jobs
+const printGatewayState = {
+  lastHeartbeat: 0,
+  gatewayName: 'Laptop Gateway',
+  printers: [
+    { id: 'kyocera', name: 'KYOCERA ECOSYS M2040dn', type: 'windows' },
+    { id: 'epson', name: 'EPSON L3250 SERIES', type: 'epson_connect' }
+  ],
+  capabilities: {
+    libreOffice: false,
+    sumatraPdf: false,
+  }
 };
 
-app.get('/api/health', handleHealthCheck);
-app.get('/health', handleHealthCheck);
+const printJobs = new Map<string, PrintJobRecord>();
+const conversions = new Map<string, ConversionRecord>();
 
-// Error handling middleware
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('[API ERROR]', err);
-  if (!res.headersSent) {
-    res.status(500).json({
+// Auto clean jobs older than 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 30 * 60 * 1000;
+  for (const [id, job] of printJobs.entries()) {
+    if (now - job.createdAt > maxAge) {
+      printJobs.delete(id);
+    }
+  }
+  for (const [id, conv] of conversions.entries()) {
+    if (now - conv.createdAt > maxAge) {
+      conversions.delete(id);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// Status check for teacher UI
+app.get('/api/print/status', (_req, res) => {
+  const now = Date.now();
+  // Gateway is online if heartbeat received in past 20 seconds
+  const isOnline = (now - printGatewayState.lastHeartbeat) < 20000;
+
+  return res.json({
+    status: 'ok',
+    online: isOnline,
+    lastSeenSecondsAgo: printGatewayState.lastHeartbeat ? Math.round((now - printGatewayState.lastHeartbeat) / 1000) : null,
+    gatewayName: printGatewayState.gatewayName,
+    printers: printGatewayState.printers,
+    capabilities: printGatewayState.capabilities,
+  });
+});
+
+// Teacher submits print job
+app.post('/api/print/submit', (req, res) => {
+  try {
+    const {
+      fileName,
+      fileType,
+      fileData,
+      fileSize,
+      printer,
+      paper = 'A4',
+      orientation = 'portrait',
+      scale = 'fit',
+      copies = 1,
+      pageRange = 'Semua',
+      duplex = 'simplex',
+      color = 'monochrome',
+    } = req.body || {};
+
+    if (!fileName || !fileData) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'File dokumen dan data tidak boleh kosong.',
+      });
+    }
+
+    if (!printer) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Printer tujuan harus dipilih.',
+      });
+    }
+
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const newJob: PrintJobRecord = {
+      id: jobId,
+      fileName: String(fileName),
+      fileType: String(fileType || 'pdf'),
+      fileData: String(fileData),
+      fileSize: Number(fileSize) || fileData.length,
+      printer: String(printer),
+      paper,
+      orientation,
+      scale,
+      copies: Math.min(99, Math.max(1, Number(copies) || 1)),
+      pageRange: String(pageRange || 'Semua'),
+      duplex,
+      color,
+      status: 'WAITING',
+      statusMessage: 'Menunggu Print Gateway mengambil job...',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+
+    printJobs.set(jobId, newJob);
+
+    return res.json({
+      status: 'success',
+      jobId,
+      message: 'Print job berhasil didaftarkan.',
+    });
+  } catch (err: any) {
+    return res.status(500).json({
       status: 'error',
-      message: err?.message || 'Terjadi kesalahan internal pada server.',
+      message: err?.message || 'Gagal mendaftarkan print job.',
     });
   }
 });
 
+// Teacher checks single job status
+app.get('/api/print/job/:id', (req, res) => {
+  const jobId = req.params.id;
+  const job = printJobs.get(jobId);
+
+  if (!job) {
+    return res.status(404).json({
+      status: 'not_found',
+      message: 'Print job tidak ditemukan atau sudah kadaluarsa.',
+    });
+  }
+
+  return res.json({
+    status: 'ok',
+    job: {
+      id: job.id,
+      fileName: job.fileName,
+      printer: job.printer,
+      status: job.status,
+      statusMessage: job.statusMessage,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    },
+  });
+});
+
+// Teacher requests Office -> PDF conversion via online gateway
+app.post('/api/print/convert-request', (req, res) => {
+  try {
+    const { fileName, fileData } = req.body || {};
+    if (!fileName || !fileData) {
+      return res.status(400).json({ status: 'error', message: 'Data file tidak lengkap.' });
+    }
+
+    const convId = `conv_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const record: ConversionRecord = {
+      id: convId,
+      fileName: String(fileName),
+      fileData: String(fileData),
+      status: 'WAITING',
+      createdAt: Date.now(),
+    };
+
+    conversions.set(convId, record);
+
+    return res.json({
+      status: 'success',
+      conversionId: convId,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ status: 'error', message: err?.message || 'Gagal membuat antrean konversi.' });
+  }
+});
+
+// Teacher polls conversion result
+app.get('/api/print/convert-result/:id', (req, res) => {
+  const conv = conversions.get(req.params.id);
+  if (!conv) {
+    return res.status(404).json({ status: 'not_found', message: 'Antrean konversi tidak ditemukan.' });
+  }
+
+  if (conv.status === 'DONE' && conv.pdfData) {
+    return res.json({
+      status: 'done',
+      pdfData: conv.pdfData,
+    });
+  }
+
+  return res.json({
+    status: conv.status,
+    error: conv.error,
+  });
+});
+
+// GATEWAY ENDPOINTS (Called by laptop gateway service)
+
+// 1. Gateway sends heartbeat
+app.post('/api/print/gateway/heartbeat', (req, res) => {
+  const { gatewayName, printers, capabilities } = req.body || {};
+
+  printGatewayState.lastHeartbeat = Date.now();
+  if (gatewayName) printGatewayState.gatewayName = gatewayName;
+  if (Array.isArray(printers) && printers.length > 0) {
+    printGatewayState.printers = printers;
+  }
+  if (capabilities) {
+    printGatewayState.capabilities = capabilities;
+  }
+
+  return res.json({
+    status: 'ok',
+    acknowledgedAt: Date.now(),
+  });
+});
+
+// 2. Gateway fetches pending print jobs & pending conversions
+app.get('/api/print/gateway/pending', (_req, res) => {
+  // Update heartbeat as active connection
+  printGatewayState.lastHeartbeat = Date.now();
+
+  const pendingJobs: Array<Omit<PrintJobRecord, 'fileData'> & { fileData: string }> = [];
+  for (const job of printJobs.values()) {
+    if (job.status === 'WAITING') {
+      pendingJobs.push(job);
+    }
+  }
+
+  const pendingConversions: ConversionRecord[] = [];
+  for (const conv of conversions.values()) {
+    if (conv.status === 'WAITING') {
+      pendingConversions.push(conv);
+    }
+  }
+
+  return res.json({
+    status: 'ok',
+    jobs: pendingJobs,
+    conversions: pendingConversions,
+  });
+});
+
+// 3. Gateway updates job status (PROCESSING, SENT, FAILED)
+app.post('/api/print/gateway/update-job', (req, res) => {
+  const { jobId, status, message } = req.body || {};
+  const job = printJobs.get(jobId);
+
+  if (!job) {
+    return res.status(404).json({ status: 'not_found', message: 'Job tidak ditemukan.' });
+  }
+
+  if (status) {
+    job.status = status;
+    job.updatedAt = Date.now();
+  }
+  if (message) {
+    job.statusMessage = message;
+  }
+
+  return res.json({ status: 'ok', jobId: job.id, currentStatus: job.status });
+});
+
+// 4. Gateway posts converted PDF
+app.post('/api/print/gateway/update-conversion', (req, res) => {
+  const { conversionId, status, pdfData, error } = req.body || {};
+  const conv = conversions.get(conversionId);
+
+  if (!conv) {
+    return res.status(404).json({ status: 'not_found', message: 'Konversi tidak ditemukan.' });
+  }
+
+  conv.status = status;
+  if (pdfData) conv.pdfData = pdfData;
+  if (error) conv.error = error;
+
+  return res.json({ status: 'ok', conversionId: conv.id });
+});
+
+// ========================================================
+// 6. ENDPOINT: HEALTH CHECK
+// ========================================================
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'SDIT Al Fikri Evaluation Service',
+    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
+    printGatewayOnline: (Date.now() - printGatewayState.lastHeartbeat) < 20000,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 export { app };
-export default app;
 
-
+export default function handler(req: any, res: any) {
+  return app(req, res);
+}
