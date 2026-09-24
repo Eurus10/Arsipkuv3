@@ -5780,29 +5780,69 @@ app.get('/api/print/jobs/:id', (req, res) => {
   });
 });
 
-// Cancel Job Endpoint
+// Get All Print Jobs Queue (Used by Monitor Antrean UI)
+app.get('/api/print/queue', (_req, res) => {
+  const queue = Array.from(printJobs.values()).map(job => ({
+    id: job.id,
+    fileName: job.fileName,
+    fileType: job.fileType,
+    fileSize: job.fileSize,
+    printer: job.printer,
+    teacherName: job.teacherName || 'Guru / Staf SDIT',
+    copies: job.copies,
+    paper: job.paper,
+    status: job.status,
+    statusMessage: job.statusMessage,
+    createdAt: job.createdAt,
+    updatedAt: job.updatedAt,
+  })).sort((a, b) => b.createdAt - a.createdAt);
+
+  return res.json({
+    status: 'ok',
+    total: queue.length,
+    gatewayOnline: (Date.now() - printGatewayState.lastHeartbeat) < 20000,
+    jobs: queue,
+  });
+});
+
+// Cancel Job Endpoint (supports force cancel by Admin/Operator)
 app.post('/api/print/jobs/:id/cancel', (req, res) => {
   const jobId = req.params.id;
+  const { force = false } = req.body || {};
   const job = printJobs.get(jobId);
 
   if (!job) {
     return res.status(404).json({ status: 'error', message: 'Antrean cetak tidak ditemukan.' });
   }
 
-  if (['COMPLETED', 'SENT', 'FAILED'].includes(job.status)) {
+  if (!force && ['COMPLETED', 'FAILED'].includes(job.status)) {
     return res.status(400).json({ status: 'error', message: 'Dokumen sudah selesai diproses dan tidak dapat dibatalkan.' });
   }
 
   job.status = 'CANCELLED';
-  job.statusMessage = 'Pengiriman dokumen telah dibatalkan oleh pengguna.';
+  job.statusMessage = force 
+    ? 'Dibatalkan secara paksa oleh Admin / Operator TU.' 
+    : 'Pengiriman dokumen telah dibatalkan oleh pengguna.';
   job.updatedAt = Date.now();
 
   return res.json({
     status: 'ok',
     jobId: job.id,
     statusJob: job.status,
-    message: 'Antrean dokumen berhasil dibatalkan.'
+    message: force ? 'Antrean berhasil dibatalkan secara paksa.' : 'Antrean dokumen berhasil dibatalkan.'
   });
+});
+
+// Clear Finished/Cancelled Jobs Queue
+app.post('/api/print/queue/clear', (_req, res) => {
+  let cleared = 0;
+  for (const [id, job] of printJobs.entries()) {
+    if (['COMPLETED', 'CANCELLED', 'FAILED'].includes(job.status)) {
+      printJobs.delete(id);
+      cleared += 1;
+    }
+  }
+  return res.json({ status: 'ok', cleared, message: `${cleared} riwayat antrean berhasil dibersihkan.` });
 });
 
 // Teacher submits print job

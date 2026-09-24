@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FileText, FileImage, FileSpreadsheet, Printer, Upload, X, Eye, Settings2, AlertCircle, CheckCircle2, RefreshCw, PrinterCheck, AlertTriangle, Terminal, Download, User, Ban } from 'lucide-react';
+import { FileText, FileImage, FileSpreadsheet, Printer, Upload, X, Eye, Settings2, AlertCircle, CheckCircle2, RefreshCw, PrinterCheck, AlertTriangle, Terminal, Download, User, Ban, ListFilter, Trash2, Clock, Activity, ShieldAlert } from 'lucide-react';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
 
@@ -7,6 +7,21 @@ type PaperSize = 'A4' | 'F4' | 'A5' | 'Letter';
 type Orientation = 'portrait' | 'landscape';
 type ScaleMode = 'fit' | 'actual' | 'fill';
 type PrinterInfo = { id: string; name: string; status?: string; type?: string };
+
+interface QueueJobItem {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  printer: string;
+  teacherName: string;
+  copies: number;
+  paper: string;
+  status: 'WAITING' | 'DISPATCHED' | 'PROCESSING' | 'SENT' | 'COMPLETED' | 'CANCELLED' | 'FAILED';
+  statusMessage?: string;
+  createdAt: number;
+  updatedAt: number;
+}
 
 type PrintDocumentModalProps = { isOpen: boolean; onClose: () => void };
 
@@ -62,6 +77,60 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isPreparingPreview, setIsPreparingPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState<'print' | 'queue'>('print');
+  const [queueJobs, setQueueJobs] = useState<QueueJobItem[]>([]);
+  const [queueFilter, setQueueFilter] = useState<'all' | 'active' | 'completed' | 'cancelled'>('all');
+
+  const fetchQueue = async () => {
+    try {
+      const response = await fetch('/api/print/queue', { cache: 'no-store' });
+      const data = await readJson(response);
+      if (Array.isArray(data.jobs)) {
+        setQueueJobs(data.jobs);
+      }
+      if (typeof data.gatewayOnline === 'boolean') {
+        setGatewayOnline(data.gatewayOnline);
+      }
+    } catch {
+      // Ignore
+    }
+  };
+
+  const handleForceCancelJob = async (jobId: string) => {
+    try {
+      const response = await fetch(`/api/print/jobs/${encodeURIComponent(jobId)}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force: true }),
+      });
+      const data = await readJson(response);
+      if (response.ok) {
+        setStatus('✓ Antrean berhasil dibatalkan secara paksa.');
+        setStatusType('warning');
+        fetchQueue();
+      } else {
+        setStatus(data.message || 'Gagal membatalkan antrean.');
+        setStatusType('error');
+      }
+    } catch {
+      setStatus('Gagal membatalkan antrean.');
+      setStatusType('error');
+    }
+  };
+
+  const handleClearQueue = async () => {
+    try {
+      const response = await fetch('/api/print/queue/clear', { method: 'POST' });
+      const data = await readJson(response);
+      if (response.ok) {
+        setStatus(`✓ ${data.message || 'Riwayat antrean berhasil dibersihkan.'}`);
+        setStatusType('success');
+        fetchQueue();
+      }
+    } catch {
+      // Ignore
+    }
+  };
 
   const paperDimensions = useMemo(() => {
     const base = PAPER_MM[paper];
@@ -358,7 +427,11 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   useEffect(() => {
     if (!isOpen) return;
     checkGateway();
-    const timer = window.setInterval(checkGateway, 10000);
+    fetchQueue();
+    const timer = window.setInterval(() => {
+      checkGateway();
+      fetchQueue();
+    }, 3000);
     return () => window.clearInterval(timer);
   }, [isOpen]);
 
@@ -384,6 +457,13 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   if (!isOpen) return null;
   const canPreview = Boolean(previewUrl || previewHtml);
   const fileExt = file ? getExtension(file.name) : '';
+
+  const filteredJobs = queueJobs.filter(job => {
+    if (queueFilter === 'active') return ['WAITING', 'DISPATCHED', 'PROCESSING'].includes(job.status);
+    if (queueFilter === 'completed') return ['COMPLETED', 'SENT'].includes(job.status);
+    if (queueFilter === 'cancelled') return ['CANCELLED', 'FAILED'].includes(job.status);
+    return true;
+  });
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-3 sm:p-6" role="dialog" aria-modal="true">
@@ -423,8 +503,226 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
           </button>
         </div>
 
+        {/* Navigation Tabs Bar */}
+        <div className="flex items-center justify-between px-6 py-2.5 bg-slate-900/90 border-b border-slate-800 text-xs font-bold flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('print')}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'print'
+                  ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-950/40'
+                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <Printer className="w-4 h-4" /> Form Cetak Dokumen
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('queue');
+                fetchQueue();
+              }}
+              className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-2 ${
+                activeTab === 'queue'
+                  ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-950/40'
+                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white'
+              }`}
+            >
+              <ListFilter className="w-4 h-4" />
+              Monitor Antrean Printer
+              {queueJobs.filter(j => ['WAITING', 'DISPATCHED', 'PROCESSING'].includes(j.status)).length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black animate-pulse">
+                  {queueJobs.filter(j => ['WAITING', 'DISPATCHED', 'PROCESSING'].includes(j.status)).length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {activeTab === 'queue' && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={fetchQueue}
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Refresh
+              </button>
+              <button
+                type="button"
+                onClick={handleClearQueue}
+                className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 hover:bg-rose-500/20 text-rose-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Bersihkan antrean yang selesai / dibatalkan"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-400" /> Bersihkan Riwayat
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Modal Body */}
-        <div className="flex-1 min-h-0 grid lg:grid-cols-[380px_minmax(0,1fr)]">
+        {activeTab === 'queue' ? (
+          <div className="flex-1 min-h-0 bg-[#070a11] p-5 sm:p-6 overflow-y-auto space-y-4">
+            {/* Header stats bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-slate-400">Total Antrean</div>
+                  <div className="text-xl font-black text-white mt-0.5">{queueJobs.length}</div>
+                </div>
+                <ListFilter className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-amber-400">Sedang Diproses</div>
+                  <div className="text-xl font-black text-amber-300 mt-0.5">
+                    {queueJobs.filter(j => ['WAITING', 'DISPATCHED', 'PROCESSING'].includes(j.status)).length}
+                  </div>
+                </div>
+                <Activity className="w-6 h-6 text-amber-400 animate-pulse" />
+              </div>
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-emerald-400">Selesai</div>
+                  <div className="text-xl font-black text-emerald-300 mt-0.5">
+                    {queueJobs.filter(j => ['COMPLETED', 'SENT'].includes(j.status)).length}
+                  </div>
+                </div>
+                <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold text-rose-400">Dibatalkan / Gagal</div>
+                  <div className="text-xl font-black text-rose-300 mt-0.5">
+                    {queueJobs.filter(j => ['CANCELLED', 'FAILED'].includes(j.status)).length}
+                  </div>
+                </div>
+                <Ban className="w-6 h-6 text-rose-400" />
+              </div>
+            </div>
+
+            {/* Filter Buttons */}
+            <div className="flex items-center gap-2 flex-wrap text-xs font-bold pt-1">
+              <span className="text-slate-400 mr-1">Filter:</span>
+              {[
+                { id: 'all', label: 'Semua Status' },
+                { id: 'active', label: 'Sedang Berjalan / Menunggu' },
+                { id: 'completed', label: 'Selesai' },
+                { id: 'cancelled', label: 'Dibatalkan / Gagal' },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setQueueFilter(f.id as any)}
+                  className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                    queueFilter === f.id
+                      ? 'bg-slate-800 border-cyan-500/50 text-cyan-300'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Queue Table List */}
+            {filteredJobs.length === 0 ? (
+              <div className="p-12 text-center rounded-3xl border border-dashed border-slate-800 bg-slate-950/40 space-y-3">
+                <Printer className="w-10 h-10 text-slate-600 mx-auto" />
+                <div className="text-sm font-bold text-slate-300">Belum Ada Antrean Cetak</div>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Semua dokumen yang dikirim oleh guru akan muncul di sini secara real-time.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {filteredJobs.map((job) => {
+                  const isActive = ['WAITING', 'DISPATCHED', 'PROCESSING'].includes(job.status);
+                  const isCompleted = ['COMPLETED', 'SENT'].includes(job.status);
+                  const isCancelled = job.status === 'CANCELLED';
+
+                  return (
+                    <div
+                      key={job.id}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                        isActive
+                          ? 'bg-slate-900/90 border-amber-500/40 shadow-lg shadow-amber-950/20'
+                          : isCompleted
+                          ? 'bg-slate-900/40 border-slate-800/80'
+                          : 'bg-slate-950/60 border-rose-500/20 opacity-80'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                          isActive
+                            ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                            : isCompleted
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                            : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                        }`}>
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-bold text-white truncate">{job.fileName}</span>
+                            <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-cyan-300 border border-slate-700">
+                              {job.copies}x Salinan ({job.paper})
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
+                            <span className="flex items-center gap-1 text-slate-200 font-medium">
+                              <User className="w-3.5 h-3.5 text-cyan-400" /> {job.teacherName}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-slate-300">
+                              <Printer className="w-3.5 h-3.5 text-slate-400" /> {job.printer}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-slate-500 text-[11px]">
+                              <Clock className="w-3.5 h-3.5" /> {new Date(job.createdAt).toLocaleTimeString('id-ID')}
+                            </span>
+                          </div>
+                          {job.statusMessage && (
+                            <p className="text-xs text-slate-400 italic pt-0.5">
+                              "{job.statusMessage}"
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Status Badge & Actions */}
+                      <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 border ${
+                          isActive
+                            ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                            : isCompleted
+                            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                            : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                        }`}>
+                          {isActive && <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />}
+                          {job.status}
+                        </span>
+
+                        {/* Force Batal Button for Admin/Ops */}
+                        {!isCancelled && !isCompleted && (
+                          <button
+                            type="button"
+                            onClick={() => handleForceCancelJob(job.id)}
+                            className="px-3 py-1.5 rounded-xl border border-rose-500/40 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-105"
+                            title="Force Batal Print"
+                          >
+                            <ShieldAlert className="w-3.5 h-3.5 text-rose-400" /> Force Batal
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 grid lg:grid-cols-[380px_minmax(0,1fr)]">
           {/* Controls Sidebar */}
           <aside className="border-b lg:border-b-0 lg:border-r border-slate-800 p-5 sm:p-6 overflow-y-auto space-y-4">
             {/* File Upload Box */}
@@ -740,7 +1038,8 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
             )}
           </main>
         </div>
-      </div>
+      )}
     </div>
-  );
+  </div>
+);
 };
