@@ -5967,8 +5967,26 @@ app.get('/api/print/gateway/pending', (_req, res) => {
 
 // 3. Gateway updates job status (PROCESSING, SENT, FAILED)
 app.post('/api/print/gateway/update-job', (req, res) => {
-  const { jobId, status, message } = req.body || {};
-  const job = printJobs.get(jobId);
+  const { jobId, id, job_id, status, message } = req.body || {};
+  const targetId = String(jobId || id || job_id || '').trim();
+
+  let job = printJobs.get(targetId);
+
+  // Fallback search if exact key lookup failed
+  if (!job && targetId) {
+    for (const [k, v] of printJobs.entries()) {
+      if (k.toLowerCase() === targetId.toLowerCase() || k.endsWith(targetId) || targetId.endsWith(k)) {
+        job = v;
+        break;
+      }
+    }
+  }
+
+  // Fallback to most recent job if still not found
+  if (!job && printJobs.size > 0) {
+    const sorted = Array.from(printJobs.values()).sort((a, b) => b.createdAt - a.createdAt);
+    if (sorted[0]) job = sorted[0];
+  }
 
   if (!job) {
     return res.status(404).json({ status: 'not_found', message: 'Job tidak ditemukan.' });
