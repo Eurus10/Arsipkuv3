@@ -5594,18 +5594,21 @@ registerPrintGatewayRoutes(app);
 // ========================================================
 // 6. ENDPOINT: HEALTH CHECK
 // ========================================================
-app.get('/api/health', (req, res) => {
-  res.json({
+const handleHealthCheck = (_req: express.Request, res: express.Response) => {
+  return res.status(200).json({
     status: 'ok',
     service: 'SDIT Al Fikri Evaluation Service',
     hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
     timestamp: new Date().toISOString(),
   });
-});
+};
+
+app.get('/api/health', handleHealthCheck);
+app.get('/health', handleHealthCheck);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('API Error:', err);
+  console.error('[API ERROR]', err);
   if (!res.headersSent) {
     res.status(500).json({
       status: 'error',
@@ -5616,4 +5619,5 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 export { app };
 export default app;
+
 
