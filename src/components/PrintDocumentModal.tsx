@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FileText, FileImage, FileSpreadsheet, Printer, Upload, X, Eye, Settings2, AlertCircle, CheckCircle2, RefreshCw, PrinterCheck } from 'lucide-react';
+import { FileText, FileImage, FileSpreadsheet, Printer, Upload, X, Eye, Settings2, AlertCircle, CheckCircle2, RefreshCw, PrinterCheck, AlertTriangle, Terminal, Download } from 'lucide-react';
+import mammoth from 'mammoth';
+import * as XLSX from 'xlsx';
 
 type PaperSize = 'A4' | 'F4' | 'A5' | 'Letter';
 type Orientation = 'portrait' | 'landscape';
@@ -42,8 +44,9 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   const previewUrlRef = useRef('');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [previewHtml, setPreviewHtml] = useState<string>('');
   const [status, setStatus] = useState('');
-  const [statusType, setStatusType] = useState<'info' | 'success' | 'error'>('info');
+  const [statusType, setStatusType] = useState<'info' | 'success' | 'error' | 'warning'>('info');
   const [paper, setPaper] = useState<PaperSize>('A4');
   const [orientation, setOrientation] = useState<Orientation>('portrait');
   const [scale, setScale] = useState<ScaleMode>('fit');
@@ -51,7 +54,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   const [pageRange, setPageRange] = useState('Semua');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [margin, setMargin] = useState('10');
-  const [gatewayOnline, setGatewayOnline] = useState(true);
+  const [gatewayOnline, setGatewayOnline] = useState(false);
   const [gatewayName, setGatewayName] = useState('Gateway Printer SDIT AL FIKRI');
   const [printers, setPrinters] = useState<PrinterInfo[]>([]);
   const [printer, setPrinter] = useState('');
@@ -66,6 +69,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   const releasePreview = () => {
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     previewUrlRef.current = '';
+    setPreviewHtml('');
   };
 
   const setPreviewBlob = (blob: Blob) => {
@@ -79,26 +83,25 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
     try {
       const response = await fetch('/api/print/gateway/status', { cache: 'no-store' });
       const data = await readJson(response);
-      const list = Array.isArray(data.printers) && data.printers.length > 0 
-        ? data.printers 
-        : [
-            { id: 'kyocera', name: 'KYOCERA ECOSYS M2040dn (Ruang Guru / TU)' },
-            { id: 'epson', name: 'EPSON L3250 SERIES (Ruang Guru)' },
-            { id: 'pdf_direct', name: 'Printer Dokumen Standar SDIT (PDF / Direct)' }
-          ];
-      setGatewayOnline(Boolean(data.online !== false));
+      const isOnline = Boolean(data.online);
+      setGatewayOnline(isOnline);
       if (data.gatewayName) setGatewayName(data.gatewayName);
-      setPrinters(list);
-      setPrinter((current) => current && list.some((item: PrinterInfo) => item.id === current) ? current : list[0]?.id || 'kyocera');
-    } catch {
-      // Fallback to active virtual service
-      setGatewayOnline(true);
-      const defaultList = [
+
+      const defaultPrinters = [
         { id: 'kyocera', name: 'KYOCERA ECOSYS M2040dn (Ruang Guru / TU)' },
         { id: 'epson', name: 'EPSON L3250 SERIES (Ruang Guru)' },
         { id: 'pdf_direct', name: 'Printer Dokumen Standar SDIT (PDF / Direct)' }
       ];
-      setPrinters(defaultList);
+      const list = Array.isArray(data.printers) && data.printers.length > 0 ? data.printers : defaultPrinters;
+      setPrinters(list);
+      setPrinter((current) => current && list.some((item: PrinterInfo) => item.id === current) ? current : list[0]?.id || 'kyocera');
+    } catch {
+      setGatewayOnline(false);
+      setPrinters([
+        { id: 'kyocera', name: 'KYOCERA ECOSYS M2040dn (Ruang Guru / TU)' },
+        { id: 'epson', name: 'EPSON L3250 SERIES (Ruang Guru)' },
+        { id: 'pdf_direct', name: 'Printer Dokumen Standar SDIT (PDF / Direct)' }
+      ]);
       setPrinter('kyocera');
     }
   };
@@ -128,18 +131,23 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
     setFile(nextFile);
     releasePreview();
     setPreviewUrl('');
+    setPreviewHtml('');
     setStatus('Menyiapkan pratinjau dokumen...');
     setStatusType('info');
+    setIsPreparingPreview(true);
+
     const ext = getExtension(nextFile.name);
 
     try {
+      // 1. PDF File
       if (ext === 'pdf' || nextFile.type === 'application/pdf') {
         setPreviewBlob(nextFile);
-        setStatus('PDF siap dicetak atau dipratinjau.');
+        setStatus('Dokumen PDF siap dicetak atau dipratinjau.');
         setStatusType('success');
         return;
       }
 
+      // 2. Image File
       if (isImageFile(nextFile)) {
         setPreviewBlob(nextFile);
         setStatus('Gambar siap dicetak atau dipratinjau.');
@@ -147,8 +155,36 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
         return;
       }
 
+      // 3. Word Document (.docx)
+      if (ext === 'docx') {
+        const arrayBuffer = await nextFile.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        setPreviewHtml(result.value || '<p class="text-slate-500 italic p-4">Dokumen Word kosong.</p>');
+        setStatus('Pratinjau Word (.docx) berhasil dibuat.');
+        setStatusType('success');
+        return;
+      }
+
+      // 4. Excel Workbook (.xlsx / .xls)
+      if (ext === 'xlsx' || ext === 'xls') {
+        const arrayBuffer = await nextFile.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        if (firstSheetName) {
+          const html = XLSX.utils.sheet_to_html(workbook.Sheets[firstSheetName]);
+          setPreviewHtml(html);
+          setStatus(`Pratinjau Excel Sheet "${firstSheetName}" siap.`);
+          setStatusType('success');
+        } else {
+          setPreviewHtml('<p class="text-slate-500 italic p-4">Lembar kerja Excel kosong.</p>');
+          setStatus('Excel kosong.');
+          setStatusType('warning');
+        }
+        return;
+      }
+
+      // Fallback for PPT / Other Office files
       if (isOfficeFile(nextFile)) {
-        setIsPreparingPreview(true);
         const base64 = await fileToBase64(nextFile);
         try {
           const response = await fetch('/api/print/jobs', {
@@ -157,14 +193,13 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
             body: JSON.stringify({ mode: 'preview', fileName: nextFile.name, dataBase64: base64, paper, orientation, scale }),
           });
           const created = await readJson(response);
-          const result = await waitForJob(created.jobId, 6000);
+          const result = await waitForJob(created.jobId, 4000);
           if (result.resultDataBase64) {
             const binary = atob(result.resultDataBase64);
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
             setPreviewBlob(new Blob([bytes], { type: 'application/pdf' }));
           } else {
-            // Fallback blob display for Office file preview
             setPreviewBlob(nextFile);
           }
         } catch {
@@ -175,7 +210,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
         return;
       }
 
-      throw new Error('Format file belum didukung. Gunakan PDF, Word, Excel, PowerPoint, atau gambar.');
+      throw new Error('Format file belum didukung. Gunakan PDF, Word (.docx), Excel (.xlsx), atau gambar.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Gagal memproses file.');
       setStatusType('error');
@@ -190,6 +225,13 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
       setStatusType('error');
       return;
     }
+
+    if (!gatewayOnline) {
+      setStatus('Print Gateway lokal sedang offline. Jalankan node agent.mjs atau gunakan tombol "Cetak via Browser".');
+      setStatusType('warning');
+      return;
+    }
+
     if (!printer) {
       setStatus('Pilih printer tujuan terlebih dahulu.');
       setStatusType('error');
@@ -218,7 +260,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
         }),
       });
       const created = await readJson(response);
-      setStatus('Dokumen masuk ke antrean cetak. Mengonfirmasi...');
+      setStatus('Dokumen masuk ke antrean cetak. Mengonfirmasi agen...');
       const result = await waitForJob(created.jobId, 5000);
       setStatus(`✓ ${result.message || `Dokumen "${file.name}" berhasil dikirim ke printer.`}`);
       setStatusType('success');
@@ -233,29 +275,54 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
 
   // Browser Direct Print Fallback
   const handleBrowserDirectPrint = () => {
-    if (!previewUrl) {
-      setStatus('Pratinjau belum siap untuk dicetak via browser.');
+    if (!previewUrl && !previewHtml) {
+      setStatus('Pratinjau belum siap untuk dicetak.');
       setStatusType('error');
       return;
     }
+
     try {
-      if (iframeRef.current && iframeRef.current.contentWindow) {
+      if (previewHtml) {
+        const printWin = window.open('', '_blank');
+        if (printWin) {
+          printWin.document.write(`
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <title>Cetak - ${file?.name || 'Dokumen'}</title>
+                <style>
+                  body { font-family: sans-serif; padding: 20px; color: #000; }
+                  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+                  th, td { border: 1px solid #ccc; padding: 6px 10px; font-size: 12px; }
+                </style>
+              </head>
+              <body>
+                ${previewHtml}
+                <script>
+                  window.onload = function() { window.print(); };
+                </script>
+              </body>
+            </html>
+          `);
+          printWin.document.close();
+        }
+      } else if (iframeRef.current && iframeRef.current.contentWindow) {
         iframeRef.current.contentWindow.focus();
         iframeRef.current.contentWindow.print();
       } else {
         window.open(previewUrl, '_blank');
       }
-      setStatus('Dialog pencetakan browser dibuka.');
+      setStatus('Dialog pencetakan browser berhasil dibuka.');
       setStatusType('success');
     } catch {
-      window.open(previewUrl, '_blank');
+      if (previewUrl) window.open(previewUrl, '_blank');
     }
   };
 
   useEffect(() => {
     if (!isOpen) return;
     checkGateway();
-    const timer = window.setInterval(checkGateway, 15000);
+    const timer = window.setInterval(checkGateway, 10000);
     return () => window.clearInterval(timer);
   }, [isOpen]);
 
@@ -264,6 +331,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
       releasePreview();
       setFile(null);
       setPreviewUrl('');
+      setPreviewHtml('');
       setStatus('');
       setIsPrinting(false);
       setIsPreparingPreview(false);
@@ -278,7 +346,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   useEffect(() => () => releasePreview(), []);
 
   if (!isOpen) return null;
-  const canPreview = Boolean(previewUrl);
+  const canPreview = Boolean(previewUrl || previewHtml);
   const fileExt = file ? getExtension(file.name) : '';
 
   return (
@@ -291,15 +359,22 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
               <Printer className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-base sm:text-lg font-black text-white">Print Dokumen & Gateway Cetak</h2>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>Gateway Online</span>
-                </div>
+                {gatewayOnline ? (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Gateway Online</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Gateway Offline (Belum Dijalankan)</span>
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-400 truncate mt-0.5">
-                Mendukung PDF, Word, Excel, PowerPoint, dan Gambar untuk cetak langsung ke printer sekolah
+                PDF, Word, Excel, PowerPoint, dan Gambar untuk cetak via Gateway atau Browser Direct
               </p>
             </div>
           </div>
@@ -362,12 +437,31 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
               </div>
             )}
 
+            {/* Gateway Offline Warning Callout */}
+            {!gatewayOnline && (
+              <div className="p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-200 text-xs space-y-2">
+                <div className="flex items-center gap-2 font-bold text-amber-300">
+                  <Terminal className="w-4 h-4 text-amber-400" />
+                  <span>Agent Gateway Belum Aktif</span>
+                </div>
+                <p className="leading-relaxed text-[11.5px] text-amber-200/90">
+                  Jalankan perintah berikut di Terminal/CMD komputer sekolah tempat printer terhubung:
+                </p>
+                <div className="p-2 rounded-xl bg-slate-950 font-mono text-[11px] text-emerald-400 border border-slate-800 select-all font-semibold">
+                  npm run print-agent
+                </div>
+                <p className="text-[10.5px] text-slate-400">
+                  *Anda tetap dapat mencetak langsung menggunakan tombol <strong>Cetak via Browser</strong> di bawah.
+                </p>
+              </div>
+            )}
+
             {/* Printer Selection */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-400">Pilih Printer Gateway</span>
-                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Online (Siap)
+                <span className={`text-xs font-bold flex items-center gap-1 ${gatewayOnline ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {gatewayOnline ? <><CheckCircle2 className="w-3.5 h-3.5" /> Online</> : <><AlertCircle className="w-3.5 h-3.5" /> Standby</>}
                 </span>
               </div>
               <select
@@ -425,7 +519,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
 
               <div className="grid grid-cols-[1fr_1.4fr] gap-3">
                 <label className="print-field">
-                  <span>Jumlah Salinan (Copies)</span>
+                  <span>Jumlah Salinan</span>
                   <input
                     type="number"
                     min={1}
@@ -459,7 +553,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
                     />
                   </label>
                   <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                    Dokumen Office dan PDF akan dioptimalkan sesuai rasio margin yang dipilih.
+                    Margin dioptimalkan secara otomatis saat pengiriman ke printer.
                   </p>
                 </div>
               )}
@@ -472,12 +566,16 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
                   ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                   : statusType === 'success'
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                  : statusType === 'warning'
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
                   : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
               }`}>
                 {statusType === 'error' ? (
                   <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
                 ) : statusType === 'success' ? (
                   <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
+                ) : statusType === 'warning' ? (
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
                 ) : (
                   <AlertCircle className="w-4 h-4 shrink-0 text-cyan-400 mt-0.5" />
                 )}
@@ -503,7 +601,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
                   onClick={handleBrowserDirectPrint}
                   className="w-full h-10 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-xs font-bold text-slate-200 inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
-                  <PrinterCheck className="w-4 h-4 text-emerald-400" /> Cetak Langsung via Dialog Browser
+                  <PrinterCheck className="w-4 h-4 text-emerald-400" /> Cetak via Dialog Browser
                 </button>
               )}
             </div>
@@ -520,7 +618,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
               </div>
               {canPreview && (
                 <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Siap Dicetak
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Pratinjau Siap
                 </span>
               )}
             </div>
@@ -532,16 +630,21 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
                 </div>
                 <div className="text-base font-bold text-slate-300">Belum Ada Dokumen yang Dipilih</div>
                 <p className="text-xs text-slate-500 mt-1.5 max-w-md leading-relaxed">
-                  Silakan pilih file PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx), atau Gambar dari panel kiri untuk melihat pratinjau dan mencetak.
+                  Silakan pilih file PDF, Word (.docx), Excel (.xlsx), atau Gambar dari panel kiri untuk melihat pratinjau langsung.
                 </p>
               </div>
             ) : (
               <div className="flex-1 flex justify-center items-start min-h-full py-2">
                 <div
-                  className="print-preview-paper relative shadow-2xl transition-all"
+                  className="print-preview-paper relative shadow-2xl transition-all w-full max-w-3xl bg-white text-slate-900 rounded-xl overflow-hidden min-h-[520px]"
                   style={{ aspectRatio: `${paperDimensions.width} / ${paperDimensions.height}` }}
                 >
-                  {isImageFile(file!) ? (
+                  {previewHtml ? (
+                    <div
+                      className="p-8 text-slate-900 overflow-auto w-full h-full max-h-[620px] text-sm leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: previewHtml }}
+                    />
+                  ) : isImageFile(file!) ? (
                     <img
                       src={previewUrl}
                       alt={file?.name || 'Preview'}
@@ -552,10 +655,9 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
                       ref={iframeRef}
                       src={previewUrl}
                       title="Pratinjau PDF"
-                      className="w-full h-full min-h-[500px] border-0 bg-white"
+                      className="w-full h-full min-h-[520px] border-0 bg-white"
                     />
                   )}
-                  <div className="absolute inset-0 pointer-events-none border border-black/10" />
                 </div>
               </div>
             )}

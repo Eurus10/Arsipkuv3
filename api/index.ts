@@ -5619,14 +5619,14 @@ interface ConversionRecord {
   createdAt: number;
 }
 
-// In-Memory state: active gateway with registered school printers and continuous readiness
+// In-Memory state: print gateway state updated by external local node agent heartbeats
 const printGatewayState = {
-  lastHeartbeat: Date.now(),
+  lastHeartbeat: 0, // 0 until an actual agent sends a heartbeat
   gatewayName: 'Gateway Printer SDIT AL FIKRI',
   printers: [
     { id: 'kyocera', name: 'KYOCERA ECOSYS M2040dn (Ruang Guru / TU)', type: 'windows', status: 'ready' },
     { id: 'epson', name: 'EPSON L3250 SERIES (Ruang Guru)', type: 'epson_connect', status: 'ready' },
-    { id: 'pdf_direct', name: 'Printer Dokumen Standar SDIT (PDF / Office)', type: 'direct_spool', status: 'ready' }
+    { id: 'pdf_direct', name: 'Printer Dokumen Standar SDIT (PDF / Direct)', type: 'direct_spool', status: 'ready' }
   ],
   capabilities: {
     libreOffice: true,
@@ -5636,11 +5636,6 @@ const printGatewayState = {
 
 const printJobs = new Map<string, PrintJobRecord>();
 const conversions = new Map<string, ConversionRecord>();
-
-// Keep-alive heartbeat interval to ensure gateway status stays online
-setInterval(() => {
-  printGatewayState.lastHeartbeat = Date.now();
-}, 10_000);
 
 // Auto clean jobs older than 30 minutes
 setInterval(() => {
@@ -5661,30 +5656,36 @@ setInterval(() => {
 // Status check for teacher UI (alias 1)
 app.get('/api/print/status', (_req, res) => {
   const now = Date.now();
-  printGatewayState.lastHeartbeat = now;
+  const isOnline = printGatewayState.lastHeartbeat > 0 && (now - printGatewayState.lastHeartbeat) < 25000;
   return res.json({
     status: 'ok',
-    online: true,
-    lastSeenSecondsAgo: 0,
-    lastSeenAt: new Date(now).toISOString(),
+    online: isOnline,
+    lastSeenSecondsAgo: printGatewayState.lastHeartbeat ? Math.round((now - printGatewayState.lastHeartbeat) / 1000) : null,
+    lastSeenAt: printGatewayState.lastHeartbeat ? new Date(printGatewayState.lastHeartbeat).toISOString() : null,
     gatewayName: printGatewayState.gatewayName,
     printers: printGatewayState.printers,
     capabilities: printGatewayState.capabilities,
+    message: isOnline 
+      ? 'Print Gateway lokal terhubung & aktif.' 
+      : 'Print Gateway offline. Jalankan node agent.mjs atau npm run print-agent di komputer/laptop sekolah.'
   });
 });
 
 // Status check for PrintDocumentModal (alias 2)
 app.get('/api/print/gateway/status', (_req, res) => {
   const now = Date.now();
-  printGatewayState.lastHeartbeat = now;
+  const isOnline = printGatewayState.lastHeartbeat > 0 && (now - printGatewayState.lastHeartbeat) < 25000;
   return res.json({
     status: 'ok',
-    online: true,
-    lastSeenSecondsAgo: 0,
-    lastSeenAt: new Date(now).toISOString(),
+    online: isOnline,
+    lastSeenSecondsAgo: printGatewayState.lastHeartbeat ? Math.round((now - printGatewayState.lastHeartbeat) / 1000) : null,
+    lastSeenAt: printGatewayState.lastHeartbeat ? new Date(printGatewayState.lastHeartbeat).toISOString() : null,
     gatewayName: printGatewayState.gatewayName,
     printers: printGatewayState.printers,
     capabilities: printGatewayState.capabilities,
+    message: isOnline 
+      ? 'Print Gateway lokal terhubung & aktif.' 
+      : 'Print Gateway offline. Jalankan node agent.mjs atau npm run print-agent di komputer/laptop sekolah.'
   });
 });
 
