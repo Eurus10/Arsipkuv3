@@ -4,179 +4,225 @@ import http from 'http';
 import https from 'https';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import crypto from 'crypto';
 
-const execFileAsync = promisify(execFile);
+const execFileAsync =
+  promisify(execFile);
 
-const DEFAULT_INTERNAL_KEY = 'sdit-print-gateway-key-2026';
+/*
+|--------------------------------------------------------------------------
+| KONFIGURASI
+|--------------------------------------------------------------------------
+*/
 
 const CONFIG = {
   serverUrl:
-    process.env.PRINT_GATEWAY_SERVER_URL ||
+    process.env.PRINT_SERVER_URL ||
     'https://arsipku.sditalfikri.my.id',
 
-  gatewayToken:
-    process.env.PRINT_GATEWAY_TOKEN || DEFAULT_INTERNAL_KEY,
-
   gatewayName:
-    process.env.PRINT_GATEWAY_NAME ||
     'Laptop Gateway SDIT',
 
   kyoceraPrinter:
-    process.env.KYOCERA_PRINTER ||
     'KYOCERA ECOSYS M2040dn',
 
   epsonPrinter:
-    process.env.EPSON_PRINTER ||
     'EPSON L3250 SERIES',
 
   sumatraPdf:
-    process.env.SUMATRA_PDF_PATH ||
     'C:\\Program Files\\SumatraPDF\\SumatraPDF.exe',
 
   libreOffice:
-    process.env.LIBREOFFICE_PATH ||
     'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
 };
 
-const ROOT_DIR = process.cwd();
+/*
+|--------------------------------------------------------------------------
+| FOLDER KERJA
+|--------------------------------------------------------------------------
+*/
 
-const SPOOL_DIR = path.join(
-  ROOT_DIR,
-  '.print-spool'
-);
+const SPOOL_DIR =
+  path.join(
+    process.cwd(),
+    '.print-spool'
+  );
 
-const WORK_DIR = path.join(
+fs.mkdirSync(
   SPOOL_DIR,
-  'work'
+  {
+    recursive: true,
+  }
 );
 
-fs.mkdirSync(WORK_DIR, {
-  recursive: true,
-});
+/*
+|--------------------------------------------------------------------------
+| POWERSHELL
+|--------------------------------------------------------------------------
+*/
 
-function getPowerShellExe() {
+function getPowerShell() {
   const candidates = [
-    `${process.env.SystemRoot || 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`,
     'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
+    `${process.env.SystemRoot || 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`,
     'powershell.exe',
   ];
 
   return (
     candidates.find(
-      (candidate) =>
-        candidate === 'powershell.exe' ||
-        fs.existsSync(candidate)
-    ) || 'powershell.exe'
+      (item) =>
+        item === 'powershell.exe' ||
+        fs.existsSync(item)
+    ) ||
+    'powershell.exe'
   );
 }
 
-const PS_EXE = getPowerShellExe();
+const POWERSHELL =
+  getPowerShell();
+
+/*
+|--------------------------------------------------------------------------
+| REQUEST KE SERVER
+|--------------------------------------------------------------------------
+*/
 
 function requestApi(
   endpoint,
   method = 'GET',
   data = null
 ) {
-  const fullUrl = new URL(
-    endpoint,
-    CONFIG.serverUrl
-  );
+  const url =
+    new URL(
+      endpoint,
+      CONFIG.serverUrl
+    );
 
   const client =
-    fullUrl.protocol === 'https:'
+    url.protocol === 'https:'
       ? https
       : http;
 
-  const payload = data
-    ? JSON.stringify(data)
-    : null;
+  const body =
+    data
+      ? JSON.stringify(data)
+      : null;
 
-  return new Promise((resolve, reject) => {
-    const req = client.request(
-      fullUrl,
-      {
-        method,
-        headers: {
-          Accept: 'application/json',
-          'X-Print-Gateway-Token':
-            CONFIG.gatewayToken,
+  return new Promise(
+    (resolve, reject) => {
+      const req =
+        client.request(
+          url,
+          {
+            method,
 
-          ...(payload
-            ? {
-                'Content-Type':
-                  'application/json',
+            headers: {
+              Accept:
+                'application/json',
 
-                'Content-Length':
-                  Buffer.byteLength(payload),
+              ...(body
+                ? {
+                    'Content-Type':
+                      'application/json',
+
+                    'Content-Length':
+                      Buffer.byteLength(
+                        body
+                      ),
+                  }
+                : {}),
+            },
+
+            timeout: 15000,
+          },
+
+          (res) => {
+            let text = '';
+
+            res.setEncoding(
+              'utf8'
+            );
+
+            res.on(
+              'data',
+              (chunk) => {
+                text += chunk;
               }
-            : {}),
-        },
-        timeout: 15000,
-      },
-      (res) => {
-        let body = '';
+            );
 
-        res.setEncoding('utf8');
+            res.on(
+              'end',
+              () => {
+                let json = {};
 
-        res.on('data', (chunk) => {
-          body += chunk;
-        });
+                try {
+                  json = text
+                    ? JSON.parse(
+                        text
+                      )
+                    : {};
+                } catch {
+                  json = {
+                    raw: text,
+                  };
+                }
 
-        res.on('end', () => {
-          let parsed = {};
+                if (
+                  res.statusCode >=
+                    200 &&
+                  res.statusCode <
+                    300
+                ) {
+                  resolve(json);
+                  return;
+                }
 
-          try {
-            parsed = body
-              ? JSON.parse(body)
-              : {};
-          } catch {
-            parsed = {
-              raw: body,
-            };
-          }
-
-          if (
-            res.statusCode &&
-            res.statusCode >= 200 &&
-            res.statusCode < 300
-          ) {
-            resolve(parsed);
-          } else {
-            reject(
-              new Error(
-                parsed?.message ||
-                  `HTTP ${res.statusCode}`
-              )
+                reject(
+                  new Error(
+                    json?.message ||
+                      `HTTP ${res.statusCode}`
+                  )
+                );
+              }
             );
           }
-        });
+        );
+
+      req.on(
+        'timeout',
+        () => {
+          req.destroy(
+            new Error(
+              'Request ke server timeout.'
+            )
+          );
+        }
+      );
+
+      req.on(
+        'error',
+        reject
+      );
+
+      if (body) {
+        req.write(body);
       }
-    );
 
-    req.on('timeout', () =>
-      req.destroy(
-        new Error(
-          'Request ke Web App timeout.'
-        )
-      )
-    );
-
-    req.on('error', reject);
-
-    if (payload) {
-      req.write(payload);
+      req.end();
     }
-
-    req.end();
-  });
+  );
 }
+
+/*
+|--------------------------------------------------------------------------
+| CEK PRINTER WINDOWS
+|--------------------------------------------------------------------------
+*/
 
 async function getWindowsPrinters() {
   try {
-    const { stdout } =
+    const result =
       await execFileAsync(
-        PS_EXE,
+        POWERSHELL,
         [
           '-NoProfile',
           '-ExecutionPolicy',
@@ -189,13 +235,16 @@ async function getWindowsPrinters() {
         }
       );
 
-    return stdout
+    return result.stdout
       .split(/\r?\n/)
-      .map((name) => name.trim())
+      .map(
+        (name) =>
+          name.trim()
+      )
       .filter(Boolean);
   } catch (error) {
     console.error(
-      '! Gagal membaca printer Windows:',
+      '[PRINTER ERROR]',
       error.message
     );
 
@@ -203,88 +252,97 @@ async function getWindowsPrinters() {
   }
 }
 
-function findConfiguredPrinter(
+function findPrinter(
   detected,
-  configuredName
+  configured
 ) {
-  const normalizedTarget =
-    configuredName
+  const target =
+    configured
       .trim()
       .toLowerCase();
 
   return (
     detected.find(
       (name) =>
-        name.trim().toLowerCase() ===
-        normalizedTarget
+        name
+          .trim()
+          .toLowerCase() ===
+        target
     ) ||
     detected.find(
       (name) =>
-        name.trim()
+        name
+          .trim()
           .toLowerCase()
-          .includes(normalizedTarget)
-    ) ||
-    detected.find(
-      (name) =>
-        normalizedTarget.includes(
-          name.trim().toLowerCase()
-        )
+          .includes(target)
     )
   );
 }
 
-async function buildPrinterStatus() {
-  const detected =
-    await getWindowsPrinters();
+/*
+|--------------------------------------------------------------------------
+| HEARTBEAT
+|--------------------------------------------------------------------------
+*/
 
-  const printers = [];
-
-  const kyocera =
-    findConfiguredPrinter(
-      detected,
-      CONFIG.kyoceraPrinter
-    );
-
-  if (kyocera) {
-    printers.push({
-      id: CONFIG.kyoceraPrinter,
-      name: CONFIG.kyoceraPrinter,
-      windowsName: kyocera,
-      type: 'windows_lan',
-      status: 'READY',
-    });
-  }
-
-  const epson =
-    findConfiguredPrinter(
-      detected,
-      CONFIG.epsonPrinter
-    );
-
-  if (epson) {
-    printers.push({
-      id: CONFIG.epsonPrinter,
-      name: CONFIG.epsonPrinter,
-      windowsName: epson,
-      type: 'windows_driver',
-      status: 'READY',
-    });
-  }
-
-  return {
-    detected,
-    printers,
-  };
-}
-
-async function sendHeartbeat() {
+async function heartbeat() {
   try {
-    const {
-      detected,
-      printers,
-    } = await buildPrinterStatus();
+    const detected =
+      await getWindowsPrinters();
 
-    const result = await requestApi(
+    const printers = [];
+
+    const kyocera =
+      findPrinter(
+        detected,
+        CONFIG.kyoceraPrinter
+      );
+
+    if (kyocera) {
+      printers.push({
+        id:
+          CONFIG.kyoceraPrinter,
+
+        name:
+          CONFIG.kyoceraPrinter,
+
+        windowsName:
+          kyocera,
+
+        type:
+          'windows',
+
+        status:
+          'READY',
+      });
+    }
+
+    const epson =
+      findPrinter(
+        detected,
+        CONFIG.epsonPrinter
+      );
+
+    if (epson) {
+      printers.push({
+        id:
+          CONFIG.epsonPrinter,
+
+        name:
+          CONFIG.epsonPrinter,
+
+        windowsName:
+          epson,
+
+        type:
+          'windows',
+
+        status:
+          'READY',
+      });
+    }
+
+    await requestApi(
       '/api/print/gateway/heartbeat',
       'POST',
       {
@@ -296,28 +354,48 @@ async function sendHeartbeat() {
     );
 
     console.log(
-      `[HEARTBEAT] Online | Printer Windows: ${detected.length} | Target siap: ${printers.length}`
+      `[ONLINE] ${printers.length} printer terdeteksi.`
     );
 
-    if (result?.status !== 'ok') {
-      console.warn(
-        '! Heartbeat ditolak server.'
+    for (
+      const printer of printers
+    ) {
+      console.log(
+        `  ✓ ${printer.name}`
+      );
+    }
+
+    if (
+      printers.length === 0
+    ) {
+      console.log(
+        '  ! Tidak ada printer target yang ditemukan.'
       );
     }
   } catch (error) {
     console.error(
-      `[HEARTBEAT ERROR] ${error.message}`
+      `[SERVER ERROR] ${error.message}`
     );
   }
 }
 
-function extensionOf(fileName) {
+/*
+|--------------------------------------------------------------------------
+| BANTUAN FORMAT FILE
+|--------------------------------------------------------------------------
+*/
+
+function extension(
+  fileName
+) {
   return path
     .extname(fileName)
     .toLowerCase();
 }
 
-function isOffice(fileName) {
+function isOffice(
+  fileName
+) {
   return [
     '.doc',
     '.docx',
@@ -326,55 +404,40 @@ function isOffice(fileName) {
     '.ppt',
     '.pptx',
   ].includes(
-    extensionOf(fileName)
+    extension(fileName)
   );
 }
 
-function isPdf(fileName) {
-  return extensionOf(fileName) === '.pdf';
-}
-
-function isImage(fileName) {
-  return [
-    '.jpg',
-    '.jpeg',
-    '.png',
-    '.gif',
-    '.webp',
-    '.bmp',
-    '.tif',
-    '.tiff',
-  ].includes(
-    extensionOf(fileName)
-  );
-}
-
-function safeName(fileName) {
-  return (
-    path
-      .basename(fileName)
-      .replace(
-        /[^a-zA-Z0-9._()\-\s]/g,
-        '_'
-      )
-      .slice(0, 180) ||
-    'dokumen'
-  );
-}
+/*
+|--------------------------------------------------------------------------
+| KONVERSI OFFICE → PDF
+|--------------------------------------------------------------------------
+*/
 
 async function convertOfficeToPdf(
-  inputPath,
-  workDir
+  inputFile,
+  outputDir
 ) {
-  if (!fs.existsSync(CONFIG.libreOffice)) {
+  if (
+    !fs.existsSync(
+      CONFIG.libreOffice
+    )
+  ) {
     throw new Error(
       `LibreOffice tidak ditemukan: ${CONFIG.libreOffice}`
     );
   }
 
-  fs.mkdirSync(workDir, {
-    recursive: true,
-  });
+  fs.mkdirSync(
+    outputDir,
+    {
+      recursive: true,
+    }
+  );
+
+  console.log(
+    `  → Konversi Office ke PDF`
+  );
 
   await execFileAsync(
     CONFIG.libreOffice,
@@ -383,8 +446,8 @@ async function convertOfficeToPdf(
       '--convert-to',
       'pdf',
       '--outdir',
-      workDir,
-      inputPath,
+      outputDir,
+      inputFile,
     ],
     {
       timeout: 120000,
@@ -392,328 +455,355 @@ async function convertOfficeToPdf(
     }
   );
 
-  const expected = path.join(
-    workDir,
-    `${path.basename(
-      inputPath,
-      path.extname(inputPath)
-    )}.pdf`
-  );
+  const expected =
+    path.join(
+      outputDir,
+      `${path.basename(
+        inputFile,
+        path.extname(
+          inputFile
+        )
+      )}.pdf`
+    );
 
-  if (fs.existsSync(expected)) {
+  if (
+    fs.existsSync(expected)
+  ) {
     return expected;
   }
 
   const generated =
-    fs.readdirSync(workDir).find(
-      (name) =>
-        name.toLowerCase().endsWith('.pdf')
-    );
+    fs
+      .readdirSync(
+        outputDir
+      )
+      .find(
+        (name) =>
+          name
+            .toLowerCase()
+            .endsWith('.pdf')
+      );
 
   if (!generated) {
     throw new Error(
-      'LibreOffice tidak menghasilkan file PDF.'
+      'LibreOffice tidak menghasilkan PDF.'
     );
   }
 
   return path.join(
-    workDir,
+    outputDir,
     generated
   );
 }
 
-function normalizePageRange(value) {
-  const raw = String(
-    value || ''
-  ).trim();
+/*
+|--------------------------------------------------------------------------
+| PENGATURAN SUMATRAPDF
+|--------------------------------------------------------------------------
+*/
+
+function buildPrintSettings(
+  job
+) {
+  const settings = [];
 
   if (
-    !raw ||
-    /^(semua|all|all pages)$/i.test(raw)
-  ) {
-    return '';
-  }
-
-  if (!/^[0-9,\s-]+$/.test(raw)) {
-    throw new Error(
-      'Rentang halaman tidak valid. Gunakan contoh: 1-3 atau 1,3,5.'
-    );
-  }
-
-  return raw.replace(/\s+/g, '');
-}
-
-function paperToken(paper) {
-  switch (
-    String(paper).toUpperCase()
-  ) {
-    case 'A4':
-      return 'paper=A4';
-
-    case 'A5':
-      return 'paper=A5';
-
-    case 'LETTER':
-      return 'paper=letter';
-
-    case 'F4':
-      return 'paper=215.9mm x 330.2mm';
-
-    default:
-      return 'paper=A4';
-  }
-}
-
-function scaleToken(scale) {
-  switch (
-    String(scale).toLowerCase()
-  ) {
-    case 'actual':
-      return 'noscale';
-
-    case 'fill':
-      return 'stretch';
-
-    default:
-      return 'fit';
-  }
-}
-
-function buildPrintSettings(job) {
-  const settings = [
-    paperToken(job.paper),
-
-    String(job.orientation).toLowerCase() ===
-    'landscape'
-      ? 'landscape'
-      : 'portrait',
-
-    scaleToken(job.scale),
-
-    `${Math.min(
-      99,
-      Math.max(1, Number(job.copies) || 1)
-    )}x`,
-
-    'ignore-pdf-print-settings',
-  ];
-
-  const pageRange =
-    normalizePageRange(
+    job.pageRange &&
+    !/^semua$/i.test(
       job.pageRange
+    )
+  ) {
+    settings.push(
+      job.pageRange
+        .replace(/\s+/g, '')
+    );
+  }
+
+  const copies =
+    Math.min(
+      99,
+      Math.max(
+        1,
+        Number(job.copies) ||
+          1
+      )
     );
 
-  if (pageRange) {
-    settings.unshift(pageRange);
+  settings.push(
+    `${copies}x`
+  );
+
+  if (
+    String(
+      job.orientation
+    ).toLowerCase() ===
+    'landscape'
+  ) {
+    settings.push(
+      'landscape'
+    );
   }
+
+  settings.push(
+    'fit'
+  );
 
   return settings.join(',');
 }
 
-async function resolveTargetPrinter(
-  requestedName
-) {
-  const { detected } =
-    await buildPrinterStatus();
+/*
+|--------------------------------------------------------------------------
+| PRINT PDF
+|--------------------------------------------------------------------------
+*/
 
-  const configured =
-    [
-      CONFIG.kyoceraPrinter,
-      CONFIG.epsonPrinter,
-    ].find(
-      (name) =>
-        name.toLowerCase() ===
-        String(requestedName || '')
-          .trim()
-          .toLowerCase()
-    );
-
-  if (!configured) {
-    throw new Error(
-      `Printer tidak diizinkan: ${
-        requestedName || '(kosong)'
-      }`
-    );
-  }
-
-  const windowsName =
-    findConfiguredPrinter(
-      detected,
-      configured
-    );
-
-  if (!windowsName) {
-    throw new Error(
-      `Printer ${configured} tidak ditemukan pada Windows laptop gateway.`
-    );
-  }
-
-  return windowsName;
-}
-
-async function printWithSumatra(
+async function printPdf(
   pdfPath,
   printerName,
   job
 ) {
-  if (fs.existsSync(CONFIG.sumatraPdf)) {
-    try {
-      const settings =
-        buildPrintSettings(job);
-
-      const result =
-        await execFileAsync(
-          CONFIG.sumatraPdf,
-          [
-            '-silent',
-            '-print-to',
-            printerName,
-            '-print-settings',
-            settings,
-            pdfPath,
-          ],
-          {
-            timeout: 120000,
-            windowsHide: true,
-          }
-        );
-
-      if (result.stderr?.trim()) {
-        console.log(
-          `[SUMATRA] ${result.stderr.trim()}`
-        );
-      }
-      return;
-    } catch (sumatraErr) {
-      console.warn(`[SUMATRA] Gagal menggunakan SumatraPDF: ${sumatraErr.message}. Beralih ke Windows Native Print.`);
-    }
+  if (
+    !fs.existsSync(
+      CONFIG.sumatraPdf
+    )
+  ) {
+    throw new Error(
+      `SumatraPDF tidak ditemukan: ${CONFIG.sumatraPdf}`
+    );
   }
 
-  // Windows Native Printing Fallback
-  console.log(`[PRINT] Mencetak via Windows PowerShell ke printer "${printerName}"...`);
-  const escapedFile = pdfPath.replace(/'/g, "''");
-  const escapedPrinter = printerName.replace(/'/g, "''");
-  const script = `
-    $file = '${escapedFile}'
-    $printer = '${escapedPrinter}'
-    Start-Process -FilePath $file -Verb PrintTo -ArgumentList ('"' + $printer + '"') -WindowStyle Hidden -PassThru | Wait-Process -Timeout 30 -ErrorAction SilentlyContinue
-  `;
-  await runPowerShell(script);
+  const settings =
+    buildPrintSettings(
+      job
+    );
+
+  console.log(
+    `  → Print ke "${printerName}"`
+  );
+
+  console.log(
+    `  → Setting: ${settings}`
+  );
+
+  await execFileAsync(
+    CONFIG.sumatraPdf,
+    [
+      '-silent',
+
+      '-print-to',
+      printerName,
+
+      '-print-settings',
+      settings,
+
+      pdfPath,
+    ],
+    {
+      timeout: 120000,
+      windowsHide: true,
+    }
+  );
 }
 
-async function processJob(job) {
-  const jobDir = path.join(
-    WORK_DIR,
-    `${Date.now()}-${crypto.randomUUID()}`
+/*
+|--------------------------------------------------------------------------
+| UPDATE JOB
+|--------------------------------------------------------------------------
+*/
+
+async function updateJob(
+  jobId,
+  status,
+  message,
+  resultDataBase64 = null
+) {
+  await requestApi(
+    '/api/print/gateway/update-job',
+    'POST',
+    {
+      jobId,
+      status,
+      message,
+
+      ...(resultDataBase64
+        ? {
+            resultDataBase64,
+          }
+        : {}),
+    }
   );
+}
 
-  fs.mkdirSync(jobDir, {
-    recursive: true,
-  });
+/*
+|--------------------------------------------------------------------------
+| PROSES JOB
+|--------------------------------------------------------------------------
+*/
 
-  const originalPath = path.join(
-    jobDir,
-    safeName(job.fileName)
-  );
+async function processJob(
+  job
+) {
+  const jobFolder =
+    path.join(
+      SPOOL_DIR,
+      `${Date.now()}-${job.id}`
+    );
 
-  fs.writeFileSync(
-    originalPath,
-    Buffer.from(
-      job.fileData,
-      'base64'
-    )
+  fs.mkdirSync(
+    jobFolder,
+    {
+      recursive: true,
+    }
   );
 
   try {
-    let printablePath =
-      originalPath;
-
-    if (isOffice(job.fileName)) {
-      console.log(
-        `  → Konversi Office ke PDF: ${job.fileName}`
+    const originalFile =
+      path.join(
+        jobFolder,
+        path.basename(
+          job.fileName
+        )
       );
 
-      printablePath =
+    fs.writeFileSync(
+      originalFile,
+      Buffer.from(
+        job.fileData,
+        'base64'
+      )
+    );
+
+    console.log(
+      `\n[JOB] ${job.fileName}`
+    );
+
+    console.log(
+      `     Printer: ${
+        job.printer || '-'
+      }`
+    );
+
+    let pdfFile =
+      originalFile;
+
+    /*
+    |--------------------------------------------------------------------------
+    | OFFICE → PDF
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+      isOffice(
+        job.fileName
+      )
+    ) {
+      pdfFile =
         await convertOfficeToPdf(
-          originalPath,
+          originalFile,
           path.join(
-            jobDir,
+            jobFolder,
             'pdf'
           )
         );
     }
 
-    if (job.mode === 'preview') {
-      if (!isPdf(printablePath)) {
-        throw new Error(
-          'Preview server-side hanya dikembalikan sebagai PDF.'
-        );
-      }
+    /*
+    |--------------------------------------------------------------------------
+    | PREVIEW
+    |--------------------------------------------------------------------------
+    */
 
-      const resultDataBase64 =
-        fs.readFileSync(
-          printablePath
-        ).toString('base64');
+    if (
+      job.mode ===
+      'preview'
+    ) {
+      const pdfBase64 =
+        fs
+          .readFileSync(
+            pdfFile
+          )
+          .toString(
+            'base64'
+          );
 
-      await requestApi(
-        '/api/print/gateway/update-job',
-        'POST',
-        {
-          jobId: job.id,
-          status: 'READY',
-          message:
-            'PDF preview siap.',
-          resultDataBase64,
-        }
+      await updateJob(
+        job.id,
+        'READY',
+        'Preview PDF siap.',
+        pdfBase64
       );
 
       console.log(
-        `✓ Preview siap: ${job.fileName}`
+        '  ✓ Preview selesai.'
       );
 
       return;
     }
 
-    const printerName =
-      await resolveTargetPrinter(
-        job.printer
-      );
+    /*
+    |--------------------------------------------------------------------------
+    | PRINT
+    |--------------------------------------------------------------------------
+    */
 
-    if (isPdf(printablePath)) {
-      await printWithSumatra(
-        printablePath,
-        printerName,
-        job
-      );
-    } else if (
-      isImage(job.fileName)
+    const detected =
+      await getWindowsPrinters();
+
+    const requested =
+      String(
+        job.printer || ''
+      ).trim();
+
+    let printerName = '';
+
+    if (
+      requested
+        .toLowerCase()
+        .includes(
+          'kyocera'
+        )
     ) {
-      await printWithSumatra(
-        originalPath,
-        printerName,
-        job
-      );
-    } else {
+      printerName =
+        findPrinter(
+          detected,
+          CONFIG.kyoceraPrinter
+        ) || '';
+    }
+
+    if (
+      requested
+        .toLowerCase()
+        .includes(
+          'epson'
+        )
+    ) {
+      printerName =
+        findPrinter(
+          detected,
+          CONFIG.epsonPrinter
+        ) || '';
+    }
+
+    if (!printerName) {
       throw new Error(
-        `Format ${extensionOf(
-          job.fileName
-        )} belum memiliki jalur print.`
+        `Printer "${requested}" tidak ditemukan di Windows.`
       );
     }
 
-    await requestApi(
-      '/api/print/gateway/update-job',
-      'POST',
-      {
-        jobId: job.id,
-        status: 'SENT',
-        message:
-          `Dokumen dikirim ke printer ${job.printer}.`,
-      }
+    await printPdf(
+      pdfFile,
+      printerName,
+      job
+    );
+
+    await updateJob(
+      job.id,
+      'SENT',
+      `Dokumen dikirim ke printer ${printerName}.`
     );
 
     console.log(
-      `✓ SENT → ${job.printer} | ${job.fileName}`
+      `  ✓ SENT → ${printerName}`
     );
   } catch (error) {
     const message =
@@ -722,36 +812,48 @@ async function processJob(job) {
         : String(error);
 
     console.error(
-      `✗ FAILED → ${job.fileName}: ${message}`
+      `  ✗ GAGAL: ${message}`
     );
 
     try {
-      await requestApi(
-        '/api/print/gateway/update-job',
-        'POST',
-        {
-          jobId: job.id,
-          status: 'FAILED',
-          message,
-        }
+      await updateJob(
+        job.id,
+        'FAILED',
+        message
       );
-    } catch (updateError) {
+    } catch (
+      updateError
+    ) {
       console.error(
-        `✗ Gagal mengirim status FAILED: ${updateError.message}`
+        '  ✗ Gagal mengirim status FAILED:',
+        updateError.message
       );
     }
   } finally {
-    fs.rmSync(jobDir, {
-      recursive: true,
-      force: true,
-    });
+    try {
+      fs.rmSync(
+        jobFolder,
+        {
+          recursive: true,
+          force: true,
+        }
+      );
+    } catch {}
   }
 }
+
+/*
+|--------------------------------------------------------------------------
+| AMBIL ANTREAN
+|--------------------------------------------------------------------------
+*/
 
 let polling = false;
 
 async function pollQueue() {
-  if (polling) return;
+  if (polling) {
+    return;
+  }
 
   polling = true;
 
@@ -762,23 +864,20 @@ async function pollQueue() {
       );
 
     if (
-      result?.status !== 'ok' ||
-      !Array.isArray(result.jobs) ||
-      result.jobs.length === 0
+      !result ||
+      !Array.isArray(
+        result.jobs
+      )
     ) {
       return;
     }
 
-    for (const job of result.jobs) {
-      console.log(
-        `\n[JOB] ${
-          job.mode?.toUpperCase()
-        } | ${job.fileName} | ${
-          job.printer || '-'
-        }`
+    for (
+      const job of result.jobs
+    ) {
+      await processJob(
+        job
       );
-
-      await processJob(job);
     }
   } catch (error) {
     console.error(
@@ -789,40 +888,54 @@ async function pollQueue() {
   }
 }
 
-console.log(
-  '============================================================'
-);
-console.log(
-  ' PRINT GATEWAY SDIT AL FIKRI'
-);
-console.log(
-  '============================================================'
-);
-console.log(
-  `Server : ${CONFIG.serverUrl}`
-);
-console.log(
-  `Kyocera: ${CONFIG.kyoceraPrinter}`
-);
-console.log(
-  `Epson  : ${CONFIG.epsonPrinter}`
-);
-console.log(
-  'Gateway berjalan sebagai koneksi keluar ke Web App.'
-);
-console.log(
-  '============================================================'
-);
+/*
+|--------------------------------------------------------------------------
+| START
+|--------------------------------------------------------------------------
+*/
 
-await sendHeartbeat();
+console.log('');
+console.log(
+  '===================================================='
+);
+console.log(
+  '        SDIT AL FIKRI PRINT GATEWAY'
+);
+console.log(
+  '===================================================='
+);
+console.log(
+  `Server  : ${CONFIG.serverUrl}`
+);
+console.log(
+  `Kyocera : ${CONFIG.kyoceraPrinter}`
+);
+console.log(
+  `Epson   : ${CONFIG.epsonPrinter}`
+);
+console.log(
+  '===================================================='
+);
+console.log(
+  'Gateway tidak menggunakan token.'
+);
+console.log(
+  'Gateway hanya melakukan koneksi keluar ke server.'
+);
+console.log(
+  '===================================================='
+);
+console.log('');
+
+await heartbeat();
 await pollQueue();
 
 setInterval(
-  sendHeartbeat,
-  10_000
+  heartbeat,
+  10000
 );
 
 setInterval(
   pollQueue,
-  2_000
+  2000
 );
