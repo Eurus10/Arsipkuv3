@@ -29,6 +29,7 @@ import {
   FlaskConical,
   CheckSquare,
   BookOpen,
+  Printer,
 } from 'lucide-react';
 
 import {
@@ -55,6 +56,7 @@ import { checkFeatureAccess, verifyActiveTokenRealtime } from '../services/token
 import { TokenAccessModal } from './auth/TokenAccessModal';
 import { getActiveTeacherSession, verifyActiveTeacherSessionRealtime } from '../services/teacherStorage';
 import { DriveFolderTransitionModal } from './DriveFolderTransitionModal';
+import { PrintDocumentModal } from './PrintDocumentModal';
 
 interface TemplateDownloadSectionProps {
   templates: SchoolTemplateItem[];
@@ -374,6 +376,7 @@ export const TemplateDownloadSection: React.FC<
   ] = useState(false);
 
   const [isPbsModalOpen, setIsPbsModalOpen] = useState(false);
+  const [isPrintDocumentModalOpen, setIsPrintDocumentModalOpen] = useState(false);
 
   const [pendingFeatureType, setPendingFeatureType] = useState<'analysis' | 'evaluation' | null>(null);
 
@@ -1028,21 +1031,21 @@ export const TemplateDownloadSection: React.FC<
             Urutan: 1. Info Butir Soal, 2. Jadwal, 3. Skor Nilai, 4. Salin Data
             ==================================================== */}
 
-        <div className="hidden sm:flex items-center gap-3 md:gap-4 flex-shrink-0">
+        <div className="hidden sm:flex items-start gap-2.5 md:gap-3 flex-shrink-0 select-none">
 
           {/* 1. INFO BUTIR SOAL */}
           <button
             type="button"
             onClick={openBreakdownModal}
-            className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
             title="Informasi Butir Soal & Kisi-Kisi Ujian"
           >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-cyan-400/30 via-cyan-500/15 to-cyan-950/90 border border-cyan-400/70 shadow-[0_0_16px_rgba(34,211,238,0.35)] flex items-center justify-center text-cyan-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300 group-hover:shadow-[0_0_22px_rgba(34,211,238,0.6)]">
+            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-cyan-400/30 via-cyan-500/15 to-cyan-950/90 border border-cyan-400/70 shadow-[0_0_16px_rgba(34,211,238,0.35)] flex items-center justify-center text-cyan-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300 group-hover:shadow-[0_0_22px_rgba(34,211,238,0.6)]">
               <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
               <FileText className="w-5 h-5 text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
             </div>
 
-            <span className="text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-cyan-300 transition-colors whitespace-nowrap">
+            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-cyan-300 transition-colors whitespace-nowrap">
               Info Soal
             </span>
           </button>
@@ -1052,15 +1055,15 @@ export const TemplateDownloadSection: React.FC<
           <button
             type="button"
             onClick={openScheduleModal}
-            className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
             title="Jadwal Pelaksanaan Ujian"
           >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-emerald-400/30 via-emerald-500/15 to-emerald-950/90 border border-emerald-400/70 shadow-[0_0_16px_rgba(52,211,153,0.35)] flex items-center justify-center text-emerald-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300 group-hover:shadow-[0_0_22px_rgba(52,211,153,0.6)]">
+            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-emerald-400/30 via-emerald-500/15 to-emerald-950/90 border border-emerald-400/70 shadow-[0_0_16px_rgba(52,211,153,0.35)] flex items-center justify-center text-emerald-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300 group-hover:shadow-[0_0_22px_rgba(52,211,153,0.6)]">
               <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
               <Calendar className="w-5 h-5 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
             </div>
 
-            <span className="text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-emerald-300 transition-colors whitespace-nowrap">
+            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-emerald-300 transition-colors whitespace-nowrap">
               Jadwal
             </span>
           </button>
@@ -1070,15 +1073,15 @@ export const TemplateDownloadSection: React.FC<
           <button
             type="button"
             onClick={() => setShowScoreCalculator(true)}
-            className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
             title="Kalkulator Skor Nilai Ujian"
           >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-amber-400/30 via-amber-500/15 to-amber-950/90 border border-amber-400/70 shadow-[0_0_16px_rgba(251,191,36,0.35)] flex items-center justify-center text-amber-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300 group-hover:shadow-[0_0_22px_rgba(251,191,36,0.6)]">
+            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-amber-400/30 via-amber-500/15 to-amber-950/90 border border-amber-400/70 shadow-[0_0_16px_rgba(251,191,36,0.35)] flex items-center justify-center text-amber-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300 group-hover:shadow-[0_0_22px_rgba(251,191,36,0.6)]">
               <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
               <Calculator className="w-5 h-5 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
             </div>
 
-            <span className="text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-amber-300 transition-colors whitespace-nowrap">
+            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-amber-300 transition-colors whitespace-nowrap">
               Skor Nilai
             </span>
           </button>
@@ -1088,16 +1091,33 @@ export const TemplateDownloadSection: React.FC<
           <button
             type="button"
             onClick={() => setIsPbsModalOpen(true)}
-            className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
             title="Salin Data Nama Siswa, NISN, atau Nama Guru untuk Aplikasi PBS"
           >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-purple-400/30 via-purple-500/15 to-purple-950/90 border border-purple-400/70 shadow-[0_0_16px_rgba(192,132,252,0.35)] flex items-center justify-center text-purple-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300 group-hover:shadow-[0_0_22px_rgba(192,132,252,0.6)]">
+            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-purple-400/30 via-purple-500/15 to-purple-950/90 border border-purple-400/70 shadow-[0_0_16px_rgba(192,132,252,0.35)] flex items-center justify-center text-purple-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300 group-hover:shadow-[0_0_22px_rgba(192,132,252,0.6)]">
               <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
               <Copy className="w-5 h-5 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
             </div>
 
-            <span className="text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-purple-300 transition-colors whitespace-nowrap">
+            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-purple-300 transition-colors whitespace-nowrap">
               Salin Data
+            </span>
+          </button>
+
+          {/* 5. PRINT DOKUMEN */}
+          <button
+            type="button"
+            onClick={() => setIsPrintDocumentModalOpen(true)}
+            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
+            title="Cetak dokumen dari PDF, Word, Excel, atau gambar"
+          >
+            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-sky-400/30 via-sky-500/15 to-sky-950/90 border border-sky-400/70 shadow-[0_0_16px_rgba(56,189,248,0.35)] flex items-center justify-center text-sky-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-sky-300 group-hover:shadow-[0_0_22px_rgba(56,189,248,0.6)]">
+              <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+              <Printer className="w-5 h-5 text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
+            </div>
+
+            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-sky-300 transition-colors whitespace-nowrap">
+              Print Dokumen
             </span>
           </button>
 
@@ -1110,20 +1130,20 @@ export const TemplateDownloadSection: React.FC<
           4 Shortcut Icon Besar Berwarna + Label Ringkas di Bawahnya
           ==================================================== */}
 
-      <div className="grid sm:hidden grid-cols-4 gap-2 pt-1 pb-2 mb-2">
+      <div className="grid sm:hidden grid-cols-5 gap-1 pt-1 pb-2 mb-2 select-none">
 
         {/* 1. INFO SOAL */}
         <button
           type="button"
           onClick={openBreakdownModal}
-          className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-cyan-400/30 via-cyan-500/15 to-cyan-950/90 border border-cyan-400/70 shadow-[0_0_20px_rgba(34,211,238,0.4)] flex items-center justify-center text-cyan-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300 group-hover:shadow-[0_0_26px_rgba(34,211,238,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-cyan-400/30 via-cyan-500/15 to-cyan-950/90 border border-cyan-400/70 shadow-[0_0_20px_rgba(34,211,238,0.4)] flex items-center justify-center text-cyan-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300 group-hover:shadow-[0_0_26px_rgba(34,211,238,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <FileText className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
           </div>
 
-          <span className="text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-cyan-300 transition-colors">
+          <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-cyan-300 transition-colors leading-tight text-center">
             Info Soal
           </span>
         </button>
@@ -1133,14 +1153,14 @@ export const TemplateDownloadSection: React.FC<
         <button
           type="button"
           onClick={openScheduleModal}
-          className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-emerald-400/30 via-emerald-500/15 to-emerald-950/90 border border-emerald-400/70 shadow-[0_0_20px_rgba(52,211,153,0.4)] flex items-center justify-center text-emerald-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300 group-hover:shadow-[0_0_26px_rgba(52,211,153,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-emerald-400/30 via-emerald-500/15 to-emerald-950/90 border border-emerald-400/70 shadow-[0_0_20px_rgba(52,211,153,0.4)] flex items-center justify-center text-emerald-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300 group-hover:shadow-[0_0_26px_rgba(52,211,153,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <Calendar className="w-6 h-6 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
           </div>
 
-          <span className="text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-emerald-300 transition-colors">
+          <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-emerald-300 transition-colors leading-tight text-center">
             Jadwal
           </span>
         </button>
@@ -1150,14 +1170,14 @@ export const TemplateDownloadSection: React.FC<
         <button
           type="button"
           onClick={() => setShowScoreCalculator(true)}
-          className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-amber-400/30 via-amber-500/15 to-amber-950/90 border border-amber-400/70 shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center text-amber-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300 group-hover:shadow-[0_0_26px_rgba(251,191,36,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-amber-400/30 via-amber-500/15 to-amber-950/90 border border-amber-400/70 shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center text-amber-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300 group-hover:shadow-[0_0_26px_rgba(251,191,36,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <Calculator className="w-6 h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
           </div>
 
-          <span className="text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-amber-300 transition-colors">
+          <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-amber-300 transition-colors leading-tight text-center">
             Skor Nilai
           </span>
         </button>
@@ -1167,16 +1187,32 @@ export const TemplateDownloadSection: React.FC<
         <button
           type="button"
           onClick={() => setIsPbsModalOpen(true)}
-          className="flex flex-col items-center justify-center group cursor-pointer focus:outline-none"
+          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
           title="Salin Data Nama Siswa, NISN, atau Nama Guru untuk Aplikasi PBS"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-purple-400/30 via-purple-500/15 to-purple-950/90 border border-purple-400/70 shadow-[0_0_20px_rgba(192,132,252,0.4)] flex items-center justify-center text-purple-300 transition-all duration-300 group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300 group-hover:shadow-[0_0_26px_rgba(192,132,252,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-purple-400/30 via-purple-500/15 to-purple-950/90 border border-purple-400/70 shadow-[0_0_20px_rgba(192,132,252,0.4)] flex items-center justify-center text-purple-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300 group-hover:shadow-[0_0_26px_rgba(192,132,252,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <Copy className="w-6 h-6 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
           </div>
 
-          <span className="text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-purple-300 transition-colors">
+          <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-purple-300 transition-colors leading-tight text-center">
             Salin Data
+          </span>
+        </button>
+
+        {/* 5. PRINT DOKUMEN */}
+        <button
+          type="button"
+          onClick={() => setIsPrintDocumentModalOpen(true)}
+          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
+          title="Cetak dokumen"
+        >
+          <div className="relative w-14 h-14 rounded-full bg-gradient-to-b from-sky-400/30 via-sky-500/15 to-sky-950/90 border border-sky-400/70 shadow-[0_0_18px_rgba(56,189,248,0.35)] flex items-center justify-center text-sky-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-sky-300">
+            <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+            <Printer className="w-5 h-5 text-sky-300" />
+          </div>
+          <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-sky-300 transition-colors text-center leading-tight">
+            Print Dokumen
           </span>
         </button>
 
@@ -2551,6 +2587,11 @@ export const TemplateDownloadSection: React.FC<
       <PbsCopyModal
         isOpen={isPbsModalOpen}
         onClose={() => setIsPbsModalOpen(false)}
+      />
+
+      <PrintDocumentModal
+        isOpen={isPrintDocumentModalOpen}
+        onClose={() => setIsPrintDocumentModalOpen(false)}
       />
 
       <DriveFolderTransitionModal

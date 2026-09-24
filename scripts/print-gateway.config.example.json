@@ -1,0 +1,29 @@
+{
+  "serverUrl": "http://localhost:3000",
+  "gatewaySecret": "sdit-print-gateway-key-2026",
+  "pollIntervalMs": 2500,
+  "heartbeatIntervalMs": 5000,
+  "printers": {
+    "kyocera": {
+      "enabled": true,
+      "windowsPrinterName": "KYOCERA ECOSYS M2040dn",
+      "sumatraPdfPath": "C:\\Program Files\\SumatraPDF\\SumatraPDF.exe"
+    },
+    "epson": {
+      "enabled": true,
+      "mode": "email_print",
+      "printerEmail": "epson-printer-sekolah@print.epsonconnect.com",
+      "smtp": {
+        "host": "smtp.gmail.com",
+        "port": 465,
+        "secure": true,
+        "auth": {
+          "user": "sditaf23@gmail.com",
+          "pass": "xxxx-xxxx-xxxx-xxxx"
+        },
+        "fromName": "Web Arsip SDIT Print Gateway"
+      }
+    }
+  },
+  "libreOfficePath": "C:\\Program Files\\LibreOffice\\program\\soffice.exe"
+}
