@@ -5727,10 +5727,10 @@ app.post('/api/print/jobs', (req, res) => {
       pageRange: String(pageRange || 'Semua'),
       duplex: 'simplex',
       color: 'monochrome',
-      status: 'SENT',
+      status: 'WAITING',
       statusMessage: mode === 'preview' 
         ? 'Preview siap.' 
-        : `Dokumen "${fileName}" (${copies}x) berhasil dikirim ke antrean ${selectedPrinter}.`,
+        : `Dokumen "${fileName}" (${copies}x) berhasil didaftarkan ke antrean ${selectedPrinter}.`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -5821,8 +5821,8 @@ app.post('/api/print/submit', (req, res) => {
       pageRange: String(pageRange || 'Semua'),
       duplex,
       color,
-      status: 'SENT',
-      statusMessage: `Dokumen berhasil dikirim ke antrean ${printer}.`,
+      status: 'WAITING',
+      statusMessage: `Dokumen berhasil mendaftar di antrean ${printer}.`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -5944,8 +5944,10 @@ app.get('/api/print/gateway/pending', (_req, res) => {
 
   const pendingJobs: Array<Omit<PrintJobRecord, 'fileData'> & { fileData: string }> = [];
   for (const job of printJobs.values()) {
-    if (job.status === 'WAITING') {
+    if (job.status === 'WAITING' || job.status === 'SENT') {
       pendingJobs.push(job);
+      job.status = 'PROCESSING';
+      job.updatedAt = Date.now();
     }
   }
 
