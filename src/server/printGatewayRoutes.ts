@@ -1,25 +1,12 @@
-import crypto from 'crypto';
-import path from 'path';
 import type {
   Express,
   Request,
   Response,
 } from 'express';
 
-type PrintJobStatus =
-  | 'WAITING'
-  | 'PROCESSING'
-  | 'SENT'
-  | 'READY'
-  | 'FAILED';
-
-type PrintJobMode =
-  | 'print'
-  | 'preview';
-
 type PrintJob = {
   id: string;
-  mode: PrintJobMode;
+  mode: 'print' | 'preview';
   fileName: string;
   fileDataBase64: string;
   printer: string;
@@ -28,165 +15,33 @@ type PrintJob = {
   scale: string;
   copies: number;
   pageRange: string;
-  status: PrintJobStatus;
+  status:
+    | 'WAITING'
+    | 'PROCESSING'
+    | 'SENT'
+    | 'READY'
+    | 'FAILED';
   message: string;
   createdAt: number;
   updatedAt: number;
 };
 
-type GatewayState = {
-  online: boolean;
-  gatewayName: string;
-  lastSeenAt: number | null;
-  printers: Array<{
-    id: string;
-    name: string;
-    type?: string;
-    status?: string;
-  }>;
-};
-
-/*
-|--------------------------------------------------------------------------
-| SIMPLE PRINT QUEUE
-|--------------------------------------------------------------------------
-*/
-
 const jobs =
   new Map<string, PrintJob>();
 
-const gateway: GatewayState = {
-  online: false,
-  gatewayName:
-    'Laptop Gateway SDIT',
-  lastSeenAt: null,
-  printers: [],
-};
+let gatewayOnline = false;
 
-const MAX_FILE_BYTES =
-  20 * 1024 * 1024;
+let gatewayName =
+  'Laptop Gateway SDIT';
 
-const JOB_TTL =
-  30 * 60 * 1000;
+let gatewayLastSeen:
+  number | null = null;
 
-const CLAIM_TIMEOUT =
-  5 * 60 * 1000;
+let gatewayPrinters: any[] = [];
 
 /*
 |--------------------------------------------------------------------------
-| HELPERS
-|--------------------------------------------------------------------------
-*/
-
-function normalizeBase64(
-  value: unknown
-) {
-  if (
-    typeof value !== 'string'
-  ) {
-    return '';
-  }
-
-  return value
-    .replace(
-      /^data:[^;]+;base64,/,
-      ''
-    )
-    .trim();
-}
-
-function estimateBytes(
-  base64: string
-) {
-  if (!base64) {
-    return 0;
-  }
-
-  const padding =
-    base64.endsWith('==')
-      ? 2
-      : base64.endsWith('=')
-        ? 1
-        : 0;
-
-  return Math.max(
-    0,
-    Math.floor(
-      (base64.length * 3) / 4
-    ) - padding
-  );
-}
-
-function safeFileName(
-  value: unknown
-) {
-  const name =
-    path.basename(
-      String(
-        value ||
-          'dokumen.pdf'
-      )
-    );
-
-  return (
-    name
-      .replace(
-        /[^a-zA-Z0-9._()\- ]/g,
-        '_'
-      )
-      .slice(0, 180) ||
-    'dokumen.pdf'
-  );
-}
-
-function cleanupJobs() {
-  const now =
-    Date.now();
-
-  for (
-    const [id, job] of jobs
-  ) {
-    /*
-     * Job lama dibuang.
-     */
-    if (
-      now - job.updatedAt >
-      JOB_TTL
-    ) {
-      jobs.delete(id);
-      continue;
-    }
-
-    /*
-     * Jika gateway mengambil job
-     * lalu mati, kembalikan ke WAITING.
-     */
-    if (
-      job.status ===
-        'PROCESSING' &&
-      now - job.updatedAt >
-        CLAIM_TIMEOUT
-    ) {
-      job.status =
-        'WAITING';
-
-      job.message =
-        'Gateway sebelumnya terputus. Job dikembalikan ke antrean.';
-
-      job.updatedAt =
-        now;
-    }
-  }
-}
-
-setInterval(
-  cleanupJobs,
-  60_000
-).unref();
-
-/*
-|--------------------------------------------------------------------------
-| REGISTER ROUTES
+| REGISTER PRINT ROUTES
 |--------------------------------------------------------------------------
 */
 
@@ -195,59 +50,45 @@ export function registerPrintGatewayRoutes(
 ) {
   /*
   |--------------------------------------------------------------------------
-  | GATEWAY STATUS
+  | TEST / STATUS
   |--------------------------------------------------------------------------
   */
 
-  const gatewayStatus = (
-    _req: Request,
-    res: Response
-  ) => {
-    const online =
-      gateway.lastSeenAt !==
-        null &&
-      Date.now() -
-        gateway.lastSeenAt <
-        20_000;
-
-    gateway.online =
-      online;
-
-    return res.json({
-      status: 'ok',
-
-      online,
-
-      gatewayName:
-        gateway.gatewayName,
-
-      lastSeenAt:
-        gateway.lastSeenAt
-          ? new Date(
-              gateway.lastSeenAt
-            ).toISOString()
-          : null,
-
-      printers:
-        online
-          ? gateway.printers
-          : [],
-
-      capabilities: {
-        libreOffice: true,
-        sumatraPdf: true,
-      },
-    });
-  };
-
   app.get(
     '/api/print/gateway/status',
-    gatewayStatus
-  );
+    (
+      _req: Request,
+      res: Response
+    ) => {
+      const online =
+        gatewayLastSeen !== null &&
+        Date.now() -
+          gatewayLastSeen <
+          20000;
 
-  app.get(
-    '/api/print/status',
-    gatewayStatus
+      gatewayOnline =
+        online;
+
+      return res.json({
+        status: 'ok',
+
+        online,
+
+        gatewayName,
+
+        lastSeenAt:
+          gatewayLastSeen
+            ? new Date(
+                gatewayLastSeen
+              ).toISOString()
+            : null,
+
+        printers:
+          online
+            ? gatewayPrinters
+            : [],
+      });
+    }
   );
 
   /*
@@ -256,139 +97,160 @@ export function registerPrintGatewayRoutes(
   |--------------------------------------------------------------------------
   */
 
-  const createPrintJob = (
-    req: Request,
-    res: Response
-  ) => {
-    try {
-      const dataBase64 =
-        normalizeBase64(
-          req.body?.dataBase64
+  app.post(
+    '/api/print/jobs',
+    (
+      req: Request,
+      res: Response
+    ) => {
+      try {
+        const body =
+          req.body || {};
+
+        const dataBase64 =
+          String(
+            body.dataBase64 || ''
+          );
+
+        if (!dataBase64) {
+          return res.status(400).json({
+            status: 'error',
+            message:
+              'Data dokumen kosong.',
+          });
+        }
+
+        const jobId =
+          `${Date.now()}-${Math.random()
+            .toString(36)
+            .slice(2, 10)}`;
+
+        const job: PrintJob = {
+          id: jobId,
+
+          mode:
+            body.mode ===
+            'preview'
+              ? 'preview'
+              : 'print',
+
+          fileName:
+            String(
+              body.fileName ||
+                'dokumen.pdf'
+            ),
+
+          fileDataBase64:
+            dataBase64,
+
+          printer:
+            String(
+              body.printer || ''
+            ),
+
+          paper:
+            String(
+              body.paper || 'A4'
+            ),
+
+          orientation:
+            String(
+              body.orientation ||
+                'portrait'
+            ),
+
+          scale:
+            String(
+              body.scale ||
+                'fit'
+            ),
+
+          copies:
+            Math.max(
+              1,
+              Number(
+                body.copies
+              ) || 1
+            ),
+
+          pageRange:
+            String(
+              body.pageRange ||
+                'Semua'
+            ),
+
+          status:
+            'WAITING',
+
+          message:
+            'Menunggu laptop gateway.',
+
+          createdAt:
+            Date.now(),
+
+          updatedAt:
+            Date.now(),
+        };
+
+        jobs.set(
+          jobId,
+          job
         );
 
-      if (!dataBase64) {
-        return res.status(400).json({
-          status: 'error',
-          message:
-            'Data dokumen kosong.',
-        });
-      }
-
-      const size =
-        estimateBytes(
-          dataBase64
+        console.log(
+          `[PRINT] Job ${jobId} dibuat.`
         );
 
-      if (
-        size >
-        MAX_FILE_BYTES
-      ) {
-        return res.status(400).json({
-          status: 'error',
+        return res.json({
+          status: 'ok',
+
+          jobId,
+
           message:
-            'Ukuran dokumen terlalu besar. Maksimal 20 MB.',
+            'Print job masuk antrean.',
+        });
+      } catch (error: any) {
+        console.error(
+          '[PRINT JOB ERROR]',
+          error
+        );
+
+        return res.status(500).json({
+          status: 'error',
+
+          message:
+            error?.message ||
+            'Gagal membuat print job.',
         });
       }
+    }
+  );
 
-      const mode: PrintJobMode =
-        req.body?.mode ===
-        'preview'
-          ? 'preview'
-          : 'print';
+  /*
+  |--------------------------------------------------------------------------
+  | JOB STATUS
+  |--------------------------------------------------------------------------
+  */
 
-      const printer =
-        String(
-          req.body?.printer ||
-            ''
-        ).trim();
+  app.get(
+    '/api/print/jobs/:id',
+    (
+      req: Request,
+      res: Response
+    ) => {
+      const job =
+        jobs.get(
+          req.params.id
+        );
 
-      if (
-        mode === 'print' &&
-        !printer
-      ) {
-        return res.status(400).json({
+      if (!job) {
+        return res.status(404).json({
           status: 'error',
+
           message:
-            'Printer belum dipilih.',
+            'Print job tidak ditemukan.',
         });
       }
-
-      const job: PrintJob = {
-        id:
-          crypto.randomUUID(),
-
-        mode,
-
-        fileName:
-          safeFileName(
-            req.body?.fileName
-          ),
-
-        fileDataBase64:
-          dataBase64,
-
-        printer,
-
-        paper:
-          String(
-            req.body?.paper ||
-              'A4'
-          ),
-
-        orientation:
-          String(
-            req.body
-              ?.orientation ||
-              'portrait'
-          ),
-
-        scale:
-          String(
-            req.body?.scale ||
-              'fit'
-          ),
-
-        copies: Math.min(
-          99,
-          Math.max(
-            1,
-            Number(
-              req.body?.copies
-            ) || 1
-          )
-        ),
-
-        pageRange:
-          String(
-            req.body
-              ?.pageRange ||
-              'Semua'
-          ).trim() ||
-          'Semua',
-
-        status:
-          'WAITING',
-
-        message:
-          mode === 'preview'
-            ? 'Menunggu gateway untuk membuat preview.'
-            : 'Menunggu laptop gateway.',
-
-        createdAt:
-          Date.now(),
-
-        updatedAt:
-          Date.now(),
-      };
-
-      jobs.set(
-        job.id,
-        job
-      );
-
-      console.log(
-        `[PRINT] Job dibuat: ${job.id} - ${job.fileName}`
-      );
 
       return res.json({
         status: 'ok',
@@ -396,96 +258,25 @@ export function registerPrintGatewayRoutes(
         jobId:
           job.id,
 
-        mode:
-          job.mode,
+        statusJob:
+          job.status,
 
         message:
-          'Print job masuk ke antrean.',
-      });
-    } catch (error: any) {
-      console.error(
-        '[PRINT CREATE ERROR]',
-        error
-      );
+          job.message,
 
-      return res.status(500).json({
-        status: 'error',
+        fileName:
+          job.fileName,
 
-        message:
-          error?.message ||
-          'Gagal membuat print job.',
-      });
-    }
-  };
+        printer:
+          job.printer,
 
-  app.post(
-    '/api/print/jobs',
-    createPrintJob
-  );
+        createdAt:
+          job.createdAt,
 
-  /*
-  |--------------------------------------------------------------------------
-  | GET JOB STATUS
-  |--------------------------------------------------------------------------
-  */
-
-  const getJob = (
-    req: Request,
-    res: Response
-  ) => {
-    cleanupJobs();
-
-    const job =
-      jobs.get(
-        req.params.id
-      );
-
-    if (!job) {
-      return res.status(404).json({
-        status: 'error',
-        message:
-          'Print job tidak ditemukan.',
+        updatedAt:
+          job.updatedAt,
       });
     }
-
-    return res.json({
-      status: 'ok',
-
-      jobId:
-        job.id,
-
-      mode:
-        job.mode,
-
-      fileName:
-        job.fileName,
-
-      printer:
-        job.printer,
-
-      statusJob:
-        job.status,
-
-      message:
-        job.message,
-
-      statusMessage:
-        job.message,
-
-      createdAt:
-        job.createdAt,
-
-      updatedAt:
-        job.updatedAt,
-
-      resultDataBase64:
-        null,
-    });
-  };
-
-  app.get(
-    '/api/print/jobs/:id',
-    getJob
   );
 
   /*
@@ -500,45 +291,37 @@ export function registerPrintGatewayRoutes(
       req: Request,
       res: Response
     ) => {
-      gateway.online =
+      gatewayOnline =
         true;
 
-      gateway.gatewayName =
+      gatewayLastSeen =
+        Date.now();
+
+      gatewayName =
         String(
-          req.body
-            ?.gatewayName ||
+          req.body?.gatewayName ||
             'Laptop Gateway SDIT'
         );
 
-      gateway.lastSeenAt =
-        Date.now();
-
-      gateway.printers =
+      gatewayPrinters =
         Array.isArray(
           req.body?.printers
         )
           ? req.body.printers
           : [];
 
-      console.log(
-        `[GATEWAY] ${gateway.gatewayName} ONLINE`
-      );
-
       return res.json({
         status: 'ok',
 
         message:
           'Gateway terhubung.',
-
-        serverTime:
-          new Date().toISOString(),
       });
     }
   );
 
   /*
   |--------------------------------------------------------------------------
-  | LAPTOP GET PENDING JOB
+  | LAPTOP AMBIL JOB
   |--------------------------------------------------------------------------
   */
 
@@ -548,29 +331,25 @@ export function registerPrintGatewayRoutes(
       _req: Request,
       res: Response
     ) => {
-      cleanupJobs();
-
-      const waiting =
+      const job =
         Array.from(
           jobs.values()
         )
           .filter(
-            (job) =>
-              job.status ===
+            (item) =>
+              item.status ===
               'WAITING'
           )
           .sort(
             (a, b) =>
               a.createdAt -
               b.createdAt
-          );
-
-      const job =
-        waiting[0];
+          )[0];
 
       if (!job) {
         return res.json({
           status: 'ok',
+
           jobs: [],
         });
       }
@@ -578,15 +357,11 @@ export function registerPrintGatewayRoutes(
       job.status =
         'PROCESSING';
 
-      job.updatedAt =
-        Date.now();
-
       job.message =
         'Sedang diproses oleh laptop gateway.';
 
-      console.log(
-        `[GATEWAY] Mengambil job ${job.id}`
-      );
+      job.updatedAt =
+        Date.now();
 
       return res.json({
         status: 'ok',
@@ -630,7 +405,7 @@ export function registerPrintGatewayRoutes(
 
   /*
   |--------------------------------------------------------------------------
-  | LAPTOP UPDATE JOB
+  | UPDATE JOB
   |--------------------------------------------------------------------------
   */
 
@@ -651,12 +426,13 @@ export function registerPrintGatewayRoutes(
       if (!job) {
         return res.status(404).json({
           status: 'error',
+
           message:
             'Print job tidak ditemukan.',
         });
       }
 
-      const nextStatus =
+      const status =
         String(
           req.body?.status ||
             ''
@@ -672,18 +448,19 @@ export function registerPrintGatewayRoutes(
 
       if (
         !allowed.includes(
-          nextStatus
+          status
         )
       ) {
         return res.status(400).json({
           status: 'error',
+
           message:
-            'Status print job tidak valid.',
+            'Status job tidak valid.',
         });
       }
 
       job.status =
-        nextStatus as PrintJobStatus;
+        status as PrintJob['status'];
 
       job.message =
         String(
@@ -694,15 +471,9 @@ export function registerPrintGatewayRoutes(
       job.updatedAt =
         Date.now();
 
-      /*
-       * File sudah tidak dibutuhkan
-       * setelah dikirim / gagal.
-       */
       if (
-        nextStatus ===
-          'SENT' ||
-        nextStatus ===
-          'FAILED'
+        status === 'SENT' ||
+        status === 'FAILED'
       ) {
         job.fileDataBase64 =
           '';
