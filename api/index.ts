@@ -5596,6 +5596,7 @@ interface PrintJobRecord {
   fileData: string; // base64
   fileSize: number;
   printer: string;
+  teacherName?: string;
   paper: 'A4' | 'F4' | 'A5' | 'Letter';
   orientation: 'portrait' | 'landscape';
   scale: 'fit' | 'actual' | 'fill';
@@ -5603,7 +5604,7 @@ interface PrintJobRecord {
   pageRange: string;
   duplex?: 'simplex' | 'duplex_long' | 'duplex_short';
   color?: 'monochrome' | 'color';
-  status: 'WAITING' | 'PROCESSING' | 'SENT' | 'FAILED';
+  status: 'WAITING' | 'DISPATCHED' | 'PROCESSING' | 'SENT' | 'COMPLETED' | 'CANCELLED' | 'FAILED';
   statusMessage?: string;
   createdAt: number;
   updatedAt: number;
@@ -5697,6 +5698,7 @@ app.post('/api/print/jobs', (req, res) => {
       fileName = 'Dokumen',
       dataBase64 = '',
       printer = 'kyocera',
+      teacherName = 'Guru / Staf SDIT',
       paper = 'A4',
       orientation = 'portrait',
       scale = 'fit',
@@ -5712,6 +5714,7 @@ app.post('/api/print/jobs', (req, res) => {
 
     const jobId = `job_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const selectedPrinter = printGatewayState.printers.find(p => p.id === printer)?.name || printer || 'KYOCERA ECOSYS M2040dn';
+    const cleanTeacherName = String(teacherName || '').trim() || 'Guru / Staf SDIT';
 
     const newJob: PrintJobRecord = {
       id: jobId,
@@ -5720,6 +5723,7 @@ app.post('/api/print/jobs', (req, res) => {
       fileData: cleanBase64,
       fileSize: cleanBase64.length,
       printer: selectedPrinter,
+      teacherName: cleanTeacherName,
       paper,
       orientation,
       scale,
@@ -5730,7 +5734,7 @@ app.post('/api/print/jobs', (req, res) => {
       status: 'WAITING',
       statusMessage: mode === 'preview' 
         ? 'Preview siap.' 
-        : `Dokumen "${fileName}" (${copies}x) berhasil didaftarkan ke antrean ${selectedPrinter}.`,
+        : `Dokumen "${fileName}" (${copies}x) dari ${cleanTeacherName} berhasil masuk antrean ${selectedPrinter}.`,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -5741,6 +5745,7 @@ app.post('/api/print/jobs', (req, res) => {
       status: 'ok',
       jobId,
       mode,
+      teacherName: cleanTeacherName,
       message: newJob.statusMessage,
     });
   } catch (err: any) {
@@ -5766,11 +5771,37 @@ app.get('/api/print/jobs/:id', (req, res) => {
     jobId: job.id,
     fileName: job.fileName,
     printer: job.printer,
+    teacherName: job.teacherName || 'Guru / Staf SDIT',
     statusJob: job.status,
     message: job.statusMessage || `Dokumen siap diproses di ${job.printer}.`,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
     resultDataBase64: job.fileData,
+  });
+});
+
+// Cancel Job Endpoint
+app.post('/api/print/jobs/:id/cancel', (req, res) => {
+  const jobId = req.params.id;
+  const job = printJobs.get(jobId);
+
+  if (!job) {
+    return res.status(404).json({ status: 'error', message: 'Antrean cetak tidak ditemukan.' });
+  }
+
+  if (['COMPLETED', 'SENT', 'FAILED'].includes(job.status)) {
+    return res.status(400).json({ status: 'error', message: 'Dokumen sudah selesai diproses dan tidak dapat dibatalkan.' });
+  }
+
+  job.status = 'CANCELLED';
+  job.statusMessage = 'Pengiriman dokumen telah dibatalkan oleh pengguna.';
+  job.updatedAt = Date.now();
+
+  return res.json({
+    status: 'ok',
+    jobId: job.id,
+    statusJob: job.status,
+    message: 'Antrean dokumen berhasil dibatalkan.'
   });
 });
 
@@ -5944,9 +5975,9 @@ app.get('/api/print/gateway/pending', (_req, res) => {
 
   const pendingJobs: Array<Omit<PrintJobRecord, 'fileData'> & { fileData: string }> = [];
   for (const job of printJobs.values()) {
-    if (job.status === 'WAITING' || job.status === 'SENT') {
+    if (job.status === 'WAITING') {
       pendingJobs.push(job);
-      job.status = 'PROCESSING';
+      job.status = 'DISPATCHED';
       job.updatedAt = Date.now();
     }
   }
@@ -5955,6 +5986,7 @@ app.get('/api/print/gateway/pending', (_req, res) => {
   for (const conv of conversions.values()) {
     if (conv.status === 'WAITING') {
       pendingConversions.push(conv);
+      conv.status = 'PROCESSING';
     }
   }
 

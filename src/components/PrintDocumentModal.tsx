@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FileText, FileImage, FileSpreadsheet, Printer, Upload, X, Eye, Settings2, AlertCircle, CheckCircle2, RefreshCw, PrinterCheck, AlertTriangle, Terminal, Download } from 'lucide-react';
+import { FileText, FileImage, FileSpreadsheet, Printer, Upload, X, Eye, Settings2, AlertCircle, CheckCircle2, RefreshCw, PrinterCheck, AlertTriangle, Terminal, Download, User, Ban } from 'lucide-react';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
 
@@ -58,6 +58,8 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
   const [gatewayName, setGatewayName] = useState('Gateway Printer SDIT AL FIKRI');
   const [printers, setPrinters] = useState<PrinterInfo[]>([]);
   const [printer, setPrinter] = useState('');
+  const [teacherName, setTeacherName] = useState(() => localStorage.getItem('sdit_print_teacher_name') || '');
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isPreparingPreview, setIsPreparingPreview] = useState(false);
 
@@ -219,10 +221,40 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
     }
   };
 
+  const handleCancelJob = async () => {
+    if (!activeJobId) return;
+    try {
+      setStatus('Membatalkan pengiriman antrean cetak...');
+      setStatusType('info');
+      const response = await fetch(`/api/print/jobs/${encodeURIComponent(activeJobId)}/cancel`, {
+        method: 'POST',
+      });
+      const data = await readJson(response);
+      if (response.ok) {
+        setStatus('✓ Antrean cetak berhasil dibatalkan.');
+        setStatusType('warning');
+        setActiveJobId(null);
+        setIsPrinting(false);
+      } else {
+        setStatus(data.message || 'Gagal membatalkan antrean.');
+        setStatusType('error');
+      }
+    } catch {
+      setStatus('Gagal membatalkan antrean cetak.');
+      setStatusType('error');
+    }
+  };
+
   const handlePrint = async () => {
     if (!file) {
       setStatus('Pilih dokumen terlebih dahulu.');
       setStatusType('error');
+      return;
+    }
+
+    if (!teacherName.trim()) {
+      setStatus('Harap masukkan nama guru / pengirim dokumen terlebih dahulu.');
+      setStatusType('warning');
       return;
     }
 
@@ -239,7 +271,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
     }
 
     setIsPrinting(true);
-    setStatus('Mengirim dokumen ke antrean cetak sekolah...');
+    setStatus(`Mengirim dokumen dari ${teacherName.trim()} ke antrean cetak sekolah...`);
     setStatusType('info');
     try {
       const base64 = await fileToBase64(file);
@@ -251,6 +283,7 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
           fileName: file.name,
           dataBase64: base64,
           printer,
+          teacherName: teacherName.trim(),
           paper,
           orientation,
           scale,
@@ -260,6 +293,9 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
         }),
       });
       const created = await readJson(response);
+      if (created.jobId) {
+        setActiveJobId(created.jobId);
+      }
       setStatus('Dokumen masuk ke antrean cetak. Mengonfirmasi agen...');
       const result = await waitForJob(created.jobId, 5000);
       setStatus(`✓ ${result.message || `Dokumen "${file.name}" berhasil dikirim ke printer.`}`);
@@ -456,6 +492,35 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
               </div>
             )}
 
+            {/* Teacher / Sender Name Input */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                  Nama Guru / Pengirim <span className="text-rose-400">*</span>
+                </span>
+                {teacherName.trim() && (
+                  <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Tersimpan
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                  <User className="w-4 h-4" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Contoh: Ustadz Ahmad / Bu Siti"
+                  value={teacherName}
+                  onChange={(e) => {
+                    setTeacherName(e.target.value);
+                    localStorage.setItem('sdit_print_teacher_name', e.target.value);
+                  }}
+                  className="w-full h-10 pl-9 pr-3 rounded-xl bg-slate-900 border border-slate-700 text-xs font-medium text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                />
+              </div>
+            </div>
+
             {/* Printer Selection */}
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -561,25 +626,37 @@ export const PrintDocumentModal: React.FC<PrintDocumentModalProps> = ({ isOpen, 
 
             {/* Status Message */}
             {status && (
-              <div className={`flex items-start gap-2.5 p-3.5 rounded-2xl border text-xs font-semibold ${
-                statusType === 'error'
-                  ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                  : statusType === 'success'
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                  : statusType === 'warning'
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                  : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
-              }`}>
-                {statusType === 'error' ? (
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
-                ) : statusType === 'success' ? (
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
-                ) : statusType === 'warning' ? (
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 shrink-0 text-cyan-400 mt-0.5" />
+              <div className="space-y-2">
+                <div className={`flex items-start gap-2.5 p-3.5 rounded-2xl border text-xs font-semibold ${
+                  statusType === 'error'
+                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                    : statusType === 'success'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : statusType === 'warning'
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    : 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+                }`}>
+                  {statusType === 'error' ? (
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                  ) : statusType === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
+                  ) : statusType === 'warning' ? (
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 shrink-0 text-cyan-400 mt-0.5" />
+                  )}
+                  <span className="flex-1">{status}</span>
+                </div>
+
+                {activeJobId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelJob}
+                    className="w-full h-9 rounded-xl border border-rose-500/40 bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-bold inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                  >
+                    <Ban className="w-4 h-4 text-rose-400" /> Batal Kirim Ke Printer
+                  </button>
                 )}
-                <span>{status}</span>
               </div>
             )}
 

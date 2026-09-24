@@ -362,13 +362,25 @@ async function sendToEpsonEmailPrint(pdfFilePath: string, fileName: string) {
   }
 }
 
+// Deduplication set to ensure a job is processed exactly once by this agent instance
+const processedJobIds = new Set<string>();
+
 // ==========================================
 // 6. PROCESS PRINT JOB
 // ==========================================
 async function processJob(job: any) {
   const jobId = job.id;
+  if (processedJobIds.has(jobId) || job.status === 'CANCELLED') {
+    return;
+  }
+  processedJobIds.add(jobId);
+
   const jobFileName = job.fileName || 'dokumen.pdf';
-  console.log(`\n📄 [JOB BARU DITERIMA] #${jobId}: ${jobFileName} -> Target: ${job.printer}`);
+  const teacherName = job.teacherName || 'Guru / Staf SDIT';
+  console.log(`\n📄 [JOB BARU DITERIMA] #${jobId}`);
+  console.log(`   └─ Dokumen  : ${jobFileName}`);
+  console.log(`   └─ Pengirim : 👤 ${teacherName}`);
+  console.log(`   └─ Target   : 🖨️ ${job.printer}`);
 
   // 1. Set status PROCESSING
   await requestApi('/api/print/gateway/update-job', 'POST', {
@@ -405,7 +417,7 @@ async function processJob(job: any) {
       await sendToEpsonEmailPrint(printablePdfPath, jobFileName);
       await requestApi('/api/print/gateway/update-job', 'POST', {
         jobId,
-        status: 'SENT',
+        status: 'COMPLETED',
         message: `Dokumen berhasil diteruskan ke Epson Connect (${config.printers.epson.printerEmail}).`,
       });
       console.log(`✓ [SUKSES] Job #${jobId} berhasil dikirim ke printer Epson.`);
@@ -425,7 +437,7 @@ async function processJob(job: any) {
 
       await requestApi('/api/print/gateway/update-job', 'POST', {
         jobId,
-        status: 'SENT',
+        status: 'COMPLETED',
         message: `Print job berhasil dikirim ke antrean printer Windows: ${printerName}.`,
       });
       console.log(`✓ [SUKSES] Job #${jobId} berhasil dikirim ke printer Windows (${printerName}).`);
