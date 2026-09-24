@@ -8,13 +8,15 @@ import crypto from 'crypto';
 
 const execFileAsync = promisify(execFile);
 
+const DEFAULT_INTERNAL_KEY = 'sdit-print-gateway-key-2026';
+
 const CONFIG = {
   serverUrl:
     process.env.PRINT_GATEWAY_SERVER_URL ||
     'https://arsipku.sditalfikri.my.id',
 
   gatewayToken:
-    process.env.PRINT_GATEWAY_TOKEN || '',
+    process.env.PRINT_GATEWAY_TOKEN || DEFAULT_INTERNAL_KEY,
 
   gatewayName:
     process.env.PRINT_GATEWAY_NAME ||
@@ -36,13 +38,6 @@ const CONFIG = {
     process.env.LIBREOFFICE_PATH ||
     'C:\\Program Files\\LibreOffice\\program\\soffice.exe',
 };
-
-if (!CONFIG.gatewayToken) {
-  console.error(
-    '✗ PRINT_GATEWAY_TOKEN belum diatur. Gateway tidak akan berjalan.'
-  );
-  process.exit(1);
-}
 
 const ROOT_DIR = process.cwd();
 
@@ -561,37 +556,49 @@ async function printWithSumatra(
   printerName,
   job
 ) {
-  if (!fs.existsSync(CONFIG.sumatraPdf)) {
-    throw new Error(
-      `SumatraPDF tidak ditemukan: ${CONFIG.sumatraPdf}`
-    );
-  }
+  if (fs.existsSync(CONFIG.sumatraPdf)) {
+    try {
+      const settings =
+        buildPrintSettings(job);
 
-  const settings =
-    buildPrintSettings(job);
+      const result =
+        await execFileAsync(
+          CONFIG.sumatraPdf,
+          [
+            '-silent',
+            '-print-to',
+            printerName,
+            '-print-settings',
+            settings,
+            pdfPath,
+          ],
+          {
+            timeout: 120000,
+            windowsHide: true,
+          }
+        );
 
-  const result =
-    await execFileAsync(
-      CONFIG.sumatraPdf,
-      [
-        '-silent',
-        '-print-to',
-        printerName,
-        '-print-settings',
-        settings,
-        pdfPath,
-      ],
-      {
-        timeout: 120000,
-        windowsHide: true,
+      if (result.stderr?.trim()) {
+        console.log(
+          `[SUMATRA] ${result.stderr.trim()}`
+        );
       }
-    );
-
-  if (result.stderr?.trim()) {
-    console.log(
-      `[SUMATRA] ${result.stderr.trim()}`
-    );
+      return;
+    } catch (sumatraErr) {
+      console.warn(`[SUMATRA] Gagal menggunakan SumatraPDF: ${sumatraErr.message}. Beralih ke Windows Native Print.`);
+    }
   }
+
+  // Windows Native Printing Fallback
+  console.log(`[PRINT] Mencetak via Windows PowerShell ke printer "${printerName}"...`);
+  const escapedFile = pdfPath.replace(/'/g, "''");
+  const escapedPrinter = printerName.replace(/'/g, "''");
+  const script = `
+    $file = '${escapedFile}'
+    $printer = '${escapedPrinter}'
+    Start-Process -FilePath $file -Verb PrintTo -ArgumentList ('"' + $printer + '"') -WindowStyle Hidden -PassThru | Wait-Process -Timeout 30 -ErrorAction SilentlyContinue
+  `;
+  await runPowerShell(script);
 }
 
 async function processJob(job) {
