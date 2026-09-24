@@ -5603,8 +5603,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-export { app };
+// Error handling middleware
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('API Error:', err);
+  if (!res.headersSent) {
+    res.status(500).json({
+      status: 'error',
+      message: err?.message || 'Terjadi kesalahan internal pada server.',
+    });
+  }
+});
 
-export default function handler(req: any, res: any) {
-  return app(req, res);
-}
+export { app };
+export default app;
+
