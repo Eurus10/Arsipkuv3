@@ -409,20 +409,20 @@ const handleSaveStudentResult = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-slate-950/95 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-md animate-[fadeIn_200ms_ease-out]"
+      className="fixed inset-0 z-50 flex flex-col bg-slate-950 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_200ms_ease-out]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[94vh] sm:max-w-6xl flex flex-col bg-slate-900 border-0 sm:border sm:border-white/10 rounded-none sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100">
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 left-1/4 w-80 h-24 bg-sky-500/10 blur-3xl pointer-events-none -z-10" />
-        <div className="absolute top-0 right-1/4 w-80 h-24 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
+        {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
+        <div className="hidden sm:block absolute top-0 left-1/4 w-80 h-24 bg-sky-500/10 blur-3xl pointer-events-none -z-10" />
+        <div className="hidden sm:block absolute top-0 right-1/4 w-80 h-24 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
 
         {/* ====================================================
             TOP MODAL HEADER (Responsive 2-Row on Mobile, Safe-Area Protected)
             ==================================================== */}
-        <div className="px-4 sm:px-7 py-3 sm:py-4 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-950/50 backdrop-blur-md border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div className="px-4 sm:px-7 py-3 sm:py-4 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-950 sm:bg-slate-950/50 backdrop-blur-none sm:backdrop-blur-md border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
           {/* Top Line on Mobile / Left Column on Desktop */}
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
             <div className="flex items-center gap-3">
