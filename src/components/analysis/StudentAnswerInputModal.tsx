@@ -219,19 +219,19 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex flex-col bg-slate-950/95 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+      className="fixed inset-0 z-[70] flex flex-col bg-slate-950 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) handleCloseWithSave();
       }}
     >
       <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] sm:max-w-4xl flex flex-col bg-slate-900 border-0 sm:border sm:border-white/10 rounded-none sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100">
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 left-1/4 w-72 h-20 bg-sky-500/10 blur-3xl pointer-events-none -z-10" />
+        {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
+        <div className="hidden sm:block absolute top-0 left-1/4 w-72 h-20 bg-sky-500/10 blur-3xl pointer-events-none -z-10" />
 
         {/* ====================================================
             TOP HEADER BAR (Safe-area protected & Compact on Mobile)
             ==================================================== */}
-        <div className="px-3 sm:px-6 py-2 sm:py-3.5 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-950/60 backdrop-blur-md border-b border-white/10 flex items-center justify-between gap-2.5 shrink-0">
+        <div className="px-3 sm:px-6 py-2 sm:py-3.5 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-950 sm:bg-slate-950/60 backdrop-blur-none sm:backdrop-blur-md border-b border-white/10 flex items-center justify-between gap-2.5 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-500/15 border border-sky-400/25 flex items-center justify-center text-sky-400 flex-shrink-0 shadow-[0_0_12px_rgba(56,189,248,0.15)]">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -522,7 +522,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
         {/* ====================================================
             FOOTER SUMMARY BAR & NEXT ACTION (SAFE-AREA & MOBILE OPTIMIZED)
             ==================================================== */}
-        <div className="flex-shrink-0 px-3 sm:px-6 py-2.5 sm:py-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-md border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+        <div className="flex-shrink-0 px-3 sm:px-6 py-2.5 sm:py-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-950 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
           <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 bg-slate-900/60 sm:bg-transparent px-3 py-1.5 sm:p-0 rounded-xl border border-white/5 sm:border-0">
             <div>
               <span className="text-[9px] sm:text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
