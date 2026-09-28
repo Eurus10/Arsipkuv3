@@ -459,6 +459,68 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
     );
   }, [activeSubjectInSession, activeClassStudents, activeClassSession, kktp]);
 
+  // Memoized student row display map to prevent 90+ array allocations and .filter calls on every render
+  const studentRowDisplayMap = useMemo(() => {
+    const map = new Map<string, {
+      isFilled: boolean;
+      finalGrade: number | null;
+      isPassed: boolean;
+      correctPg: string | number;
+      correctIsian: string | number;
+      correctC: string | number;
+      totalScore: string | number;
+    }>();
+
+    if (!activeSubjectInSession) return map;
+
+    for (let sIdx = 0; sIdx < activeClassStudents.length; sIdx++) {
+      const s = activeClassStudents[sIdx];
+      const res = activeSubjectInSession.studentResults?.[s.id];
+      if (!res) {
+        map.set(s.id, {
+          isFilled: false,
+          finalGrade: null,
+          isPassed: false,
+          correctPg: '-',
+          correctIsian: '-',
+          correctC: '-',
+          totalScore: '-',
+        });
+      } else {
+        const answers = res.answers;
+        let cPg = 0;
+        if (answers?.pg) {
+          for (let i = 0; i < answers.pg.length; i++) {
+            if (answers.pg[i] > 0) cPg++;
+          }
+        }
+        let cIsian = 0;
+        if (answers?.isian) {
+          for (let i = 0; i < answers.isian.length; i++) {
+            if (answers.isian[i] > 0) cIsian++;
+          }
+        }
+        let cC = 0;
+        if (answers?.c) {
+          for (let i = 0; i < answers.c.length; i++) {
+            if (answers.c[i] > 0) cC++;
+          }
+        }
+
+        map.set(s.id, {
+          isFilled: true,
+          finalGrade: Math.round(res.finalGrade),
+          isPassed: res.isPassed,
+          correctPg: cPg,
+          correctIsian: cIsian,
+          correctC: cC,
+          totalScore: res.totalScore,
+        });
+      }
+    }
+    return map;
+  }, [activeSubjectInSession, activeClassStudents]);
+
   // Export Excel 1 Kelas Aktif
   const handleExportActiveClass = () => {
     if (!activeClassSession || !activeSubjectInSession) return;
@@ -527,9 +589,9 @@ const handleExportAllClasses = () => {
   if (!isConfigured) {
     return (
       <div className="max-w-4xl mx-auto space-y-6 animate-[fadeIn_150ms_ease-out]">
-        <div className="relative bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-6 overflow-hidden">
-          {/* Ambient Top Glow */}
-          <div className="absolute -top-12 -right-12 w-64 h-32 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
+        <div className="relative bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-2xl space-y-6 overflow-hidden">
+          {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
+          <div className="hidden sm:block absolute -top-12 -right-12 w-64 h-32 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
 
           {/* Header Banner Mode Guru Bidang */}
           <div className="flex items-start justify-between pb-5 border-b border-white/10 gap-4">
@@ -923,10 +985,10 @@ const handleExportAllClasses = () => {
   return (
     <div className="space-y-5 animate-[fadeIn_150ms_ease-out]">
       {/* Top Banner Guru Bidang (Executive Glass) */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
-        {/* Ambient Top Glow */}
-        <div className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900 sm:bg-gradient-to-br sm:from-slate-900/90 sm:via-slate-900/80 sm:to-slate-950/90 p-4 sm:p-6 shadow-xl sm:shadow-2xl backdrop-blur-none sm:backdrop-blur-xl">
+        {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
+        <div className="hidden sm:block pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="hidden sm:block pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch justify-between gap-5 lg:gap-6">
           {/* Info Utama Mapel */}
@@ -1055,7 +1117,7 @@ const handleExportAllClasses = () => {
       </div>
 
       {/* Class Switcher Tabs (Horizontal Pills) */}
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-2.5 flex items-center gap-2 overflow-x-auto select-none shadow-sm">
+      <div className="bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl p-2.5 flex items-center gap-2 overflow-x-auto select-none shadow-sm">
         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 shrink-0 flex items-center gap-1.5">
           <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
           Pilih Kelas:
@@ -1104,7 +1166,7 @@ const handleExportAllClasses = () => {
       </div>
 
       {/* Selected Class Dashboard Workspace */}
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5">
+      <div className="bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5">
         {/* Class Overview Header & Actions */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
           <div className="flex items-center gap-3">
@@ -1252,7 +1314,7 @@ const handleExportAllClasses = () => {
           <div className="border border-white/10 rounded-xl overflow-hidden bg-slate-950/40">
             <div className="overflow-x-auto max-h-[360px]">
               <table className="w-full text-xs text-left">
-                <thead className="bg-white/5 text-slate-300 uppercase text-[10px] font-extrabold sticky top-0 z-10 border-b border-white/10 backdrop-blur-md">
+                <thead className="bg-slate-950 sm:bg-slate-900/95 text-slate-300 uppercase text-[10px] font-extrabold sticky top-0 z-10 border-b border-white/10">
                   <tr>
                     <th className="py-2.5 px-3 text-center w-12">No</th>
                     <th className="py-2.5 px-3">Nama Siswa</th>
@@ -1267,13 +1329,15 @@ const handleExportAllClasses = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {filteredStudents.map((student, idx) => {
-                    const res = activeSubjectInSession?.studentResults[student.id];
-                    const isFilled = !!res;
-                    const finalGrade = res ? Math.round(res.finalGrade) : null;
-                    const isPassed = res ? res.isPassed : false;
-                    const correctPg = res?.answers?.pg ? res.answers.pg.filter((v) => v > 0).length : '-';
-                    const correctIsian = res?.answers?.isian ? res.answers.isian.filter((v) => v > 0).length : '-';
-                    const correctC = res?.answers?.c ? res.answers.c.filter((v) => v > 0).length : '-';
+                    const rowData = studentRowDisplayMap.get(student.id) || {
+                      isFilled: false,
+                      finalGrade: null,
+                      isPassed: false,
+                      correctPg: '-',
+                      correctIsian: '-',
+                      correctC: '-',
+                      totalScore: '-',
+                    };
 
                     return (
                       <tr
@@ -1287,30 +1351,30 @@ const handleExportAllClasses = () => {
                           {student.name}
                         </td>
                         <td className="py-2.5 px-3 text-center font-mono text-sky-300">
-                          {correctPg}
+                          {rowData.correctPg}
                         </td>
                         <td className="py-2.5 px-3 text-center font-mono text-amber-300">
-                          {correctIsian}
+                          {rowData.correctIsian}
                         </td>
                         <td className="py-2.5 px-3 text-center font-mono text-purple-300">
-                          {correctC}
+                          {rowData.correctC}
                         </td>
                         <td className="py-2.5 px-3 text-center font-bold text-white font-mono">
-                          {res ? res.totalScore : '-'}
+                          {rowData.totalScore}
                         </td>
                         <td className="py-2.5 px-3 text-center font-extrabold text-white text-sm font-mono">
-                          {finalGrade !== null ? finalGrade : '-'}
+                          {rowData.finalGrade !== null ? rowData.finalGrade : '-'}
                         </td>
                         <td className="py-2.5 px-3 text-center">
-                          {res ? (
+                          {rowData.isFilled ? (
                             <span
                               className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
-                                isPassed
+                                rowData.isPassed
                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                                   : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
                               }`}
                             >
-                              {isPassed ? 'L' : 'TL'}
+                              {rowData.isPassed ? 'L' : 'TL'}
                             </span>
                           ) : (
                             <span className="text-slate-500 text-[10px]">-</span>
@@ -1326,7 +1390,7 @@ const handleExportAllClasses = () => {
                             }}
                             className="px-3 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/30 text-indigo-300 hover:text-white text-[11px] font-bold transition-all cursor-pointer"
                           >
-                            {isFilled ? 'Edit' : 'Input'}
+                            {rowData.isFilled ? 'Edit' : 'Input'}
                           </button>
                         </td>
                       </tr>
@@ -1349,12 +1413,12 @@ const handleExportAllClasses = () => {
       {/* Modal 1: Edit Konfigurasi & Atur Bobot Soal */}
       {isEditModalOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsEditModalOpen(false);
           }}
         >
-          <div className="w-full max-w-3xl bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-3xl bg-slate-900 sm:bg-slate-900/90 backdrop-blur-none sm:backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.15)]">
@@ -1624,14 +1688,14 @@ const handleExportAllClasses = () => {
       {/* Modal: Konfirmasi Hapus Sesi */}
       {showDeleteSessionModal && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
               setShowDeleteSessionModal(false);
             }
           }}
         >
-          <div className="w-full max-w-md bg-slate-900/95 backdrop-blur-2xl border border-rose-500/30 rounded-2xl sm:rounded-3xl p-6 shadow-2xl text-slate-100">
+          <div className="w-full max-w-md bg-slate-900 sm:bg-slate-900/95 backdrop-blur-none sm:backdrop-blur-2xl border border-rose-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-100">
             <div className="flex items-start gap-3.5">
               <div className="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(244,63,94,0.15)]">
                 <AlertCircle className="w-5 h-5 text-rose-400" />
@@ -1689,12 +1753,12 @@ const handleExportAllClasses = () => {
       {/* Modal 2: Ganti Sesi / Pilih Mata Pelajaran Lain */}
       {showSwitchSessionModal && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setShowSwitchSessionModal(false);
           }}
         >
-          <div className="w-full max-w-xl bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-6 shadow-2xl space-y-5 text-slate-100 max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-slate-900 sm:bg-slate-900/90 backdrop-blur-none sm:backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-slate-100 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 shadow-[0_0_12px_rgba(14,165,233,0.15)]">
