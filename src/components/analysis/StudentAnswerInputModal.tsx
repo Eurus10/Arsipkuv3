@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   X,
   ChevronLeft,
@@ -57,9 +57,6 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
     createDefaultStudentAnswers(subject.config)
   );
 
-  // Intercept hardware and browser back button on phone so modal closes gracefully without leaving the web
-  useModalNavigation('student-answer-input', isOpen, onClose);
-
   // Sort students alphabetically
   const sortedStudents = useMemo(() => {
     return [...students].sort((a, b) =>
@@ -71,21 +68,73 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
   const config = subject.config;
   const maxScore = calculateMaxScore(config);
 
+  // Refs for instantaneous flush on transition
+  const answersRef = useRef<StudentAnswers>(answers);
+  const isDirtyRef = useRef<boolean>(false);
+  const debounceTimerRef = useRef<number | null>(null);
+  const currentStudentRef = useRef(currentStudent);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    currentStudentRef.current = currentStudent;
+  }, [currentStudent]);
+
+  // Flush pending save immediately to persistent storage
+  const flushPendingSave = useCallback(() => {
+    if (debounceTimerRef.current) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    if (!isDirtyRef.current || !currentStudentRef.current) return;
+
+    onSaveStudentResult(subject.subjectId, {
+      studentId: currentStudentRef.current.id,
+      studentName: currentStudentRef.current.name,
+      answers: answersRef.current,
+    });
+    isDirtyRef.current = false;
+  }, [subject.subjectId, onSaveStudentResult]);
+
+  // Safe close that guarantees saving previous student changes
+  const handleCloseWithSave = useCallback(() => {
+    flushPendingSave();
+    onClose();
+  }, [flushPendingSave, onClose]);
+
+  // Intercept hardware and browser back button on phone so modal closes gracefully without leaving the web
+  useModalNavigation('student-answer-input', isOpen, handleCloseWithSave);
+
   // Load existing student answers whenever currentIdx or subject changes
   useEffect(() => {
     if (!currentStudent) return;
     const existingResult = subject.studentResults[currentStudent.id];
     if (existingResult && existingResult.answers) {
-      setAnswers({
+      const loaded = {
         pg: [...existingResult.answers.pg],
         isian: [...existingResult.answers.isian],
         c: [...existingResult.answers.c],
-      });
+      };
+      setAnswers(loaded);
+      answersRef.current = loaded;
+      isDirtyRef.current = false;
     } else {
       // Create default answers (all 1s / full score)
-      setAnswers(createDefaultStudentAnswers(config));
+      const def = createDefaultStudentAnswers(config);
+      setAnswers(def);
+      answersRef.current = def;
+      isDirtyRef.current = false;
     }
   }, [currentIdx, currentStudent, subject, config]);
+
+  // Cleanup effect: flush on unmount or before switching
+  useEffect(() => {
+    return () => {
+      flushPendingSave();
+    };
+  }, [flushPendingSave]);
 
   if (!isOpen || !currentStudent) return null;
 
@@ -94,18 +143,26 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
   const finalGrade = Math.round((totalScore / maxScore) * 100);
   const isPassed = finalGrade >= session.kktp;
 
-  // Toggle PG answer: 1 -> 0 -> 1
+  // Instant local state update + debounced autosave backup
+  const markDirtyAndScheduleSave = (newAnswers: StudentAnswers) => {
+    answersRef.current = newAnswers;
+    setAnswers(newAnswers);
+    isDirtyRef.current = true;
+
+    if (debounceTimerRef.current) {
+      window.clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = window.setTimeout(() => {
+      flushPendingSave();
+    }, 400);
+  };
+
+  // Toggle PG answer: 1 -> 0 -> 1 (Instant 0ms response)
   const handleTogglePg = (qIndex: number) => {
     const updated = [...answers.pg];
     updated[qIndex] = updated[qIndex] === 1 ? 0 : 1;
     const newAnswers = { ...answers, pg: updated };
-    setAnswers(newAnswers);
-    // Instant autosave
-    onSaveStudentResult(subject.subjectId, {
-      studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      answers: newAnswers,
-    });
+    markDirtyAndScheduleSave(newAnswers);
   };
 
   // Toggle Isian answer
@@ -117,12 +174,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
       updated[qIndex] = updated[qIndex] >= 1 ? 0 : config.isianWeight;
     }
     const newAnswers = { ...answers, isian: updated };
-    setAnswers(newAnswers);
-    onSaveStudentResult(subject.subjectId, {
-      studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      answers: newAnswers,
-    });
+    markDirtyAndScheduleSave(newAnswers);
   };
 
   // Change Bagian C score
@@ -130,54 +182,36 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
     const updated = [...answers.c];
     updated[qIndex] = score;
     const newAnswers = { ...answers, c: updated };
-    setAnswers(newAnswers);
-    onSaveStudentResult(subject.subjectId, {
-      studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      answers: newAnswers,
-    });
+    markDirtyAndScheduleSave(newAnswers);
   };
 
   // Set all PG correct or incorrect
   const handleSetAllPg = (value: number) => {
     const updated = new Array(config.pgCount).fill(value);
     const newAnswers = { ...answers, pg: updated };
-    setAnswers(newAnswers);
-    onSaveStudentResult(subject.subjectId, {
-      studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      answers: newAnswers,
-    });
+    markDirtyAndScheduleSave(newAnswers);
   };
 
-const handleNextStudent = () => {
-  // Pastikan data siswa yang sedang aktif benar-benar
-  // disimpan ketika tombol "Simpan & Siswa Berikutnya"
-  // ditekan.
-  if (currentStudent) {
-    onSaveStudentResult(subject.subjectId, {
-      studentId: currentStudent.id,
-      studentName: currentStudent.name,
-      answers: {
-        pg: [...answers.pg],
-        isian: [...answers.isian],
-        c: [...answers.c],
-      },
-    });
-  }
-
-  // Setelah disimpan, pindah ke siswa berikutnya.
-  if (currentIdx < sortedStudents.length - 1) {
-    setCurrentIdx(currentIdx + 1);
-  } else {
-    onClose();
-  }
-};
+  const handleNextStudent = () => {
+    flushPendingSave();
+    if (currentIdx < sortedStudents.length - 1) {
+      setCurrentIdx((prev) => prev + 1);
+    } else {
+      onClose();
+    }
+  };
 
   const handlePrevStudent = () => {
+    flushPendingSave();
     if (currentIdx > 0) {
-      setCurrentIdx(currentIdx - 1);
+      setCurrentIdx((prev) => prev - 1);
     }
+  };
+
+  const handleChangeStudentIndex = (newIdx: number) => {
+    if (newIdx === currentIdx) return;
+    flushPendingSave();
+    setCurrentIdx(newIdx);
   };
 
   // Count how many students are completed in this subject
@@ -187,7 +221,7 @@ const handleNextStudent = () => {
     <div
       className="fixed inset-0 z-[70] flex flex-col bg-slate-950/95 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleCloseWithSave();
       }}
     >
       <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] sm:max-w-4xl flex flex-col bg-slate-900 border-0 sm:border sm:border-white/10 rounded-none sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100">
@@ -219,7 +253,7 @@ const handleNextStudent = () => {
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCloseWithSave}
             className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
             title="Tutup (Esc / Back)"
           >
@@ -238,11 +272,11 @@ const handleNextStudent = () => {
             <div className="min-w-0 flex-1">
               <select
                 value={currentIdx}
-                onChange={(e) => setCurrentIdx(Number(e.target.value))}
+                onChange={(e) => handleChangeStudentIndex(Number(e.target.value))}
                 className="w-full bg-slate-900 text-xs sm:text-sm font-bold text-white hover:text-sky-300 outline-none cursor-pointer border-b border-dashed border-slate-600 focus:border-sky-400 py-0.5 truncate"
               >
                 {sortedStudents.map((s, idx) => {
-                  const isGraded = !!subject.studentResults[s.id];
+                  const isGraded = (s.id === currentStudent?.id && isDirtyRef.current) || !!subject.studentResults[s.id];
                   return (
                     <option key={s.id} value={idx} className="bg-slate-900 text-white">
                       {idx + 1}. {s.name} {isGraded ? '✓' : ''}
@@ -288,7 +322,7 @@ const handleNextStudent = () => {
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-4 sm:space-y-6 overscroll-contain">
           {/* 1. BAGIAN A: PILIHAN GANDA (PG) */}
           {config.pgCount > 0 && (
-            <div className="bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
+            <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 pb-2.5 border-b border-white/10">
                 <div>
                   <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
@@ -357,7 +391,7 @@ const handleNextStudent = () => {
 
           {/* 2. BAGIAN B: ISIAN SINGKAT */}
           {config.isianCount > 0 && (
-            <div className="bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
+            <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
               <div className="mb-3.5 pb-2.5 border-b border-white/10">
                 <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
                   <span className="px-2 py-0.5 bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-md text-[11px] font-black">
@@ -377,7 +411,7 @@ const handleNextStudent = () => {
                   return (
                     <div
                       key={`isian-${i}`}
-                      className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between gap-2 shadow-sm"
+                      className="p-3 rounded-xl bg-slate-900/80 border border-white/10 flex flex-col justify-between gap-2 shadow-sm"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-300">Isian #{i + 1}</span>
@@ -425,7 +459,7 @@ const handleNextStudent = () => {
 
           {/* 3. BAGIAN C: URAIAN / ESSAY / MENJODOHKAN */}
           {config.cCount > 0 && (
-            <div className="bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
+            <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
               <div className="mb-3.5 pb-2.5 border-b border-white/10">
                 <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
                   <span className="px-2 py-0.5 bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-md text-[11px] font-black">
@@ -531,7 +565,7 @@ const handleNextStudent = () => {
           <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleCloseWithSave}
               className="w-full sm:w-auto min-h-[42px] sm:min-h-[38px] px-3 sm:px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer flex items-center justify-center text-center"
               title="Tutup lembar input (Kembali ke modul analisis)"
             >
