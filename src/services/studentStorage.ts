@@ -25,7 +25,7 @@ export interface StudentInput {
   gender?: 'L' | 'P';
 }
 
-export const DEFAULT_SCHOOL_NAME = 'SDIT Al Fikri';
+export const DEFAULT_SCHOOL_NAME = 'SDIT AL FIKRI';
 const SCHOOLS_STORAGE_KEY = 'sdit_registered_schools_list';
 const STUDENTS_LOCAL_CACHE_KEY = 'sdit_students_local_cache';
 
@@ -34,7 +34,14 @@ export const getStoredStudentsLocal = (): Student[] => {
     const raw = localStorage.getItem(STUDENTS_LOCAL_CACHE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Auto-migrate "SDIT Al Fikri" variations to canonical uppercase "SDIT AL FIKRI"
+    return parsed.map((s: Student) => {
+      if (s.schoolName && s.schoolName.trim().toLowerCase() === 'sdit al fikri' && s.schoolName !== 'SDIT AL FIKRI') {
+        return { ...s, schoolName: 'SDIT AL FIKRI' };
+      }
+      return s;
+    });
   } catch (e) {
     console.error('Failed to read local student cache:', e);
     return [];
@@ -50,17 +57,35 @@ export const saveStoredStudentsLocal = (students: Student[]): void => {
 };
 
 /**
- * Mendapatkan daftar seluruh sekolah yang terdaftar (SDIT Al Fikri + custom schools)
+ * Mendapatkan daftar seluruh sekolah yang terdaftar (SDIT AL FIKRI + custom schools)
  */
 export const getStoredSchools = (): string[] => {
   try {
     const raw = localStorage.getItem(SCHOOLS_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     const list = Array.isArray(parsed) ? parsed : [];
-    if (!list.includes(DEFAULT_SCHOOL_NAME)) {
-      list.unshift(DEFAULT_SCHOOL_NAME);
+    // Auto-normalize any case variation of SDIT AL FIKRI
+    const normalizedList = list.map((s) => {
+      if (typeof s === 'string' && s.trim().toLowerCase() === 'sdit al fikri') {
+        return DEFAULT_SCHOOL_NAME;
+      }
+      return typeof s === 'string' ? s.trim() : s;
+    }).filter(Boolean);
+
+    if (!normalizedList.includes(DEFAULT_SCHOOL_NAME)) {
+      normalizedList.unshift(DEFAULT_SCHOOL_NAME);
     }
-    return list;
+    // Deduplicate case-insensitively while prioritizing DEFAULT_SCHOOL_NAME
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const item of normalizedList) {
+      const lower = item.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        unique.push(item);
+      }
+    }
+    return unique;
   } catch (err) {
     return [DEFAULT_SCHOOL_NAME];
   }
@@ -158,12 +183,17 @@ export const cleanNisn = (val: any): string | undefined => {
  * Normalisasi objek baris dari tabel public.students Supabase ke interface Student
  */
 const normalizeStudentFromRow = (row: any): Student => {
-  const school =
+  const rawSchool =
     typeof row.school_name === 'string' && row.school_name.trim()
       ? row.school_name.trim()
       : typeof row.schoolName === 'string' && row.schoolName.trim()
       ? row.schoolName.trim()
       : DEFAULT_SCHOOL_NAME;
+
+  const school =
+    rawSchool.toLowerCase() === 'sdit al fikri'
+      ? DEFAULT_SCHOOL_NAME
+      : rawSchool;
 
   if (school && school !== DEFAULT_SCHOOL_NAME) {
     saveStoredSchool(school);
@@ -719,6 +749,105 @@ export const saveStudents = async (
 
   const result = await bulkUpsertStudents(validStudents);
   return result.createdCount + result.updatedCount;
+};
+
+/**
+ * ============================================================
+ * RENAME SCHOOL / EDIT NAMA SEKOLAH DI DATABASE
+ * ============================================================
+ */
+
+/**
+ * Mengubah nama sekolah pada database siswa (Supabase & local cache) dan memperbarui daftar sekolah
+ */
+export const renameStoredSchool = async (
+  oldSchoolName: string,
+  newSchoolName: string
+): Promise<{ success: boolean; count: number }> => {
+  const oldClean = (oldSchoolName || '').trim();
+  const newClean = (newSchoolName || '').trim();
+
+  if (!oldClean || !newClean) {
+    return { success: false, count: 0 };
+  }
+
+  let updatedCount = 0;
+
+  // 1. Update Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .update({ school_name: newClean })
+        .ilike('school_name', oldClean)
+        .select('id');
+
+      if (error) {
+        console.error('[Supabase] Gagal mengubah nama sekolah:', error);
+      } else {
+        updatedCount = data?.length || 0;
+      }
+    } catch (err) {
+      console.warn('[Supabase] Error update school name:', err);
+    }
+  }
+
+  // 2. Update local storage cache
+  const local = getStoredStudentsLocal();
+  let localModified = false;
+  const updatedLocal = local.map((st) => {
+    const currentSchool = (st.schoolName || DEFAULT_SCHOOL_NAME).trim();
+    if (currentSchool.toLowerCase() === oldClean.toLowerCase()) {
+      localModified = true;
+      if (!isSupabaseConfigured()) updatedCount++;
+      return { ...st, schoolName: newClean };
+    }
+    return st;
+  });
+
+  if (localModified) {
+    saveStoredStudentsLocal(updatedLocal);
+  }
+
+  // 3. Update daftar sekolah di localStorage
+  try {
+    const schools = getStoredSchools();
+    const updatedSchools = schools.map((s) => {
+      return s.trim().toLowerCase() === oldClean.toLowerCase() ? newClean : s;
+    });
+
+    if (!updatedSchools.some((s) => s.toLowerCase() === newClean.toLowerCase())) {
+      updatedSchools.push(newClean);
+    }
+
+    // Deduplicate case-insensitively
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const s of updatedSchools) {
+      const lower = s.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        unique.push(s);
+      }
+    }
+
+    localStorage.setItem(SCHOOLS_STORAGE_KEY, JSON.stringify(unique));
+  } catch (err) {
+    console.error('Gagal memperbarui daftar sekolah saat rename:', err);
+  }
+
+  // Trigger event agar komponen React dapat me-refresh
+  try {
+    window.dispatchEvent(
+      new CustomEvent('sdit_school_renamed', {
+        detail: { oldSchoolName: oldClean, newSchoolName: newClean, count: updatedCount },
+      })
+    );
+  } catch (e) {
+    // Ignore in non-browser context
+  }
+
+  return { success: true, count: updatedCount };
 };
 
 /**

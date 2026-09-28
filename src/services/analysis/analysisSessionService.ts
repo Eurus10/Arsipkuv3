@@ -6,6 +6,7 @@ import {
 } from '../../types/analysisTypes';
 import { Student } from '../studentStorage';
 import { calculateMaxScore, evaluateStudentResult } from './analysisCalculationService';
+import { getEraporHomeroomForClass } from './eraporHomeroomBridge';
 
 const ACTIVE_SESSION_STORAGE_KEY = 'sdit_analysis_active_session';
 const SAVED_SESSIONS_STORAGE_KEY = 'sdit_analysis_saved_sessions_list';
@@ -553,7 +554,7 @@ Object.keys(updatedMap).forEach((classKey) => {
         className,
         examType: params.examType,
         schoolYear: params.schoolYear,
-        teacherName: foundClass?.waliKelas || '',
+        teacherName: getEraporHomeroomForClass(cId) || foundClass?.waliKelas || '',
         kktp: params.kktp,
         students: classStudents,
       });

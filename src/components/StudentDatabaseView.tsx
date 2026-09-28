@@ -23,6 +23,7 @@ import {
   Filter,
   Layers,
   Activity,
+  Pencil,
 } from 'lucide-react';
 import {
   addStudent,
@@ -33,6 +34,7 @@ import {
   saveStoredSchool,
   normalizeSchoolName,
   removeStoredSchool,
+  renameStoredSchool,
   deleteStudentsBySchool,
   deleteAllStudents,
   deleteBatchStudents,
@@ -74,6 +76,18 @@ const StudentDatabaseView: React.FC<
 
   const [newSchoolNameInput, setNewSchoolNameInput] =
     useState('');
+
+  const [isEditSchoolModalOpen, setIsEditSchoolModalOpen] =
+    useState(false);
+
+  const [schoolToEdit, setSchoolToEdit] =
+    useState<string>('');
+
+  const [editSchoolNewName, setEditSchoolNewName] =
+    useState('');
+
+  const [isEditingSchool, setIsEditingSchool] =
+    useState(false);
 
   const [isDeleteSchoolModalOpen, setIsDeleteSchoolModalOpen] =
     useState(false);
@@ -284,6 +298,55 @@ const StudentDatabaseView: React.FC<
     setIsAddSchoolModalOpen(false);
     setSuccessMessage(`Sekolah "${clean}" berhasil ditambahkan ke ekosistem.`);
     setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
+  const handleOpenEditSchoolModal = (schoolName?: string) => {
+    const target = (schoolName || selectedSchool || DEFAULT_SCHOOL_NAME).trim();
+    setSchoolToEdit(target);
+    setEditSchoolNewName(target);
+    setIsEditSchoolModalOpen(true);
+  };
+
+  const handleConfirmEditSchool = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanNew = editSchoolNewName.trim();
+    if (!cleanNew) {
+      setError('Nama sekolah baru tidak boleh kosong.');
+      return;
+    }
+    if (cleanNew === schoolToEdit) {
+      setIsEditSchoolModalOpen(false);
+      return;
+    }
+    setIsEditingSchool(true);
+    setError('');
+    try {
+      const res = await renameStoredSchool(schoolToEdit, cleanNew);
+      // Update local state siswa
+      setStudents((current) =>
+        current.map((st) => {
+          const sName = st.schoolName || DEFAULT_SCHOOL_NAME;
+          if (sName.toLowerCase() === schoolToEdit.toLowerCase()) {
+            return { ...st, schoolName: cleanNew };
+          }
+          return st;
+        })
+      );
+      setSchoolsList(getStoredSchools());
+      if (selectedSchool.toLowerCase() === schoolToEdit.toLowerCase()) {
+        setSelectedSchool(cleanNew);
+      }
+      setIsEditSchoolModalOpen(false);
+      setSuccessMessage(
+        `Nama sekolah "${schoolToEdit}" berhasil diubah menjadi "${cleanNew}" (${res.count} data siswa diperbarui).`
+      );
+      setTimeout(() => setSuccessMessage(''), 5000);
+    } catch (err: any) {
+      console.error('Error editing school name:', err);
+      setError(err?.message || 'Gagal mengubah nama sekolah.');
+    } finally {
+      setIsEditingSchool(false);
+    }
   };
 
   const handleOpenDeleteSchoolModal = (schoolName: string) => {
@@ -789,6 +852,16 @@ const StudentDatabaseView: React.FC<
 
           <button
             type="button"
+            onClick={() => handleOpenEditSchoolModal(selectedSchool || DEFAULT_SCHOOL_NAME)}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1D2538] hover:bg-[#252E45] border border-[#2E3954] px-4 py-2.5 text-xs font-bold text-amber-300 transition-all cursor-pointer shadow-md"
+            title="Ubah nama sekolah terdaftar (contoh: ubah huruf kapital SDIT AL FIKRI)"
+          >
+            <Pencil className="w-4 h-4 text-amber-400" />
+            <span>Ubah Nama Sekolah</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => {
               setImportSchoolTarget(selectedSchool || DEFAULT_SCHOOL_NAME);
               setIsImportModalOpen(true);
@@ -978,15 +1051,26 @@ const StudentDatabaseView: React.FC<
               </span>
             )}
             {selectedSchool && (
-              <button
-                type="button"
-                onClick={() => handleOpenDeleteSchoolModal(selectedSchool)}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-xs font-bold transition-all cursor-pointer shadow-sm ml-auto"
-                title={`Hapus seluruh data sekolah ${selectedSchool}`}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Hapus Seluruh Data Sekolah Ini</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleOpenEditSchoolModal(selectedSchool)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer shadow-sm ml-auto"
+                  title={`Ubah nama sekolah ${selectedSchool}`}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>Ubah Nama Sekolah</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleOpenDeleteSchoolModal(selectedSchool)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                  title={`Hapus seluruh data sekolah ${selectedSchool}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Hapus Seluruh Data</span>
+                </button>
+              </>
             )}
             <button
               onClick={() => {
@@ -1210,6 +1294,129 @@ const StudentDatabaseView: React.FC<
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Simpan Sekolah</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT / UBAH NAMA SEKOLAH MODAL */}
+      {isEditSchoolModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setIsEditSchoolModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md rounded-[24px] bg-[#141824] border border-[#2A324A] shadow-2xl shadow-black/60 text-slate-100 overflow-hidden">
+            <div className="px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-[#1E2538] to-[#141824] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Pencil className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white tracking-tight">
+                    Edit / Ubah Nama Sekolah
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Perbarui nama sekolah pada database siswa
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditSchoolModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmEditSchool}>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Pilih Sekolah yang Ingin Diubah
+                  </label>
+                  <select
+                    value={schoolToEdit}
+                    onChange={(e) => {
+                      setSchoolToEdit(e.target.value);
+                      setEditSchoolNewName(e.target.value);
+                    }}
+                    className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] px-3.5 py-2.5 text-xs font-bold text-cyan-300 outline-none transition focus:border-cyan-400"
+                  >
+                    {schoolsList.map((sch) => (
+                      <option key={sch} value={sch}>
+                        {sch}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Nama Sekolah Baru
+                  </label>
+                  <input
+                    type="text"
+                    value={editSchoolNewName}
+                    onChange={(e) => setEditSchoolNewName(e.target.value)}
+                    placeholder="Contoh: SDIT AL FIKRI"
+                    className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] px-3.5 py-2.5 text-xs font-bold text-white outline-none transition focus:border-teal-400"
+                    required
+                  />
+
+                  {/* Tombol Cepat Standarisasi Kapital SDIT AL FIKRI */}
+                  {editSchoolNewName !== 'SDIT AL FIKRI' &&
+                    (schoolToEdit.toLowerCase() === 'sdit al fikri' ||
+                      editSchoolNewName.toLowerCase() === 'sdit al fikri') && (
+                      <button
+                        type="button"
+                        onClick={() => setEditSchoolNewName('SDIT AL FIKRI')}
+                        className="mt-2 text-[11px] font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer flex items-center gap-1.5"
+                      >
+                        <span>⚡ Format Kapital Resmi:</span>
+                        <strong className="text-white bg-amber-950/60 px-2 py-0.5 rounded border border-amber-600/50">
+                          SDIT AL FIKRI
+                        </strong>
+                      </button>
+                    )}
+                </div>
+
+                <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 p-3 text-xs text-sky-300">
+                  <p>
+                    Nama sekolah pada seluruh data peserta didik yang saat ini bernama{' '}
+                    <strong>"{schoolToEdit}"</strong> akan otomatis disinkronkan ke nama baru di database.
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-[#242C40] bg-[#10131D] flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditSchoolModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditingSchool}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50"
+                >
+                  {isEditingSchool ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Simpan Perubahan</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

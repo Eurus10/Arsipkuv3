@@ -43,11 +43,11 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
   const [customSubjectName, setCustomSubjectName] = useState<string>('');
   const [teacherName, setTeacherName] = useState<string>('');
 
-  // Config States
-  const [pgCount, setPgCount] = useState<number>(20);
+  // Config States (Default resmi: 25 PG, 10 Isian, 5 Uraian)
+  const [pgCount, setPgCount] = useState<number>(25);
   const [pgWeight, setPgWeight] = useState<number>(1);
 
-  const [isianCount, setIsianCount] = useState<number>(5);
+  const [isianCount, setIsianCount] = useState<number>(10);
   const [isianWeight, setIsianWeight] = useState<number>(1);
 
   const [cType, setCType] = useState<'Uraian' | 'Essay' | 'Menjodohkan' | 'Lainnya'>('Uraian');
@@ -75,15 +75,18 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
       setSelectedSubjectId(first.id);
       setCustomSubjectName(first.name);
       setTeacherName(defaultTeacherName || first.teacher || activeClass.waliKelas || '');
-      setPgCount(20);
+      setPgCount(25);
       setPgWeight(1);
-      setIsianCount(5);
+      setIsianCount(10);
       setIsianWeight(1);
       setCType('Uraian');
       setCCount(5);
       setCWeight(2);
     } else {
       setTeacherName(defaultTeacherName || '');
+      setPgCount(25);
+      setIsianCount(10);
+      setCCount(5);
     }
   }, [existingSubject, activeClass, defaultTeacherName, isOpen]);
 

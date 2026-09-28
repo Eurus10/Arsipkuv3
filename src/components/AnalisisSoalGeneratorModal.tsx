@@ -50,6 +50,11 @@ import {
 import { verifyActiveTokenRealtime } from '../services/tokenAuthService';
 import { isAdminLoggedIn } from '../services/auth';
 import { useModalNavigation } from '../utils/modalNavigation';
+import {
+  getEraporHomeroomMap,
+  getEraporHomeroomForClass,
+  syncEraporHomeroomFromCloud,
+} from '../services/analysis/eraporHomeroomBridge';
 
 interface AnalisisSoalGeneratorModalProps {
   isOpen: boolean;
@@ -60,7 +65,13 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
   isOpen,
   onClose,
 }) => {
-  const [masterClasses, setMasterClasses] = useState<MasterClass[]>(MASTER_CLASSES);
+  const [masterClasses, setMasterClasses] = useState<MasterClass[]>(() => {
+    const homeroomMap = getEraporHomeroomMap();
+    return MASTER_CLASSES.map((c) => ({
+      ...c,
+      waliKelas: getEraporHomeroomForClass(c.id, homeroomMap) || c.waliKelas,
+    }));
+  });
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoadingStudents, setIsLoadingStudents] = useState<boolean>(true);
 
@@ -86,10 +97,10 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isConfirmResetOpen, setIsConfirmResetOpen] = useState(false);
 
-  // Legacy Blank Template Form State
+  // Legacy Blank Template Form State (Default resmi: 25 PG, 10 Isian, 5 Uraian)
   const [blankClassId, setBlankClassId] = useState<string>('');
-  const [blankPgCount, setBlankPgCount] = useState<string>('20');
-  const [blankIsianCount, setBlankIsianCount] = useState<string>('5');
+  const [blankPgCount, setBlankPgCount] = useState<string>('25');
+  const [blankIsianCount, setBlankIsianCount] = useState<string>('10');
   const [blankTypeC, setBlankTypeC] = useState<'Essay/Uraian' | 'Menjodohkan'>('Essay/Uraian');
   const [blankCCount, setBlankCCount] = useState<string>('5');
   const [blankStatus, setBlankStatus] = useState<{
@@ -97,18 +108,35 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
     message: string;
   } | null>(null);
 
-  // Load master classes & check local storage on mount
+  // Load master classes & sync with e-Rapor homeroom data
   useEffect(() => {
     try {
+      const homeroomMap = getEraporHomeroomMap();
       const classes = getStoredMasterClasses();
-      if (classes && classes.length > 0) {
-        setMasterClasses(classes);
-        if (!blankClassId) {
-          setBlankClassId(classes[0].id);
-        }
+      const base = classes && classes.length > 0 ? classes : MASTER_CLASSES;
+      const updated = base.map((c) => ({
+        ...c,
+        waliKelas: getEraporHomeroomForClass(c.id, homeroomMap) || c.waliKelas,
+      }));
+
+      setMasterClasses(updated);
+      if (!blankClassId && updated.length > 0) {
+        setBlankClassId(updated[0].id);
       }
+
+      // Background cloud sync from e-Rapor
+      syncEraporHomeroomFromCloud().then((cloudMap) => {
+        if (cloudMap && Object.keys(cloudMap).length > 0) {
+          setMasterClasses((prev) =>
+            prev.map((c) => ({
+              ...c,
+              waliKelas: getEraporHomeroomForClass(c.id, cloudMap) || c.waliKelas,
+            }))
+          );
+        }
+      });
     } catch (err) {
-      console.error('Error loading master classes:', err);
+      console.error('Error loading master classes with e-Rapor homeroom bridge:', err);
     }
 
     // Load active session from cache

@@ -18,6 +18,7 @@ import { MasterClass } from '../../data/masterExamData';
 import { Student, getStoredSchools, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
 import { ExamType } from '../../types/analysisTypes';
 import { PillStepper } from './PillStepper';
+import { getEraporHomeroomForClass } from '../../services/analysis/eraporHomeroomBridge';
 
 interface SessionSetupCardProps {
   masterClasses: MasterClass[];
@@ -38,12 +39,11 @@ interface SessionSetupCardProps {
 }
 
 const COMMON_EXAMS: Array<{ id: string; label: string; desc: string }> = [
-  { id: 'SAS', label: 'SAS (Sumatif Akhir Semester)', desc: 'Semester Ganjil/Genap' },
   { id: 'STS1', label: 'STS 1 (Sumatif Tengah Smt 1)', desc: 'Tengah Semester 1' },
+  { id: 'SAS 1', label: 'SAS 1 (Sumatif Akhir Smt 1)', desc: 'Akhir Semester 1' },
   { id: 'STS2', label: 'STS 2 (Sumatif Tengah Smt 2)', desc: 'Tengah Semester 2' },
-  { id: 'SAT', label: 'SAT (Sumatif Akhir Tahun)', desc: 'Kenaikan Kelas' },
+  { id: 'SAT', label: 'SAT (Sumatif Akhir Tahun)', desc: 'Kenaikan Kelas / Akhir Tahun' },
   { id: 'US', label: 'US (Ujian Sekolah)', desc: 'Kelas 6 Akhir' },
-  { id: 'PH', label: 'PH (Penilaian Harian)', desc: 'Ulangan Harian' },
 ];
 
 export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
@@ -57,7 +57,7 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
   const [schoolsList, setSchoolsList] = useState<string[]>(() => getStoredSchools());
   const [selectedSchool, setSelectedSchool] = useState<string>(DEFAULT_SCHOOL_NAME);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [examType, setExamType] = useState<string>('SAS');
+  const [examType, setExamType] = useState<string>('STS1');
   const [customExam, setCustomExam] = useState<string>('');
   const [schoolYear, setSchoolYear] = useState<string>('2026/2027');
   const [teacherName, setTeacherName] = useState<string>('');
@@ -78,16 +78,22 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
     if (masterClasses.length > 0 && !selectedClassId) {
       const first = masterClasses[0];
       setSelectedClassId(first.id);
-      setTeacherName(first.waliKelas || '');
+      const homeroom = getEraporHomeroomForClass(first.id) || first.waliKelas || '';
+      setTeacherName(homeroom);
     }
   }, [masterClasses, selectedClassId]);
 
-  // When class changes, update default teacher if available
+  // When class changes, update default teacher from e-Rapor
   const handleClassChange = (newClassId: string) => {
     setSelectedClassId(newClassId);
-    const found = masterClasses.find((c) => c.id === newClassId);
-    if (found && found.waliKelas && !teacherName) {
-      setTeacherName(found.waliKelas);
+    const homeroom = getEraporHomeroomForClass(newClassId);
+    if (homeroom) {
+      setTeacherName(homeroom);
+    } else {
+      const found = masterClasses.find((c) => c.id === newClassId);
+      if (found && found.waliKelas) {
+        setTeacherName(found.waliKelas);
+      }
     }
   };
 
@@ -312,6 +318,12 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
             <p className="text-[11px] text-cyan-300/90 font-medium mt-1.5 flex items-center gap-1">
               <span className="text-amber-400 font-bold">★ Wajib nama lengkap + gelar:</span> contoh "Bu Yeni, S.Pd."
             </p>
+            {getEraporHomeroomForClass(selectedClassId) && (
+              <p className="text-[11px] text-teal-300 font-semibold mt-1 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 inline-block animate-pulse"></span>
+                <span>Otomatis dari data e-Rapor: <strong className="text-white underline decoration-teal-400/50">{getEraporHomeroomForClass(selectedClassId)}</strong></span>
+              </p>
+            )}
           </div>
 
           {/* 4. TAHUN PELAJARAN & 5. TANGGAL ANALISIS (2 KOLOM RESPONSIVE) */}
@@ -375,24 +387,25 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
             <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Nilai ≥ KKTP dianggap Lulus (L).</p>
           </div>
 
-          {/* 7. PILIH JENIS UJIAN (GRID 2x2 MOBILE) */}
+          {/* 7. PILIH JENIS UJIAN (GRID 5 PILIHAN RESMI SDIT AL FIKRI) */}
           <div className="p-3 sm:p-4 rounded-2xl bg-[#0B101D]/90 border border-slate-800 space-y-2.5">
             <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
               <div className="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 shrink-0">
                 <FileText className="w-4 h-4" />
               </div>
-              <span>7. Pilih Jenis Ujian</span>
+              <span>7. Pilih Jenis Ujian (Urutan Resmi: STS1, SAS 1, STS2, SAT, US)</span>
             </label>
 
-            {/* Grid 2x2 pada Mobile, 4 Pilihan Utama */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {/* Grid 5 Pilihan Urutan Resmi: 1. STS1, 2. SAS 1, 3. STS2, 4. SAT, 5. US */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
               {[
-                { id: 'SAS', name: 'SAS', desc: 'Semester Ganjil/Genap' },
-                { id: 'STS1', name: 'STS1', desc: 'Tengah Semester 1' },
-                { id: 'STS2', name: 'STS2', desc: 'Tengah Semester 2' },
-                { id: 'SAT', name: 'SAT', desc: 'Kenaikan Kelas' },
+                { id: 'STS1', name: '1. STS1', desc: 'Tengah Semester 1' },
+                { id: 'SAS 1', name: '2. SAS 1', desc: 'Akhir Semester 1' },
+                { id: 'STS2', name: '3. STS2', desc: 'Tengah Semester 2' },
+                { id: 'SAT', name: '4. SAT', desc: 'Kenaikan / Akhir Tahun' },
+                { id: 'US', name: '5. US', desc: 'Ujian Sekolah Kelas 6' },
               ].map((exam) => {
-                const isSelected = examType === exam.id;
+                const isSelected = examType === exam.id || (exam.id === 'SAS 1' && (examType === 'SAS1' || examType === 'SAS'));
                 return (
                   <button
                     key={exam.id}

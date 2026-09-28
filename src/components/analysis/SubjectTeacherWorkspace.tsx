@@ -96,7 +96,7 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   const [isCustomSubject, setIsCustomSubject] = useState<boolean>(false);
   const [customSubjectText, setCustomSubjectText] = useState<string>('');
   const [teacherName, setTeacherName] = useState<string>('');
-  const [examType, setExamType] = useState<ExamType>('SAS');
+  const [examType, setExamType] = useState<ExamType>('STS1');
   const [schoolYear, setSchoolYear] = useState<string>('2026/2027');
   const [kktp, setKktp] = useState<number>(70);
   const [analysisDate, setAnalysisDate] = useState<string>(
@@ -107,10 +107,10 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
     })
   );
 
-  // Question configuration
-  const [pgCount, setPgCount] = useState<number>(20);
+  // Question configuration (Default resmi: 25 PG, 10 Isian, 5 Uraian)
+  const [pgCount, setPgCount] = useState<number>(25);
   const [pgWeight, setPgWeight] = useState<number>(1);
-  const [isianCount, setIsianCount] = useState<number>(5);
+  const [isianCount, setIsianCount] = useState<number>(10);
   const [isianWeight, setIsianWeight] = useState<number>(2);
   const [cType, setCType] = useState<'Uraian' | 'Essay' | 'Menjodohkan'>('Uraian');
   const [cCount, setCCount] = useState<number>(5);
@@ -707,13 +707,11 @@ const handleExportAllClasses = () => {
                   onChange={(e) => setExamType(e.target.value as ExamType)}
                   className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none focus:border-indigo-400/50 cursor-pointer"
                 >
-                  <option value="SAS">SAS (Sumatif Akhir Semester)</option>
-                  <option value="SAT">SAT (Sumatif Akhir Tahun)</option>
-                  <option value="STS 1">STS 1 (Sumatif Tengah Semester 1)</option>
-                  <option value="STS 2">STS 2 (Sumatif Tengah Semester 2)</option>
-                  <option value="PTS">PTS (Penilaian Tengah Semester)</option>
-                  <option value="PAS">PAS (Penilaian Akhir Semester)</option>
-                  <option value="PAT">PAT (Penilaian Akhir Tahun)</option>
+                  <option value="STS1">1. STS 1 (Sumatif Tengah Semester 1)</option>
+                  <option value="SAS 1">2. SAS 1 (Sumatif Akhir Semester 1)</option>
+                  <option value="STS2">3. STS 2 (Sumatif Tengah Semester 2)</option>
+                  <option value="SAT">4. SAT (Sumatif Akhir Tahun)</option>
+                  <option value="US">5. US (Ujian Sekolah)</option>
                 </select>
               </div>
 

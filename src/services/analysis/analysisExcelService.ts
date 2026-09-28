@@ -302,18 +302,23 @@ export function generateSubjectWorksheet(
   const studentCount = students.length || 1;
 
   // 2. Tulis Header Identitas Resmi Sekolah (Baris 1 & 2 dengan Merge & Alignment Center/Middle)
+  const normExam = (session.examType || '').toUpperCase().replace(/[\s_-]+/g, '');
   const examTitle =
-    session.examType.toUpperCase() === 'STS1'
+    normExam === 'STS1'
       ? 'ANALISIS HASIL SUMATIF TENGAH SEMESTER 1'
-      : session.examType.toUpperCase() === 'SAS1'
+      : normExam === 'SAS1' || normExam === 'SAS'
       ? 'ANALISIS HASIL SUMATIF AKHIR SEMESTER 1'
-      : session.examType.toUpperCase() === 'STS2'
+      : normExam === 'STS2'
       ? 'ANALISIS HASIL SUMATIF TENGAH SEMESTER 2'
-      : session.examType.toUpperCase() === 'SAS2'
+      : normExam === 'SAS2'
       ? 'ANALISIS HASIL SUMATIF AKHIR SEMESTER 2'
+      : normExam === 'SAT'
+      ? 'ANALISIS HASIL SUMATIF AKHIR TAHUN'
+      : normExam === 'US'
+      ? 'ANALISIS HASIL UJIAN SEKOLAH'
       : `ANALISIS HASIL SUMATIF ${session.examType.toUpperCase()}`;
 
-  const schoolNameUpper = (session.schoolName || 'SDIT AL-FIKRI').toUpperCase();
+  const schoolNameUpper = (session.schoolName || 'SDIT AL FIKRI').toUpperCase();
 
   ws['A1'] = {
     t: 's',
@@ -710,7 +715,7 @@ export function generateSubjectWorksheet(
     s: STYLE_SIGNATURE,
   };
 
-  ws[`C${sigRow2}`] = { t: 's', v: 'Kepala SDIT AL-FIKRI', s: STYLE_SIGNATURE };
+  ws[`C${sigRow2}`] = { t: 's', v: 'Kepala SDIT AL FIKRI', s: STYLE_SIGNATURE };
   ws[`BC${sigRow2}`] = { t: 's', v: 'Guru Kelas / Guru Bidang', s: STYLE_SIGNATURE };
 
   ws[`C${sigRow3}`] = { t: 's', v: 'H. M. HALIM MUSTOMI, S.Pd.', s: STYLE_SIGNATURE_BOLD };
@@ -1231,7 +1236,7 @@ function generateMultiClassRekapWorksheet(params: {
     s: STYLE_SIGNATURE,
   };
 
-  ws[`B${sigRow2}`] = { t: 's', v: 'Kepala SDIT AL-FIKRI', s: STYLE_SIGNATURE };
+  ws[`B${sigRow2}`] = { t: 's', v: 'Kepala SDIT AL FIKRI', s: STYLE_SIGNATURE };
   ws[`I${sigRow2}`] = { t: 's', v: 'Guru Bidang Studi', s: STYLE_SIGNATURE };
 
   ws[`B${sigRow3}`] = { t: 's', v: 'H. M. HALIM MUSTOMI, S.Pd.', s: STYLE_SIGNATURE_BOLD };
