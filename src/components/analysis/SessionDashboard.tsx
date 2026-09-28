@@ -96,10 +96,10 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
       {/* ====================================================
           TOP SESSION BANNER & ACTION GRID (EXECUTIVE GLASS)
           ==================================================== */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
-        {/* Ambient background glow accents */}
-        <div className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900 sm:bg-gradient-to-br sm:from-slate-900/90 sm:via-slate-900/80 sm:to-slate-950/90 p-4 sm:p-6 shadow-xl sm:shadow-2xl backdrop-blur-none sm:backdrop-blur-xl">
+        {/* Ambient background glow accents (Hidden on Mobile for 60fps GPU performance) */}
+        <div className="hidden sm:block pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl" />
+        <div className="hidden sm:block pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch justify-between gap-5 lg:gap-6">
           
@@ -270,7 +270,7 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
 
         {session.subjects.length === 0 ? (
           /* Empty Subject State */
-          <div className="bg-slate-900/40 backdrop-blur-xl border-2 border-dashed border-white/10 rounded-2xl p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-3">
+          <div className="bg-slate-900 sm:bg-slate-900/40 backdrop-blur-none sm:backdrop-blur-xl border-2 border-dashed border-white/10 rounded-2xl p-6 sm:p-12 text-center flex flex-col items-center justify-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-sky-500/10 text-sky-400 flex items-center justify-center border border-sky-500/20 shadow-[0_0_15px_rgba(56,189,248,0.1)]">
               <BookOpen className="w-7 h-7" />
             </div>
