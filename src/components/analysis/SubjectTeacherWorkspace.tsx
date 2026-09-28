@@ -922,85 +922,128 @@ const handleExportAllClasses = () => {
   // ====================================================
   return (
     <div className="space-y-5 animate-[fadeIn_150ms_ease-out]">
-      {/* Top Banner Guru Bidang */}
-      <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+      {/* Top Banner Guru Bidang (Executive Glass) */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
         {/* Ambient Top Glow */}
-        <div className="absolute -top-10 -right-10 w-64 h-32 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
+        <div className="pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch justify-between gap-5 lg:gap-6">
           {/* Info Utama Mapel */}
-          <div className="space-y-2 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wide">
-                <BookOpen className="w-3 h-3 text-indigo-400" />
+          <div className="flex-1 flex flex-col justify-between min-w-0">
+            {/* 1. Top Row: Institutional Context & Tags */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 shadow-sm">
+                <Building2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="font-bold text-slate-200">{selectedSchool || DEFAULT_SCHOOL_NAME}</span>
+                <span className="text-white/20">•</span>
+                <span className="text-slate-400 font-mono">TP {schoolYear}</span>
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-500/15 border border-indigo-400/30 text-indigo-200 tracking-wider uppercase shadow-[0_0_12px_rgba(99,102,241,0.15)]">
+                <BookOpen className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
                 <span>{activeSubjectName}</span>
               </div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-white/5 text-sky-300 border border-white/10">
-                <Building2 className="w-3 h-3 text-sky-400" />
-                <span>{selectedSchool || DEFAULT_SCHOOL_NAME}</span>
-              </div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-white/5 text-sky-300 border border-white/10">
-                <GraduationCap className="w-3 h-3 text-sky-400" />
-                <span>{selectedClassIds.length} Kelas Diampu</span>
-              </div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-black bg-purple-500/20 text-purple-200 border border-purple-500/30">
-                <FileText className="w-3 h-3 text-purple-300" />
-                <span>{examType}</span>
-              </div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-white/5 text-slate-300 border border-white/10">
-                <Calendar className="w-3 h-3 text-slate-400" />
-                <span>TP {schoolYear}</span>
-              </div>
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                <Target className="w-3 h-3 text-amber-400" />
-                <span>KKTP: {kktp}</span>
-              </div>
-            </div>
 
-            <div className="space-y-0.5">
-              <h2 className="text-base sm:text-lg lg:text-xl font-black text-white tracking-tight">
-                Workspace Analisis {activeSubjectName}
-              </h2>
               {teacherName && (
-                <div className="text-xs sm:text-sm font-extrabold text-amber-300 flex items-center gap-1.5">
-                  <UserCheck className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Guru Pengampu: {teacherName}</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-400/25 text-amber-200">
+                  <UserCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Guru: {teacherName}</span>
                 </div>
               )}
             </div>
+
+            {/* 2. Middle Row: Main Title & Description */}
+            <div className="mt-3 mb-3.5">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug flex flex-wrap items-center gap-2 sm:gap-3">
+                <span>Workspace Analisis {activeSubjectName}</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-400/30 font-mono">
+                  <FileText className="w-3 h-3 text-purple-400" />
+                  {examType}
+                </span>
+              </h2>
+              <p className="text-xs text-slate-400 mt-1 line-clamp-1">
+                Pengelolaan dan analisis terpusat untuk {selectedClassIds.length} rombel kelas yang diampu
+              </p>
+            </div>
+
+            {/* 3. Bottom Row: 4-Card Parametric Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
+              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-indigo-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Jenis Ujian</p>
+                  <p className="text-xs font-bold text-white truncate">{examType}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-4 h-4 text-sky-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Kelas Diampu</p>
+                  <p className="text-xs font-bold text-white truncate">{selectedClassIds.length} Rombel</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <Target className="w-4 h-4 text-amber-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Target KKTP</p>
+                  <p className="text-xs font-black text-amber-300 truncate">≥ {kktp}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                  <Calendar className="w-4 h-4 text-emerald-300" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Tanggal Asesmen</p>
+                  <p className="text-xs font-bold text-white truncate">{analysisDate}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Action Buttons Top Banner (Responsive Grid on Mobile) */}
-          <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2 w-full lg:w-auto shrink-0">
+          {/* Action Buttons Top Banner */}
+          <div className="w-full lg:w-[280px] xl:w-[310px] shrink-0 flex flex-col justify-between gap-2.5 self-stretch pt-2 lg:pt-0">
             <button
               type="button"
               onClick={handleExportAllClasses}
-              className="h-10 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-[0.98] text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_12px_rgba(16,185,129,0.15)] border border-emerald-500/30 cursor-pointer transition-all"
+              className="w-full h-11 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 border border-emerald-400/40 cursor-pointer transition-all"
               title="Download berkas Excel untuk semua kelas yang diajar"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-300 stroke-[2.5]" />
+              <Download className="w-4 h-4 stroke-[2.5]" />
               <span>Download Excel Semua Kelas</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(true)}
-              className="h-10 px-4 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:scale-[0.98] text-purple-200 hover:text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-500/30 cursor-pointer transition-all shadow-[0_0_12px_rgba(168,85,247,0.15)]"
-              title="Edit struktur & bobot butir soal atau daftar kelas"
-            >
-              <Settings2 className="w-3.5 h-3.5 text-purple-300" />
-              <span>Edit Bobot & Soal</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(true)}
+                className="h-10 px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 active:scale-[0.98] text-purple-200 border border-purple-500/30 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                title="Edit struktur & bobot butir soal atau daftar kelas"
+              >
+                <Settings2 className="w-3.5 h-3.5 text-purple-300" />
+                <span>Edit Bobot</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setShowDeleteSessionModal(true)}
-              className="h-10 px-4 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 active:scale-[0.98] text-rose-300 hover:text-white font-bold text-xs flex items-center justify-center gap-2 border border-rose-500/30 cursor-pointer transition-all"
-              title="Hapus sesi analisis mata pelajaran ini"
-            >
-              <AlertCircle className="w-3.5 h-3.5" />
-              <span>Hapus Sesi</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteSessionModal(true)}
+                className="h-10 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:scale-[0.98] text-rose-300 border border-rose-500/25 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                title="Hapus sesi analisis mata pelajaran ini"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+                <span>Hapus Sesi</span>
+              </button>
+            </div>
           </div>
         </div>
 
