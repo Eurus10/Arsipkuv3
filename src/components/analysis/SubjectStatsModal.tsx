@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   X,
   BarChart3,
@@ -36,9 +36,12 @@ export const SubjectStatsModal: React.FC<SubjectStatsModalProps> = ({
   // Intercept phone back button so modal closes gracefully without leaving web
   useModalNavigation('subject-stats', isOpen, onClose);
 
-  if (!isOpen) return null;
+  const stats = useMemo(() => {
+    if (!isOpen) return null;
+    return calculateSubjectSummaryStats(subject, students, session.kktp);
+  }, [isOpen, subject, students, session.kktp]);
 
-  const stats = calculateSubjectSummaryStats(subject, students, session.kktp);
+  if (!isOpen || !stats) return null;
 
   const handleExportSingle = () => {
     exportSingleSubjectToExcel(session, subject, students);
