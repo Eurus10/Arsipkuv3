@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   X,
   FileSpreadsheet,
@@ -31,13 +31,18 @@ export const SessionRekapModal: React.FC<SessionRekapModalProps> = ({
   // Intercept phone back button so modal closes gracefully without leaving web
   useModalNavigation('session-rekap', isOpen, onClose);
 
-  if (!isOpen) return null;
+  const sortedStudents = useMemo(() => {
+    return [...students].sort((a, b) =>
+      a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })
+    );
+  }, [students]);
 
-  const sortedStudents = [...students].sort((a, b) =>
-    a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })
-  );
+  const rekap = useMemo(() => {
+    if (!isOpen) return null;
+    return calculateSessionRekap(session, sortedStudents);
+  }, [isOpen, session, sortedStudents]);
 
-  const rekap = calculateSessionRekap(session, sortedStudents);
+  if (!isOpen || !rekap) return null;
 
   const handleExport = () => {
     exportAnalysisProjectToExcel(session, sortedStudents);
