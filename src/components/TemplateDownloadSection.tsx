@@ -48,15 +48,45 @@ import {
   sanitizeDriveUrl,
 } from '../utils/driveHelpers';
 
-import { EditTemplateModal } from './EditTemplateModal';
-import { AnalisisSoalGeneratorModal } from './AnalisisSoalGeneratorModal';
-import { ActiveExamScheduleModal } from './ActiveExamScheduleModal';
-import { PbsCopyModal } from './PbsCopyModal';
 import { checkFeatureAccess, verifyActiveTokenRealtime } from '../services/tokenAuthService';
-import { TokenAccessModal } from './auth/TokenAccessModal';
 import { getActiveTeacherSession, verifyActiveTeacherSessionRealtime } from '../services/teacherStorage';
-import { DriveFolderTransitionModal } from './DriveFolderTransitionModal';
-import { PrintDocumentModal } from './PrintDocumentModal';
+import { LazyModalLoader } from './common/LazyViewLoader';
+
+const EditTemplateModal = React.lazy(() =>
+  import('./EditTemplateModal').then((m) => ({
+    default: m.EditTemplateModal,
+  }))
+);
+const AnalisisSoalGeneratorModal = React.lazy(() =>
+  import('./AnalisisSoalGeneratorModal').then((m) => ({
+    default: m.AnalisisSoalGeneratorModal,
+  }))
+);
+const ActiveExamScheduleModal = React.lazy(() =>
+  import('./ActiveExamScheduleModal').then((m) => ({
+    default: m.ActiveExamScheduleModal,
+  }))
+);
+const PbsCopyModal = React.lazy(() =>
+  import('./PbsCopyModal').then((m) => ({
+    default: m.PbsCopyModal,
+  }))
+);
+const TokenAccessModal = React.lazy(() =>
+  import('./auth/TokenAccessModal').then((m) => ({
+    default: m.TokenAccessModal,
+  }))
+);
+const DriveFolderTransitionModal = React.lazy(() =>
+  import('./DriveFolderTransitionModal').then((m) => ({
+    default: m.DriveFolderTransitionModal,
+  }))
+);
+const PrintDocumentModal = React.lazy(() =>
+  import('./PrintDocumentModal').then((m) => ({
+    default: m.PrintDocumentModal,
+  }))
+);
 
 interface TemplateDownloadSectionProps {
   templates: SchoolTemplateItem[];
@@ -2508,100 +2538,108 @@ export const TemplateDownloadSection: React.FC<
           MODAL JADWAL UJIAN & PENGAWAS RUANG TERPADU
           ====================================================== */}
 
-      <ActiveExamScheduleModal
-        isOpen={showScheduleModal}
-        onClose={closeScheduleModal}
-        schedule={activeExamSchedule || DEFAULT_ACTIVE_EXAM_SCHEDULE}
-        isAdmin={isAdmin}
-        onSaveSchedule={async (updatedSchedule) => {
-          if (onUpdateExamConfig) {
-            await onUpdateExamConfig({
-              activeExamSchedule: updatedSchedule,
-            });
-          }
-        }}
-      />
+      {showScheduleModal && (
+        <React.Suspense fallback={<LazyModalLoader title="Jadwal Ujian" />}>
+          <ActiveExamScheduleModal
+            isOpen={true}
+            onClose={closeScheduleModal}
+            schedule={activeExamSchedule || DEFAULT_ACTIVE_EXAM_SCHEDULE}
+            isAdmin={isAdmin}
+            onSaveSchedule={async (updatedSchedule) => {
+              if (onUpdateExamConfig) {
+                await onUpdateExamConfig({
+                  activeExamSchedule: updatedSchedule,
+                });
+              }
+            }}
+          />
+        </React.Suspense>
+      )}
 
       {/* ======================================================
           EDIT TEMPLATE
           ====================================================== */}
 
-      {editingTemplate &&
-        onUpdateTemplate && (
+      {editingTemplate && onUpdateTemplate && (
+        <React.Suspense fallback={<LazyModalLoader title="Edit Template" />}>
           <EditTemplateModal
-            isOpen={
-              !!editingTemplate
-            }
-            template={
-              editingTemplate
-            }
-            onClose={() =>
-              setEditingTemplate(
-                null
-              )
-            }
-            onSave={async (
-              id,
-              updates
-            ) => {
-              await onUpdateTemplate(
-                id,
-                updates
-              );
-
-              setEditingTemplate(
-                null
-              );
+            isOpen={true}
+            template={editingTemplate}
+            onClose={() => setEditingTemplate(null)}
+            onSave={async (id, updates) => {
+              await onUpdateTemplate(id, updates);
+              setEditingTemplate(null);
             }}
           />
-        )}
+        </React.Suspense>
+      )}
 
-      <AnalisisSoalGeneratorModal
-        isOpen={isAnalisisGeneratorOpen}
-        onClose={() => setIsAnalisisGeneratorOpen(false)}
-      />
+      {isAnalisisGeneratorOpen && (
+        <React.Suspense fallback={<LazyModalLoader title="Generator Analisis Butir Soal" />}>
+          <AnalisisSoalGeneratorModal
+            isOpen={true}
+            onClose={() => setIsAnalisisGeneratorOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
-      <TokenAccessModal
-        isOpen={isTokenModalOpen}
-        featureName={
-          pendingFeatureType === 'evaluation'
-            ? 'Modul Evaluasi Pembelajaran (AI Assistant)'
-            : 'Generator Analisis Butir Soal'
-        }
-        onClose={() => {
-          setIsTokenModalOpen(false);
-          setPendingFeatureType(null);
-        }}
-        onSuccess={() => {
-          setIsTokenModalOpen(false);
-          if (pendingFeatureType === 'evaluation') {
-            setPendingFeatureType(null);
-            if (onOpenEvaluation) onOpenEvaluation();
-          } else {
-            setPendingFeatureType(null);
-            setIsAnalisisGeneratorOpen(true);
-          }
-        }}
-      />
+      {isTokenModalOpen && (
+        <React.Suspense fallback={null}>
+          <TokenAccessModal
+            isOpen={true}
+            featureName={
+              pendingFeatureType === 'evaluation'
+                ? 'Modul Evaluasi Pembelajaran (AI Assistant)'
+                : 'Generator Analisis Butir Soal'
+            }
+            onClose={() => {
+              setIsTokenModalOpen(false);
+              setPendingFeatureType(null);
+            }}
+            onSuccess={() => {
+              setIsTokenModalOpen(false);
+              if (pendingFeatureType === 'evaluation') {
+                setPendingFeatureType(null);
+                if (onOpenEvaluation) onOpenEvaluation();
+              } else {
+                setPendingFeatureType(null);
+                setIsAnalisisGeneratorOpen(true);
+              }
+            }}
+          />
+        </React.Suspense>
+      )}
 
-      <PbsCopyModal
-        isOpen={isPbsModalOpen}
-        onClose={() => setIsPbsModalOpen(false)}
-      />
+      {isPbsModalOpen && (
+        <React.Suspense fallback={<LazyModalLoader title="Template PBS" />}>
+          <PbsCopyModal
+            isOpen={true}
+            onClose={() => setIsPbsModalOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
-      <PrintDocumentModal
-        isOpen={isPrintDocumentModalOpen}
-        onClose={() => setIsPrintDocumentModalOpen(false)}
-      />
+      {isPrintDocumentModalOpen && (
+        <React.Suspense fallback={<LazyModalLoader title="Cetak Dokumen" />}>
+          <PrintDocumentModal
+            isOpen={true}
+            onClose={() => setIsPrintDocumentModalOpen(false)}
+          />
+        </React.Suspense>
+      )}
 
-      <DriveFolderTransitionModal
-        isOpen={driveTransitionModal.isOpen}
-        targetUrl={driveTransitionModal.targetUrl}
-        folderTitle={driveTransitionModal.title}
-        onClose={() =>
-          setDriveTransitionModal({ isOpen: false, targetUrl: '', title: '' })
-        }
-      />
+      {driveTransitionModal.isOpen && (
+        <React.Suspense fallback={null}>
+          <DriveFolderTransitionModal
+            isOpen={true}
+            targetUrl={driveTransitionModal.targetUrl}
+            folderTitle={driveTransitionModal.title}
+            onClose={() =>
+              setDriveTransitionModal({ isOpen: false, targetUrl: '', title: '' })
+            }
+          />
+        </React.Suspense>
+      )}
 
     </section>
   );

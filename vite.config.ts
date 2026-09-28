@@ -11,9 +11,56 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (
+                id.includes('xlsx') ||
+                id.includes('xlsx-js-style') ||
+                id.includes('docx') ||
+                id.includes('jszip') ||
+                id.includes('mammoth')
+              ) {
+                return 'vendor-office';
+              }
+              if (
+                id.includes('jspdf') ||
+                id.includes('html2canvas') ||
+                id.includes('html-to-image')
+              ) {
+                return 'vendor-pdf-canvas';
+              }
+              if (id.includes('firebase')) {
+                return 'vendor-firebase';
+              }
+              if (id.includes('@supabase')) {
+                return 'vendor-supabase';
+              }
+              if (id.includes('@google/genai')) {
+                return 'vendor-gemini';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (
+                id.includes('react') ||
+                id.includes('react-dom') ||
+                id.includes('scheduler')
+              ) {
+                return 'vendor-react';
+              }
+              return 'vendor-misc';
+            }
+          },
+        },
+      },
+      chunkSizeWarningLimit: 1200,
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},

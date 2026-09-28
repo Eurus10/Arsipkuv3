@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   Sparkles,
   GraduationCap,
@@ -14,21 +14,70 @@ import {
   Layers,
 } from 'lucide-react';
 import { DocumentItem } from '../types';
-import { EvaluationLearningView } from './evaluation/EvaluationLearningView';
 import { subscribeToStudents, type Student } from '../services/studentStorage';
+import { LazyViewLoader, LazyModalLoader } from './common/LazyViewLoader';
 
-// Generator Modals
-import { AbsensiGeneratorModal } from './administrasi/AbsensiGeneratorModal';
-import { JadwalPelajaranGeneratorModal } from './administrasi/JadwalPelajaranGeneratorModal';
-import { DaftarNilaiGeneratorModal } from './administrasi/DaftarNilaiGeneratorModal';
-import { DataUsiaGeneratorModal } from './administrasi/DataUsiaGeneratorModal';
-import { SuratOfficialGeneratorModal } from './administrasi/SuratOfficialGeneratorModal';
-import { SimulasiKenaikanKelasWorkspace } from './administrasi/SimulasiKenaikanKelasWorkspace';
-import { LatihanHarianGeneratorModal } from './administrasi/LatihanHarianGeneratorModal';
-import { ModulAjarGeneratorModal } from './administrasi/ModulAjarGeneratorModal';
-import { LkpdGeneratorModal } from './administrasi/LkpdGeneratorModal';
-import { ProtaGeneratorModal } from './administrasi/ProtaGeneratorModal';
-import { PromesGeneratorModal } from './administrasi/PromesGeneratorModal';
+// Lazy Loaded Generator Modals & Workspaces
+const EvaluationLearningView = lazy(() =>
+  import('./evaluation/EvaluationLearningView').then((m) => ({
+    default: m.EvaluationLearningView,
+  }))
+);
+const AbsensiGeneratorModal = lazy(() =>
+  import('./administrasi/AbsensiGeneratorModal').then((m) => ({
+    default: m.AbsensiGeneratorModal,
+  }))
+);
+const JadwalPelajaranGeneratorModal = lazy(() =>
+  import('./administrasi/JadwalPelajaranGeneratorModal').then((m) => ({
+    default: m.JadwalPelajaranGeneratorModal,
+  }))
+);
+const DaftarNilaiGeneratorModal = lazy(() =>
+  import('./administrasi/DaftarNilaiGeneratorModal').then((m) => ({
+    default: m.DaftarNilaiGeneratorModal,
+  }))
+);
+const DataUsiaGeneratorModal = lazy(() =>
+  import('./administrasi/DataUsiaGeneratorModal').then((m) => ({
+    default: m.DataUsiaGeneratorModal,
+  }))
+);
+const SuratOfficialGeneratorModal = lazy(() =>
+  import('./administrasi/SuratOfficialGeneratorModal').then((m) => ({
+    default: m.SuratOfficialGeneratorModal,
+  }))
+);
+const SimulasiKenaikanKelasWorkspace = lazy(() =>
+  import('./administrasi/SimulasiKenaikanKelasWorkspace').then((m) => ({
+    default: m.SimulasiKenaikanKelasWorkspace,
+  }))
+);
+const LatihanHarianGeneratorModal = lazy(() =>
+  import('./administrasi/LatihanHarianGeneratorModal').then((m) => ({
+    default: m.LatihanHarianGeneratorModal,
+  }))
+);
+const ModulAjarGeneratorModal = lazy(() =>
+  import('./administrasi/ModulAjarGeneratorModal').then((m) => ({
+    default: m.ModulAjarGeneratorModal,
+  }))
+);
+const LkpdGeneratorModal = lazy(() =>
+  import('./administrasi/LkpdGeneratorModal').then((m) => ({
+    default: m.LkpdGeneratorModal,
+  }))
+);
+const ProtaGeneratorModal = lazy(() =>
+  import('./administrasi/ProtaGeneratorModal').then((m) => ({
+    default: m.ProtaGeneratorModal,
+  }))
+);
+const PromesGeneratorModal = lazy(() =>
+  import('./administrasi/PromesGeneratorModal').then((m) => ({
+    default: m.PromesGeneratorModal,
+  }))
+);
 
 interface AdministrasiViewProps {
   documents?: DocumentItem[];
@@ -385,7 +434,9 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
   if (showEvaluationModule) {
     return (
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 md:pb-10 text-slate-100 font-sans">
-        <EvaluationLearningView onBack={() => setShowEvaluationModule(false)} />
+        <Suspense fallback={<LazyViewLoader label="Memuat Modul Evaluasi Pembelajaran..." />}>
+          <EvaluationLearningView onBack={() => setShowEvaluationModule(false)} />
+        </Suspense>
       </div>
     );
   }
@@ -393,10 +444,12 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
   if (activeWorkspace === 'simulasi_kenaikan') {
     return (
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4 sm:py-6 pb-24 md:pb-10 text-slate-100 font-sans">
-        <SimulasiKenaikanKelasWorkspace
-          studentsList={studentsList}
-          onBack={() => setActiveWorkspace('none')}
-        />
+        <Suspense fallback={<LazyViewLoader label="Memuat Simulasi Kenaikan Kelas..." />}>
+          <SimulasiKenaikanKelasWorkspace
+            studentsList={studentsList}
+            onBack={() => setActiveWorkspace('none')}
+          />
+        </Suspense>
       </div>
     );
   }
@@ -567,60 +620,100 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
         </div>
       </div>
 
-      {/* Render Generator Modals (Preserved 100% Intact + Prota & Promes) */}
-      <ModulAjarGeneratorModal
-        isOpen={activeModal === 'modul_ajar'}
-        onClose={() => setActiveModal('none')}
-      />
+      {/* Render Lazy Generator Modals On-Demand (Preserved 100% Functionality) */}
+      {activeModal === 'modul_ajar' && (
+        <Suspense fallback={<LazyModalLoader title="Modul Ajar" />}>
+          <ModulAjarGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+          />
+        </Suspense>
+      )}
 
-      <LkpdGeneratorModal
-        isOpen={activeModal === 'lkpd'}
-        onClose={() => setActiveModal('none')}
-      />
+      {activeModal === 'lkpd' && (
+        <Suspense fallback={<LazyModalLoader title="Lembar Kerja Peserta Didik" />}>
+          <LkpdGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+          />
+        </Suspense>
+      )}
 
-      <ProtaGeneratorModal
-        isOpen={activeModal === 'prota'}
-        onClose={() => setActiveModal('none')}
-      />
+      {activeModal === 'prota' && (
+        <Suspense fallback={<LazyModalLoader title="Program Tahunan (Prota)" />}>
+          <ProtaGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+          />
+        </Suspense>
+      )}
 
-      <PromesGeneratorModal
-        isOpen={activeModal === 'promes'}
-        onClose={() => setActiveModal('none')}
-      />
+      {activeModal === 'promes' && (
+        <Suspense fallback={<LazyModalLoader title="Program Semester (Promes)" />}>
+          <PromesGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+          />
+        </Suspense>
+      )}
 
-      <LatihanHarianGeneratorModal
-        isOpen={activeModal === 'latihan_harian'}
-        onClose={() => setActiveModal('none')}
-      />
+      {activeModal === 'latihan_harian' && (
+        <Suspense fallback={<LazyModalLoader title="Latihan Harian" />}>
+          <LatihanHarianGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+          />
+        </Suspense>
+      )}
 
-      <AbsensiGeneratorModal
-        isOpen={activeModal === 'absensi'}
-        onClose={() => setActiveModal('none')}
-        studentsList={studentsList}
-      />
+      {activeModal === 'absensi' && (
+        <Suspense fallback={<LazyModalLoader title="Absensi Bulanan" />}>
+          <AbsensiGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+            studentsList={studentsList}
+          />
+        </Suspense>
+      )}
 
-      <JadwalPelajaranGeneratorModal
-        isOpen={activeModal === 'jadwal'}
-        onClose={() => setActiveModal('none')}
-      />
+      {activeModal === 'jadwal' && (
+        <Suspense fallback={<LazyModalLoader title="Jadwal Pelajaran" />}>
+          <JadwalPelajaranGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+          />
+        </Suspense>
+      )}
 
-      <DaftarNilaiGeneratorModal
-        isOpen={activeModal === 'nilai'}
-        onClose={() => setActiveModal('none')}
-        studentsList={studentsList}
-      />
+      {activeModal === 'nilai' && (
+        <Suspense fallback={<LazyModalLoader title="Daftar Nilai" />}>
+          <DaftarNilaiGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+            studentsList={studentsList}
+          />
+        </Suspense>
+      )}
 
-      <DataUsiaGeneratorModal
-        isOpen={activeModal === 'usia'}
-        onClose={() => setActiveModal('none')}
-        studentsList={studentsList}
-      />
+      {activeModal === 'usia' && (
+        <Suspense fallback={<LazyModalLoader title="Data Usia Siswa" />}>
+          <DataUsiaGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+            studentsList={studentsList}
+          />
+        </Suspense>
+      )}
 
-      <SuratOfficialGeneratorModal
-        isOpen={activeModal === 'surat'}
-        onClose={() => setActiveModal('none')}
-        studentsList={studentsList}
-      />
+      {activeModal === 'surat' && (
+        <Suspense fallback={<LazyModalLoader title="Surat Resmi" />}>
+          <SuratOfficialGeneratorModal
+            isOpen={true}
+            onClose={() => setActiveModal('none')}
+            studentsList={studentsList}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

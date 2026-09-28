@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import {
   Search,
   Calendar,
@@ -25,9 +25,20 @@ import {
 } from '../types';
 import { DocumentCard } from './DocumentCard';
 import { TemplateDownloadSection } from './TemplateDownloadSection';
-import { EvaluationLearningView } from './evaluation/EvaluationLearningView';
-import { PersonalQrisModal } from './PersonalQrisModal';
 import { AppBranding, DEFAULT_BRANDING } from '../services/brandingStorage';
+import { LazyViewLoader } from './common/LazyViewLoader';
+
+const EvaluationLearningView = lazy(() =>
+  import('./evaluation/EvaluationLearningView').then((m) => ({
+    default: m.EvaluationLearningView,
+  }))
+);
+
+const PersonalQrisModal = lazy(() =>
+  import('./PersonalQrisModal').then((m) => ({
+    default: m.PersonalQrisModal,
+  }))
+);
 
 interface DashboardViewProps {
   documents: DocumentItem[];
@@ -186,11 +197,13 @@ export const DashboardView: React.FC<
   if (showEvaluationModule) {
     return (
       <div className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-8 pb-28 md:pb-12 text-slate-100 font-sans">
-        <EvaluationLearningView
-          onBack={() =>
-            setShowEvaluationModule(false)
-          }
-        />
+        <Suspense fallback={<LazyViewLoader label="Memuat Modul Evaluasi Pembelajaran..." />}>
+          <EvaluationLearningView
+            onBack={() =>
+              setShowEvaluationModule(false)
+            }
+          />
+        </Suspense>
       </div>
     );
   }
@@ -652,14 +665,18 @@ export const DashboardView: React.FC<
       )}
 
       {/* Personal QRIS & Profile Management Modal */}
-      <PersonalQrisModal
-        isOpen={isQrisModalOpen}
-        onClose={() => setIsQrisModalOpen(false)}
-        branding={branding}
-        onBrandingUpdated={onUpdateBranding}
-        defaultTab={qrisModalDefaultTab}
-        isAdmin={isAdmin}
-      />
+      {isQrisModalOpen && (
+        <Suspense fallback={null}>
+          <PersonalQrisModal
+            isOpen={true}
+            onClose={() => setIsQrisModalOpen(false)}
+            branding={branding}
+            onBrandingUpdated={onUpdateBranding}
+            defaultTab={qrisModalDefaultTab}
+            isAdmin={isAdmin}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

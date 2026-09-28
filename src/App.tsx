@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import {
   NavTab,
   DocumentItem,
@@ -52,23 +52,84 @@ import { AppBranding, getLocalBranding, subscribeToBranding, updateStoredBrandin
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
-import { AdministrasiView } from './components/AdministrasiView';
-import { SoalView } from './components/SoalView';
-import { SertifikatView } from './components/SertifikatView';
-import { RaporView } from './components/RaporView';
-import { RaporWorkspace } from './components/rapor/RaporWorkspace';
-import { EraporAdminDashboard } from './components/rapor/EraporAdminDashboard';
-import { AdminView } from './components/AdminView';
-import { TrackingSoalView } from './components/TrackingSoalView';
-import { UploadSoalView } from './components/UploadSoalView';
-import { UploadSoalModal } from './components/UploadSoalModal';
-import { LoginModal } from './components/LoginModal';
-import { TeacherAuthModal } from './components/TeacherAuthModal';
-import { EraporAuthModal } from './components/EraporAuthModal';
-import { EditDocumentModal } from './components/EditDocumentModal';
-import { PersonalQrisModal } from './components/PersonalQrisModal';
-import StudentDatabaseView from './components/StudentDatabaseView';
-import AcademicSettingsView from './components/academic/AcademicSettingsView';
+import { LazyViewLoader } from './components/common/LazyViewLoader';
+
+// Lazy-loaded Views for Maximum Initial Mobile Performance
+const AdministrasiView = lazy(() =>
+  import('./components/AdministrasiView').then((m) => ({
+    default: m.AdministrasiView,
+  }))
+);
+const SoalView = lazy(() =>
+  import('./components/SoalView').then((m) => ({
+    default: m.SoalView,
+  }))
+);
+const SertifikatView = lazy(() =>
+  import('./components/SertifikatView').then((m) => ({
+    default: m.SertifikatView,
+  }))
+);
+const RaporView = lazy(() =>
+  import('./components/RaporView').then((m) => ({
+    default: m.RaporView,
+  }))
+);
+const RaporWorkspace = lazy(() =>
+  import('./components/rapor/RaporWorkspace').then((m) => ({
+    default: m.RaporWorkspace,
+  }))
+);
+const EraporAdminDashboard = lazy(() =>
+  import('./components/rapor/EraporAdminDashboard').then((m) => ({
+    default: m.EraporAdminDashboard,
+  }))
+);
+const AdminView = lazy(() =>
+  import('./components/AdminView').then((m) => ({
+    default: m.AdminView,
+  }))
+);
+const TrackingSoalView = lazy(() =>
+  import('./components/TrackingSoalView').then((m) => ({
+    default: m.TrackingSoalView,
+  }))
+);
+const StudentDatabaseView = lazy(() => import('./components/StudentDatabaseView'));
+const AcademicSettingsView = lazy(() => import('./components/academic/AcademicSettingsView'));
+
+// Lazy-loaded Global Modals
+const UploadSoalModal = lazy(() =>
+  import('./components/UploadSoalModal').then((m) => ({
+    default: m.UploadSoalModal,
+  }))
+);
+const LoginModal = lazy(() =>
+  import('./components/LoginModal').then((m) => ({
+    default: m.LoginModal,
+  }))
+);
+const TeacherAuthModal = lazy(() =>
+  import('./components/TeacherAuthModal').then((m) => ({
+    default: m.TeacherAuthModal,
+  }))
+);
+const EraporAuthModal = lazy(() =>
+  import('./components/EraporAuthModal').then((m) => ({
+    default: m.EraporAuthModal,
+  }))
+);
+const EditDocumentModal = lazy(() =>
+  import('./components/EditDocumentModal').then((m) => ({
+    default: m.EditDocumentModal,
+  }))
+);
+const PersonalQrisModal = lazy(() =>
+  import('./components/PersonalQrisModal').then((m) => ({
+    default: m.PersonalQrisModal,
+  }))
+);
+
 import { handleModalPopState } from './utils/modalNavigation';
 import { getTabFromCurrentPath, syncUrlWithTab, TAB_TO_PATH } from './utils/urlRouter';
 import { clearEraporSession, getActiveEraporSession } from './services/teacherEraporAuthService';
@@ -873,268 +934,294 @@ export default function App() {
 
         {/* Content Views */}
         <main className="flex-1 pb-20 md:pb-8">
-          {currentTab === 'dashboard' && (
-            <DashboardView
-              documents={documents}
-              templates={templates}
-              examConfig={examConfig}
-              examSubmissions={examSubmissions}
-              isAdmin={isAdmin}
-              onRequestTeacherAuth={handleRequestTeacherAuth}
-              onNavigate={handleSelectTab}
-              onEditDocument={handleEditFromList}
-              onUpdateTemplate={handleUpdateTemplate}
-              onUpdateExamConfig={handleUpdateExamConfig}
-              onOpenUploadModal={() => setIsUploadModalOpen(true)}
-              onOpenRaporSts={() => handleSelectTab('rapor_sts')}
-              branding={branding}
-              onUpdateBranding={async (newBranding) => {
-                setBranding(newBranding);
-                await updateStoredBranding(newBranding);
-              }}
-            />
-          )}
-
-          {currentTab === 'rapor_sts' && (
-            isAdmin && !previewTeacher ? (
-              <EraporAdminDashboard
-                onBack={() => handleSelectTab('dashboard')}
-                onPreviewTeacher={handlePreviewTeacher}
-                onNavigate={handleSelectTab}
-                showNotification={(msg, type) => {
-                  setAuthNotification({ message: msg, type: type || 'success' });
-                  setTimeout(() => setAuthNotification(null), 3500);
-                }}
-              />
-            ) : (
-              <RaporWorkspace
-                onBack={() => handleSelectTab('dashboard')}
-                isAdmin={isAdmin}
-                previewTeacher={previewTeacher}
-                onLogoutTeacher={handleTeacherLogout}
-              />
-            )
-          )}
-
-          {currentTab === 'administrasi' && (
-            <AdministrasiView
-              documents={documents}
-              onEditDocument={handleEditFromList}
-            />
-          )}
-
-          {currentTab === 'soal' && (
-            <SoalView
-              documents={documents}
-              onEditDocument={handleEditFromList}
-              onNavigateToUpload={() => handleSelectTab('tracking_soal')}
-              onNavigateToTracking={() => handleSelectTab('tracking_soal')}
-            />
-          )}
-
-          {currentTab === 'tracking_soal' && (
-            <TrackingSoalView
-              isAdmin={isAdmin}
-              schoolYears={DEFAULT_SCHOOL_YEAR_OPTIONS}
-              onRequestLogin={() => setIsLoginModalOpen(true)}
-            />
-          )}
-
-          {currentTab === 'sertifikat' && (
-            <SertifikatView
-              documents={documents}
-              onEditDocument={handleEditFromList}
-            />
-          )}
-
-          {currentTab === 'rapor' && (
-            <RaporView
-              documents={documents}
-              onEditDocument={handleEditFromList}
-            />
-          )}
-
-          {currentTab === 'student_db' && (
-            isAdmin ? (
-              <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
-                <StudentDatabaseView
-                  classes={[
-                    { id: '1A', name: '1A' },
-                    { id: '1B', name: '1B' },
-                    { id: '2A', name: '2A' },
-                    { id: '2B', name: '2B' },
-                    { id: '2C', name: '2C' },
-                    { id: '3A', name: '3A' },
-                    { id: '3B', name: '3B' },
-                    { id: '3C', name: '3C' },
-                    { id: '4A', name: '4A' },
-                    { id: '4B', name: '4B' },
-                    { id: '5A', name: '5A' },
-                    { id: '5B', name: '5B' },
-                    { id: '6A', name: '6A' },
-                    { id: '6B', name: '6B' },
-                  ]}
-                />
-              </div>
-            ) : (
-              <div className="max-w-md mx-auto my-20 p-8 bg-[#181B26] border border-[#272D3E] rounded-3xl text-center shadow-2xl">
-                <div className="w-14 h-14 rounded-2xl bg-teal-400/15 border border-teal-400/30 text-teal-400 mx-auto flex items-center justify-center mb-4">
-                  🔒
-                </div>
-                <h2 className="text-lg font-bold text-white mb-2">Halaman Terkunci</h2>
-                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                  Menu Data Siswa hanya dapat diakses oleh Administrator SDIT AL FIKRI.
-                </p>
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="px-6 py-3 bg-teal-400 hover:bg-teal-300 text-slate-950 text-xs font-bold rounded-2xl shadow-lg transition-all cursor-pointer"
-                >
-                  Masuk sebagai Admin
-                </button>
-              </div>
-            )
-          )}
-
-          {currentTab === 'academic_settings' && (
-            isAdmin ? (
-              <AcademicSettingsView
-                showNotification={(msg, type) => {
-                  setAuthNotification({ message: msg, type: type || 'success' });
-                  setTimeout(() => setAuthNotification(null), 3500);
-                }}
-              />
-            ) : (
-              <div className="max-w-md mx-auto my-20 p-8 bg-[#181B26] border border-[#272D3E] rounded-3xl text-center shadow-2xl">
-                <div className="w-14 h-14 rounded-2xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 mx-auto flex items-center justify-center mb-4">
-                  🔒
-                </div>
-                <h2 className="text-lg font-bold text-white mb-2">Halaman Terkunci</h2>
-                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                  Pengaturan Akademik hanya dapat diakses oleh Administrator SDIT AL FIKRI.
-                </p>
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="px-6 py-3 bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-bold rounded-2xl shadow-lg transition-all cursor-pointer"
-                >
-                  Masuk sebagai Admin
-                </button>
-              </div>
-            )
-          )}
-
-          {currentTab === 'admin' && (
-            isAdmin ? (
-              <AdminView
+          <Suspense fallback={<LazyViewLoader label="Memuat halaman..." />}>
+            {currentTab === 'dashboard' && (
+              <DashboardView
                 documents={documents}
                 templates={templates}
                 examConfig={examConfig}
                 examSubmissions={examSubmissions}
-                onAddDocument={handleAddDocument}
-                onUpdateDocument={handleUpdateDocument}
-                onDeleteDocument={handleDeleteDocument}
-                onDeleteMultipleDocuments={handleDeleteMultipleDocuments}
-                onClearAllDocuments={handleClearAllDocuments}
-                onResetDefaults={handleResetDefaults}
-                onLogout={handleLogout}
-                editingDocId={editingDocId}
-                onClearEditing={() => setEditingDocId(null)}
+                isAdmin={isAdmin}
+                onRequestTeacherAuth={handleRequestTeacherAuth}
+                onNavigate={handleSelectTab}
+                onEditDocument={handleEditFromList}
                 onUpdateTemplate={handleUpdateTemplate}
                 onUpdateExamConfig={handleUpdateExamConfig}
-                onUpdateExamSubmission={handleUpdateExamSubmission}
-                onDeleteExamSubmission={handleDeleteExamSubmission}
-                onArchiveExamSubmission={handleArchiveExamSubmission}
+                onOpenUploadModal={() => setIsUploadModalOpen(true)}
+                onOpenRaporSts={() => handleSelectTab('rapor_sts')}
                 branding={branding}
-                onBrandingUpdated={(newBranding) => setBranding(newBranding)}
-                onPreviewTeacher={handlePreviewTeacher}
-                showNotification={(msg, type) => {
-                  setAuthNotification({ message: msg, type: type || 'success' });
-                  setTimeout(() => setAuthNotification(null), 3500);
+                onUpdateBranding={async (newBranding) => {
+                  setBranding(newBranding);
+                  await updateStoredBranding(newBranding);
                 }}
               />
-            ) : (
-              <div className="max-w-md mx-auto my-20 p-8 bg-[#181B26] border border-[#272D3E] rounded-3xl text-center shadow-2xl">
-                <div className="w-14 h-14 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400 mx-auto flex items-center justify-center mb-4">
-                  🔒
+            )}
+
+            {currentTab === 'rapor_sts' && (
+              isAdmin && !previewTeacher ? (
+                <EraporAdminDashboard
+                  onBack={() => handleSelectTab('dashboard')}
+                  onPreviewTeacher={handlePreviewTeacher}
+                  onNavigate={handleSelectTab}
+                  showNotification={(msg, type) => {
+                    setAuthNotification({ message: msg, type: type || 'success' });
+                    setTimeout(() => setAuthNotification(null), 3500);
+                  }}
+                />
+              ) : (
+                <RaporWorkspace
+                  onBack={() => handleSelectTab('dashboard')}
+                  isAdmin={isAdmin}
+                  previewTeacher={previewTeacher}
+                  onLogoutTeacher={handleTeacherLogout}
+                />
+              )
+            )}
+
+            {currentTab === 'administrasi' && (
+              <AdministrasiView
+                documents={documents}
+                onEditDocument={handleEditFromList}
+              />
+            )}
+
+            {currentTab === 'soal' && (
+              <SoalView
+                documents={documents}
+                onEditDocument={handleEditFromList}
+                onNavigateToUpload={() => handleSelectTab('tracking_soal')}
+                onNavigateToTracking={() => handleSelectTab('tracking_soal')}
+              />
+            )}
+
+            {currentTab === 'tracking_soal' && (
+              <TrackingSoalView
+                isAdmin={isAdmin}
+                schoolYears={DEFAULT_SCHOOL_YEAR_OPTIONS}
+                onRequestLogin={() => setIsLoginModalOpen(true)}
+              />
+            )}
+
+            {currentTab === 'sertifikat' && (
+              <SertifikatView
+                documents={documents}
+                onEditDocument={handleEditFromList}
+              />
+            )}
+
+            {currentTab === 'rapor' && (
+              <RaporView
+                documents={documents}
+                onEditDocument={handleEditFromList}
+              />
+            )}
+
+            {currentTab === 'student_db' && (
+              isAdmin ? (
+                <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
+                  <StudentDatabaseView
+                    classes={[
+                      { id: '1A', name: '1A' },
+                      { id: '1B', name: '1B' },
+                      { id: '2A', name: '2A' },
+                      { id: '2B', name: '2B' },
+                      { id: '2C', name: '2C' },
+                      { id: '3A', name: '3A' },
+                      { id: '3B', name: '3B' },
+                      { id: '3C', name: '3C' },
+                      { id: '4A', name: '4A' },
+                      { id: '4B', name: '4B' },
+                      { id: '5A', name: '5A' },
+                      { id: '5B', name: '5B' },
+                      { id: '6A', name: '6A' },
+                      { id: '6B', name: '6B' },
+                    ]}
+                  />
                 </div>
-                <h2 className="text-lg font-bold text-white mb-2">Halaman Terkunci</h2>
-                <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                  Menu Pengaturan & Kelola Data hanya dapat diakses oleh Administrator SDIT AL FIKRI.
-                </p>
-                <button
-                  onClick={() => setIsLoginModalOpen(true)}
-                  className="px-6 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold rounded-2xl shadow-lg transition-all cursor-pointer"
-                >
-                  Masuk sebagai Admin
-                </button>
-              </div>
-            )
-          )}
+              ) : (
+                <div className="max-w-md mx-auto my-20 p-8 bg-[#181B26] border border-[#272D3E] rounded-3xl text-center shadow-2xl">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-400/15 border border-teal-400/30 text-teal-400 mx-auto flex items-center justify-center mb-4">
+                    🔒
+                  </div>
+                  <h2 className="text-lg font-bold text-white mb-2">Halaman Terkunci</h2>
+                  <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                    Menu Data Siswa hanya dapat diakses oleh Administrator SDIT AL FIKRI.
+                  </p>
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="px-6 py-3 bg-teal-400 hover:bg-teal-300 text-slate-950 text-xs font-bold rounded-2xl shadow-lg transition-all cursor-pointer"
+                  >
+                    Masuk sebagai Admin
+                  </button>
+                </div>
+              )
+            )}
+
+            {currentTab === 'academic_settings' && (
+              isAdmin ? (
+                <AcademicSettingsView
+                  showNotification={(msg, type) => {
+                    setAuthNotification({ message: msg, type: type || 'success' });
+                    setTimeout(() => setAuthNotification(null), 3500);
+                  }}
+                />
+              ) : (
+                <div className="max-w-md mx-auto my-20 p-8 bg-[#181B26] border border-[#272D3E] rounded-3xl text-center shadow-2xl">
+                  <div className="w-14 h-14 rounded-2xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-400 mx-auto flex items-center justify-center mb-4">
+                    🔒
+                  </div>
+                  <h2 className="text-lg font-bold text-white mb-2">Halaman Terkunci</h2>
+                  <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                    Pengaturan Akademik hanya dapat diakses oleh Administrator SDIT AL FIKRI.
+                  </p>
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="px-6 py-3 bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-bold rounded-2xl shadow-lg transition-all cursor-pointer"
+                  >
+                    Masuk sebagai Admin
+                  </button>
+                </div>
+              )
+            )}
+
+            {currentTab === 'admin' && (
+              isAdmin ? (
+                <AdminView
+                  documents={documents}
+                  templates={templates}
+                  examConfig={examConfig}
+                  examSubmissions={examSubmissions}
+                  onAddDocument={handleAddDocument}
+                  onUpdateDocument={handleUpdateDocument}
+                  onDeleteDocument={handleDeleteDocument}
+                  onDeleteMultipleDocuments={handleDeleteMultipleDocuments}
+                  onClearAllDocuments={handleClearAllDocuments}
+                  onResetDefaults={handleResetDefaults}
+                  onLogout={handleLogout}
+                  editingDocId={editingDocId}
+                  onClearEditing={() => setEditingDocId(null)}
+                  onUpdateTemplate={handleUpdateTemplate}
+                  onUpdateExamConfig={handleUpdateExamConfig}
+                  onUpdateExamSubmission={handleUpdateExamSubmission}
+                  onDeleteExamSubmission={handleDeleteExamSubmission}
+                  onArchiveExamSubmission={handleArchiveExamSubmission}
+                  branding={branding}
+                  onBrandingUpdated={(newBranding) => setBranding(newBranding)}
+                  onPreviewTeacher={handlePreviewTeacher}
+                  showNotification={(msg, type) => {
+                    setAuthNotification({ message: msg, type: type || 'success' });
+                    setTimeout(() => setAuthNotification(null), 3500);
+                  }}
+                />
+              ) : (
+                <div className="max-w-md mx-auto my-20 p-8 bg-[#181B26] border border-[#272D3E] rounded-3xl text-center shadow-2xl">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400 mx-auto flex items-center justify-center mb-4">
+                    🔒
+                  </div>
+                  <h2 className="text-lg font-bold text-white mb-2">Halaman Terkunci</h2>
+                  <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                    Menu Pengaturan & Kelola Data hanya dapat diakses oleh Administrator SDIT AL FIKRI.
+                  </p>
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="px-6 py-3 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold rounded-2xl shadow-lg transition-all cursor-pointer"
+                  >
+                    Masuk sebagai Admin
+                  </button>
+                </div>
+              )
+            )}
+          </Suspense>
         </main>
       </div>
 
       {/* Teacher Exam Upload Modal Form */}
-      <UploadSoalModal
-        isOpen={isUploadModalOpen}
-        config={examConfig}
-        availableYears={availableYears}
-        onClose={() => setIsUploadModalOpen(false)}
-        onSubmit={handleSubmitExam}
-      />
+      {isUploadModalOpen && (
+        <Suspense fallback={null}>
+          <UploadSoalModal
+            isOpen={true}
+            config={examConfig}
+            availableYears={availableYears}
+            onClose={() => setIsUploadModalOpen(false)}
+            onSubmit={handleSubmitExam}
+          />
+        </Suspense>
+      )}
 
       {/* e-Rapor Authentication Modal */}
-      <EraporAuthModal
-        isOpen={isEraporAuthModalOpen}
-        teacher={activeTeacher}
-        onClose={() => setIsEraporAuthModalOpen(false)}
-        onSuccess={handleEraporAuthSuccess}
-      />
+      {isEraporAuthModalOpen && (
+        <Suspense fallback={null}>
+          <EraporAuthModal
+            isOpen={true}
+            teacher={activeTeacher}
+            onClose={() => setIsEraporAuthModalOpen(false)}
+            onSuccess={handleEraporAuthSuccess}
+          />
+        </Suspense>
+      )}
 
       {/* Teacher Authentication Modal (Whitelist by Name) */}
-      <TeacherAuthModal
-        isOpen={isTeacherModalOpen}
-        onClose={() => {
-          setIsTeacherModalOpen(false);
-          setPendingTabForTeacher(null);
-          setTeacherSuccessCallback(null);
-        }}
-        onSuccess={handleTeacherLoginSuccess}
-        targetFeatureName={teacherTargetName}
-      />
+      {isTeacherModalOpen && (
+        <Suspense fallback={null}>
+          <TeacherAuthModal
+            isOpen={true}
+            onClose={() => {
+              setIsTeacherModalOpen(false);
+              setPendingTabForTeacher(null);
+              setTeacherSuccessCallback(null);
+            }}
+            onSuccess={handleTeacherLoginSuccess}
+            targetFeatureName={teacherTargetName}
+          />
+        </Suspense>
+      )}
 
       {/* In-Place Quick Edit Document Modal for all views */}
-      <EditDocumentModal
-        isOpen={isEditDocModalOpen}
-        document={docToEditModal}
-        availableYears={availableYears}
-        onClose={() => {
-          setIsEditDocModalOpen(false);
-          setDocToEditModal(null);
-        }}
-        onSave={handleSaveDocModal}
-        onDelete={handleDeleteDocModal}
-      />
+      {isEditDocModalOpen && (
+        <Suspense fallback={null}>
+          <EditDocumentModal
+            isOpen={true}
+            document={docToEditModal}
+            availableYears={availableYears}
+            onClose={() => {
+              setIsEditDocModalOpen(false);
+              setDocToEditModal(null);
+            }}
+            onSave={handleSaveDocModal}
+            onDelete={handleDeleteDocModal}
+          />
+        </Suspense>
+      )}
 
       {/* Login Authentication Modal */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => {
-          setIsLoginModalOpen(false);
-          setPendingDocToEdit(null);
-        }}
-        onSuccess={handleLoginSuccess}
-      />
+      {isLoginModalOpen && (
+        <Suspense fallback={null}>
+          <LoginModal
+            isOpen={true}
+            onClose={() => {
+              setIsLoginModalOpen(false);
+              setPendingDocToEdit(null);
+            }}
+            onSuccess={handleLoginSuccess}
+          />
+        </Suspense>
+      )}
 
       {/* Global Mobile QRIS & Profile Modal */}
-      <PersonalQrisModal
-        isOpen={isAppQrisModalOpen}
-        onClose={() => setIsAppQrisModalOpen(false)}
-        branding={branding}
-        onBrandingUpdated={async (newBranding) => {
-          setBranding(newBranding);
-          await updateStoredBranding(newBranding);
-        }}
-        isAdmin={isAdmin}
-      />
+      {isAppQrisModalOpen && (
+        <Suspense fallback={null}>
+          <PersonalQrisModal
+            isOpen={true}
+            onClose={() => setIsAppQrisModalOpen(false)}
+            branding={branding}
+            onBrandingUpdated={async (newBranding) => {
+              setBranding(newBranding);
+              await updateStoredBranding(newBranding);
+            }}
+            isAdmin={isAdmin}
+          />
+        </Suspense>
+      )}
 
       {/* Android Double-Back to Exit Floating Notification */}
       {showExitPrompt && (
@@ -1146,3 +1233,4 @@ export default function App() {
     </div>
   );
 }
+
