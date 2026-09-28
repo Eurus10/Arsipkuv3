@@ -11,6 +11,14 @@ const ACTIVE_SESSION_STORAGE_KEY = 'sdit_analysis_active_session';
 const SAVED_SESSIONS_STORAGE_KEY = 'sdit_analysis_saved_sessions_list';
 const CLASS_SESSIONS_MAP_KEY = 'sdit_analysis_class_sessions_map';
 
+let memoryClassSessionsMap: Record<string, AnalysisSession> | null = null;
+let memoryActiveSession: AnalysisSession | null = null;
+
+export function invalidateSessionsCache(): void {
+  memoryClassSessionsMap = null;
+  memoryActiveSession = null;
+}
+
 /**
  * Buat ID Sesi yang unik
  */
@@ -23,16 +31,24 @@ export function generateSessionId(classId: string, examType: string): string {
 }
 
 /**
- * Ambil semua sesi kelas yang tersimpan
+ * Ambil semua sesi kelas yang tersimpan (dengan memory caching untuk performa tinggi)
  */
-export function getAllClassSessions(): Record<string, AnalysisSession> {
+export function getAllClassSessions(forceReload = false): Record<string, AnalysisSession> {
+  if (memoryClassSessionsMap && !forceReload) {
+    return memoryClassSessionsMap;
+  }
   try {
     const raw = localStorage.getItem(CLASS_SESSIONS_MAP_KEY);
-    if (!raw) return {};
+    if (!raw) {
+      memoryClassSessionsMap = {};
+      return {};
+    }
     const map = JSON.parse(raw);
-    return typeof map === 'object' && map !== null ? map : {};
+    memoryClassSessionsMap = typeof map === 'object' && map !== null ? map : {};
+    return memoryClassSessionsMap;
   } catch (err) {
     console.error('Failed to parse all class sessions:', err);
+    memoryClassSessionsMap = {};
     return {};
   }
 }
@@ -64,11 +80,13 @@ export function saveSessionForClass(session: AnalysisSession): void {
     const all = getAllClassSessions();
     const key = session.classId.toLowerCase().trim();
     all[key] = session;
+    memoryClassSessionsMap = all;
     localStorage.setItem(CLASS_SESSIONS_MAP_KEY, JSON.stringify(all));
 
     // Jika ini adalah kelas yang sedang aktif, update juga active session
     const active = getActiveSession();
     if (!active || active.classId.toLowerCase().trim() === key) {
+      memoryActiveSession = session;
       localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify(session));
     }
   } catch (err) {
@@ -134,6 +152,7 @@ export function createNewSession(params: {
 export function saveActiveSession(session: AnalysisSession): void {
   try {
     session.updatedAt = new Date().toISOString();
+    memoryActiveSession = session;
     const serialized = JSON.stringify(session);
     localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, serialized);
 
@@ -141,6 +160,7 @@ export function saveActiveSession(session: AnalysisSession): void {
     const all = getAllClassSessions();
     if (session.classId) {
       all[session.classId.toLowerCase().trim()] = session;
+      memoryClassSessionsMap = all;
       localStorage.setItem(CLASS_SESSIONS_MAP_KEY, JSON.stringify(all));
     }
 
@@ -179,19 +199,28 @@ export function saveActiveSession(session: AnalysisSession): void {
 }
 
 /**
- * Ambil sesi aktif yang tersimpan di LocalStorage
+ * Ambil sesi aktif yang tersimpan di LocalStorage (dengan memory caching)
  */
-export function getActiveSession(): AnalysisSession | null {
+export function getActiveSession(forceReload = false): AnalysisSession | null {
+  if (memoryActiveSession && !forceReload) {
+    return memoryActiveSession;
+  }
   try {
     const raw = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
-    if (!raw) return null;
+    if (!raw) {
+      memoryActiveSession = null;
+      return null;
+    }
     const session = JSON.parse(raw) as AnalysisSession;
     if (session && session.formatType === 'ANALYSIS_PROJECT') {
+      memoryActiveSession = session;
       return session;
     }
+    memoryActiveSession = null;
     return null;
   } catch (err) {
     console.error('Failed to parse active session from localStorage:', err);
+    memoryActiveSession = null;
     return null;
   }
 }
@@ -201,6 +230,7 @@ export function getActiveSession(): AnalysisSession | null {
  */
 export function clearActiveSession(): void {
   try {
+    memoryActiveSession = null;
     localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
   } catch (err) {
     console.error('Failed to clear active session:', err);
@@ -407,7 +437,6 @@ export function saveStudentSubjectResult(
   };
 
   saveActiveSession(updatedSession);
-  saveSessionForClass(updatedSession);
   return updatedSession;
 }
 
