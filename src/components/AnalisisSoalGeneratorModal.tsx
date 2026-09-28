@@ -118,8 +118,9 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
     }
   }, [blankClassId]);
 
-  // Subscribe to students in realtime
+  // Subscribe to students in realtime (hanya saat modal terbuka untuk hemat memori & CPU)
   useEffect(() => {
+    if (!isOpen) return;
     setIsLoadingStudents(true);
     const unsubscribe = subscribeToStudents(
       (data) => {
@@ -132,7 +133,7 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [isOpen]);
 
   // Real-time security watchdog: if admin revokes token or removes device while modal is open, auto close modal
   useEffect(() => {
