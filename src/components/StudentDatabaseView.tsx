@@ -29,6 +29,7 @@ import {
   addStudent,
   deleteStudent,
   subscribeToStudents,
+  getStoredStudentsLocal,
   updateStudent,
   getStoredSchools,
   saveStoredSchool,
@@ -197,11 +198,16 @@ const StudentDatabaseView: React.FC<
     const handleError = (supabaseError: Error) => {
       if (disposed) return;
 
-      console.error('[StudentDatabaseView] Gagal mengambil data siswa:', supabaseError);
-      setError(
-        supabaseError?.message ||
-          'Gagal mengambil database peserta didik dari Supabase.'
-      );
+      console.warn('[StudentDatabaseView] Fallback ke database peserta didik lokal:', supabaseError);
+      const cached = getStoredStudentsLocal();
+      if (cached.length > 0) {
+        applyStudents(cached);
+      } else {
+        setError(
+          supabaseError?.message ||
+            'Gagal mengambil database peserta didik dari server.'
+        );
+      }
       setIsLoading(false);
       setIsRefreshing(false);
     };
@@ -217,18 +223,8 @@ const StudentDatabaseView: React.FC<
     setError('');
     subscribe();
 
-    // Fallback polling setiap 5 detik.
-    // Ini membuat UI tetap otomatis diperbarui walaupun Supabase Realtime
-    // belum diaktifkan pada publication/table project.
-    const autoRefreshInterval = window.setInterval(() => {
-      if (disposed) return;
-      setIsRefreshing(true);
-      subscribe();
-    }, 5000);
-
     return () => {
       disposed = true;
-      window.clearInterval(autoRefreshInterval);
       activeUnsubscribe?.();
       activeUnsubscribe = null;
     };

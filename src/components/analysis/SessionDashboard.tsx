@@ -21,6 +21,10 @@ import {
   GraduationCap,
   FileText,
   Building2,
+  Send,
+  Printer,
+  AlertCircle,
+  MessageSquare,
 } from 'lucide-react';
 import {
   AnalysisSession,
@@ -30,6 +34,14 @@ import { Student, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
 import { MasterClass } from '../../data/masterExamData';
 import { calculateSubjectSummaryStats } from '../../services/analysis/analysisCalculationService';
 import { exportAnalysisProjectToExcel } from '../../services/analysis/analysisExcelService';
+import { SendToPakZakiModal } from './SendToPakZakiModal';
+import { AnalysisSubmissionChatModal } from './AnalysisSubmissionChatModal';
+import {
+  subscribeToAnalysisSubmissions,
+  getLocalAnalysisSubmissions,
+} from '../../services/analysisSubmissionService';
+import { getActiveTeacherSession } from '../../services/teacherStorage';
+import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
 
 interface SessionDashboardProps {
   session: AnalysisSession;
@@ -61,6 +73,26 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
   onSwitchClass,
 }) => {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [isSendToPakZakiOpen, setIsSendToPakZakiOpen] = useState<boolean>(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState<boolean>(false);
+  const [submissions, setSubmissions] = useState<AnalysisSubmissionItem[]>(() =>
+    getLocalAnalysisSubmissions()
+  );
+
+  React.useEffect(() => {
+    const unsubscribe = subscribeToAnalysisSubmissions((items) => {
+      setSubmissions(items);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const classSubmission = useMemo(() => {
+    return submissions.find(
+      (s) =>
+        s.classId.toLowerCase().includes(session.classId.toLowerCase()) &&
+        (!s.examType || s.examType.toLowerCase() === session.examType.toLowerCase())
+    );
+  }, [submissions, session.classId, session.examType]);
 
   // Filter students for the active class & school
   const classStudents = students.filter(
@@ -215,6 +247,17 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
               <span className="tracking-wide">Rekapitulasi Nilai Seluruh Mapel</span>
             </button>
 
+            {/* 2b. Kirim ke Pak Zaki */}
+            <button
+              type="button"
+              onClick={() => setIsSendToPakZakiOpen(true)}
+              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center justify-center gap-2 border border-emerald-400/40 shadow-lg shadow-emerald-500/20 cursor-pointer transition-all"
+              title="Kirim lembar analisis kelas ini langsung ke Pak Zaki"
+            >
+              <Send className="w-4 h-4 text-emerald-100 shrink-0" />
+              <span>🚀 Kirim ke Pak Zaki</span>
+            </button>
+
             {/* 3. Secondary Utility Deck: Download Excel, Import Guru Mapel, Ganti Sesi */}
             <div className="grid grid-cols-3 gap-2">
               {/* Download Excel */}
@@ -253,6 +296,156 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* ====================================================
+          STATUS SETORAN & CATATAN REVISI DARI PAK ZAKI
+          ==================================================== */}
+      {classSubmission && (
+        <div className="animate-fadeIn">
+          {classSubmission.status === 'revisi' && (
+            <div className="bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm font-black text-amber-200 uppercase tracking-wide">
+                        ⚠️ Catatan Revisi dari Pak Zaki
+                      </h4>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/25 text-amber-300 font-extrabold border border-amber-500/40">
+                        Perlu Perbaikan
+                      </span>
+                    </div>
+                    <div className="text-xs text-white font-medium bg-slate-950/70 p-3 rounded-xl border border-amber-500/20 mt-1.5 leading-relaxed">
+                      "{classSubmission.adminNote || 'Mohon periksa kembali kelengkapan skor siswa.'}"
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Silakan sesuaikan nilai atau butir soal di bawah, lalu klik tombol kirim ulang.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap shrink-0 self-start sm:self-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsChatModalOpen(true)}
+                    className="px-3.5 py-2.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-300" />
+                    <span>💬 Diskusi {classSubmission.messages?.length ? `(${classSubmission.messages.length})` : ''}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsSendToPakZakiOpen(true)}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/25 cursor-pointer transition-all"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>🚀 Kirim Ulang ke Pak Zaki</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {classSubmission.status === 'telah_diprint' && (
+            <div className="bg-gradient-to-r from-cyan-500/20 via-teal-500/15 to-transparent border border-cyan-400/40 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shrink-0 shadow-sm">
+                  <Printer className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs sm:text-sm font-black text-cyan-200">
+                      🖨️ Telah di-Print oleh Pak Zaki
+                    </h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-extrabold border border-cyan-500/40">
+                      Selesai Dicetak
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Berkas fisik analisis kelas ini telah dicetak oleh Pak Zaki untuk pengesahan &amp; arsip sekolah.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChatModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-cyan-300" />
+                <span>💬 Ruang Diskusi {classSubmission.messages?.length ? `(${classSubmission.messages.length})` : ''}</span>
+              </button>
+            </div>
+          )}
+
+          {classSubmission.status === 'disetujui' && (
+            <div className="bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent border border-emerald-400/30 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0 shadow-sm">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs sm:text-sm font-black text-emerald-200">
+                      ✓ Telah Disetujui oleh Pak Zaki
+                    </h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/40">
+                      Disetujui
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Lembar analisis kelas ini telah diverifikasi &amp; disetujui. Menunggu giliran cetak fisik.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChatModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-300" />
+                <span>💬 Ruang Diskusi {classSubmission.messages?.length ? `(${classSubmission.messages.length})` : ''}</span>
+              </button>
+            </div>
+          )}
+
+          {classSubmission.status === 'menunggu' && (
+            <div className="bg-gradient-to-r from-sky-500/15 via-slate-900/60 to-transparent border border-sky-400/30 rounded-2xl p-3.5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 text-sky-300 flex items-center justify-center shrink-0">
+                  <Clock3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-sky-200">
+                    ⏳ Sedang Menunggu Verifikasi Pak Zaki
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Lembar analisis telah disetorkan ke Pak Zaki. Menunggu pemeriksaan.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChatModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-sky-300" />
+                <span>💬 Ruang Diskusi {classSubmission.messages?.length ? `(${classSubmission.messages.length})` : ''}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ====================================================
           SUBJECT CARDS GRID
@@ -457,6 +650,50 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal Kirim ke Pak Zaki */}
+      <SendToPakZakiModal
+        isOpen={isSendToPakZakiOpen}
+        onClose={() => setIsSendToPakZakiOpen(false)}
+        submissionType="session"
+        subjectName={
+          session.subjects.length > 0
+            ? session.subjects.map((s) => s.subjectName).join(', ')
+            : 'Rekap Analisis Kelas'
+        }
+        classId={session.classId}
+        className={`Kelas ${session.className}`}
+        examType={session.examType}
+        schoolYear={session.schoolYear}
+        teacherName={session.teacherName}
+        kktp={session.kktp}
+        totalStudents={totalStudents}
+        completedStudents={
+          session.subjects.reduce(
+            (acc, subj) => acc + Object.keys(subj.studentResults || {}).length,
+            0
+          )
+        }
+        payload={{
+          session,
+          students: classStudents,
+        }}
+      />
+
+      {/* Analysis Submission Chat / Discussion Modal for Walas */}
+      {classSubmission && (
+        <AnalysisSubmissionChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          submission={classSubmission}
+          currentUserRole="guru"
+          currentUserName={
+            getActiveTeacherSession()?.name ||
+            session.teacherName ||
+            `Wali Kelas ${session.className}`
+          }
+        />
+      )}
     </div>
   );
 };

@@ -13,6 +13,7 @@ import {
 import {
   type Student,
   subscribeToStudents,
+  getStoredStudentsLocal,
   DEFAULT_SCHOOL_NAME,
   cleanNisn,
 } from '../services/studentStorage';
@@ -57,7 +58,11 @@ export const PbsCopyModal: React.FC<PbsCopyModalProps> = ({
         setIsLoading(false);
       },
       (err) => {
-        console.error('Failed to load students for PBS:', err);
+        console.warn('Gagal memuat data siswa via cloud, menggunakan cache lokal:', err);
+        const cached = getStoredStudentsLocal();
+        if (cached && cached.length > 0) {
+          setStudents(cached);
+        }
         setIsLoading(false);
       }
     );

@@ -133,6 +133,7 @@ function buildStudentRaporWorksheet(
 ) {
   const { config, subjects, subjectRecords, additionalInfo } = classData;
   const ws: any = {};
+  const rowHeights: { hpt: number }[] = [];
   let r = 0;
 
   const setCell = (rowIdx: number, colIdx: number, val: any, style?: any) => {
@@ -335,6 +336,10 @@ function buildStudentRaporWorksheet(
         border: BORDER_BLACK_THIN,
       });
 
+      // Calculate dynamic row height based on description length to avoid text clipping
+      const descLines = Math.max(1, Math.ceil((desc || '').length / 45));
+      rowHeights[r] = { hpt: Math.max(22, descLines * 15) };
+
       r++;
     });
   };
@@ -482,6 +487,26 @@ function buildStudentRaporWorksheet(
     { wch: 72 }, // Kolom D: CAPAIAN KOMPETENSI
   ];
 
+  ws['!rows'] = rowHeights;
+
+  // Standar Halaman Cetak Excel (A4, Fit to 1 Page Width, Dynamic Vertical Flow)
+  ws['!pageSetup'] = {
+    orientation: 'portrait',
+    paperSize: 9, // A4
+    fitToWidth: 1,
+    fitToHeight: 0,
+    fitToPage: true,
+  };
+
+  ws['!margins'] = {
+    left: 0.4,
+    right: 0.4,
+    top: 0.5,
+    bottom: 0.5,
+    header: 0.2,
+    footer: 0.2,
+  };
+
   ws['!merges'] = merges;
   ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r + 1, c: 3 } });
 
@@ -608,31 +633,57 @@ function createDocxStudentSection(
     })
   );
 
-  // 2. IDENTITAS SISWA (Tabel 2 kolom tanpa border)
+  // 2. IDENTITAS SISWA (Tabel 6 kolom tanpa border untuk presisi titik dua)
+  const identityBorderNone = { style: BorderStyle.NONE };
+  const cellBorderNone = {
+    top: identityBorderNone,
+    bottom: identityBorderNone,
+    left: identityBorderNone,
+    right: identityBorderNone,
+  };
+
   const identityTable = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: {
-      top: { style: BorderStyle.NONE },
-      bottom: { style: BorderStyle.NONE },
-      left: { style: BorderStyle.NONE },
-      right: { style: BorderStyle.NONE },
-      insideHorizontal: { style: BorderStyle.NONE },
-      insideVertical: { style: BorderStyle.NONE },
+      top: identityBorderNone,
+      bottom: identityBorderNone,
+      left: identityBorderNone,
+      right: identityBorderNone,
+      insideHorizontal: identityBorderNone,
+      insideVertical: identityBorderNone,
     },
     rows: [
+      // Baris 1: NAMA (Kiri) | NIM/NISN (Kanan)
       new TableRow({
+        cantSplit: true,
         children: [
           new TableCell({
-            width: { size: 60, type: WidthType.PERCENTAGE },
+            width: { size: 24, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 40 },
+                children: [new TextRun({ text: 'NAMA', font: DOCX_FONT_FAMILY, size: 19 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 3, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 40 },
+                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 28, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
             children: [
               new Paragraph({
                 spacing: { after: 40 },
                 children: [
-                  new TextRun({
-                    text: 'NAMA                               : ',
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
                   new TextRun({
                     text: student.name.toUpperCase(),
                     bold: true,
@@ -641,14 +692,83 @@ function createDocxStudentSection(
                   }),
                 ],
               }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 16, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 40 },
+                children: [new TextRun({ text: 'NIM / NISN', font: DOCX_FONT_FAMILY, size: 19 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 3, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 40 },
+                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 26, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 40 },
+                children: [
+                  new TextRun({
+                    text: formatStudentNimNisn(student.nim, student.nisn),
+                    font: DOCX_FONT_FAMILY,
+                    size: 19,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      // Baris 2: TEMPAT, TANGGAL LAHIR (Kiri) | KELAS (Kanan)
+      new TableRow({
+        cantSplit: true,
+        children: [
+          new TableCell({
+            width: { size: 24, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
               new Paragraph({
                 spacing: { after: 120 },
                 children: [
                   new TextRun({
-                    text: 'TEMPAT, TANGGAL LAHIR : ',
+                    text: 'TEMPAT, TANGGAL LAHIR',
                     font: DOCX_FONT_FAMILY,
                     size: 19,
                   }),
+                ],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 3, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 120 },
+                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 28, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 120 },
+                children: [
                   new TextRun({
                     text: formatStudentTTL(student.tempatLahir, student.tanggalLahir),
                     font: DOCX_FONT_FAMILY,
@@ -659,31 +779,32 @@ function createDocxStudentSection(
             ],
           }),
           new TableCell({
-            width: { size: 40, type: WidthType.PERCENTAGE },
+            width: { size: 16, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
             children: [
               new Paragraph({
-                spacing: { after: 40 },
-                children: [
-                  new TextRun({
-                    text: 'NIM/NISN : ',
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                  new TextRun({
-                    text: formatStudentNimNisn(student.nim, student.nisn),
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                ],
+                spacing: { after: 120 },
+                children: [new TextRun({ text: 'KELAS', font: DOCX_FONT_FAMILY, size: 19 })],
               }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 3, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
+              new Paragraph({
+                spacing: { after: 120 },
+                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 26, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
+            children: [
               new Paragraph({
                 spacing: { after: 120 },
                 children: [
-                  new TextRun({
-                    text: 'KELAS       : ',
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
                   new TextRun({
                     text: activeClass,
                     font: DOCX_FONT_FAMILY,
@@ -713,6 +834,8 @@ function createDocxStudentSection(
   // Header Baris 1
   tableRows.push(
     new TableRow({
+      tableHeader: true,
+      cantSplit: true,
       children: [
         new TableCell({
           rowSpan: 2,
@@ -776,6 +899,8 @@ function createDocxStudentSection(
   // Header Baris 2
   tableRows.push(
     new TableRow({
+      tableHeader: true,
+      cantSplit: true,
       children: [
         new TableCell({
           width: { size: 14, type: WidthType.PERCENTAGE },
@@ -822,6 +947,7 @@ function createDocxStudentSection(
   const addDocxCategory = (roman: string, catTitle: string) => {
     tableRows.push(
       new TableRow({
+        cantSplit: true,
         children: [
           new TableCell({
             width: { size: 6, type: WidthType.PERCENTAGE },
@@ -877,6 +1003,7 @@ function createDocxStudentSection(
 
       tableRows.push(
         new TableRow({
+          cantSplit: true,
           children: [
             new TableCell({
               width: { size: 6, type: WidthType.PERCENTAGE },
@@ -1002,6 +1129,7 @@ function createDocxStudentSection(
     borders: cellBorders,
     rows: [
       new TableRow({
+        cantSplit: true,
         children: [
           new TableCell({
             borders: cellBorders,
@@ -1056,6 +1184,7 @@ function createDocxStudentSection(
     },
     rows: [
       new TableRow({
+        cantSplit: true,
         children: [
           new TableCell({
             width: { size: 50, type: WidthType.PERCENTAGE },
@@ -1141,6 +1270,7 @@ function createDocxStudentSection(
     },
     rows: [
       new TableRow({
+        cantSplit: true,
         children: [
           new TableCell({
             width: { size: 100, type: WidthType.PERCENTAGE },

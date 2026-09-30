@@ -322,12 +322,13 @@ export const subscribeToStudents = (
         callback(students);
       }
     } catch (err: any) {
-      console.warn('[Supabase] Gagal mengambil data siswa, fallback ke cache lokal:', err);
+      console.warn('[Supabase] Gagal mengambil data siswa dari cloud, fallback ke cache lokal:', err);
       const cached = getStoredStudentsLocal();
       if (cached.length > 0) {
         callback(cached);
+      } else {
+        onError?.(err instanceof Error ? err : new Error(String(err)));
       }
-      onError?.(err instanceof Error ? err : new Error(String(err)));
     }
   };
 

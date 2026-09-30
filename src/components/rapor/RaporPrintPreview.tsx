@@ -133,7 +133,7 @@ async function renderElementToCanvas(element: HTMLElement): Promise<HTMLCanvasEl
     allowTaint: true,
     logging: false,
     backgroundColor: '#ffffff',
-    windowWidth: 850,
+    windowWidth: element.clientWidth || 800,
     onclone: (clonedDoc) => {
       sanitizeModernColorsInClonedDoc(clonedDoc);
     },
@@ -142,116 +142,219 @@ async function renderElementToCanvas(element: HTMLElement): Promise<HTMLCanvasEl
 
 /**
  * Renders an element to multi-page or single-page PDF with exact 1cm (10mm) margins.
- * Intelligent Slicing:
- * - Scans logical break points (table row borders, note borders, signature section)
- * - Prevents cutting through lines of text or across table rows
- * - Generates crisp, clean pages where each page respects 10mm top & bottom margins
+ * Refined PDF Architecture:
+ * - Renders inside an isolated offscreen container (0 padding, 0 shadow, 0 screen borders)
+ * - Fills 100% of usable width (190mm A4 / 195mm F4) from margin to margin without center shrinking
+ * - Slices only at valid table row boundaries or section boundaries
+ * - Repeats table header (thead) on page 2 if table spans across pages
+ * - Preserves Catatan Guru and TTD sections without cutting signatures in half
  */
 async function addElementToPdf(
   pdf: jsPDF,
   element: HTMLElement,
-  isFirstPageInDocument: boolean = true
+  isFirstPageInDocument: boolean = true,
+  paperSize: 'a4' | 'f4' = 'a4'
 ): Promise<void> {
-  const pageWidth = 210; // A4 mm
-  const pageHeight = 297; // A4 mm
+  const isF4 = paperSize === 'f4';
+  const pageWidth = isF4 ? 215 : 210; // mm
+  const pageHeight = isF4 ? 330 : 297; // mm
   const margin = 10; // 10 mm = 1.0 cm exactly
-  const usableWidth = pageWidth - margin * 2; // 190 mm
-  const usableHeight = pageHeight - margin * 2; // 277 mm
+  const usableWidth = pageWidth - margin * 2; // 195 mm (F4) or 190 mm (A4)
+  const usableHeight = pageHeight - margin * 2; // 310 mm (F4) or 277 mm (A4)
 
-  const fullCanvas = await renderElementToCanvas(element);
-  const pxPerMm = fullCanvas.width / usableWidth;
-  const maxPageHeightPx = usableHeight * pxPerMm;
+  // 1. Create an isolated offscreen staging container with clean 0-padding, 0-border, 0-shadow
+  // at exact proportional pixel width (A4: 760px, F4: 780px)
+  const targetWidthPx = isF4 ? 780 : 760;
+  const offscreenContainer = document.createElement('div');
+  offscreenContainer.style.position = 'fixed';
+  offscreenContainer.style.left = '-9999px';
+  offscreenContainer.style.top = '0';
+  offscreenContainer.style.width = `${targetWidthPx}px`;
+  offscreenContainer.style.zIndex = '-9999';
+  offscreenContainer.style.opacity = '1';
+  offscreenContainer.style.backgroundColor = '#ffffff';
 
-  // If the content comfortably fits in 1 page (allow slight 6% tolerance with compact scale)
-  if (fullCanvas.height <= maxPageHeightPx * 1.06) {
-    if (!isFirstPageInDocument) {
-      pdf.addPage();
+  const cleanClone = element.cloneNode(true) as HTMLElement;
+  cleanClone.id = 'clean-rapor-pdf-render';
+  cleanClone.style.margin = '0';
+  cleanClone.style.padding = '0';
+  cleanClone.style.border = 'none';
+  cleanClone.style.boxShadow = 'none';
+  cleanClone.style.borderRadius = '0';
+  cleanClone.style.maxWidth = 'none';
+  cleanClone.style.width = '100%';
+  cleanClone.style.backgroundColor = '#ffffff';
+  cleanClone.style.color = '#000000';
+
+  offscreenContainer.appendChild(cleanClone);
+  document.body.appendChild(offscreenContainer);
+
+  try {
+    const fullCanvas = await renderElementToCanvas(cleanClone);
+    const pxPerMm = fullCanvas.width / usableWidth;
+    const maxPageHeightPx = usableHeight * pxPerMm;
+
+    // A. Single-Page: Content comfortably fits in 1 page
+    if (fullCanvas.height <= maxPageHeightPx) {
+      if (!isFirstPageInDocument) {
+        pdf.addPage();
+      }
+      const finalHeightMm = (fullCanvas.height * usableWidth) / fullCanvas.width;
+      const imgData = fullCanvas.toDataURL('image/jpeg', 0.98);
+      // Fills 100% usable width without centering offset or horizontal shrinkage
+      pdf.addImage(imgData, 'JPEG', margin, margin, usableWidth, finalHeightMm);
+      return;
     }
-    const finalHeightMm = Math.min(usableHeight, fullCanvas.height / pxPerMm);
-    const finalWidthMm = (fullCanvas.width * finalHeightMm) / fullCanvas.height;
-    const xOffset = margin + (usableWidth - finalWidthMm) / 2;
-    const imgData = fullCanvas.toDataURL('image/jpeg', 0.96);
-    pdf.addImage(imgData, 'JPEG', xOffset, margin, finalWidthMm, finalHeightMm);
-    return;
-  }
 
-  // Multi-page handling: Determine safe vertical slice positions based on DOM child elements
-  const elementRect = element.getBoundingClientRect();
-  const safeBreakYList: number[] = [];
+    // B. Multi-Page: Content extends beyond 1 page
+    // Safe row-boundary slicing + repeated table header on subsequent pages
+    const cloneRect = cleanClone.getBoundingClientRect();
+    const scaleY = fullCanvas.height / cloneRect.height;
 
-  // Identify all potential safe break elements (table rows, notes block, signature block)
-  const candidateElements = element.querySelectorAll('tr, .mb-6, .pt-2, h1, h2, h3, table');
-  candidateElements.forEach((child) => {
-    const rect = child.getBoundingClientRect();
-    const relativeBottomPx = (rect.bottom - elementRect.top) * (fullCanvas.height / elementRect.height);
-    if (relativeBottomPx > 0 && relativeBottomPx < fullCanvas.height) {
-      safeBreakYList.push(relativeBottomPx);
-    }
-  });
-
-  // Sort and remove duplicates
-  safeBreakYList.sort((a, b) => a - b);
-
-  let currentSourceY = 0;
-  let pageCount = 0;
-
-  while (currentSourceY < fullCanvas.height - 5) {
-    pageCount++;
-    if (!isFirstPageInDocument || pageCount > 1) {
-      pdf.addPage();
-    }
-
-    const remainingHeightPx = fullCanvas.height - currentSourceY;
-
-    let sliceHeightPx: number;
-    if (remainingHeightPx <= maxPageHeightPx) {
-      // Remaining content fits on this final page
-      sliceHeightPx = remainingHeightPx;
-    } else {
-      // Find the largest safe cut point <= currentSourceY + maxPageHeightPx
-      const targetMaxCut = currentSourceY + maxPageHeightPx;
-      // We look for a safe break within [targetMaxCut - 220px, targetMaxCut]
-      const validCuts = safeBreakYList.filter(
-        (y) => y > currentSourceY + 80 && y <= targetMaxCut
-      );
-
-      if (validCuts.length > 0) {
-        // Pick the closest break point to the bottom of the page
-        sliceHeightPx = validCuts[validCuts.length - 1] - currentSourceY;
-      } else {
-        // Fallback to max allowed height
-        sliceHeightPx = maxPageHeightPx;
+    // Prepare repeated table header (thead)
+    const theadEl = cleanClone.querySelector('thead');
+    let theadCanvas: HTMLCanvasElement | null = null;
+    let theadHeightPx = 0;
+    if (theadEl) {
+      const theadRect = theadEl.getBoundingClientRect();
+      const theadTopPx = Math.max(0, (theadRect.top - cloneRect.top) * scaleY);
+      theadHeightPx = Math.round(theadRect.height * scaleY);
+      if (theadHeightPx > 10) {
+        theadCanvas = document.createElement('canvas');
+        theadCanvas.width = fullCanvas.width;
+        theadCanvas.height = theadHeightPx;
+        const theadCtx = theadCanvas.getContext('2d');
+        if (theadCtx) {
+          theadCtx.fillStyle = '#ffffff';
+          theadCtx.fillRect(0, 0, theadCanvas.width, theadHeightPx);
+          theadCtx.drawImage(
+            fullCanvas,
+            0,
+            Math.round(theadTopPx),
+            fullCanvas.width,
+            theadHeightPx,
+            0,
+            0,
+            theadCanvas.width,
+            theadHeightPx
+          );
+        }
       }
     }
 
-    // Create a temporary canvas for this page slice
-    const pageCanvas = document.createElement('canvas');
-    pageCanvas.width = fullCanvas.width;
-    pageCanvas.height = Math.round(sliceHeightPx);
-
-    const ctx = pageCanvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-      ctx.drawImage(
-        fullCanvas,
-        0,
-        Math.round(currentSourceY),
-        fullCanvas.width,
-        Math.round(sliceHeightPx),
-        0,
-        0,
-        pageCanvas.width,
-        Math.round(sliceHeightPx)
-      );
+    // Track table bottom position
+    const tableEl = cleanClone.querySelector('table');
+    let tableBottomPx = fullCanvas.height;
+    if (tableEl) {
+      const tableRect = tableEl.getBoundingClientRect();
+      tableBottomPx = Math.round((tableRect.bottom - cloneRect.top) * scaleY);
     }
 
-    const sliceImgData = pageCanvas.toDataURL('image/jpeg', 0.96);
-    const sliceHeightMm = (sliceHeightPx * usableWidth) / fullCanvas.width;
+    // Identify safe break points:
+    // 1. Bottom of each table row
+    // 2. Top and bottom of Catatan Guru
+    // 3. Top and bottom of TTD section (keeps entire signature block unified)
+    const safeBreakYList: number[] = [];
 
-    pdf.addImage(sliceImgData, 'JPEG', margin, margin, usableWidth, sliceHeightMm);
+    const rowElements = cleanClone.querySelectorAll('tbody > tr');
+    rowElements.forEach((tr) => {
+      const rect = tr.getBoundingClientRect();
+      const bottomPx = Math.round((rect.bottom - cloneRect.top) * scaleY);
+      if (bottomPx > 20 && bottomPx < fullCanvas.height) {
+        safeBreakYList.push(bottomPx);
+      }
+    });
 
-    currentSourceY += sliceHeightPx;
+    const catatanEl = cleanClone.querySelector('.catatan-guru-section');
+    if (catatanEl) {
+      const rect = catatanEl.getBoundingClientRect();
+      const topPx = Math.round((rect.top - cloneRect.top) * scaleY);
+      const bottomPx = Math.round((rect.bottom - cloneRect.top) * scaleY);
+      if (topPx > 20) safeBreakYList.push(topPx);
+      if (bottomPx > 20 && bottomPx < fullCanvas.height) safeBreakYList.push(bottomPx);
+    }
+
+    const ttdEl = cleanClone.querySelector('.ttd-section');
+    if (ttdEl) {
+      const rect = ttdEl.getBoundingClientRect();
+      const topPx = Math.round((rect.top - cloneRect.top) * scaleY);
+      const bottomPx = Math.round((rect.bottom - cloneRect.top) * scaleY);
+      if (topPx > 20) safeBreakYList.push(topPx);
+      if (bottomPx > 20 && bottomPx < fullCanvas.height) safeBreakYList.push(bottomPx);
+    }
+
+    const sortedBreaks = Array.from(new Set(safeBreakYList)).sort((a, b) => a - b);
+
+    let currentSourceY = 0;
+    let pageCount = 0;
+
+    while (currentSourceY < fullCanvas.height - 5) {
+      pageCount++;
+      if (!isFirstPageInDocument || pageCount > 1) {
+        pdf.addPage();
+      }
+
+      const remainingHeightPx = fullCanvas.height - currentSourceY;
+      const isSubsequentPageInTable = pageCount > 1 && currentSourceY < tableBottomPx && theadCanvas !== null;
+      const headerHeightForThisPage = isSubsequentPageInTable ? theadHeightPx : 0;
+      const usableContentHeightPx = maxPageHeightPx - headerHeightForThisPage;
+
+      let sliceHeightPx: number;
+      if (remainingHeightPx <= usableContentHeightPx) {
+        sliceHeightPx = remainingHeightPx;
+      } else {
+        const targetMaxCut = currentSourceY + usableContentHeightPx;
+        const validCuts = sortedBreaks.filter(
+          (y) => y > currentSourceY + 80 && y <= targetMaxCut
+        );
+
+        if (validCuts.length > 0) {
+          sliceHeightPx = validCuts[validCuts.length - 1] - currentSourceY;
+        } else {
+          sliceHeightPx = usableContentHeightPx;
+        }
+      }
+
+      const totalPageSliceHeightPx = Math.round(headerHeightForThisPage + sliceHeightPx);
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = fullCanvas.width;
+      pageCanvas.height = totalPageSliceHeightPx;
+
+      const ctx = pageCanvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+        let yOffsetOnPage = 0;
+        if (isSubsequentPageInTable && theadCanvas) {
+          ctx.drawImage(theadCanvas, 0, 0);
+          yOffsetOnPage += theadHeightPx;
+        }
+
+        ctx.drawImage(
+          fullCanvas,
+          0,
+          Math.round(currentSourceY),
+          fullCanvas.width,
+          Math.round(sliceHeightPx),
+          0,
+          yOffsetOnPage,
+          pageCanvas.width,
+          Math.round(sliceHeightPx)
+        );
+      }
+
+      const sliceImgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+      const totalSliceHeightMm = (totalPageSliceHeightPx * usableWidth) / fullCanvas.width;
+
+      pdf.addImage(sliceImgData, 'JPEG', margin, margin, usableWidth, totalSliceHeightMm);
+
+      currentSourceY += sliceHeightPx;
+    }
+  } finally {
+    if (offscreenContainer.parentNode) {
+      offscreenContainer.parentNode.removeChild(offscreenContainer);
+    }
   }
 }
 
@@ -268,6 +371,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
   const [isExportingWord, setIsExportingWord] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number; name: string } | null>(null);
+  const [paperSize, setPaperSize] = useState<'a4' | 'f4'>('a4');
+  const [includeKopSekolah, setIncludeKopSekolah] = useState<boolean>(false);
 
   const { config, subjects, subjectRecords, additionalInfo } = classData;
   const currentStudent = students[selectedStudentIndex] || students[0];
@@ -377,12 +482,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
+        format: paperSize === 'f4' ? [215, 330] : 'a4',
         compress: true,
       });
 
       // Render with 1cm margin & intelligent multi-page clean cut
-      await addElementToPdf(pdf, element, true);
+      await addElementToPdf(pdf, element, true, paperSize);
 
       const cleanName = student.name.replace(/[^a-zA-Z0-9]/g, '_');
       pdf.save(`Rapor_STS_${activeClass}_Sem${activeSemester}_${cleanName}.pdf`);
@@ -408,7 +513,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
+        format: paperSize === 'f4' ? [215, 330] : 'a4',
         compress: true,
       });
 
@@ -424,7 +529,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
         if (!element) continue;
 
         // Render with 1cm margin & intelligent multi-page clean cut
-        await addElementToPdf(pdf, element, i === 0);
+        await addElementToPdf(pdf, element, i === 0, paperSize);
       }
 
       const cleanYear = activeSchoolYear.replace(/[^a-zA-Z0-9]/g, '-');
@@ -511,7 +616,9 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
       <div
         id={domId}
         key={student.id}
-        className={`bg-white text-black p-8 sm:p-10 mx-auto max-w-[850px] rounded-xl leading-normal print:p-0 print:m-0 print:max-w-none ${
+        className={`rapor-sheet bg-white text-black p-6 sm:p-8 mx-auto ${
+          paperSize === 'f4' ? 'max-w-[880px]' : 'max-w-[850px]'
+        } rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none print:max-w-none ${
           isPrintBatch ? 'page-break-after mb-12 print:mb-0' : ''
         }`}
         style={{
@@ -522,30 +629,45 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
         }}
       >
+        {/* KOP SEKOLAH RESMI (OPSIONAL / TOGGLEABLE) */}
+        {includeKopSekolah && (
+          <div className="border-b-2 border-black pb-2.5 mb-3 text-center">
+            <h1 className="text-base font-bold uppercase tracking-wider text-black m-0 leading-tight">
+              {config.schoolName || 'SDIT AL FIKRI'}
+            </h1>
+            <p className="text-[11px] font-semibold text-black m-0 mt-0.5">
+              NPSN: {config.npsn || '69978648'} • Terakreditasi
+            </p>
+            <p className="text-[10px] text-gray-800 m-0 leading-tight">
+              {config.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok'}
+            </p>
+          </div>
+        )}
+
         {/* JUDUL RESMI (SESUAI GAMBAR & SETTING AKTIF) */}
-        <div className="text-center mb-6">
-          <h1 className="text-base font-bold uppercase tracking-wider text-black m-0">
+        <div className="text-center mb-3">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0">
             LAPORAN
-          </h1>
-          <h2 className="text-sm font-bold uppercase tracking-wide text-black mt-1 mb-0">
-            {semesterTitle}
           </h2>
-          <h3 className="text-sm font-bold uppercase tracking-wide text-black mt-1 mb-0">
-            TAHUN PELAJARAN {schoolYearTitle}
+          <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+            {semesterTitle}
           </h3>
+          <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+            TAHUN PELAJARAN {schoolYearTitle}
+          </h4>
         </div>
 
         {/* IDENTITAS SISWA (HANYA NAMA SISWA YANG BOLD, LABEL & TTL REGULER) */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-xs mb-4 text-black font-normal">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-3 text-black font-normal">
           {/* Kolom Kiri */}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <div className="flex items-start">
-              <span className="w-48 font-normal">NAMA</span>
+              <span className="w-44 font-normal">NAMA</span>
               <span className="w-3 font-normal">:</span>
               <span className="font-bold uppercase flex-1">{student.name}</span>
             </div>
             <div className="flex items-start">
-              <span className="w-48 font-normal">TEMPAT, TANGGAL LAHIR</span>
+              <span className="w-44 font-normal">TEMPAT, TANGGAL LAHIR</span>
               <span className="w-3 font-normal">:</span>
               <span className="font-normal flex-1">
                 {formatTTL(student.tempatLahir, student.tanggalLahir)}
@@ -554,16 +676,16 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           </div>
 
           {/* Kolom Kanan */}
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <div className="flex items-start">
-              <span className="w-28 font-normal">NIM/NISN</span>
+              <span className="w-24 font-normal">NIM/NISN</span>
               <span className="w-3 font-normal">:</span>
               <span className="font-normal flex-1">
                 {formatNimNisn(student.nim, student.nisn)}
               </span>
             </div>
             <div className="flex items-start">
-              <span className="w-28 font-normal">KELAS</span>
+              <span className="w-24 font-normal">KELAS</span>
               <span className="w-3 font-normal">:</span>
               <span className="font-normal flex-1">{activeClass}</span>
             </div>
@@ -579,11 +701,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               border: '1px solid #000000',
               width: '100%',
               fontFamily: BOOKMAN_FONT_FAMILY,
+              pageBreakInside: 'auto',
             }}
           >
-            <thead>
+            <thead style={{ display: 'table-header-group' }}>
               {/* Header Baris 1 */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG }}>
+              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                 <th
                   rowSpan={2}
                   style={{
@@ -601,9 +724,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   rowSpan={2}
                   style={{
                     border: '1px solid #000000',
-                    padding: '6px 10px',
-                    width: '260px',
-                    whiteSpace: 'nowrap',
+                    padding: '6px 8px',
+                    width: '210px',
                     textAlign: 'center',
                     fontWeight: 'bold',
                     color: '#000000',
@@ -625,12 +747,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 </th>
               </tr>
               {/* Header Baris 2: Sub-Kolom */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG }}>
+              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                 <th
                   style={{
                     border: '1px solid #000000',
                     padding: '6px 4px',
-                    width: '75px',
+                    width: '70px',
                     textAlign: 'center',
                     fontWeight: 'bold',
                     color: '#000000',
@@ -654,7 +776,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
             <tbody>
               {/* I. PENDIDIKAN AGAMA */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold' }}>
+              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                 <td
                   style={{
                     border: '1px solid #000000',
@@ -668,7 +790,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 <td
                   style={{
                     border: '1px solid #000000',
-                    padding: '4px 10px',
+                    padding: '4px 8px',
                     color: '#000000',
                     whiteSpace: 'nowrap',
                   }}
@@ -691,7 +813,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 ></td>
               </tr>
 
-              {/* DAFTAR MAPEL AGAMA (TIDAK BOLD, WHITE-SPACE NOWRAP) */}
+              {/* DAFTAR MAPEL AGAMA */}
               {agamaSubjects.map((subj, idx) => {
                 const scoreData: StudentScoreDetail | undefined =
                   subjectRecords[subj.id]?.scores[student.id];
@@ -702,7 +824,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   '';
 
                 return (
-                  <tr key={subj.id} className="align-top">
+                  <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                     <td
                       style={{
                         border: '1px solid #000000',
@@ -716,9 +838,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                     <td
                       style={{
                         border: '1px solid #000000',
-                        padding: '5px 10px',
+                        padding: '5px 8px',
                         fontWeight: 'normal',
-                        whiteSpace: 'nowrap',
                         textTransform: 'uppercase',
                         color: '#000000',
                       }}
@@ -745,6 +866,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                         lineHeight: '1.4',
                         fontWeight: 'normal',
                         color: '#000000',
+                        wordBreak: 'break-word',
                       }}
                     >
                       {desc || '-'}
@@ -754,7 +876,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               })}
 
               {/* II. PENDIDIKAN UMUM */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold' }}>
+              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                 <td
                   style={{
                     border: '1px solid #000000',
@@ -768,7 +890,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 <td
                   style={{
                     border: '1px solid #000000',
-                    padding: '4px 10px',
+                    padding: '4px 8px',
                     color: '#000000',
                     whiteSpace: 'nowrap',
                   }}
@@ -791,7 +913,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 ></td>
               </tr>
 
-              {/* DAFTAR MAPEL UMUM (TIDAK BOLD, WHITE-SPACE NOWRAP) */}
+              {/* DAFTAR MAPEL UMUM */}
               {umumSubjects.map((subj, idx) => {
                 const scoreData: StudentScoreDetail | undefined =
                   subjectRecords[subj.id]?.scores[student.id];
@@ -802,7 +924,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   '';
 
                 return (
-                  <tr key={subj.id} className="align-top">
+                  <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                     <td
                       style={{
                         border: '1px solid #000000',
@@ -816,9 +938,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                     <td
                       style={{
                         border: '1px solid #000000',
-                        padding: '5px 10px',
+                        padding: '5px 8px',
                         fontWeight: 'normal',
-                        whiteSpace: 'nowrap',
                         textTransform: 'uppercase',
                         color: '#000000',
                       }}
@@ -845,6 +966,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                         lineHeight: '1.4',
                         fontWeight: 'normal',
                         color: '#000000',
+                        wordBreak: 'break-word',
                       }}
                     >
                       {desc || '-'}
@@ -856,7 +978,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               {/* III. MUATAN LOKAL (SESUAI PENGATURAN MAPEL MULOK DI PENGATURAN RAPOR) */}
               {finalMulokSubjects.length > 0 && (
                 <>
-                  <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold' }}>
+                  <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                     <td
                       style={{
                         border: '1px solid #000000',
@@ -870,7 +992,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                     <td
                       style={{
                         border: '1px solid #000000',
-                        padding: '4px 10px',
+                        padding: '4px 8px',
                         color: '#000000',
                         whiteSpace: 'nowrap',
                       }}
@@ -903,7 +1025,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                       '';
 
                     return (
-                      <tr key={subj.id} className="align-top">
+                      <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                         <td
                           style={{
                             border: '1px solid #000000',
@@ -917,9 +1039,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                         <td
                           style={{
                             border: '1px solid #000000',
-                            padding: '5px 10px',
+                            padding: '5px 8px',
                             fontWeight: 'normal',
-                            whiteSpace: 'nowrap',
                             textTransform: 'uppercase',
                             color: '#000000',
                           }}
@@ -946,6 +1067,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                             lineHeight: '1.4',
                             fontWeight: 'normal',
                             color: '#000000',
+                            wordBreak: 'break-word',
                           }}
                         >
                           {desc || '-'}
@@ -961,17 +1083,17 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
         {/* CATATAN GURU / WALI KELAS */}
         {displayNote && (
-          <div className="mb-6">
+          <div className="catatan-guru-section mb-4" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
             <div className="text-xs font-bold text-black uppercase mb-1">
               CATATAN GURU / WALI KELAS:
             </div>
             <div
               style={{
                 border: '1px solid #000000',
-                padding: '8px 12px',
+                padding: '6px 10px',
                 fontSize: '11px',
                 fontStyle: 'italic',
-                lineHeight: '1.5',
+                lineHeight: '1.45',
               }}
             >
               "{displayNote}"
@@ -980,21 +1102,21 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
         )}
 
         {/* TANDA TANGAN RESMI (SESUAI PERMINTAAN: TTD GURU KELAS TANPA NAMA KELAS, GELAR TIDAK KAPITAL SEMUA) */}
-        <div className="pt-2 text-xs text-black">
-          <div className="text-right mb-4">
+        <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+          <div className="text-right mb-3">
             {config.reportDatePlace || 'Tangerang, 20 Maret 2027'}
           </div>
 
-          <div className="grid grid-cols-2 gap-8 text-center mb-8">
+          <div className="grid grid-cols-2 gap-8 text-center mb-6">
             <div>
               <p className="m-0">Mengetahui,</p>
-              <p className="font-bold m-0 mb-16">Orang Tua / Wali Siswa</p>
+              <p className="font-bold m-0 mb-12">Orang Tua / Wali Siswa</p>
               <p className="font-bold m-0">..................................................</p>
             </div>
 
             <div>
               <p className="m-0">Mengetahui,</p>
-              <p className="font-bold m-0 mb-16">Guru Kelas,</p>
+              <p className="font-bold m-0 mb-12">Guru Kelas,</p>
               <p className="font-bold underline m-0">
                 {formatPersonNameWithDegree(config.teacherName || 'Guru Kelas')}
               </p>
@@ -1006,7 +1128,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
           <div className="text-center">
             <p className="m-0">Mengetahui,</p>
-            <p className="font-bold m-0 mb-16">
+            <p className="font-bold m-0 mb-12">
               Kepala Sekolah {config.schoolName || 'SDIT AL FIKRI'}
             </p>
             <p className="font-bold underline m-0">
@@ -1016,6 +1138,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               NIP. {config.headmasterNip || '-'}
             </p>
           </div>
+        </div>
+
+        {/* Footer Cetak Bersih */}
+        <div className="print:flex hidden justify-between items-center text-[9.5px] text-gray-600 pt-2.5 border-t border-gray-400 mt-4 font-sans">
+          <span>Rapor STS • {config.schoolName || 'SDIT AL FIKRI'} • Kelas {activeClass}</span>
+          <span>Semester {activeSemester} • TA {schoolYearTitle}</span>
         </div>
       </div>
     );
@@ -1082,8 +1210,53 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           </button>
         </div>
 
-        {/* Action Controls: Export Scope + 3 Symbol Export Buttons (Word, Excel, PDF) + Print */}
+        {/* Action Controls: Export Scope + Paper Size + Kop Toggle + 3 Symbol Export Buttons + Print */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Pilihan Kertas: A4 vs F4 / Folio */}
+          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800" title="Pilih Ukuran Kertas Cetak">
+            <button
+              type="button"
+              onClick={() => setPaperSize('a4')}
+              disabled={isGeneratingPdf}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                paperSize === 'a4'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Kertas A4 (210 × 297 mm)"
+            >
+              A4
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaperSize('f4')}
+              disabled={isGeneratingPdf}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                paperSize === 'f4'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Kertas F4 / Folio (215 × 330 mm) - Sangat cocok untuk deskripsi capaian pembelajaran yang panjang"
+            >
+              F4 / Folio
+            </button>
+          </div>
+
+          {/* Toggle Kop Surat Resmi */}
+          <button
+            type="button"
+            onClick={() => setIncludeKopSekolah(!includeKopSekolah)}
+            disabled={isGeneratingPdf}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+              includeKopSekolah
+                ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
+                : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
+            }`}
+            title="Tampilkan Kop Resmi Sekolah (Nama Sekolah, NPSN, & Alamat)"
+          >
+            {includeKopSekolah ? '✓ Kop Resmi' : '+ Kop Resmi'}
+          </button>
+
           {/* Scope Selector: Siswa Ini vs Seluruh Kelas */}
           <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800">
             <button
@@ -1218,17 +1391,22 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
       {/* Dedicated Print Styles for 1cm (10mm) Margins & Clean Page Breaking */}
       <style>{`
         @page {
-          size: A4 portrait;
+          size: ${paperSize === 'f4' ? '215mm 330mm' : 'A4 portrait'};
           margin: 10mm 10mm 10mm 10mm;
         }
         @media print {
-          body {
+          html, body, #root {
             background-color: #ffffff !important;
             color: #000000 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
           }
-          .print\\:hidden {
+          header, aside, nav, .print\\:hidden {
             display: none !important;
           }
           .page-break-after {
@@ -1247,6 +1425,18 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           }
           tfoot {
             display: table-footer-group !important;
+          }
+          .catatan-guru-section, .ttd-section {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .rapor-sheet {
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            max-width: none !important;
+            width: 100% !important;
           }
         }
       `}</style>

@@ -35,6 +35,7 @@ interface SidebarProps {
   activeTeacher?: TeacherUser | null;
   onLogoutTeacher?: () => void;
   pendingSubmissionsCount?: number;
+  pendingAnalysisCount?: number;
   studentCount?: number;
   branding?: AppBranding;
   onOpenQris?: () => void;
@@ -56,6 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTeacher,
   onLogoutTeacher,
   pendingSubmissionsCount = 0,
+  pendingAnalysisCount = 0,
   studentCount = 0,
   branding,
   onOpenQris,
@@ -145,6 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       activeColor: 'text-sky-400',
       activeBg: 'bg-sky-500/15 text-sky-400 border border-sky-500/30',
       isProtected: true,
+      count: isAdmin && pendingAnalysisCount > 0 ? pendingAnalysisCount : undefined,
     },
   ];
 
@@ -203,7 +206,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* ========================================================================= */}
       {/* DESKTOP SIDEBAR (100% PRESERVED & UNCHANGED)                               */}
       {/* ========================================================================= */}
-      <aside className="hidden md:flex flex-col w-20 bg-[#161822] border-r border-[#242838] min-h-screen py-6 items-center justify-between select-none z-30 flex-shrink-0">
+      <aside className="hidden md:flex flex-col w-20 bg-[#161822] border-r border-[#242838] min-h-screen py-6 items-center justify-between select-none z-30 flex-shrink-0 print:hidden">
         {/* Top Logo */}
         <div className="flex flex-col items-center gap-8 w-full">
           <button
@@ -328,7 +331,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* MOBILE AKADEMIK BOTTOM SHEET (HUB RINGKASAN AKADEMIK)                     */}
       {/* ========================================================================= */}
       {isAkademikSheetOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in flex flex-col justify-end">
+        <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in flex flex-col justify-end print:hidden">
           {/* Backdrop Touch Dismiss */}
           <div
             className="flex-1 w-full"
@@ -540,7 +543,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* MOBILE LAINNYA BOTTOM SHEET (HUB UTILITAS & ADMIN)                         */}
       {/* ========================================================================= */}
       {isLainnyaSheetOpen && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in flex flex-col justify-end">
+        <div className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fade-in flex flex-col justify-end print:hidden">
           {/* Backdrop Touch Dismiss */}
           <div
             className="flex-1 w-full"
@@ -595,9 +598,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {isAdmin ? 'Panel Pengaturan Admin' : 'Login Administrator'}
                       </span>
                       {isAdmin ? (
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                          Aktif
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            Aktif
+                          </span>
+                          {pendingAnalysisCount > 0 && (
+                            <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 animate-pulse">
+                              {pendingAnalysisCount} Setoran Baru
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
                           Terkunci
@@ -722,7 +732,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* ========================================================================= */}
       <nav
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B101D]/92 backdrop-blur-2xl border-t border-slate-800/90 rounded-t-[26px] shadow-[0_-10px_35px_rgba(0,0,0,0.65)] px-2.5 pt-2 pb-2.5 flex items-center justify-around select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B101D]/92 backdrop-blur-2xl border-t border-slate-800/90 rounded-t-[26px] shadow-[0_-10px_35px_rgba(0,0,0,0.65)] px-2.5 pt-2 pb-2.5 flex items-center justify-around select-none print:hidden"
       >
         {/* 1. BERANDA */}
         <button

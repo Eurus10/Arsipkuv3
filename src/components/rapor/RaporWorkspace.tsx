@@ -1403,7 +1403,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
              Executive Header with Integrated Navigation & Quick Stats
           ============================================================ */
           <main className="space-y-3.5">
-            <section className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 p-3 sm:p-4">
+            <section className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 p-3 sm:p-4 print:hidden">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
                 {/* Left: Class Identity & Role Badge */}
                 <div className="flex items-center gap-3 min-w-0">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   BookOpen,
   Users,
@@ -22,9 +22,16 @@ import {
   Layers,
   FileSpreadsheet,
   Settings2,
+  ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  LayoutGrid,
+  X,
   AlertCircle,
   Building2,
+  Send,
+  Printer,
+  MessageSquare,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -46,6 +53,14 @@ import {
 import { exportSingleSubjectToExcel, exportMultiClassSubjectToExcel, } from '../../services/analysis/analysisExcelService';
 import { calculateMaxScore, calculateSubjectSummaryStats } from '../../services/analysis/analysisCalculationService';
 import { PillStepper } from './PillStepper';
+import { SendToPakZakiModal } from './SendToPakZakiModal';
+import { AnalysisSubmissionChatModal } from './AnalysisSubmissionChatModal';
+import {
+  subscribeToAnalysisSubmissions,
+  getLocalAnalysisSubmissions,
+} from '../../services/analysisSubmissionService';
+import { getActiveTeacherSession } from '../../services/teacherStorage';
+import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
 
 // Preset mata pelajaran umum guru bidang di SDIT AL FIKRI
 const PRESET_SUBJECTS = [
@@ -123,10 +138,15 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   // Mode status: apakah sudah selesai konfigurasi awal
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [showClassPickerModal, setShowClassPickerModal] = useState<boolean>(false);
   const [showSwitchSessionModal, setShowSwitchSessionModal] = useState<boolean>(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState<boolean>(false);
   const [searchStudent, setSearchStudent] = useState<string>('');
   const [batchDownloadStatus, setBatchDownloadStatus] = useState<string | null>(null);
+  const [isSendToPakZakiOpen, setIsSendToPakZakiOpen] = useState<boolean>(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState<boolean>(false);
+  const [sendTargetMode, setSendTargetMode] = useState<'single' | 'all'>('single');
+  const classScrollRef = useRef<HTMLDivElement>(null);
 
   // Load class sessions map from storage
   const [classSessionsMap, setClassSessionsMap] = useState<Record<string, AnalysisSession>>({});
@@ -139,6 +159,18 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   useEffect(() => {
     reloadSessions();
   }, [refreshKey]);
+
+  // Real-time listener for submissions status and revision notes from Pak Zaki
+  const [submissions, setSubmissions] = useState<AnalysisSubmissionItem[]>(() =>
+    getLocalAnalysisSubmissions()
+  );
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAnalysisSubmissions((items) => {
+      setSubmissions(items);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Cek apakah ada sesi yang sudah tersimpan untuk subject ini
   useEffect(() => {
@@ -193,6 +225,25 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
       }
     }
   }, []);
+
+  // Scroll active class into view smoothly
+  useEffect(() => {
+    if (classScrollRef.current && activeClassId) {
+      const activeBtn = classScrollRef.current.querySelector<HTMLButtonElement>(
+        `[data-class-id="${activeClassId}"]`
+      );
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  }, [activeClassId]);
+
+  const handleScrollClasses = (direction: 'left' | 'right') => {
+    if (classScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      classScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   // Daftar mata pelajaran yang sudah ada dalam sesi kelas yang tersimpan
   const availableSubjectsList = useMemo(() => {
@@ -326,6 +377,15 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
     () => calculateMaxScore(currentQuestionConfig),
     [currentQuestionConfig]
   );
+
+  const activeSubjectSubmission = useMemo(() => {
+    return submissions.find(
+      (s) =>
+        s.subjectName.toLowerCase().trim() === activeSubjectName.toLowerCase().trim() &&
+        (s.classId.toLowerCase().includes(activeClassId.toLowerCase()) ||
+          s.submissionType === 'multi_class')
+    );
+  }, [submissions, activeSubjectName, activeClassId]);
 
   // Helper toggle pilih kelas
   const handleToggleClass = (classId: string) => {
@@ -1083,6 +1143,19 @@ const handleExportAllClasses = () => {
               <span>Download Excel Semua Kelas</span>
             </button>
 
+            <button
+              type="button"
+              onClick={() => {
+                setSendTargetMode('all');
+                setIsSendToPakZakiOpen(true);
+              }}
+              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 hover:from-teal-400 hover:to-emerald-500 active:scale-[0.98] text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 border border-emerald-400/35 cursor-pointer transition-all"
+              title="Kirim lembar analisis seluruh kelas ini langsung ke Pak Zaki"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>🚀 Kirim ke Pak Zaki (Semua Kelas)</span>
+            </button>
+
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -1091,7 +1164,7 @@ const handleExportAllClasses = () => {
                 title="Edit struktur & bobot butir soal atau daftar kelas"
               >
                 <Settings2 className="w-3.5 h-3.5 text-purple-300" />
-                <span>Edit Bobot</span>
+                <span>Atur Bobot/Kelas</span>
               </button>
 
               <button
@@ -1114,54 +1187,382 @@ const handleExportAllClasses = () => {
         )}
       </div>
 
-      {/* Class Switcher Tabs (Horizontal Pills) */}
-      <div className="bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl p-2.5 flex items-center gap-2 overflow-x-auto select-none shadow-sm">
-        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 shrink-0 flex items-center gap-1.5">
-          <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
-          Pilih Kelas:
-        </span>
-        <div className="flex items-center gap-1.5">
-          {selectedClassIds.map((cId) => {
-            const session = classSessionsMap[cId.toLowerCase()];
-            const clsStudents = students.filter(
-              (s) => s.classId.toLowerCase() === cId.toLowerCase()
-            );
-            const subj = session?.subjects.find(
-              (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
-            );
-            const completedCount = subj ? Object.keys(subj.studentResults).length : 0;
-            const totalCount = clsStudents.length;
-            const isCompleted = totalCount > 0 && completedCount >= totalCount;
-            const isActive = activeClassId === cId;
+      {/* ====================================================
+          STATUS SETORAN & CATATAN REVISI DARI PAK ZAKI
+          ==================================================== */}
+      {activeSubjectSubmission && (
+        <div className="animate-fadeIn">
+          {activeSubjectSubmission.status === 'revisi' && (
+            <div className="bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-sm font-black text-amber-200 uppercase tracking-wide">
+                        ⚠️ Catatan Revisi dari Pak Zaki
+                      </h4>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/25 text-amber-300 font-extrabold border border-amber-500/40">
+                        {activeSubjectSubmission.className}
+                      </span>
+                    </div>
+                    <div className="text-xs text-white font-medium bg-slate-950/70 p-3 rounded-xl border border-amber-500/20 mt-1.5 leading-relaxed">
+                      "{activeSubjectSubmission.adminNote || 'Mohon periksa kembali kelengkapan skor siswa.'}"
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Silakan perbaiki data pada kelas terkait di bawah, lalu kirim ulang ke Pak Zaki.
+                    </p>
+                  </div>
+                </div>
 
-            return (
+                <div className="flex items-center gap-2 flex-wrap shrink-0 self-start sm:self-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsChatModalOpen(true)}
+                    className="px-3.5 py-2.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-300" />
+                    <span>💬 Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSendTargetMode('single');
+                      setIsSendToPakZakiOpen(true);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/25 cursor-pointer transition-all"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>🚀 Kirim Ulang Hasil Revisi</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSubjectSubmission.status === 'telah_diprint' && (
+            <div className="bg-gradient-to-r from-cyan-500/20 via-teal-500/15 to-transparent border border-cyan-400/40 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shrink-0 shadow-sm">
+                  <Printer className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs sm:text-sm font-black text-cyan-200">
+                      🖨️ Telah di-Print oleh Pak Zaki
+                    </h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-extrabold border border-cyan-500/40">
+                      Selesai Dicetak
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Berkas fisik analisis mapel {activeSubjectName} telah selesai dicetak untuk arsip dan pengesahan sekolah.
+                  </p>
+                </div>
+              </div>
+
               <button
-                key={cId}
                 type="button"
-                onClick={() => setActiveClassId(cId)}
-                className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-indigo-500/25 text-white border border-indigo-400/40 shadow-sm shadow-indigo-500/20 font-black'
-                    : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
-                }`}
+                onClick={() => setIsChatModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
               >
-                <span>Kelas {cId}</span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                    isCompleted
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : completedCount > 0
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                      : 'bg-white/10 text-slate-400'
+                <MessageSquare className="w-3.5 h-3.5 text-cyan-300" />
+                <span>💬 Ruang Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
+              </button>
+            </div>
+          )}
+
+          {activeSubjectSubmission.status === 'disetujui' && (
+            <div className="bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent border border-emerald-400/30 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0 shadow-sm">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs sm:text-sm font-black text-emerald-200">
+                      ✓ Telah Disetujui oleh Pak Zaki
+                    </h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/40">
+                      Disetujui
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Lembar analisis mapel {activeSubjectName} telah diverifikasi &amp; disetujui. Menunggu proses cetak fisik.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChatModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-300" />
+                <span>💬 Ruang Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
+              </button>
+            </div>
+          )}
+
+          {activeSubjectSubmission.status === 'menunggu' && (
+            <div className="bg-gradient-to-r from-sky-500/15 via-slate-900/60 to-transparent border border-sky-400/30 rounded-2xl p-3.5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 text-sky-300 flex items-center justify-center shrink-0">
+                  <Clock3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-sky-200">
+                    ⏳ Sedang Menunggu Verifikasi Pak Zaki
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Lembar analisis telah disetorkan ke Pak Zaki. Menunggu giliran pemeriksaan.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsChatModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-sky-300" />
+                <span>💬 Ruang Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ====================================================
+          CLASS SWITCHER BAR (HYBRID OPTION A + B)
+          Refined Mobile Carousel + Edge Fade + Fast Grid Modal
+          ==================================================== */}
+      <div className="bg-slate-900/95 sm:bg-slate-900/70 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg overflow-hidden select-none">
+        {/* Top Control Bar: Active Class Context & Actions */}
+        <div className="px-3.5 py-2.5 bg-slate-950/40 border-b border-white/5 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-6 h-6 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0">
+              <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 truncate">
+              <span className="text-slate-400 hidden xs:inline">Daftar Kelas:</span>
+              <span className="text-white font-extrabold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-md text-[11px]">
+                Kelas {activeClassId} ({selectedClassIds.indexOf(activeClassId) + 1}/{selectedClassIds.length})
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+            {/* Quick Grid Modal Trigger (Ideal for Mobile 1-Thumb Switching) */}
+            <button
+              type="button"
+              onClick={() => setShowClassPickerModal(true)}
+              className="h-7 px-2.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 active:scale-95 text-indigo-300 border border-indigo-400/30 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              title="Tampilkan semua kelas dalam bentuk grid cepat"
+            >
+              <LayoutGrid className="w-3 h-3" />
+              <span>Pilih Cepat ({selectedClassIds.length})</span>
+            </button>
+
+            {/* Scroll Navigation Arrows (For quick nudging) */}
+            {selectedClassIds.length > 3 && (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleScrollClasses('left')}
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-slate-400 hover:text-white border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                  title="Geser kelas ke kiri"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleScrollClasses('right')}
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-slate-400 hover:text-white border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                  title="Geser kelas ke kanan"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Horizontal Carousel Track with Left/Right Fading Edge Masks */}
+        <div className="relative overflow-hidden p-2 sm:p-2.5">
+          {/* Left Edge Fade Mask */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent z-10" />
+
+          {/* Scrollable Classes Row */}
+          <div
+            ref={classScrollRef}
+            className="flex items-center gap-1.5 overflow-x-auto overscroll-x-contain touch-pan-x no-scrollbar scroll-smooth px-1"
+          >
+            {selectedClassIds.map((cId) => {
+              const session = classSessionsMap[cId.toLowerCase()];
+              const clsStudents = students.filter(
+                (s) => s.classId.toLowerCase() === cId.toLowerCase()
+              );
+              const subj = session?.subjects.find(
+                (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
+              );
+              const completedCount = subj ? Object.keys(subj.studentResults).length : 0;
+              const totalCount = clsStudents.length;
+              const isCompleted = totalCount > 0 && completedCount >= totalCount;
+              const isActive = activeClassId === cId;
+
+              return (
+                <button
+                  key={cId}
+                  data-class-id={cId}
+                  type="button"
+                  onClick={() => setActiveClassId(cId)}
+                  className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-indigo-500/25 text-white border-2 border-indigo-400 shadow-md shadow-indigo-500/25 font-black scale-[1.02]'
+                      : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
                   }`}
                 >
-                  {completedCount}/{totalCount}
-                </span>
-              </button>
-            );
-          })}
+                  <span>Kelas {cId}</span>
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                      isCompleted
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        : completedCount > 0
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                        : 'bg-white/10 text-slate-400'
+                    }`}
+                  >
+                    {completedCount}/{totalCount}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right Edge Fade Mask */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent z-10" />
         </div>
       </div>
+
+      {/* ====================================================
+          MODAL PILIH KELAS CEPAT (MOBILE BOTTOM SHEET / GRID)
+          ==================================================== */}
+      {showClassPickerModal && (
+        <div
+          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowClassPickerModal(false);
+          }}
+        >
+          <div className="w-full sm:max-w-lg bg-slate-900 border-t sm:border border-white/15 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
+                  <LayoutGrid className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">
+                    Pilih Kelas / Rombel
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    {selectedClassIds.length} Kelas diampu untuk {activeSubjectName}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowClassPickerModal(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {selectedClassIds.map((cId) => {
+                const session = classSessionsMap[cId.toLowerCase()];
+                const clsStudents = students.filter(
+                  (s) => s.classId.toLowerCase() === cId.toLowerCase()
+                );
+                const subj = session?.subjects.find(
+                  (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
+                );
+                const completedCount = subj ? Object.keys(subj.studentResults).length : 0;
+                const totalCount = clsStudents.length;
+                const isCompleted = totalCount > 0 && completedCount >= totalCount;
+                const isActive = activeClassId === cId;
+                const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+                return (
+                  <button
+                    key={cId}
+                    type="button"
+                    onClick={() => {
+                      setActiveClassId(cId);
+                      setShowClassPickerModal(false);
+                    }}
+                    className={`p-3 rounded-2xl border text-left flex flex-col justify-between gap-2.5 transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-indigo-500/25 border-indigo-400 text-white shadow-lg shadow-indigo-500/20 ring-2 ring-indigo-400/30'
+                        : 'bg-slate-950/50 hover:bg-slate-950/80 border-white/10 hover:border-white/20 text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-sm">Kelas {cId}</span>
+                      {isActive ? (
+                        <span className="w-5 h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[10px] font-bold">
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-slate-500 font-mono">
+                          {percent}%
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[10.5px]">
+                        <span className="text-slate-400">Progres Nilai</span>
+                        <span
+                          className={`font-bold ${
+                            isCompleted
+                              ? 'text-emerald-300'
+                              : completedCount > 0
+                              ? 'text-amber-300'
+                              : 'text-slate-500'
+                          }`}
+                        >
+                          {completedCount}/{totalCount} Siswa
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            isCompleted
+                              ? 'bg-emerald-400'
+                              : completedCount > 0
+                              ? 'bg-amber-400'
+                              : 'bg-slate-600'
+                          }`}
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Selected Class Dashboard Workspace */}
       <div className="bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5">
@@ -1235,6 +1636,19 @@ const handleExportAllClasses = () => {
             >
               <Download className="w-3.5 h-3.5 text-emerald-300" />
               <span>Download Excel</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSendTargetMode('single');
+                setIsSendToPakZakiOpen(true);
+              }}
+              className="h-10 px-3.5 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 active:scale-[0.98] text-teal-300 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(20,184,166,0.15)] border border-teal-500/30 cursor-pointer transition-all"
+              title="Kirim lembar analisis kelas ini langsung ke Pak Zaki"
+            >
+              <Send className="w-3.5 h-3.5 text-teal-300" />
+              <span>Kirim ke Pak Zaki</span>
             </button>
           </div>
         </div>
@@ -1881,6 +2295,73 @@ const handleExportAllClasses = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Kirim ke Pak Zaki */}
+      <SendToPakZakiModal
+        isOpen={isSendToPakZakiOpen}
+        onClose={() => setIsSendToPakZakiOpen(false)}
+        submissionType={sendTargetMode === 'all' ? 'multi_class' : 'single_class'}
+        subjectName={activeSubjectName}
+        classId={sendTargetMode === 'all' ? selectedClassIds.join(', ') : activeClassId}
+        className={
+          sendTargetMode === 'all'
+            ? selectedClassIds.map((c) => `Kelas ${c}`).join(', ')
+            : `Kelas ${activeClassId}`
+        }
+        examType={examType}
+        schoolYear={schoolYear}
+        teacherName={teacherName}
+        kktp={kktp}
+        totalStudents={
+          sendTargetMode === 'all'
+            ? students.filter((s) => selectedClassIds.map((c) => c.toLowerCase()).includes(s.classId.toLowerCase())).length
+            : activeClassStudents.length
+        }
+        completedStudents={
+          sendTargetMode === 'all'
+            ? Object.values(classSessionsMap).reduce((acc, sess) => {
+                const subj = sess?.subjects.find(
+                  (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
+                );
+                return acc + (subj ? Object.keys(subj.studentResults || {}).length : 0);
+              }, 0)
+            : (activeStats?.completedStudents || 0)
+        }
+        passedStudents={activeStats?.passedCount}
+        averageGrade={activeStats ? Math.round(activeStats.averageGrade) : undefined}
+        payload={
+          sendTargetMode === 'all'
+            ? {
+                mode: 'multi_class',
+                subjectName: activeSubjectName,
+                teacherName,
+                examType,
+                schoolYear,
+                kktp,
+                classSessionsMap,
+                selectedClassIds,
+                allStudents: students,
+                masterClasses,
+              }
+            : {
+                mode: 'single_class',
+                activeClassSession,
+                activeSubjectInSession,
+                activeClassStudents,
+              }
+        }
+      />
+
+      {/* Analysis Submission Chat / Discussion Modal */}
+      {activeSubjectSubmission && (
+        <AnalysisSubmissionChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          submission={activeSubjectSubmission}
+          currentUserRole="guru"
+          currentUserName={getActiveTeacherSession()?.name || teacherName || 'Guru Mata Pelajaran'}
+        />
       )}
     </div>
   );

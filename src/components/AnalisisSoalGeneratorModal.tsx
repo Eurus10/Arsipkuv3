@@ -16,7 +16,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { subscribeToStudents, Student } from '../services/studentStorage';
+import { subscribeToStudents, getStoredStudentsLocal, Student } from '../services/studentStorage';
 import { getStoredMasterClasses } from '../services/storage';
 import { MasterClass, MASTER_CLASSES } from '../data/masterExamData';
 import {
@@ -156,7 +156,11 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
         setIsLoadingStudents(false);
       },
       (err) => {
-        console.error('Failed to load students:', err);
+        console.warn('Gagal memuat data siswa via cloud, menggunakan cache lokal:', err);
+        const cached = getStoredStudentsLocal();
+        if (cached && cached.length > 0) {
+          setStudents(cached);
+        }
         setIsLoadingStudents(false);
       }
     );

@@ -49,6 +49,7 @@ import {
   subscribeToCurrentTeacherSession,
 } from './services/teacherStorage';
 import { AppBranding, getLocalBranding, subscribeToBranding, updateStoredBranding } from './services/brandingStorage';
+import { subscribeToAnalysisSubmissions } from './services/analysisSubmissionService';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -150,6 +151,7 @@ export default function App() {
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+  const [pendingAnalysisCount, setPendingAnalysisCount] = useState<number>(0);
 
   // Admin Authentication State
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -307,12 +309,18 @@ export default function App() {
       setBranding(cloudBranding);
     });
 
+    const unsubscribeAnalysisSubmissions = subscribeToAnalysisSubmissions((items) => {
+      const pending = items.filter((s) => s.status === 'menunggu').length;
+      setPendingAnalysisCount(pending);
+    });
+
     return () => {
       unsubscribeAuth();
       unsubscribeDocs();
       unsubscribeTemplates();
       unsubscribeExamConfig();
       unsubscribeBranding();
+      unsubscribeAnalysisSubmissions();
     };
   }, []);
 
@@ -863,6 +871,7 @@ export default function App() {
         activeTeacher={activeTeacher}
         onLogoutTeacher={handleTeacherLogout}
         pendingSubmissionsCount={pendingSubmissionsCount}
+        pendingAnalysisCount={pendingAnalysisCount}
         studentCount={students.length}
         branding={branding}
         onOpenQris={() => setIsAppQrisModalOpen(true)}
@@ -886,7 +895,7 @@ export default function App() {
 
         {/* Global Notification Banner */}
         {authNotification && (
-          <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 max-w-sm p-4 bg-[#181B26] border border-amber-400/40 text-slate-100 rounded-2xl shadow-2xl flex items-start gap-3 animate-slide-in">
+          <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 max-w-sm p-4 bg-[#181B26] border border-amber-400/40 text-slate-100 rounded-2xl shadow-2xl flex items-start gap-3 animate-slide-in print:hidden">
             <span className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0 animate-pulse"></span>
             <div className="flex-1">
               <p className="text-xs font-semibold leading-relaxed">
@@ -904,7 +913,7 @@ export default function App() {
 
         {/* ADMIN PREVIEW TEACHER BANNER */}
         {isAdmin && previewTeacher && (
-          <div className="sticky top-0 z-40 px-3 sm:px-5 pt-3">
+          <div className="sticky top-0 z-40 px-3 sm:px-5 pt-3 print:hidden">
             <div className="max-w-7xl mx-auto rounded-2xl border border-violet-400/25 bg-[#171827]/95 backdrop-blur-xl shadow-xl shadow-violet-950/10">
               <div className="px-3.5 py-3 sm:px-4 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-400/25 text-violet-300 flex items-center justify-center shrink-0">

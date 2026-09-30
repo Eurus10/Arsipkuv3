@@ -3,9 +3,32 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL || '').trim();
 const supabaseAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
+const isPlaceholderUrl = (url: string): boolean => {
+  if (!url || !url.startsWith('https://')) return true;
+  const lower = url.toLowerCase();
+  return (
+    lower.includes('your_project') ||
+    lower.includes('placeholder') ||
+    lower.includes('example.com') ||
+    lower.includes('your-project') ||
+    lower === 'https://placeholder.supabase.co'
+  );
+};
+
+const isPlaceholderKey = (key: string): boolean => {
+  if (!key) return true;
+  const lower = key.toLowerCase();
+  return (
+    lower.includes('your_supabase') ||
+    lower.includes('placeholder') ||
+    lower.includes('your-supabase') ||
+    lower === 'placeholder-anon-key'
+  );
+};
+
 const hasSupabaseConfig =
-  Boolean(supabaseUrl) &&
-  Boolean(supabaseAnonKey);
+  !isPlaceholderUrl(supabaseUrl) &&
+  !isPlaceholderKey(supabaseAnonKey);
 
 if (!hasSupabaseConfig) {
   console.warn(
