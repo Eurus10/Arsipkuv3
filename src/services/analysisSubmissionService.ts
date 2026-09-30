@@ -59,27 +59,61 @@ export function saveLocalAnalysisSubmissions(items: AnalysisSubmissionItem[]): v
 
 /**
  * Send an analysis submission to Pak Zaki (Admin)
+ * Uses Smart Overwrite: If a submission for the same class + subject already exists,
+ * updates the existing document and preserves existing discussion thread.
  */
 export async function sendAnalysisSubmission(
   data: Omit<AnalysisSubmissionItem, 'id' | 'submittedAt' | 'status' | 'messages'>
 ): Promise<AnalysisSubmissionItem> {
-  const newId = 'asub-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+  const currentLocal = getLocalAnalysisSubmissions();
   const now = new Date().toISOString();
 
-  // Inisialisasi linimasa pesan awal
-  const initialMessages: SubmissionChatMessage[] = [
-    {
+  // Find existing submission for the same class & subject to overwrite
+  const existingSubmission = currentLocal.find((s) => {
+    if (data.submissionType === 'session') {
+      return (
+        s.submissionType === 'session' &&
+        s.classId === data.classId &&
+        s.schoolYear === data.schoolYear
+      );
+    }
+    return (
+      s.classId === data.classId &&
+      s.subjectName.trim().toLowerCase() === data.subjectName.trim().toLowerCase() &&
+      s.schoolYear === data.schoolYear
+    );
+  });
+
+  const submissionId = existingSubmission
+    ? existingSubmission.id
+    : 'asub-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+
+  // Prepare messages: keep existing messages or start new thread
+  const existingMessages: SubmissionChatMessage[] = existingSubmission?.messages || [];
+  const updatedMessages: SubmissionChatMessage[] = [...existingMessages];
+
+  if (existingSubmission) {
+    updatedMessages.push({
+      id: 'msg-sys-' + Date.now().toString(36),
+      senderName: 'Sistem SDIT',
+      senderRole: 'system',
+      text: `🔄 Berkas analisis mapel ${data.subjectName} (${data.className}) telah diperbarui dengan data nilai revisi terbaru.`,
+      timestamp: Date.now(),
+      isSystem: true,
+    });
+  } else {
+    updatedMessages.push({
       id: 'msg-sys-' + Date.now().toString(36),
       senderName: 'Sistem SDIT',
       senderRole: 'system',
       text: `🚀 Berkas analisis mapel ${data.subjectName} (${data.className}) berhasil disetorkan ke Pak Zaki.`,
       timestamp: Date.now(),
       isSystem: true,
-    },
-  ];
+    });
+  }
 
   if (data.teacherNote && data.teacherNote.trim()) {
-    initialMessages.push({
+    updatedMessages.push({
       id: 'msg-tch-' + (Date.now() + 10).toString(36),
       senderName: data.teacherName || 'Guru',
       senderRole: 'guru',
@@ -88,28 +122,30 @@ export async function sendAnalysisSubmission(
     });
   }
 
-  const newSubmission: AnalysisSubmissionItem = {
+  const targetSubmission: AnalysisSubmissionItem = {
     ...data,
-    id: newId,
-    status: 'menunggu',
+    id: submissionId,
+    status: existingSubmission?.status === 'telah_diprint' ? 'telah_diprint' : 'menunggu',
     submittedAt: now,
-    messages: initialMessages,
+    messages: updatedMessages,
   };
 
-  // 1. Save to local cache first
-  const currentLocal = getLocalAnalysisSubmissions();
-  const updatedLocal = [newSubmission, ...currentLocal.filter((s) => s.id !== newId)];
+  // 1. Save to local cache
+  const updatedLocal = [
+    targetSubmission,
+    ...currentLocal.filter((s) => s.id !== submissionId),
+  ];
   saveLocalAnalysisSubmissions(updatedLocal);
 
   // 2. Persist to Firestore
   try {
-    const docRef = doc(db, FIRESTORE_COLLECTION, newId);
-    await setDoc(docRef, cleanObjectForFirestore(newSubmission));
+    const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
+    await setDoc(docRef, cleanObjectForFirestore(targetSubmission));
   } catch (err) {
     console.warn('Failed to sync analysis submission to Firestore, saved locally:', err);
   }
 
-  return newSubmission;
+  return targetSubmission;
 }
 
 /**

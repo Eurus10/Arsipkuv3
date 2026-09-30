@@ -14,6 +14,9 @@ import {
   User,
   Camera,
   Image as ImageIcon,
+  UserCheck,
+  LogOut,
+  Lock,
 } from 'lucide-react';
 import {
   DocumentItem,
@@ -21,6 +24,7 @@ import {
   SchoolTemplateItem,
   ExamUploadConfig,
   ExamSubmissionItem,
+  TeacherUser,
   DEFAULT_EXAM_CONFIG,
 } from '../types';
 import { DocumentCard } from './DocumentCard';
@@ -46,6 +50,10 @@ interface DashboardViewProps {
   examConfig?: ExamUploadConfig;
   examSubmissions?: ExamSubmissionItem[];
   isAdmin?: boolean;
+  activeTeacher?: TeacherUser | null;
+  onLogout?: () => void;
+  onRequestLogin?: () => void;
+  onLogoutTeacher?: () => void;
   onRequestTeacherAuth?: (
     targetName: string,
     onSuccessCallback?: () => void
@@ -73,6 +81,10 @@ export const DashboardView: React.FC<
   examConfig = DEFAULT_EXAM_CONFIG,
   examSubmissions = [],
   isAdmin = false,
+  activeTeacher = null,
+  onLogout,
+  onRequestLogin,
+  onLogoutTeacher,
   onRequestTeacherAuth,
   onNavigate,
   onEditDocument,
@@ -298,61 +310,82 @@ export const DashboardView: React.FC<
               <span>{todayFormatted}</span>
             </div>
 
-            {/* Tombol QRIS Pribadi (Sebelah Logo Pribadi) */}
+            {/* Tombol Terpadu Muzaki & QRIS */}
             <button
               type="button"
-              id="btn-personal-qris"
-              onClick={() => {
-                setQrisModalDefaultTab('view');
-                setIsQrisModalOpen(true);
-              }}
-              className="flex items-center gap-2 px-3.5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/25 hover:from-emerald-500/35 hover:to-teal-500/35 backdrop-blur-md border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white transition-all duration-200 shadow-lg shadow-emerald-950/50 group/qris cursor-pointer active:scale-95 shrink-0"
-              title="Scan QRIS Pribadi / Dukungan Pengembang"
-            >
-              <div className="w-5 h-5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover/qris:scale-110 transition-transform">
-                <QrCode className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-xs font-black tracking-wide">QRIS</span>
-            </button>
-
-            {/* Logo & Identitas Pribadi (Pojok Kanan Atas) */}
-            <button
-              type="button"
-              id="btn-personal-profile"
+              id="btn-developer-qris"
               onClick={() => {
                 setQrisModalDefaultTab(isAdmin ? 'edit' : 'view');
                 setIsQrisModalOpen(true);
               }}
-              className="flex items-center gap-2.5 pl-1.5 pr-3 sm:pr-4 py-1 sm:py-1.5 rounded-full bg-[#131724]/90 backdrop-blur-md border border-slate-700/80 hover:border-emerald-500/50 hover:bg-[#1A2033] transition-all cursor-pointer group shadow-md shrink-0 text-left"
-              title={isAdmin ? "Klik untuk Kelola Foto Profil, Identitas & QRIS Pribadi (Admin)" : "Lihat Profil & QRIS Pengembang"}
+              className="flex items-center gap-2 pl-1.5 pr-3.5 py-1 sm:py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/25 hover:from-emerald-500/35 hover:to-teal-500/35 backdrop-blur-md border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white transition-all duration-200 shadow-lg shadow-emerald-950/50 group/dev cursor-pointer active:scale-95 shrink-0"
+              title="Profil Pengembang Muzaki & QRIS Dukungan"
             >
-              {/* Personal Avatar / Logo */}
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0 group-hover/dev:scale-105 transition-transform">
                 {branding?.personalAvatarUrl ? (
                   <img
                     src={branding.personalAvatarUrl}
-                    alt={branding.personalName || 'Personal'}
+                    alt={branding.personalName || 'Muzaki'}
                     className="w-full h-full object-cover rounded-full"
                   />
                 ) : (
-                  <div className="w-full h-full rounded-full bg-[#0D1A18] flex items-center justify-center text-emerald-300 font-black text-[10px] sm:text-xs">
-                    {branding?.personalName
-                      ? branding.personalName.substring(0, 2).toUpperCase()
-                      : 'AF'}
+                  <div className="w-full h-full rounded-full bg-[#0D1A18] flex items-center justify-center text-emerald-300 font-black text-[9px]">
+                    {branding?.personalName ? branding.personalName.substring(0, 2).toUpperCase() : 'MZ'}
                   </div>
                 )}
               </div>
-
-              {/* Personal Name & Role */}
-              <div className="flex flex-col text-left leading-tight pr-0.5">
-                <span className="text-[11px] sm:text-xs font-black text-white group-hover:text-emerald-300 transition-colors truncate max-w-[110px] sm:max-w-[140px]">
-                  {branding?.personalName || 'Pengembang'}
+              <div className="flex items-center gap-1.5 text-left">
+                <span className="text-xs font-black tracking-wide text-white group-hover/dev:text-emerald-300 transition-colors">
+                  {branding?.personalName || 'Muzaki'}
                 </span>
-                <span className="text-[9px] font-bold text-emerald-400/90 truncate max-w-[110px] sm:max-w-[140px]">
-                  {branding?.personalRole || 'Guru / Inisiator'}
-                </span>
+                <div className="w-4 h-4 rounded bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                  <QrCode className="w-2.5 h-2.5" />
+                </div>
               </div>
             </button>
+
+            {/* Login / Logout Auth Status Info (Pojok Kanan Atas) */}
+            {isAdmin ? (
+              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-400 shadow-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Admin Aktif</span>
+                {onLogout && (
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="ml-1 p-1 rounded-lg bg-rose-500/20 text-rose-400 hover:text-rose-300 hover:bg-rose-500/30 transition-all cursor-pointer"
+                    title="Keluar Mode Admin"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ) : activeTeacher ? (
+              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-400 shadow-md">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="truncate max-w-[120px]">{activeTeacher.name}</span>
+                {onLogoutTeacher && (
+                  <button
+                    type="button"
+                    onClick={onLogoutTeacher}
+                    className="ml-1 p-1 rounded-lg bg-rose-500/20 text-rose-400 hover:text-rose-300 hover:bg-rose-500/30 transition-all cursor-pointer"
+                    title="Keluar Sesi Guru"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            ) : onRequestLogin ? (
+              <button
+                type="button"
+                onClick={onRequestLogin}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#1F2332] hover:bg-[#282E40] text-slate-200 text-xs font-bold border border-[#2D3346] hover:border-amber-400/50 transition-all cursor-pointer shadow-md"
+                title="Masuk sebagai Administrator"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <span>Login Admin</span>
+              </button>
+            ) : null}
           </div>
         </div>
       </header>

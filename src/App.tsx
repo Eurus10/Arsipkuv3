@@ -951,6 +951,10 @@ export default function App() {
                 examConfig={examConfig}
                 examSubmissions={examSubmissions}
                 isAdmin={isAdmin}
+                activeTeacher={activeTeacher}
+                onLogout={handleLogout}
+                onRequestLogin={() => setIsLoginModalOpen(true)}
+                onLogoutTeacher={handleTeacherLogout}
                 onRequestTeacherAuth={handleRequestTeacherAuth}
                 onNavigate={handleSelectTab}
                 onEditDocument={handleEditFromList}

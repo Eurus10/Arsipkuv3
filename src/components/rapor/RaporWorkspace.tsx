@@ -36,6 +36,8 @@ import {
   BarChart2,
   FileText,
   Plus,
+  Zap,
+  X,
 } from 'lucide-react';
 import {
   RaporStsClassData,
@@ -55,6 +57,8 @@ import { RaporScoreGrid } from './RaporScoreGrid';
 import { RaporPrintPreview } from './RaporPrintPreview';
 import { RaporLegerTable } from './RaporLegerTable';
 import { RaporSettingsModal } from './RaporSettingsModal';
+import { RaporAnalysisSyncModal } from './RaporAnalysisSyncModal';
+import type { AnalysisSyncResult } from '../../services/analysisToRaporSyncService';
 import { getActiveTeacherSession, logoutTeacher } from '../../services/teacherStorage';
 import { clearEraporSession } from '../../services/teacherEraporAuthService';
 import {
@@ -295,9 +299,13 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
     }
   }, [loadCurrentClassData, isAuthorized, targetClassId, activePeriodId, classData]);
 
+  const [isAnalysisSyncModalOpen, setIsAnalysisSyncModalOpen] = useState<boolean>(false);
+  const [syncSuccessToast, setSyncSuccessToast] = useState<string | null>(null);
+
   // Save to Supabase
-  const handleSaveToCloud = async () => {
-    if (!classData || !selectedContext || !academicAccess?.academicPeriod) return;
+  const handleSaveToCloud = async (dataToSave?: RaporStsClassData) => {
+    const targetData = dataToSave || classData;
+    if (!targetData || !selectedContext || !academicAccess?.academicPeriod) return;
     if (previewTeacher) {
       return;
     }
@@ -309,7 +317,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         academicPeriodId: academicAccess.academicPeriod.id,
         classId: selectedContext.classId,
         teacherId: activeTeacherId,
-        classData,
+        classData: targetData,
       });
 
       if (res.success) {
@@ -327,6 +335,19 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
     } finally {
       setIsSavingCloud(false);
     }
+  };
+
+  const handleAnalysisSyncComplete = async (
+    updatedData: RaporStsClassData,
+    result: AnalysisSyncResult
+  ) => {
+    setClassData(updatedData);
+    setHasUnsavedChanges(true);
+    await handleSaveToCloud(updatedData);
+    setSyncSuccessToast(
+      `Alhamdulillah, berhasil menyinkronkan ${result.syncedSubjects.length} mata pelajaran (${result.totalStudentsUpdated} siswa) dari Analisis Soal!`
+    );
+    setTimeout(() => setSyncSuccessToast(null), 7000);
   };
 
   // Update TP dari workspace e-Rapor.
@@ -943,10 +964,23 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                 </button>
               )}
 
+              {isAuthorized && classData && (
+                <button
+                  type="button"
+                  onClick={() => setIsAnalysisSyncModalOpen(true)}
+                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+                  title="Tarik & Impor Nilai dari Analisis Soal"
+                >
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="hidden md:inline">Tarik Nilai Analisis</span>
+                  <span className="md:hidden">Analisis</span>
+                </button>
+              )}
+
               {isAuthorized && (
                 <button
                   type="button"
-                  onClick={handleSaveToCloud}
+                  onClick={() => handleSaveToCloud()}
                   disabled={isSavingCloud || !classData}
                   className={`h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
                     hasUnsavedChanges
@@ -1545,6 +1579,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   onUpdateAdditionalInfo={handleUpdateAdditionalInfo}
                   onUpdateSubjectRecord={handleUpdateSubjectRecord}
                   onGoToTpSetup={() => setActiveTab('tp_setup')}
+                  onOpenAnalysisSync={() => setIsAnalysisSyncModalOpen(true)}
                 />
               )}
 
@@ -1618,6 +1653,48 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
             onSaveConfig={handleUpdateConfig}
             isAdmin={isAdmin}
           />
+        )}
+
+        {/* Analysis To e-Rapor Sync Modal */}
+        {classData && (
+          <RaporAnalysisSyncModal
+            isOpen={isAnalysisSyncModalOpen}
+            onClose={() => setIsAnalysisSyncModalOpen(false)}
+            classData={classData}
+            students={classStudents}
+            onSyncComplete={handleAnalysisSyncComplete}
+          />
+        )}
+
+        {/* Global Sync Success Notification Pop-up */}
+        {syncSuccessToast && (
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-lg px-4 pointer-events-auto">
+            <div className="bg-slate-900/95 border-2 border-emerald-400 text-emerald-100 rounded-3xl p-4 sm:p-5 shadow-2xl shadow-emerald-500/30 backdrop-blur-xl flex items-start gap-3.5 animate-[fadeIn_200ms_ease-out]">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/50 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div className="flex-1 text-xs space-y-1">
+                <div className="flex items-center gap-2">
+                  <h5 className="font-black text-sm text-white">Sinkronisasi Nilai Berhasil!</h5>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/40">
+                    Otomatis Tersimpan
+                  </span>
+                </div>
+                <p className="text-slate-300 text-xs leading-relaxed">{syncSuccessToast}</p>
+                <div className="pt-1 flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Nilai STS, Ketercapaian TP, dan Deskripsi Otomatis telah terisi.</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSyncSuccessToast(null)}
+                className="w-7 h-7 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -31,6 +31,7 @@ import {
   Trash2,
   Upload,
   X,
+  Zap,
 } from 'lucide-react';
 import {
   RaporSubject,
@@ -67,6 +68,7 @@ interface RaporScoreGridProps {
   onGoToTpSetup?: () => void;
   initialSubjectId?: string;
   onSelectSubject?: (subjectId: string) => void;
+  onOpenAnalysisSync?: () => void;
 }
 
 const getSubjectMeta = (name: string, category?: string) => {
@@ -154,6 +156,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
   onGoToTpSetup,
   initialSubjectId,
   onSelectSubject,
+  onOpenAnalysisSync,
 }) => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
     initialSubjectId || subjects[0]?.id || 'pai'
@@ -1035,6 +1038,19 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 <Upload className="w-3.5 h-3.5 text-cyan-400" />
                 <span>{isImporting ? 'Mengimpor...' : 'Impor Template'}</span>
               </button>
+
+              {/* Tarik dari Analisis Soal */}
+              {onOpenAnalysisSync && (
+                <button
+                  type="button"
+                  onClick={onOpenAnalysisSync}
+                  className="h-9 px-3.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-sm"
+                  title="Tarik & Impor Nilai dari Analisis Soal (Otomatis)"
+                >
+                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>⚡ Tarik dari Analisis</span>
+                </button>
+              )}
 
               {/* Reset Nilai Button */}
               <button
