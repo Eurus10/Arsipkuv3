@@ -12,8 +12,10 @@ import { db } from './firebase';
 import {
   AnalysisSubmissionItem,
   AnalysisSubmissionStatus,
+  SubjectPrintStatus,
   SubmissionChatMessage,
 } from '../types/analysisSubmissionTypes';
+import { sendTeacherNotification } from './teacherNotificationService';
 
 const LOCAL_STORAGE_KEY = 'sdit_analysis_submissions_v1';
 const FIRESTORE_COLLECTION = 'analysis_submissions';
@@ -60,7 +62,7 @@ export function saveLocalAnalysisSubmissions(items: AnalysisSubmissionItem[]): v
 /**
  * Send an analysis submission to Pak Zaki (Admin)
  * Uses Smart Overwrite: If a submission for the same class + subject already exists,
- * updates the existing document and preserves existing discussion thread.
+ * updates the existing document and preserves existing discussion thread and per-subject print statuses.
  */
 export async function sendAnalysisSubmission(
   data: Omit<AnalysisSubmissionItem, 'id' | 'submittedAt' | 'status' | 'messages'>
@@ -88,6 +90,60 @@ export async function sendAnalysisSubmission(
     ? existingSubmission.id
     : 'asub-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
 
+  // Prepare per-subject statuses: preserve existing print / approval statuses
+  const mergedSubjectStatuses: Record<string, SubjectPrintStatus> = {
+    ...(existingSubmission?.subjectStatuses || {}),
+  };
+
+  if (data.submissionType === 'session' && data.payload?.session?.subjects) {
+    const subjects = data.payload.session.subjects;
+    for (const subj of subjects) {
+      const name = subj.name?.trim();
+      if (!name) continue;
+      if (!mergedSubjectStatuses[name]) {
+        // Newly added subject in multi-subject session: starts as 'menunggu' (belum print)
+        mergedSubjectStatuses[name] = {
+          status: 'menunggu',
+          lastSubmittedAt: now,
+        };
+      } else {
+        mergedSubjectStatuses[name] = {
+          ...mergedSubjectStatuses[name],
+          lastSubmittedAt: now,
+        };
+      }
+    }
+  } else if (data.subjectName) {
+    const subName = data.subjectName.trim();
+    if (!mergedSubjectStatuses[subName]) {
+      mergedSubjectStatuses[subName] = {
+        status: existingSubmission?.status === 'telah_diprint' ? 'telah_diprint' : 'menunggu',
+        lastSubmittedAt: now,
+      };
+    } else {
+      mergedSubjectStatuses[subName] = {
+        ...mergedSubjectStatuses[subName],
+        lastSubmittedAt: now,
+      };
+    }
+  }
+
+  // Calculate overall submission status based on individual subject statuses
+  let overallStatus: AnalysisSubmissionStatus = 'menunggu';
+  const statusValues = Object.values(mergedSubjectStatuses).map((s) => s.status);
+  if (statusValues.length > 0 && statusValues.every((st) => st === 'telah_diprint')) {
+    overallStatus = 'telah_diprint';
+  } else if (statusValues.length > 0 && statusValues.some((st) => st === 'revisi')) {
+    overallStatus = 'revisi';
+  } else if (
+    statusValues.length > 0 &&
+    statusValues.every((st) => st === 'disetujui' || st === 'telah_diprint')
+  ) {
+    overallStatus = 'disetujui';
+  } else {
+    overallStatus = 'menunggu';
+  }
+
   // Prepare messages: keep existing messages or start new thread
   const existingMessages: SubmissionChatMessage[] = existingSubmission?.messages || [];
   const updatedMessages: SubmissionChatMessage[] = [...existingMessages];
@@ -97,7 +153,7 @@ export async function sendAnalysisSubmission(
       id: 'msg-sys-' + Date.now().toString(36),
       senderName: 'Sistem SDIT',
       senderRole: 'system',
-      text: `🔄 Berkas analisis mapel ${data.subjectName} (${data.className}) telah diperbarui dengan data nilai revisi terbaru.`,
+      text: `🔄 Berkas analisis ${data.subjectName} (${data.className}) telah diperbarui dengan data setoran terbaru.`,
       timestamp: Date.now(),
       isSystem: true,
     });
@@ -106,7 +162,7 @@ export async function sendAnalysisSubmission(
       id: 'msg-sys-' + Date.now().toString(36),
       senderName: 'Sistem SDIT',
       senderRole: 'system',
-      text: `🚀 Berkas analisis mapel ${data.subjectName} (${data.className}) berhasil disetorkan ke Pak Zaki.`,
+      text: `🚀 Berkas analisis ${data.subjectName} (${data.className}) berhasil disetorkan ke Pak Zaki.`,
       timestamp: Date.now(),
       isSystem: true,
     });
@@ -125,8 +181,10 @@ export async function sendAnalysisSubmission(
   const targetSubmission: AnalysisSubmissionItem = {
     ...data,
     id: submissionId,
-    status: existingSubmission?.status === 'telah_diprint' ? 'telah_diprint' : 'menunggu',
-    submittedAt: now,
+    status: overallStatus,
+    subjectStatuses: mergedSubjectStatuses,
+    submittedAt: existingSubmission?.submittedAt || now,
+    updatedAt: now,
     messages: updatedMessages,
   };
 
@@ -182,7 +240,129 @@ export function subscribeToAnalysisSubmissions(
 }
 
 /**
- * Update submission status by Pak Zaki with automated system log
+ * Update print / approval status of a single subject within a submission
+ * (Critical for multi-subject homeroom sessions so already printed subjects are not reset!)
+ */
+export async function updateSingleSubjectStatus(
+  submissionId: string,
+  subjectName: string,
+  status: AnalysisSubmissionStatus,
+  adminNote?: string
+): Promise<void> {
+  const local = getLocalAnalysisSubmissions();
+  const idx = local.findIndex((s) => s.id === submissionId);
+  if (idx === -1) return;
+
+  const sub = local[idx];
+  const now = new Date().toISOString();
+  const currentStatuses = sub.subjectStatuses || {};
+
+  const updatedStatuses: Record<string, SubjectPrintStatus> = {
+    ...currentStatuses,
+    [subjectName]: {
+      ...(currentStatuses[subjectName] || {}),
+      status,
+      ...(status === 'telah_diprint' ? { printedAt: now } : {}),
+      ...(status === 'disetujui' ? { approvedAt: now } : {}),
+      ...(adminNote !== undefined ? { revisionNote: adminNote } : {}),
+    },
+  };
+
+  // Recalculate overall status
+  const allStatuses = Object.values(updatedStatuses).map((s) => s.status);
+  let overallStatus: AnalysisSubmissionStatus = 'menunggu';
+  if (allStatuses.length > 0 && allStatuses.every((st) => st === 'telah_diprint')) {
+    overallStatus = 'telah_diprint';
+  } else if (allStatuses.length > 0 && allStatuses.some((st) => st === 'revisi')) {
+    overallStatus = 'revisi';
+  } else if (
+    allStatuses.length > 0 &&
+    allStatuses.every((st) => st === 'disetujui' || st === 'telah_diprint')
+  ) {
+    overallStatus = 'disetujui';
+  } else {
+    overallStatus = 'menunggu';
+  }
+
+  // System log
+  let logText = '';
+  if (status === 'telah_diprint') {
+    logText = `🖨️ Pak Zaki (Admin) menandai mapel ${subjectName} (${sub.className}): Selesai dicetak fisik di TU.`;
+  } else if (status === 'disetujui') {
+    logText = `✅ Pak Zaki (Admin) menyetujui lembar analisis mapel ${subjectName} (${sub.className}).`;
+  } else if (status === 'revisi') {
+    logText = `⚠️ Pak Zaki (Admin) meminta revisi mapel ${subjectName} (${sub.className}).${adminNote ? ` Catatan: "${adminNote}"` : ''}`;
+  } else {
+    logText = `⏳ Status mapel ${subjectName} (${sub.className}) dikembalikan ke antrean menunggu.`;
+  }
+
+  const sysMsg: SubmissionChatMessage = {
+    id: 'msg-sys-' + Date.now().toString(36),
+    senderName: 'Sistem SDIT',
+    senderRole: 'system',
+    text: logText,
+    timestamp: Date.now(),
+    isSystem: true,
+  };
+
+  const updatedMessages = [...(sub.messages || []), sysMsg];
+
+  local[idx] = {
+    ...sub,
+    status: overallStatus,
+    subjectStatuses: updatedStatuses,
+    updatedAt: now,
+    messages: updatedMessages,
+  };
+  saveLocalAnalysisSubmissions(local);
+
+  // Send automated notification to Teacher
+  try {
+    let notifType: 'print' | 'revision' | 'approved' = 'print';
+    let notifTitle = 'Soal Selesai Dicetak';
+    if (status === 'revisi') {
+      notifType = 'revision';
+      notifTitle = 'Catatan Revisi Analisis Soal';
+    } else if (status === 'disetujui') {
+      notifType = 'approved';
+      notifTitle = 'Analisis Soal Disetujui';
+    }
+
+    await sendTeacherNotification({
+      teacherId: sub.teacherId,
+      teacherName: sub.teacherName,
+      title: notifTitle,
+      message: logText,
+      type: notifType,
+      submissionId: sub.id,
+      subjectName,
+      className: sub.className,
+      linkAction: status === 'revisi' ? 'discussion' : 'analysis',
+    });
+  } catch (err) {
+    console.warn('Failed to send teacher notification on single subject update:', err);
+  }
+
+  // Update in Firestore
+  try {
+    const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
+    await setDoc(
+      docRef,
+      cleanObjectForFirestore({
+        status: overallStatus,
+        subjectStatuses: updatedStatuses,
+        updatedAt: now,
+        messages: updatedMessages,
+      }),
+      { merge: true }
+    );
+  } catch (err) {
+    console.error('Failed to update single subject status in Firestore:', err);
+  }
+}
+
+/**
+ * Update submission status by Pak Zaki with automated system log & teacher notification
  */
 export async function updateAnalysisSubmissionStatus(
   id: string,
@@ -193,6 +373,7 @@ export async function updateAnalysisSubmissionStatus(
   const idx = local.findIndex((s) => s.id === id);
 
   let newMessages: SubmissionChatMessage[] = [];
+  const now = new Date().toISOString();
 
   // Generate automated status log message
   let systemText = '';
@@ -215,18 +396,62 @@ export async function updateAnalysisSubmissionStatus(
     isSystem: true,
   };
 
+  let updatedSubjectStatuses: Record<string, SubjectPrintStatus> | undefined = undefined;
+
   if (idx !== -1) {
     const existingMessages = Array.isArray(local[idx].messages) ? local[idx].messages! : [];
     newMessages = [...existingMessages, sysMsg];
 
+    // If marking whole submission as printed or approved, cascade to subject statuses
+    if (local[idx].subjectStatuses) {
+      updatedSubjectStatuses = { ...local[idx].subjectStatuses };
+      for (const k of Object.keys(updatedSubjectStatuses)) {
+        updatedSubjectStatuses[k] = {
+          ...updatedSubjectStatuses[k],
+          status: status,
+          ...(status === 'telah_diprint' ? { printedAt: now } : {}),
+          ...(status === 'disetujui' ? { approvedAt: now } : {}),
+        };
+      }
+    }
+
+    const targetSub = local[idx];
     local[idx] = {
-      ...local[idx],
+      ...targetSub,
       status,
-      adminNote: adminNote !== undefined ? adminNote : local[idx].adminNote,
-      updatedAt: new Date().toISOString(),
+      ...(updatedSubjectStatuses ? { subjectStatuses: updatedSubjectStatuses } : {}),
+      adminNote: adminNote !== undefined ? adminNote : targetSub.adminNote,
+      updatedAt: now,
       messages: newMessages,
     };
     saveLocalAnalysisSubmissions(local);
+
+    // Send automated notification to Teacher
+    try {
+      let notifType: 'print' | 'revision' | 'approved' = 'print';
+      let notifTitle = 'Soal Selesai Dicetak';
+      if (status === 'revisi') {
+        notifType = 'revision';
+        notifTitle = 'Catatan Revisi dari Pak Zaki';
+      } else if (status === 'disetujui') {
+        notifType = 'approved';
+        notifTitle = 'Analisis Soal Disetujui';
+      }
+
+      await sendTeacherNotification({
+        teacherId: targetSub.teacherId,
+        teacherName: targetSub.teacherName,
+        title: notifTitle,
+        message: `${targetSub.subjectName} (${targetSub.className}): ${systemText}`,
+        type: notifType,
+        submissionId: targetSub.id,
+        subjectName: targetSub.subjectName,
+        className: targetSub.className,
+        linkAction: status === 'revisi' ? 'discussion' : 'analysis',
+      });
+    } catch (err) {
+      console.warn('Failed to send teacher notification on submission status update:', err);
+    }
   }
 
   try {
@@ -235,8 +460,9 @@ export async function updateAnalysisSubmissionStatus(
       docRef,
       cleanObjectForFirestore({
         status,
+        ...(updatedSubjectStatuses ? { subjectStatuses: updatedSubjectStatuses } : {}),
         ...(adminNote !== undefined ? { adminNote } : {}),
-        updatedAt: new Date().toISOString(),
+        updatedAt: now,
         ...(newMessages.length > 0 ? { messages: newMessages } : {}),
       }),
       { merge: true }
@@ -279,6 +505,26 @@ export async function sendSubmissionChatMessage(
       updatedAt: new Date().toISOString(),
     };
     saveLocalAnalysisSubmissions(local);
+
+    // If message is sent by Admin, automatically notify the teacher
+    if (message.senderRole === 'admin') {
+      try {
+        await sendTeacherNotification({
+          teacherId: local[idx].teacherId,
+          teacherName: local[idx].teacherName,
+          title: `Pesan Diskusi Baru dari ${message.senderName}`,
+          message: `Di setoran ${local[idx].subjectName} (${local[idx].className}): "${message.text.trim()}"`,
+          type: 'chat',
+          submissionId: local[idx].id,
+          subjectName: local[idx].subjectName,
+          className: local[idx].className,
+          adminSenderName: message.senderName,
+          linkAction: 'discussion',
+        });
+      } catch (err) {
+        console.warn('Failed to send teacher notification for admin chat:', err);
+      }
+    }
   }
 
   try {
@@ -394,3 +640,4 @@ export async function deleteAnalysisSubmission(id: string): Promise<void> {
     console.error('Failed to delete submission from Firestore:', err);
   }
 }
+

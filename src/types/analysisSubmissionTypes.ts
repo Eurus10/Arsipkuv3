@@ -1,5 +1,14 @@
 export type AnalysisSubmissionStatus = 'menunggu' | 'disetujui' | 'revisi' | 'telah_diprint';
 
+export interface SubjectPrintStatus {
+  status: AnalysisSubmissionStatus;
+  printedAt?: string;
+  approvedAt?: string;
+  revisionNote?: string;
+  lastSubmittedAt?: string;
+  isRevisedAfterPrint?: boolean;
+}
+
 export interface SubmissionChatMessage {
   id: string;
   senderName: string;
@@ -18,6 +27,8 @@ export interface AnalysisSubmissionItem {
   examType: string;
   schoolYear: string;
   teacherName: string;
+  teacherId?: string; // Whitelist ID if logged in
+  teacherRoleTitle?: string; // e.g. "Wali Kelas 1A" or "Guru MTK"
   kktp: number;
   totalStudents: number;
   completedStudents: number;
@@ -26,6 +37,7 @@ export interface AnalysisSubmissionItem {
   teacherNote?: string;
   adminNote?: string;
   status: AnalysisSubmissionStatus;
+  subjectStatuses?: Record<string, SubjectPrintStatus>; // Individual status tracking per subject
   submittedAt: string;
   updatedAt?: string;
   messages?: SubmissionChatMessage[];

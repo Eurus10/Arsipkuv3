@@ -31,6 +31,10 @@ import { DocumentCard } from './DocumentCard';
 import { TemplateDownloadSection } from './TemplateDownloadSection';
 import { AppBranding, DEFAULT_BRANDING } from '../services/brandingStorage';
 import { LazyViewLoader } from './common/LazyViewLoader';
+import {
+  TeacherDashboardNotificationBanner,
+  TeacherNotificationBell,
+} from './dashboard/TeacherDashboardNotificationBanner';
 
 const EvaluationLearningView = lazy(() =>
   import('./evaluation/EvaluationLearningView').then((m) => ({
@@ -344,6 +348,14 @@ export const DashboardView: React.FC<
               </div>
             </button>
 
+            {/* Notification Bell (Lonceng Notifikasi Guru & Admin) */}
+            <TeacherNotificationBell
+              activeTeacher={activeTeacher}
+              isAdmin={isAdmin}
+              onNavigate={onNavigate}
+              onOpenRaporSts={onOpenRaporSts}
+            />
+
             {/* Login / Logout Auth Status Info (Pojok Kanan Atas) */}
             {isAdmin ? (
               <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-400 shadow-md">
@@ -389,6 +401,14 @@ export const DashboardView: React.FC<
           </div>
         </div>
       </header>
+
+      {/* Prominent Teacher Dashboard Notification Alert Banner (Muncul saat guru buka web jika ada info cetak/revisi/pesan) */}
+      <TeacherDashboardNotificationBanner
+        activeTeacher={activeTeacher}
+        isAdmin={isAdmin}
+        onNavigate={onNavigate}
+        onOpenRaporSts={onOpenRaporSts}
+      />
 
       {/* Global Search Results */}
       {searchResults !== null ? (

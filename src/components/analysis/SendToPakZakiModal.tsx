@@ -126,6 +126,7 @@ export const SendToPakZakiModal: React.FC<SendToPakZakiModalProps> = ({
     setErrorMessage(null);
 
     try {
+      const activeSession = getActiveTeacherSession();
       await sendAnalysisSubmission({
         submissionType,
         subjectName,
@@ -133,8 +134,10 @@ export const SendToPakZakiModal: React.FC<SendToPakZakiModalProps> = ({
         className,
         examType,
         schoolYear,
+        teacherId: activeSession?.id,
+        teacherRoleTitle: activeSession?.roleTitle,
         teacherName:
-          getActiveTeacherSession()?.name ||
+          activeSession?.name ||
           teacherName ||
           branding.personalName ||
           'Guru Pengampu',
