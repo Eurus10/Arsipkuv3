@@ -14,6 +14,7 @@ import {
   ChevronRight,
   CheckCheck,
   RotateCcw,
+  Trash2,
 } from 'lucide-react';
 import { TeacherUser, NavTab } from '../../types';
 import { TeacherNotificationItem } from '../../types/teacherNotificationTypes';
@@ -21,6 +22,7 @@ import {
   subscribeToTeacherNotifications,
   markTeacherNotificationRead,
   markAllTeacherNotificationsRead,
+  deleteTeacherNotification,
 } from '../../services/teacherNotificationService';
 import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
 import {
@@ -30,6 +32,7 @@ import {
 import { AnalysisSubmissionChatModal } from '../analysis/AnalysisSubmissionChatModal';
 
 const DISMISSED_STORAGE_KEY = 'sdit_dismissed_notifications_v1';
+const CLEARED_STORAGE_KEY = 'sdit_cleared_notifications_v1';
 
 function getDismissedIds(): string[] {
   try {
@@ -44,11 +47,51 @@ function saveDismissedId(id: string): void {
   try {
     const current = getDismissedIds();
     if (!current.includes(id)) {
-      const updated = [id, ...current].slice(0, 100);
+      const updated = [id, ...current].slice(0, 150);
       localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify(updated));
     }
   } catch (err) {
     console.error('Failed to save dismissed notification id:', err);
+  }
+}
+
+function getClearedIds(): string[] {
+  try {
+    const raw = localStorage.getItem(CLEARED_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveClearedId(id: string): void {
+  try {
+    const current = getClearedIds();
+    if (!current.includes(id)) {
+      const updated = [id, ...current].slice(0, 200);
+      localStorage.setItem(CLEARED_STORAGE_KEY, JSON.stringify(updated));
+    }
+  } catch (err) {
+    console.error('Failed to save cleared notification id:', err);
+  }
+}
+
+function saveAllClearedIds(ids: string[]): void {
+  try {
+    const current = getClearedIds();
+    const set = new Set([...ids, ...current]);
+    const updated = Array.from(set).slice(0, 300);
+    localStorage.setItem(CLEARED_STORAGE_KEY, JSON.stringify(updated));
+  } catch (err) {
+    console.error('Failed to save all cleared notification ids:', err);
+  }
+}
+
+function resetClearedIds(): void {
+  try {
+    localStorage.removeItem(CLEARED_STORAGE_KEY);
+  } catch (err) {
+    console.error('Failed to reset cleared notifications:', err);
   }
 }
 
@@ -73,6 +116,7 @@ function useUnifiedTeacherNotifications(
     getLocalAnalysisSubmissions()
   );
   const [dismissedIds, setDismissedIds] = useState<string[]>(() => getDismissedIds());
+  const [clearedIds, setClearedIds] = useState<string[]>(() => getClearedIds());
 
   // 1. Subscribe to teacher_notifications collection
   useEffect(() => {
@@ -230,12 +274,13 @@ function useUnifiedTeacherNotifications(
     return results;
   }, [allSubmissions, activeTeacher, isAdmin]);
 
-  // Combine both sources, remove duplicates, and apply read / dismissed flags
+  // Combine both sources, remove duplicates, filter out cleared ones, and apply read / dismissed flags
   const combinedNotifications = useMemo<TeacherNotificationItem[]>(() => {
     const map = new Map<string, TeacherNotificationItem>();
 
     // Add derived notifications first
     derivedSubNotifs.forEach((n) => {
+      if (clearedIds.includes(n.id)) return; // Filtered out because cleared
       map.set(n.id, {
         ...n,
         isRead: dismissedIds.includes(n.id),
@@ -244,6 +289,7 @@ function useUnifiedTeacherNotifications(
 
     // Add explicit notifications (overriding or supplementing)
     explicitNotifs.forEach((n) => {
+      if (clearedIds.includes(n.id)) return; // Filtered out because cleared
       map.set(n.id, {
         ...n,
         isRead: n.isRead || dismissedIds.includes(n.id),
@@ -253,7 +299,7 @@ function useUnifiedTeacherNotifications(
     return Array.from(map.values()).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-  }, [derivedSubNotifs, explicitNotifs, dismissedIds]);
+  }, [derivedSubNotifs, explicitNotifs, dismissedIds, clearedIds]);
 
   const dismissNotification = (id: string) => {
     saveDismissedId(id);
@@ -267,17 +313,44 @@ function useUnifiedTeacherNotifications(
     markAllTeacherNotificationsRead(activeTeacher?.id, activeTeacher?.name);
   };
 
+  const clearNotification = (id: string) => {
+    saveClearedId(id);
+    setClearedIds((prev) => (prev.includes(id) ? prev : [id, ...prev]));
+    deleteTeacherNotification(id).catch(() => {});
+  };
+
+  const clearAll = () => {
+    const ids = combinedNotifications.map((n) => n.id);
+    saveAllClearedIds(ids);
+    setClearedIds((prev) => {
+      const set = new Set([...ids, ...prev]);
+      return Array.from(set);
+    });
+    explicitNotifs.forEach((n) => {
+      deleteTeacherNotification(n.id).catch(() => {});
+    });
+  };
+
+  const resetCleared = () => {
+    resetClearedIds();
+    setClearedIds([]);
+  };
+
   return {
     notifications: combinedNotifications,
     dismissNotification,
     dismissAll,
+    clearNotification,
+    clearAll,
+    resetCleared,
+    clearedCount: clearedIds.length,
   };
 }
 
 export const TeacherDashboardNotificationBanner: React.FC<
   TeacherDashboardNotificationBannerProps
 > = ({ activeTeacher, isAdmin = false, onNavigate, onOpenRaporSts }) => {
-  const { notifications, dismissNotification } = useUnifiedTeacherNotifications(
+  const { notifications, dismissNotification, clearNotification } = useUnifiedTeacherNotifications(
     activeTeacher,
     isAdmin
   );
@@ -449,6 +522,18 @@ export const TeacherDashboardNotificationBanner: React.FC<
 
             <button
               type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                clearNotification(topNotification.id);
+              }}
+              className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 cursor-pointer transition-all"
+              title="Bersihkan Notifikasi Ini dari Dashboard"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
               onClick={(e) => handleDismiss(topNotification.id, e)}
               className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 cursor-pointer transition-all"
               title="Tutup & Tandai Sudah Dibaca"
@@ -495,10 +580,15 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
   onNavigate,
   onOpenRaporSts,
 }) => {
-  const { notifications, dismissNotification, dismissAll } = useUnifiedTeacherNotifications(
-    activeTeacher,
-    isAdmin
-  );
+  const {
+    notifications,
+    dismissNotification,
+    dismissAll,
+    clearNotification,
+    clearAll,
+    resetCleared,
+    clearedCount,
+  } = useUnifiedTeacherNotifications(activeTeacher, isAdmin);
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeChatSubmission, setActiveChatSubmission] =
@@ -551,7 +641,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
 
       {/* Floating Notification Panel: FIXED Positioned to prevent ANY cut-off or clipping */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end p-3 sm:p-6 pointer-events-none animate-[fadeIn_150ms_ease-out]">
+        <div className="fixed inset-0 z-[100] flex justify-end items-start p-2 sm:p-6 pointer-events-none animate-[fadeIn_150ms_ease-out]">
           {/* Backdrop for closing */}
           <div
             className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs pointer-events-auto"
@@ -559,35 +649,51 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
           />
 
           {/* Floating Dropdown Drawer Container */}
-          <div className="relative mt-14 sm:mt-16 w-full max-w-sm sm:max-w-md bg-slate-900/95 border border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-2xl text-slate-100 space-y-3.5 backdrop-blur-xl pointer-events-auto flex flex-col max-h-[85vh]">
+          <div className="relative mt-14 sm:mt-16 w-full sm:w-[420px] max-w-full bg-slate-900/98 border border-slate-700/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl text-slate-100 space-y-3.5 backdrop-blur-xl pointer-events-auto flex flex-col max-h-[calc(100vh-4.5rem)] sm:max-h-[82vh] overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                   <Bell className="w-4 h-4" />
                 </div>
                 <div>
                   <h4 className="text-xs font-black text-white uppercase tracking-wider">
                     Pemberitahuan Guru
                   </h4>
-                  {unreadCount > 0 && (
+                  {unreadCount > 0 ? (
                     <span className="text-[10px] font-bold text-rose-400">
                       {unreadCount} pesan belum dibaca
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-slate-400">
+                      Semua pesan telah dibaca
                     </span>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
                 {unreadCount > 0 && (
                   <button
                     type="button"
                     onClick={dismissAll}
-                    className="text-[11px] text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-[11px] text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-teal-500/10"
                     title="Tandai semua sebagai sudah dibaca"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Tandai Dibaca</span>
+                    <span>Tandai Dibaca</span>
+                  </button>
+                )}
+
+                {notifications.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="text-[11px] text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-rose-500/10"
+                    title="Bersihkan semua notifikasi dari daftar"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Bersihkan Semua</span>
                   </button>
                 )}
 
@@ -595,6 +701,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                  title="Tutup"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -602,53 +709,127 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar min-h-0">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 space-y-2">
-                  <Bell className="w-9 h-9 text-slate-600 mx-auto" />
-                  <p className="text-xs font-bold text-slate-400">Belum ada pemberitahuan.</p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs mx-auto">
-                    Catatan revisi dari Pak Zaki, info soal selesai dicetak, atau pesan diskusi akan otomatis muncul di sini.
-                  </p>
+                <div className="p-8 text-center text-slate-500 space-y-3">
+                  <div className="w-10 h-10 rounded-2xl bg-slate-800/80 border border-white/5 text-slate-400 flex items-center justify-center mx-auto">
+                    <CheckCheck className="w-5 h-5 text-teal-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold text-slate-300">Pemberitahuan Bersih</p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs mx-auto">
+                      Tidak ada pemberitahuan aktif. Catatan revisi atau pesan baru dari Pak Zaki akan otomatis tampil di sini.
+                    </p>
+                  </div>
+                  {clearedCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={resetCleared}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-white/10 text-[11px] font-bold text-teal-400 hover:text-teal-300 transition-colors cursor-pointer mt-1"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Pulihkan Notifikasi Sebelumnya ({clearedCount})</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 notifications.map((n) => {
                   const isPrint = n.type === 'print';
                   const isRevision = n.type === 'revision';
                   const isChat = n.type === 'chat';
+                  const isApproved = n.type === 'approved';
+
+                  const badgeBg = isRevision
+                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    : isPrint
+                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                    : isChat
+                    ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30'
+                    : isApproved
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                    : 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+
+                  const badgeLabel = isRevision
+                    ? 'Revisi'
+                    : isPrint
+                    ? 'Dicetak'
+                    : isChat
+                    ? 'Pesan Diskusi'
+                    : isApproved
+                    ? 'Disetujui'
+                    : 'Pengumuman';
 
                   return (
                     <div
                       key={n.id}
                       onClick={() => handleItemClick(n)}
-                      className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-1.5 ${
+                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer space-y-2 ${
                         !n.isRead
-                          ? 'bg-slate-950/80 border-teal-500/40 hover:border-teal-400 shadow-md'
-                          : 'bg-slate-950/30 border-white/5 hover:border-white/15 opacity-75'
+                          ? 'bg-slate-950/90 border-teal-500/50 hover:border-teal-400 shadow-lg shadow-teal-950/20'
+                          : 'bg-slate-950/40 border-white/10 hover:border-white/20 opacity-80'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-sm">
-                            {isRevision ? '⚠️' : isPrint ? '🖨️' : isChat ? '💬' : '📢'}
+                            {isRevision ? '⚠️' : isPrint ? '🖨️' : isChat ? '💬' : isApproved ? '✓' : '📢'}
                           </span>
-                          <span className="text-xs font-bold text-white line-clamp-1">
-                            {n.title}
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${badgeBg}`}>
+                            {badgeLabel}
                           </span>
+                          {!n.isRead && (
+                            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                          )}
                         </div>
-                        <span className="text-[10px] text-slate-500 shrink-0">
-                          {new Date(n.createdAt).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {new Date(n.createdAt).toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearNotification(n.id);
+                            }}
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/15 transition-all cursor-pointer"
+                            title="Bersihkan notifikasi ini dari daftar"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
 
-                      <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed pl-5">
+                      {/* Title: No truncation, full wrapping */}
+                      <h5 className="text-xs font-bold text-white leading-snug break-words">
+                        {n.title}
+                      </h5>
+
+                      {/* Message Content: Full display, no line-clamp, whitespace preserved */}
+                      <p className="text-[11.5px] text-slate-300 leading-relaxed break-words whitespace-pre-line bg-slate-900/60 p-2.5 rounded-xl border border-white/5">
                         {n.message}
                       </p>
+
+                      {/* Action pill / indicator */}
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 hover:underline">
+                          {n.linkAction === 'discussion'
+                            ? 'Buka & Balas Diskusi'
+                            : n.linkAction === 'rapor'
+                            ? 'Buka E-Rapor STS'
+                            : 'Buka Analisis Soal'}
+                          <ChevronRight className="w-3 h-3" />
+                        </span>
+                        {!n.isRead && (
+                          <span className="text-[9px] text-slate-400 italic">
+                            Klik untuk membuka
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 })

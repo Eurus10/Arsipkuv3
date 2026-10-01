@@ -14,9 +14,6 @@ import {
   User,
   Camera,
   Image as ImageIcon,
-  UserCheck,
-  LogOut,
-  Lock,
 } from 'lucide-react';
 import {
   DocumentItem,
@@ -355,49 +352,6 @@ export const DashboardView: React.FC<
               onNavigate={onNavigate}
               onOpenRaporSts={onOpenRaporSts}
             />
-
-            {/* Login / Logout Auth Status Info (Pojok Kanan Atas) */}
-            {isAdmin ? (
-              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-400 shadow-md">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Admin Aktif</span>
-                {onLogout && (
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    className="ml-1 p-1 rounded-lg bg-rose-500/20 text-rose-400 hover:text-rose-300 hover:bg-rose-500/30 transition-all cursor-pointer"
-                    title="Keluar Mode Admin"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            ) : activeTeacher ? (
-              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-400 shadow-md">
-                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="truncate max-w-[120px]">{activeTeacher.name}</span>
-                {onLogoutTeacher && (
-                  <button
-                    type="button"
-                    onClick={onLogoutTeacher}
-                    className="ml-1 p-1 rounded-lg bg-rose-500/20 text-rose-400 hover:text-rose-300 hover:bg-rose-500/30 transition-all cursor-pointer"
-                    title="Keluar Sesi Guru"
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            ) : onRequestLogin ? (
-              <button
-                type="button"
-                onClick={onRequestLogin}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#1F2332] hover:bg-[#282E40] text-slate-200 text-xs font-bold border border-[#2D3346] hover:border-amber-400/50 transition-all cursor-pointer shadow-md"
-                title="Masuk sebagai Administrator"
-              >
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Login Admin</span>
-              </button>
-            ) : null}
           </div>
         </div>
       </header>
