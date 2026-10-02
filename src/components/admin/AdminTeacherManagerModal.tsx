@@ -38,6 +38,9 @@ import {
   kickTeacherDevice,
   deleteTeacher,
   bootstrapTeachersToSupabase,
+  subscribeToUnregisteredTeacherSignals,
+  dismissUnregisteredTeacherSignal,
+  UnregisteredTeacherSignal,
 } from '../../services/teacherStorage';
 
 export type TeacherFilterStatus =
@@ -133,8 +136,20 @@ export const AdminTeacherManagerModal: React.FC<
   const [pendingConfirmation, setPendingConfirmation] =
     useState<PendingConfirmation>(null);
 
+  const [unregisteredSignals, setUnregisteredSignals] =
+    useState<UnregisteredTeacherSignal[]>([]);
+
+  const [aliasTargetSignal, setAliasTargetSignal] =
+    useState<UnregisteredTeacherSignal | null>(null);
+
+  const [selectedTeacherForAlias, setSelectedTeacherForAlias] =
+    useState<string>('');
+
+  const [isProcessingUnregistered, setIsProcessingUnregistered] =
+    useState<string | null>(null);
+
   // =====================================================
-  // SUPABASE REALTIME LISTENER
+  // SUPABASE REALTIME LISTENER & UNREGISTERED SIGNALS
   // =====================================================
 
   useEffect(() => {
@@ -145,6 +160,12 @@ export const AdminTeacherManagerModal: React.FC<
     setIsLoading(true);
     setError('');
     setSuccessMessage('');
+
+    // Subscribe to unregistered teacher signals from Firestore
+    const unsubSignals = subscribeToUnregisteredTeacherSignals((signals) => {
+      if (!isMounted) return;
+      setUnregisteredSignals(signals);
+    });
 
     // Initial check & bootstrap if empty
     fetchAllTeachers()
@@ -214,6 +235,7 @@ export const AdminTeacherManagerModal: React.FC<
       isMounted = false;
 
       try {
+        unsubSignals?.();
         unsubscribe?.();
       } catch (unsubscribeError) {
         console.warn(
@@ -271,6 +293,80 @@ export const AdminTeacherManagerModal: React.FC<
       blocked,
     };
   }, [teachers]);
+
+  // =====================================================
+  // UNREGISTERED TEACHER SIGNALS (PENDING REGISTRATION)
+  // =====================================================
+
+  const pendingUnregistered = useMemo(() => {
+    if (teachers.length === 0) return unregisteredSignals;
+    return unregisteredSignals.filter((signal) => {
+      const norm = signal.normalizedName || signal.name.toLowerCase().trim();
+      const isAlreadyInTeachers = teachers.some((t) => {
+        if (t.normalizedName === norm || t.name.toLowerCase().trim() === signal.name.toLowerCase().trim()) return true;
+        if ((t.loginAliases || []).some((a) => a.toLowerCase().trim() === signal.name.toLowerCase().trim())) return true;
+        return false;
+      });
+      return !isAlreadyInTeachers;
+    });
+  }, [unregisteredSignals, teachers]);
+
+  const handleQuickRegisterUnregistered = async (signal: UnregisteredTeacherSignal) => {
+    setError('');
+    setSuccessMessage('');
+    setIsProcessingUnregistered(signal.id);
+    try {
+      const newTeacher = await addTeacher({
+        name: signal.name,
+        roleTitle: signal.roleTitle || 'Guru SDIT',
+        maxDevices: 2,
+      });
+      setTeachers((current) => [newTeacher, ...current.filter((t) => t.id !== newTeacher.id)]);
+      await dismissUnregisteredTeacherSignal(signal.id);
+      setSuccessMessage(`Guru "${signal.name}" berhasil didaftarkan ke whitelist. Sesi perangkat guru akan segera aktif.`);
+    } catch (err: any) {
+      console.error('Error adding unregistered teacher:', err);
+      setError(err?.message || 'Gagal mendaftarkan guru ke whitelist.');
+    } finally {
+      setIsProcessingUnregistered(null);
+    }
+  };
+
+  const handleLinkAliasToTeacher = async () => {
+    if (!aliasTargetSignal || !selectedTeacherForAlias) return;
+    setError('');
+    setSuccessMessage('');
+    setIsProcessingUnregistered(aliasTargetSignal.id);
+    try {
+      const targetTeacher = teachers.find((t) => t.id === selectedTeacherForAlias);
+      if (!targetTeacher) return;
+      const currentAliases = targetTeacher.loginAliases || [];
+      if (!currentAliases.includes(aliasTargetSignal.name)) {
+        const updated = [...currentAliases, aliasTargetSignal.name];
+        await setTeacherLoginAliases(targetTeacher.id, updated);
+        setTeachers((current) =>
+          current.map((t) => (t.id === targetTeacher.id ? { ...t, loginAliases: updated } : t))
+        );
+      }
+      await dismissUnregisteredTeacherSignal(aliasTargetSignal.id);
+      setSuccessMessage(`Nama "${aliasTargetSignal.name}" berhasil dijadikan alias untuk ${targetTeacher.name}.`);
+      setAliasTargetSignal(null);
+      setSelectedTeacherForAlias('');
+    } catch (err: any) {
+      console.error('Error linking alias:', err);
+      setError(err?.message || 'Gagal menambahkan alias.');
+    } finally {
+      setIsProcessingUnregistered(null);
+    }
+  };
+
+  const handleDismissSignal = async (signalId: string) => {
+    try {
+      await dismissUnregisteredTeacherSignal(signalId);
+    } catch (err) {
+      console.warn('Failed to dismiss signal:', err);
+    }
+  };
 
   // =====================================================
   // FILTERED TEACHERS
@@ -986,6 +1082,128 @@ export const AdminTeacherManagerModal: React.FC<
             >
               <X className="w-3.5 h-3.5" />
             </button>
+          </div>
+        )}
+
+        {/* =================================================
+            UNREGISTERED TEACHERS DETECTED ALERT BANNER
+        ================================================= */}
+        {pendingUnregistered.length > 0 && (
+          <div className="mb-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-slate-200 space-y-3 shadow-lg animate-fade-in">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-4 h-4 text-amber-400" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                    <span>Terdeteksi Sesi Guru Belum Terdaftar di Whitelist</span>
+                    <span className="px-2 py-0.2 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black">
+                      {pendingUnregistered.length} Guru
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-amber-200/80">
+                    Guru berikut terdeteksi aktif di aplikasi namun namanya belum ada di whitelist. Daftarkan agar sesi perangkatnya tercatat.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-1">
+              {pendingUnregistered.map((signal) => (
+                <div
+                  key={signal.id}
+                  className="bg-[#12141D] border border-amber-500/25 rounded-xl p-3 flex flex-col justify-between gap-2.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-white">{signal.name}</span>
+                        <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[10px] font-medium border border-amber-500/30">
+                          {signal.roleTitle || 'Guru SDIT'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Perangkat: {signal.deviceInfo || 'Browser Mobile/Desktop'}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDismissSignal(signal.id)}
+                      className="text-slate-500 hover:text-slate-300 p-1 rounded-lg"
+                      title="Sembunyikan pemberitahuan"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1 border-t border-white/5">
+                    <button
+                      type="button"
+                      disabled={isProcessingUnregistered === signal.id}
+                      onClick={() => handleQuickRegisterUnregistered(signal)}
+                      className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{isProcessingUnregistered === signal.id ? 'Mendaftarkan...' : '+ Daftarkan ke Whitelist'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isProcessingUnregistered === signal.id}
+                      onClick={() => {
+                        setAliasTargetSignal(signal);
+                        setSelectedTeacherForAlias(teachers[0]?.id || '');
+                      }}
+                      className="py-1.5 px-2.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                      title="Jadikan nama ini sebagai alias dari guru yang sudah terdaftar"
+                    >
+                      <span>+ Alias</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Link Alias */}
+            {aliasTargetSignal && (
+              <div className="p-3 bg-[#0d1017] border border-indigo-500/40 rounded-xl space-y-2 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-indigo-300">
+                    Jadikan "{aliasTargetSignal.name}" sebagai alias untuk guru:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAliasTargetSignal(null)}
+                    className="text-slate-400 hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedTeacherForAlias}
+                    onChange={(e) => setSelectedTeacherForAlias(e.target.value)}
+                    className="flex-1 bg-[#181B26] border border-[#272D3E] text-white text-xs rounded-lg p-2 focus:outline-none focus:border-indigo-500"
+                  >
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.roleTitle || 'Guru'})
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleLinkAliasToTeacher}
+                    disabled={!selectedTeacherForAlias || isProcessingUnregistered === aliasTargetSignal.id}
+                    className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Simpan Alias
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

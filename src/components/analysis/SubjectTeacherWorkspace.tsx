@@ -59,7 +59,7 @@ import {
   subscribeToAnalysisSubmissions,
   getLocalAnalysisSubmissions,
 } from '../../services/analysisSubmissionService';
-import { getActiveTeacherSession } from '../../services/teacherStorage';
+import { getActiveTeacherSession, silentSyncActiveTeacherSession } from '../../services/teacherStorage';
 import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
 
 // Preset mata pelajaran umum guru bidang di SDIT AL FIKRI
@@ -224,6 +224,9 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
         setIsConfigured(true);
       }
     }
+
+    // Silent session sync in background without disrupting teacher form
+    silentSyncActiveTeacherSession().catch(() => {});
   }, []);
 
   // Scroll active class into view smoothly

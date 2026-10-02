@@ -47,6 +47,7 @@ import {
   logoutTeacher,
   verifyActiveTeacherSessionRealtime,
   subscribeToCurrentTeacherSession,
+  silentSyncActiveTeacherSession,
 } from './services/teacherStorage';
 import { AppBranding, getLocalBranding, subscribeToBranding, updateStoredBranding } from './services/brandingStorage';
 import { subscribeToAnalysisSubmissions } from './services/analysisSubmissionService';
@@ -287,6 +288,16 @@ export default function App() {
     setIsAdmin(isAdminLoggedIn());
     const initialTeacher = getActiveTeacherSession();
     setActiveTeacher(initialTeacher);
+
+    if (initialTeacher) {
+      silentSyncActiveTeacherSession()
+        .then((res) => {
+          if (res.teacher) {
+            setActiveTeacher(res.teacher);
+          }
+        })
+        .catch(() => {});
+    }
 
     const unsubscribeAuth = subscribeToAuth((loggedIn) => {
       setIsAdmin(loggedIn);

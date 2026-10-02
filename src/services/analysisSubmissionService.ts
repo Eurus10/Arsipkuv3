@@ -97,19 +97,37 @@ export async function sendAnalysisSubmission(
 
   if (data.submissionType === 'session' && data.payload?.session?.subjects) {
     const subjects = data.payload.session.subjects;
+    const totalClassStudents =
+      data.payload.students?.length ||
+      data.payload.session.studentSnapshot?.length ||
+      data.totalStudents ||
+      0;
+
     for (const subj of subjects) {
-      const name = subj.name?.trim();
+      const name = (subj.name || subj.subjectName)?.trim();
       if (!name) continue;
+
+      const completed =
+        subj.completedStudentsCount !== undefined
+          ? subj.completedStudentsCount
+          : subj.studentResults
+          ? Object.keys(subj.studentResults).length
+          : 0;
+
       if (!mergedSubjectStatuses[name]) {
         // Newly added subject in multi-subject session: starts as 'menunggu' (belum print)
         mergedSubjectStatuses[name] = {
           status: 'menunggu',
           lastSubmittedAt: now,
+          completedStudents: completed,
+          totalStudents: totalClassStudents || data.totalStudents,
         };
       } else {
         mergedSubjectStatuses[name] = {
           ...mergedSubjectStatuses[name],
           lastSubmittedAt: now,
+          completedStudents: completed,
+          totalStudents: totalClassStudents || data.totalStudents,
         };
       }
     }
@@ -119,11 +137,15 @@ export async function sendAnalysisSubmission(
       mergedSubjectStatuses[subName] = {
         status: existingSubmission?.status === 'telah_diprint' ? 'telah_diprint' : 'menunggu',
         lastSubmittedAt: now,
+        completedStudents: data.completedStudents,
+        totalStudents: data.totalStudents,
       };
     } else {
       mergedSubjectStatuses[subName] = {
         ...mergedSubjectStatuses[subName],
         lastSubmittedAt: now,
+        completedStudents: data.completedStudents,
+        totalStudents: data.totalStudents,
       };
     }
   }

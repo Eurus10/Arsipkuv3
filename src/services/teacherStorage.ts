@@ -1,4 +1,14 @@
 import { supabase, isSupabaseConfigured } from './supabase';
+import {
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  orderBy,
+} from 'firebase/firestore';
+import { db } from './firebase';
 import { TeacherUser, TeacherDeviceSession } from '../types';
 import {
   getOrGenerateDeviceId,
@@ -1428,4 +1438,243 @@ export function subscribeToCurrentTeacherSession(
   return () => {
     void supabase.removeChannel(channel);
   };
+}
+
+/**
+ * ============================================================
+ * UNREGISTERED TEACHER SIGNALS & SILENT SYNC
+ * ============================================================
+ */
+
+export interface UnregisteredTeacherSignal {
+  id: string;
+  name: string;
+  normalizedName: string;
+  roleTitle?: string;
+  deviceInfo?: string;
+  detectedAt: string;
+}
+
+const UNREGISTERED_TEACHERS_COLLECTION = 'unregistered_teacher_signals';
+const UNREGISTERED_LOCAL_KEY = 'sdit_unregistered_teacher_signals_v1';
+
+export function getLocalUnregisteredSignals(): UnregisteredTeacherSignal[] {
+  if (!isBrowser()) return [];
+  try {
+    const raw = localStorage.getItem(UNREGISTERED_LOCAL_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocalUnregisteredSignals(signals: UnregisteredTeacherSignal[]): void {
+  if (!isBrowser()) return;
+  try {
+    localStorage.setItem(UNREGISTERED_LOCAL_KEY, JSON.stringify(signals));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export async function recordUnregisteredTeacherSignal(
+  name: string,
+  roleTitle?: string
+): Promise<void> {
+  const cleanName = name.trim();
+  if (!cleanName) return;
+
+  const normalized = normalizeTeacherName(cleanName);
+  const slug = normalized.replace(/[^a-z0-9]/g, '_') || 'unknown';
+  const signalId = `unreg_${slug}`;
+  const nowIso = new Date().toISOString();
+  const { deviceName, browser } = getDeviceFriendlyName();
+  const deviceInfo = `${deviceName} (${browser})`;
+
+  const signal: UnregisteredTeacherSignal = {
+    id: signalId,
+    name: cleanName,
+    normalizedName: normalized,
+    roleTitle: roleTitle || 'Guru SDIT',
+    deviceInfo,
+    detectedAt: nowIso,
+  };
+
+  const local = getLocalUnregisteredSignals().filter((s) => s.id !== signalId);
+  local.unshift(signal);
+  saveLocalUnregisteredSignals(local);
+
+  try {
+    const docRef = doc(db, UNREGISTERED_TEACHERS_COLLECTION, signalId);
+    await setDoc(docRef, signal, { merge: true });
+  } catch (err) {
+    console.warn('[TeacherStorage] Failed to record unregistered teacher signal to Firestore:', err);
+  }
+}
+
+export function subscribeToUnregisteredTeacherSignals(
+  callback: (signals: UnregisteredTeacherSignal[]) => void
+): () => void {
+  callback(getLocalUnregisteredSignals());
+
+  try {
+    const colRef = collection(db, UNREGISTERED_TEACHERS_COLLECTION);
+    const q = query(colRef, orderBy('detectedAt', 'desc'));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const firestoreSignals: UnregisteredTeacherSignal[] = [];
+        snapshot.forEach((docSnap) => {
+          firestoreSignals.push(docSnap.data() as UnregisteredTeacherSignal);
+        });
+
+        saveLocalUnregisteredSignals(firestoreSignals);
+        callback(firestoreSignals);
+      },
+      (err) => {
+        console.warn('[TeacherStorage] Firestore unregistered signals listener error:', err);
+        callback(getLocalUnregisteredSignals());
+      }
+    );
+
+    return unsubscribe;
+  } catch (err) {
+    console.error('[TeacherStorage] Failed to setup unregistered signals listener:', err);
+    return () => {};
+  }
+}
+
+export async function dismissUnregisteredTeacherSignal(id: string): Promise<void> {
+  const local = getLocalUnregisteredSignals().filter((s) => s.id !== id);
+  saveLocalUnregisteredSignals(local);
+
+  try {
+    const docRef = doc(db, UNREGISTERED_TEACHERS_COLLECTION, id);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.warn('[TeacherStorage] Failed to delete unregistered teacher signal from Firestore:', err);
+  }
+}
+
+/**
+ * Silent Sync for Active Teacher Session:
+ * Synchronizes the teacher's device session and last_login_at in the background
+ * WITHOUT any blocking popup, without resetting form state, and without disrupting analysis.
+ */
+export async function silentSyncActiveTeacherSession(): Promise<{
+  isMatched: boolean;
+  teacher?: TeacherUser;
+  unregisteredName?: string;
+}> {
+  const active = getActiveTeacherSession();
+  if (!active || !active.name) {
+    return { isMatched: false };
+  }
+
+  try {
+    const teachers = await fetchAllTeachers();
+    const inputNormalized = normalizeTeacherName(active.name);
+    const inputTokens = inputNormalized.split(/\s+/).filter(Boolean);
+
+    // 1. Find matching teacher in whitelist
+    let matched = teachers.find(
+      (t) =>
+        t.id === active.id ||
+        t.normalizedName === inputNormalized ||
+        t.name.toLowerCase().trim() === active.name.toLowerCase().trim() ||
+        normalizeTeacherName(t.name) === inputNormalized
+    );
+
+    if (!matched) {
+      matched = teachers.find((t) =>
+        (t.loginAliases || []).some(
+          (alias) => normalizeLoginAlias(alias) === inputNormalized
+        )
+      );
+    }
+
+    if (!matched && inputTokens.length > 0) {
+      matched = teachers.find((t) => {
+        const tNorm = t.normalizedName || normalizeTeacherName(t.name);
+        const tTokens = tNorm.split(/\s+/).filter(Boolean);
+        if (inputTokens.length === 1 && tTokens.length >= 1) {
+          return tTokens.some((token) => token === inputTokens[0]);
+        }
+        if (inputTokens.length > 1 && tTokens.length >= inputTokens.length) {
+          return inputTokens.every((token) => tTokens.includes(token));
+        }
+        return false;
+      });
+    }
+
+    if (matched) {
+      // Found in whitelist! Update device session silently if Supabase is active
+      if (matched.status !== 'blocked' && isSupabaseConfigured()) {
+        const deviceId = getOrGenerateDeviceId();
+        const { deviceName, browser, deviceType } = getDeviceFriendlyName();
+        const nowIso = new Date().toISOString();
+        const maxAllowed = matched.maxDevices || 2;
+
+        let currentSessions = [...(matched.activeSessions || [])];
+        let existingIdx = currentSessions.findIndex((s) => s.deviceId === deviceId);
+
+        if (existingIdx === -1 && currentSessions.length >= maxAllowed) {
+          // FIFO rotation of oldest device
+          currentSessions.sort((a, b) => {
+            const timeA = a.lastActiveAt ? new Date(a.lastActiveAt).getTime() : 0;
+            const timeB = b.lastActiveAt ? new Date(b.lastActiveAt).getTime() : 0;
+            return timeA - timeB;
+          });
+          currentSessions.shift();
+        }
+
+        const sessionPayload: TeacherDeviceSession = {
+          deviceId,
+          deviceName,
+          browser,
+          deviceType,
+          lastActiveAt: nowIso,
+        };
+
+        const updatedSessions = [...currentSessions];
+        const foundIdx = updatedSessions.findIndex((s) => s.deviceId === deviceId);
+        if (foundIdx >= 0) {
+          updatedSessions[foundIdx] = sessionPayload;
+        } else {
+          updatedSessions.push(sessionPayload);
+        }
+
+        await supabase
+          .from(TEACHERS_TABLE)
+          .update({
+            active_sessions: updatedSessions,
+            last_login_at: nowIso,
+          })
+          .eq('id', matched.id);
+
+        const syncedTeacher: TeacherUser = {
+          ...matched,
+          activeSessions: updatedSessions,
+          lastLoginAt: nowIso,
+        };
+
+        saveActiveTeacherSession(syncedTeacher);
+
+        // If there was an unregistered signal for this teacher, dismiss it now
+        const slug = inputNormalized.replace(/[^a-z0-9]/g, '_');
+        dismissUnregisteredTeacherSignal(`unreg_${slug}`).catch(() => {});
+
+        return { isMatched: true, teacher: syncedTeacher };
+      }
+      return { isMatched: true, teacher: matched };
+    } else {
+      // Teacher not yet in whitelist -> Record signal so Pak Zaki gets a 1-click add prompt
+      recordUnregisteredTeacherSignal(active.name, active.roleTitle).catch(() => {});
+      return { isMatched: false, unregisteredName: active.name };
+    }
+  } catch (err) {
+    console.warn('[TeacherStorage] Silent sync exception (safe fallback):', err);
+    return { isMatched: false };
+  }
 }

@@ -19,6 +19,7 @@ import {
   Sparkles,
   Plus,
   Minus,
+  Send,
 } from 'lucide-react';
 import {
   getStoredStudentsLocal,
@@ -29,6 +30,8 @@ import {
   exportGrafikKehadiranToExcel,
   type GrafikKehadiranRow,
 } from '../../services/administrasiExcelService';
+import { sendAttendanceSubmission } from '../../services/attendanceSubmissionService';
+import { getActiveTeacherSession } from '../../services/teacherStorage';
 
 interface AbsensiGeneratorModalProps {
   isOpen: boolean;
@@ -369,6 +372,93 @@ export const AbsensiGeneratorModal: React.FC<AbsensiGeneratorModalProps> = ({
       });
     } catch (err) {
       console.error('Error saat export grafik Excel:', err);
+    }
+  };
+
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [attendanceNote, setAttendanceNote] = useState('');
+  const [isSendingToAdmin, setIsSendingToAdmin] = useState(false);
+  const [sendSuccessToast, setSendSuccessToast] = useState<string | null>(null);
+
+  const handleConfirmSendToAdmin = async () => {
+    setIsSendingToAdmin(true);
+    let rows: GrafikKehadiranRow[] = [];
+    let periodLabel = 'Bulanan';
+
+    if (chartPeriod === 'month') {
+      periodLabel = `Bulanan (${monthName})`;
+      rows = [
+        {
+          periode: monthName,
+          totalSiswa: activeStudentCount,
+          hariEfektif: effectiveDays,
+          totalHadir: activeStats.totalH,
+          sakit: activeStats.totalS,
+          izin: activeStats.totalI,
+          alpha: activeStats.totalA,
+          rate: parseFloat(activeStats.attendanceRate) || 100.0,
+        },
+      ];
+    } else if (chartPeriod === 'semester') {
+      periodLabel = `Semester ${selectedSemesterType === 'ganjil' ? 'Ganjil' : 'Genap'} (${schoolYear})`;
+      rows = periodRecapRows.map((r) => ({
+        periode: r.month,
+        totalSiswa: r.totalStudents,
+        hariEfektif: r.effectiveDays,
+        totalHadir: r.totalH,
+        sakit: r.sakit,
+        izin: r.izin,
+        alpha: r.alpha,
+        rate: r.rate,
+      }));
+    } else {
+      periodLabel = `1 Tahun Ajaran (${schoolYear})`;
+      rows = periodRecapRows.map((r) => ({
+        periode: r.month,
+        totalSiswa: r.totalStudents,
+        hariEfektif: r.effectiveDays,
+        totalHadir: r.totalH,
+        sakit: r.sakit,
+        izin: r.izin,
+        alpha: r.alpha,
+        rate: r.rate,
+      }));
+    }
+
+    try {
+      const activeTeacher = getActiveTeacherSession();
+      await sendAttendanceSubmission({
+        classId: selectedClass,
+        className: selectedClass === 'Semua Kelas' ? 'Semua Kelas' : `Kelas ${selectedClass}`,
+        schoolYear,
+        periodType: chartPeriod,
+        periodLabel,
+        selectedMonth: chartPeriod === 'month' ? selectedMonth : undefined,
+        selectedYear: chartPeriod === 'month' ? selectedYear : undefined,
+        teacherName: activeTeacher?.name || teacherName || 'Wali Kelas',
+        teacherId: activeTeacher?.id,
+        teacherRoleTitle: activeTeacher?.roleTitle,
+        headmasterName,
+        effectiveDays,
+        totalStudents: activeStudentCount,
+        totalH: chartPeriod === 'month' ? activeStats.totalH : periodTotals.sumH,
+        totalS: chartPeriod === 'month' ? activeStats.totalS : periodTotals.sumS,
+        totalI: chartPeriod === 'month' ? activeStats.totalI : periodTotals.sumI,
+        totalA: chartPeriod === 'month' ? activeStats.totalA : periodTotals.sumA,
+        attendanceRate: parseFloat(displayRate) || 100.0,
+        teacherNote: attendanceNote.trim() || undefined,
+        matrixData,
+        rows,
+      });
+
+      setShowSendModal(false);
+      setAttendanceNote('');
+      setSendSuccessToast(`Rekap absensi ${selectedClass} (${periodLabel}) berhasil dikirim ke Pak Zaki.`);
+      setTimeout(() => setSendSuccessToast(null), 3500);
+    } catch (err) {
+      console.error('Failed to send attendance submission:', err);
+    } finally {
+      setIsSendingToAdmin(false);
     }
   };
 
@@ -1128,11 +1218,11 @@ export const AbsensiGeneratorModal: React.FC<AbsensiGeneratorModalProps> = ({
             </button>
           </div>
 
-          {/* Right: Cetak / PDF & Download Excel */}
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          {/* Right: Cetak / PDF, Download Excel & Kirim ke Pak Zaki */}
+          <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto justify-end flex-wrap">
             <button
               onClick={() => window.print()}
-              className="px-4 sm:px-5 py-2.5 bg-[#0d1424] hover:bg-[#141e34] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 border border-[#1b253b] transition-all cursor-pointer active:scale-95"
+              className="px-3.5 sm:px-4 py-2.5 bg-[#0d1424] hover:bg-[#141e34] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 border border-[#1b253b] transition-all cursor-pointer active:scale-95"
             >
               <Printer className="w-4 h-4 text-slate-300" />
               <span>Cetak / PDF</span>
@@ -1140,13 +1230,114 @@ export const AbsensiGeneratorModal: React.FC<AbsensiGeneratorModalProps> = ({
 
             <button
               onClick={handleExportGrafikExcel}
-              className="px-5 sm:px-6 py-2.5 bg-[#00D084] hover:bg-[#00BF79] text-slate-950 text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-[#00D084]/20 active:scale-95"
+              className="px-4 sm:px-5 py-2.5 bg-[#00D084] hover:bg-[#00BF79] text-slate-950 text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-[#00D084]/20 active:scale-95"
             >
               <FileSpreadsheet className="w-4 h-4 text-slate-950" />
               <span>Download Excel</span>
             </button>
+
+            <button
+              onClick={() => setShowSendModal(true)}
+              className="px-4 sm:px-5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 text-xs font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-teal-500/25 active:scale-95"
+              title="Kirim berkas rekap absensi ini langsung ke antrean cetak Pak Zaki"
+            >
+              <Send className="w-4 h-4 text-slate-950" />
+              <span>Kirim ke Pak Zaki</span>
+            </button>
           </div>
         </div>
+
+        {/* Modal Konfirmasi Kirim Rekap Absensi ke Pak Zaki */}
+        {showSendModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-[#0f172a] border border-teal-500/40 rounded-2xl w-full max-w-md p-5 shadow-2xl text-slate-100 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center border border-teal-500/30">
+                    <Send className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Kirim Rekap ke Pak Zaki</h3>
+                    <p className="text-[11px] text-slate-400">Masuk ke antrean cetak resmi admin</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowSendModal(false)}
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="bg-slate-950/60 p-3 rounded-xl border border-white/5 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-300">
+                  <span className="text-slate-400">Kelas:</span>
+                  <strong className="text-teal-300">{selectedClass}</strong>
+                </div>
+                <div className="flex justify-between text-slate-300">
+                  <span className="text-slate-400">Periode:</span>
+                  <strong className="text-white">
+                    {chartPeriod === 'month'
+                      ? monthName
+                      : chartPeriod === 'semester'
+                      ? `Semester ${selectedSemesterType === 'ganjil' ? 'Ganjil' : 'Genap'} (${schoolYear})`
+                      : `1 Tahun Ajaran (${schoolYear})`}
+                  </strong>
+                </div>
+                <div className="flex justify-between text-slate-300">
+                  <span className="text-slate-400">Tingkat Kehadiran:</span>
+                  <strong className="text-emerald-400">{displayRate}%</strong>
+                </div>
+                <div className="flex justify-between text-slate-300">
+                  <span className="text-slate-400">Hari Efektif:</span>
+                  <strong className="text-white">{effectiveDays} Hari</strong>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  Catatan untuk Pak Zaki (Opsional):
+                </label>
+                <textarea
+                  value={attendanceNote}
+                  onChange={(e) => setAttendanceNote(e.target.value)}
+                  placeholder="Misal: Siswa A izin sakit opname 3 hari, data presensi sudah valid..."
+                  rows={2}
+                  className="w-full p-2.5 bg-slate-950/70 border border-white/10 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-teal-500/50 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowSendModal(false)}
+                  disabled={isSendingToAdmin}
+                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmSendToAdmin}
+                  disabled={isSendingToAdmin}
+                  className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all shadow-md shadow-teal-500/20 disabled:opacity-50"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSendingToAdmin ? 'Mengirim...' : 'Kirim Sekarang'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Toast Notifikasi Berhasil Kirim */}
+        {sendSuccessToast && (
+          <div className="fixed bottom-6 right-6 z-[70] bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-fadeIn border border-emerald-400/40">
+            <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+            <span className="text-xs font-bold">{sendSuccessToast}</span>
+          </div>
+        )}
 
       </div>
     </div>

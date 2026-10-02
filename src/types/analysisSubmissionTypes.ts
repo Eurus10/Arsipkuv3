@@ -7,6 +7,8 @@ export interface SubjectPrintStatus {
   revisionNote?: string;
   lastSubmittedAt?: string;
   isRevisedAfterPrint?: boolean;
+  completedStudents?: number;
+  totalStudents?: number;
 }
 
 export interface SubmissionChatMessage {
