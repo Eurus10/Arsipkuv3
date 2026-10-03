@@ -630,37 +630,59 @@ export async function loadRaporWorkspaceFromSupabase(
     };
   }
 
-  // 4. Konfigurasi Rapor (Kop Sekolah, Titimangsa, Kepala Sekolah)
-  let storedPref: Partial<RaporStsConfig> = {};
+  // 4. Konfigurasi Rapor (Sinkron Otomatis dari Pengaturan Admin Terpusat)
+  let globalAdminConfig: Partial<RaporStsConfig> = {};
+  let gradeRangePref: { passingGrade?: number } = {};
+
   if (typeof window !== 'undefined') {
     try {
-      const raw = localStorage.getItem('sdit_rapor_sts_config_pref');
-      if (raw) {
-        storedPref = JSON.parse(raw);
+      const rawGlobal = localStorage.getItem('sdit_rapor_sts_global_config');
+      if (rawGlobal) {
+        globalAdminConfig = JSON.parse(rawGlobal);
       }
     } catch {
-      // Abaikan jika tidak ada cache UI
+      // Abaikan jika parsing gagal
+    }
+
+    try {
+      const rawPref = localStorage.getItem('sdit_rapor_sts_config_pref');
+      if (rawPref) {
+        globalAdminConfig = { ...JSON.parse(rawPref), ...globalAdminConfig };
+      }
+    } catch {
+      // Abaikan
+    }
+
+    try {
+      const rawGrade = localStorage.getItem('sdit_academic_grade_range_config');
+      if (rawGrade) {
+        gradeRangePref = JSON.parse(rawGrade);
+      }
+    } catch {
+      // Abaikan
     }
   }
 
   const gradeLevel = getGradeLevel(className);
+  const classWalas = globalAdminConfig.classTeachers?.[className];
+
   const config: RaporStsConfig = {
-    schoolName: storedPref.schoolName || 'SDIT AL FIKRI',
-    npsn: storedPref.npsn || '20276221',
-    schoolAddress: storedPref.schoolAddress || 'Jl. Raden Saleh No. 56, Sukmajaya, Kota Depok',
+    schoolName: globalAdminConfig.schoolName || 'SDIT AL FIKRI',
+    npsn: globalAdminConfig.npsn || '69978648',
+    schoolAddress: globalAdminConfig.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok',
     classLevel: className,
     fase: getFaseFromGrade(gradeLevel),
     semester,
     schoolYear,
-    teacherName: teacherName || storedPref.teacherName || '',
-    teacherNip: teacherNip || storedPref.teacherNip || '-',
-    headmasterName: storedPref.headmasterName || 'Muhamad Rusdi, S.Pd.',
-    headmasterNip: storedPref.headmasterNip || '-',
-    reportDatePlace: storedPref.reportDatePlace || 'Depok, 20 Maret 2025',
-    tpWeight: storedPref.tpWeight ?? 60,
-    stsWeight: storedPref.stsWeight ?? 40,
-    passingGrade: storedPref.passingGrade ?? 75,
-    classTeachers: storedPref.classTeachers,
+    teacherName: teacherName || classWalas?.name || globalAdminConfig.teacherName || 'Guru Kelas',
+    teacherNip: teacherNip || classWalas?.nip || globalAdminConfig.teacherNip || '-',
+    headmasterName: globalAdminConfig.headmasterName || 'Muhamad Rusdi, S.Pd.',
+    headmasterNip: globalAdminConfig.headmasterNip || '-',
+    reportDatePlace: globalAdminConfig.reportDatePlace || 'Depok, 20 Maret 2025',
+    tpWeight: globalAdminConfig.tpWeight ?? 50,
+    stsWeight: globalAdminConfig.stsWeight ?? 50,
+    passingGrade: gradeRangePref.passingGrade ?? globalAdminConfig.passingGrade ?? 75,
+    classTeachers: globalAdminConfig.classTeachers,
   };
 
   // 5. Additional Info (Kehadiran & Catatan)

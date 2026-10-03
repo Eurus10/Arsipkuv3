@@ -6,7 +6,7 @@ import {
   getDocs,
   serverTimestamp,
 } from 'firebase/firestore';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import { db } from './firebase';
 import { recordQuotaUsage } from './quotaTracker';
 import {
@@ -18,6 +18,8 @@ import {
   DEFAULT_RAPOR_CONFIG,
   DEFAULT_RAPOR_SUBJECTS,
   DEFAULT_CLASS_TEACHERS,
+  getScorePredicate,
+  getMasteryStatusFromPredicate,
 } from '../types/raporSts';
 import { Student } from './studentStorage';
 
@@ -847,9 +849,9 @@ export const saveClassDataToCloud = async (data: RaporStsClassData): Promise<{ s
 };
 
 /**
- * Download Excel template for inputting scores
- * Columns: No, NISN, NIS, Nama Siswa, TP 1, TP 2, ..., Nilai STS, Catatan Guru
- * 'L' for achieved, empty/'TL' for not achieved
+ * Download Excel template for inputting scores (STS Modern Format - Pure Score & Notes)
+ * Columns: No, NISN, NIS, Nama Siswa, Nilai STS, Catatan Guru
+ * Fully formatted with Bookman Old Style font, yellow header, and clean thin borders.
  */
 export const downloadNilaiTemplateExcel = (
   classLevel: string,
@@ -859,120 +861,180 @@ export const downloadNilaiTemplateExcel = (
   students: Student[],
   currentScores?: Record<string, StudentScoreDetail>
 ): void => {
-  const activeTps = subject.tpList.filter((t) => t.isActive);
+  const ws: XLSX.WorkSheet = {};
+  const merges: XLSX.Range[] = [];
+  const rowHeights: XLSX.RowInfo[] = [];
 
-  // Metadata headers
-  const titleRow = [`TEMPLATE INPUT NILAI STS KURIKULUM MERDEKA`];
-  const infoRow1 = [
-    `Mata Pelajaran: ${subject.name}`,
-    '',
-    `Kelas: ${classLevel}`,
-    '',
-    `Semester: ${semester === '1' ? 'Ganjil (1)' : 'Genap (2)'}`,
-  ];
-  const infoRow2 = [
-    `Tahun Ajaran: ${schoolYear}`,
-    '',
-    `Jumlah TP Diujikan: ${activeTps.length} Butir`,
-    '',
-    `Format Skor STS: 0 - 100`,
-  ];
-  const emptyRow1 = [''];
+  const FONT_BOOKMAN = 'Bookman Old Style';
+  const BORDER_THIN = {
+    top: { style: 'thin', color: { rgb: '000000' } },
+    bottom: { style: 'thin', color: { rgb: '000000' } },
+    left: { style: 'thin', color: { rgb: '000000' } },
+    right: { style: 'thin', color: { rgb: '000000' } },
+  };
 
-  // Petunjuk Pengisian
-  const petunjukTitle = [`PANDUAN PENGISIAN:`];
-  const petunjuk1 = [
-    `1. Kolom TP (TP 1, TP 2, dst.): Ketik 'L' jika siswa tuntas/mencapai TP. Ketik 'TL' atau biarkan KOSONG bila belum tercapai.`,
-  ];
-  const petunjuk2 = [
-    `2. Kolom Nilai STS: Masukkan angka nilai akhir ujian (skala 0 - 100). Nilai ini otomatis menjadi Nilai Akhir Rapor.`,
-  ];
-  const petunjuk3 = [
-    `3. Kolom Catatan Guru: Ketik catatan perkembangan siswa atau apresiasi wali kelas (opsional).`,
-  ];
-  const petunjuk4 = [
-    `4. Jangan mengubah susunan baris nama siswa agar proses impor berjalan lancar.`,
-  ];
-  const emptyRow2 = [''];
+  const setCell = (row: number, col: number, val: any, style?: any) => {
+    const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+    const cell: XLSX.CellObject = {
+      v: val !== null && val !== undefined ? val : '',
+      t: typeof val === 'number' ? 'n' : 's',
+    };
+    if (style) {
+      cell.s = style;
+    }
+    ws[cellRef] = cell;
+  };
 
-  // Daftar Keterangan TP
-  const tpLegendTitle = [`KETERANGAN BUTIR TUJUAN PEMBELAJARAN (TP):`];
-  const tpLegendRows = activeTps.map((tp, idx) => [
-    `TP ${idx + 1} : ${tp.desc}`,
-  ]);
-  const emptyRow3 = [''];
+  let r = 0;
 
-  // Table header: No, NISN, NIS, Nama Siswa, TP 1, TP 2, ..., Nilai STS, Catatan Guru
-  const headerRow: string[] = ['No', 'NISN', 'NIS', 'Nama Siswa'];
-  activeTps.forEach((_tp, idx) => {
-    headerRow.push(`TP ${idx + 1}`);
+  // Title Row
+  setCell(r, 0, 'TEMPLATE INPUT NILAI SUMATIF TENGAH SEMESTER (STS)', {
+    font: { name: FONT_BOOKMAN, sz: 12, bold: true, color: { rgb: '000000' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
   });
-  headerRow.push('Nilai STS');
-  headerRow.push('Catatan Guru');
+  merges.push({ s: { r, c: 0 }, e: { r, c: 5 } });
+  rowHeights.push({ hpt: 24 });
+  r++;
 
-  // Student rows
-  const studentRows = students.map((st, idx) => {
+  // Metadata Info Rows
+  setCell(r, 0, `Mata Pelajaran: ${subject.name} (${subject.code || 'MAPEL'})`, {
+    font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '1E293B' } },
+  });
+  setCell(r, 3, `Kelas: ${classLevel}`, {
+    font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '1E293B' } },
+  });
+  setCell(r, 4, `Semester: ${semester === '1' ? 'Ganjil (1)' : 'Genap (2)'}`, {
+    font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '1E293B' } },
+  });
+  rowHeights.push({ hpt: 18 });
+  r++;
+
+  setCell(r, 0, `Tahun Ajaran: ${schoolYear}`, {
+    font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '1E293B' } },
+  });
+  setCell(r, 3, `Standar Nilai: 0 - 100`, {
+    font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '1E293B' } },
+  });
+  rowHeights.push({ hpt: 18 });
+  r++;
+
+  // Empty Spacer
+  rowHeights.push({ hpt: 10 });
+  r++;
+
+  // Panduan Pengisian
+  setCell(r, 0, 'PANDUAN PENGISIAN TEMPLATE:', {
+    font: { name: FONT_BOOKMAN, sz: 9.5, bold: true, color: { rgb: '0369A1' } },
+  });
+  rowHeights.push({ hpt: 16 });
+  r++;
+
+  const petunjuk = [
+    '1. Masukkan angka nilai murni STS (rentang 0 s/d 100) pada kolom "Nilai STS". Nilai ini otomatis menjadi Nilai Akhir Rapor.',
+    '2. Kolom "Catatan Guru" bersifat opsional untuk memberikan apresiasi capaian atau catatan motivasi bagi siswa.',
+    '3. Jangan mengubah nomor urut, NISN, atau NIS siswa agar sinkronisasi data berjalan otomatis dan akurat.',
+  ];
+
+  petunjuk.forEach((p) => {
+    setCell(r, 0, p, {
+      font: { name: FONT_BOOKMAN, sz: 8.5, italic: true, color: { rgb: '475569' } },
+    });
+    merges.push({ s: { r, c: 0 }, e: { r, c: 5 } });
+    rowHeights.push({ hpt: 15 });
+    r++;
+  });
+
+  // Empty Spacer before Table
+  rowHeights.push({ hpt: 12 });
+  r++;
+
+  // TABLE HEADER
+  const headers = [
+    { text: 'NO', width: 6, align: 'center' },
+    { text: 'NISN', width: 16, align: 'center' },
+    { text: 'NIS', width: 14, align: 'center' },
+    { text: 'NAMA SISWA', width: 34, align: 'left' },
+    { text: 'NILAI STS (0-100)', width: 18, align: 'center' },
+    { text: 'CATATAN GURU (OPSIONAL)', width: 42, align: 'left' },
+  ];
+
+  const headerStyle = {
+    font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '000000' } },
+    fill: {
+      fillType: 'pattern',
+      patternType: 'solid',
+      fgColor: { rgb: 'FDE047' },
+    },
+    border: BORDER_THIN,
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+  };
+
+  headers.forEach((h, colIdx) => {
+    setCell(r, colIdx, h.text, headerStyle);
+  });
+  rowHeights.push({ hpt: 26 });
+  r++;
+
+  // TABLE DATA ROWS
+  students.forEach((st, idx) => {
     const studentScore = currentScores ? currentScores[st.id] : undefined;
-    const row: any[] = [
-      idx + 1,
-      st.nisn || '',
-      st.nim || '',
-      st.name,
-    ];
+    const stsVal = studentScore?.stsScore ?? studentScore?.finalScore;
+    const noteVal = studentScore?.teacherNote || '';
 
-    // For TP columns, output 'L' if achieved, or empty
-    activeTps.forEach((tp) => {
-      const isAchieved =
-        studentScore?.tpAchieved?.[tp.id] === true ||
-        (typeof studentScore?.tpScores?.[tp.id] === 'number' &&
-          (studentScore.tpScores[tp.id]! >= 75 || studentScore.tpScores[tp.id] === 1 || studentScore.tpScores[tp.id] === 100));
-
-      row.push(isAchieved ? 'L' : '');
+    // No
+    setCell(r, 0, idx + 1, {
+      font: { name: FONT_BOOKMAN, sz: 10, color: { rgb: '000000' } },
+      border: BORDER_THIN,
+      alignment: { horizontal: 'center', vertical: 'center' },
     });
 
-    // For STS score, output number or empty
-    const stsVal = studentScore?.stsScore ?? studentScore?.finalScore;
-    row.push(typeof stsVal === 'number' ? stsVal : '');
+    // NISN
+    setCell(r, 1, st.nisn || '', {
+      font: { name: FONT_BOOKMAN, sz: 10, color: { rgb: '000000' } },
+      border: BORDER_THIN,
+      alignment: { horizontal: 'center', vertical: 'center' },
+    });
 
-    // For Catatan Guru
-    row.push(studentScore?.teacherNote || '');
+    // NIS
+    setCell(r, 2, st.nim || '', {
+      font: { name: FONT_BOOKMAN, sz: 10, color: { rgb: '000000' } },
+      border: BORDER_THIN,
+      alignment: { horizontal: 'center', vertical: 'center' },
+    });
 
-    return row;
+    // Nama Siswa
+    setCell(r, 3, st.name.toUpperCase(), {
+      font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '000000' } },
+      border: BORDER_THIN,
+      alignment: { horizontal: 'left', vertical: 'center' },
+    });
+
+    // Nilai STS
+    setCell(r, 4, typeof stsVal === 'number' ? stsVal : '', {
+      font: { name: FONT_BOOKMAN, sz: 10, bold: true, color: { rgb: '000000' } },
+      border: BORDER_THIN,
+      alignment: { horizontal: 'center', vertical: 'center' },
+    });
+
+    // Catatan Guru
+    setCell(r, 5, noteVal, {
+      font: { name: FONT_BOOKMAN, sz: 9.5, italic: true, color: { rgb: '000000' } },
+      border: BORDER_THIN,
+      alignment: { horizontal: 'left', vertical: 'center', wrapText: true },
+    });
+
+    rowHeights.push({ hpt: 22 });
+    r++;
   });
 
-  const wsData = [
-    titleRow,
-    infoRow1,
-    infoRow2,
-    emptyRow1,
-    petunjukTitle,
-    petunjuk1,
-    petunjuk2,
-    petunjuk3,
-    petunjuk4,
-    emptyRow2,
-    tpLegendTitle,
-    ...tpLegendRows,
-    emptyRow3,
-    headerRow,
-    ...studentRows,
-  ];
-
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-  // Column formatting: compact uniform width for TP columns
-  ws['!cols'] = [
-    { wch: 6 },  // No
-    { wch: 14 }, // NISN
-    { wch: 12 }, // NIS
-    { wch: 32 }, // Nama Siswa
-    ...activeTps.map(() => ({ wch: 10 })), // Uniform compact width for TP 1, TP 2, etc.
-    { wch: 14 }, // Nilai STS
-    { wch: 36 }, // Catatan Guru
-  ];
+  // Apply properties to Worksheet
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r - 1, c: 5 } });
+  ws['!merges'] = merges;
+  ws['!rows'] = rowHeights;
+  ws['!cols'] = headers.map((h) => ({ wch: h.width }));
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, `Nilai ${subject.code || 'STS'}`);
+  XLSX.utils.book_append_sheet(wb, ws, `Nilai STS`);
 
   const cleanMapel = (subject.code || subject.name).replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `Template_Nilai_${cleanMapel}_Kelas_${classLevel}_Sem${semester}.xlsx`;
@@ -988,7 +1050,8 @@ export interface ImportResult {
 
 /**
  * Import scores from Excel file (.xlsx, .xls, .csv)
- * Reads 'L' / 'TL' for TP checklist, single STS score for Nilai Akhir, Catatan Guru, and auto-generates description
+ * Directly reads STS score (0-100) & Catatan Guru, calculates predicate and mastery status
+ * Backward-compatible with older templates containing TP columns.
  */
 export const importNilaiFromExcel = async (
   file: File,
@@ -1011,21 +1074,21 @@ export const importNilaiFromExcel = async (
     throw new Error('File Excel kosong atau tidak memiliki data siswa.');
   }
 
-  // Robust header row detection: check each cell in row for specific keywords
+  // Header row detection
   let headerRowIndex = -1;
   for (let r = 0; r < Math.min(35, rawRows.length); r++) {
     const row = rawRows[r];
-    if (!Array.isArray(row) || row.length < 3) continue;
+    if (!Array.isArray(row) || row.length < 2) continue;
 
     const normalizedCells = row.map((c) => String(c ?? '').trim().toLowerCase());
     const hasNamaCell = normalizedCells.some(
       (c) => c === 'nama' || c === 'nama siswa' || c === 'nama lengkap' || c.startsWith('nama ')
     );
-    const hasIdCell = normalizedCells.some(
-      (c) => c === 'no' || c === 'no.' || c === 'nis' || c === 'nisn' || c.startsWith('tp')
+    const hasIdOrScoreCell = normalizedCells.some(
+      (c) => c === 'no' || c === 'no.' || c === 'nis' || c === 'nisn' || c.includes('nilai') || c.includes('sts')
     );
 
-    if (hasNamaCell && hasIdCell) {
+    if (hasNamaCell && hasIdOrScoreCell) {
       headerRowIndex = r;
       break;
     }
@@ -1045,7 +1108,7 @@ export const importNilaiFromExcel = async (
   }
 
   if (headerRowIndex === -1) {
-    throw new Error('Header kolom (Nama Siswa / TP / Nilai STS) tidak ditemukan dalam template Excel.');
+    throw new Error('Header kolom (Nama Siswa / Nilai STS) tidak ditemukan dalam template Excel.');
   }
 
   const headers = rawRows[headerRowIndex].map((h) => String(h || '').trim());
@@ -1054,47 +1117,24 @@ export const importNilaiFromExcel = async (
   let nameColIdx = headers.findIndex((h) => /nama/i.test(h));
   if (nameColIdx === -1) nameColIdx = 3;
 
-  // Map TP columns: checks for "TP 1", "TP1", etc.
-  const tpColMap: { tpId: string; colIdx: number }[] = [];
-  activeTps.forEach((tp, tpIdx) => {
-    // 1. Try matching "TP 1", "TP1"
-    let foundIdx = headers.findIndex((h) => new RegExp(`^\\s*TP\\s*${tpIdx + 1}\\s*$`, 'i').test(h));
-    if (foundIdx === -1) {
-      foundIdx = headers.findIndex((h) => new RegExp(`\\bTP\\s*${tpIdx + 1}\\b`, 'i').test(h));
-    }
-    // 2. Try matching original code
-    if (foundIdx === -1 && tp.code) {
-      const codePattern = new RegExp(`(^|\\b|[^a-zA-Z0-9])${tp.code.replace(/\s+/g, '\\s*')}(\\b|[^a-zA-Z0-9]|$)`, 'i');
-      foundIdx = headers.findIndex((h) => codePattern.test(h));
-    }
+  // Find STS column (e.g. "NILAI STS", "NILAI AKHIR", "NILAI STS (0-100)", "STS", "NILAI")
+  let stsColIdx = headers.findIndex(
+    (h) => /nilai\s*sts/i.test(h) || /sumatif\s*tengah/i.test(h) || /nilai\s*akhir/i.test(h) || /^sts$/i.test(h) || /^nilai$/i.test(h)
+  );
 
-    if (foundIdx !== -1) {
-      tpColMap.push({ tpId: tp.id, colIdx: foundIdx });
-    }
-  });
-
-  // Fallback: sequential columns directly after Nama column
-  if (tpColMap.length === 0) {
-    activeTps.forEach((tp, idx) => {
-      const colIdx = nameColIdx + 1 + idx;
-      if (colIdx < headers.length) {
-        tpColMap.push({ tpId: tp.id, colIdx });
-      }
-    });
+  // If not found, try finding any column with "nilai"
+  if (stsColIdx === -1) {
+    stsColIdx = headers.findIndex((h) => /nilai/i.test(h));
   }
 
-  // Find STS column
-  let stsColIdx = headers.findIndex((h) => /sts/i.test(h) || /sumatif\s*tengah/i.test(h) || /nilai\s*akhir/i.test(h));
-  if (stsColIdx === -1 && tpColMap.length > 0) {
-    const maxTpCol = Math.max(...tpColMap.map((t) => t.colIdx));
-    if (maxTpCol + 1 < headers.length) {
-      stsColIdx = maxTpCol + 1;
-    }
+  // Fallback: if not found, column directly after Nama
+  if (stsColIdx === -1 && nameColIdx !== -1 && nameColIdx + 1 < headers.length) {
+    stsColIdx = nameColIdx + 1;
   }
 
   // Find Catatan Guru column
   const notesColIdx = headers.findIndex(
-    (h) => /catatan/i.test(h) || /wali\s*kelas/i.test(h) || /note/i.test(h) || /keterangan/i.test(h)
+    (h) => /catatan/i.test(h) || /wali\s*kelas/i.test(h) || /note/i.test(h) || /keterangan/i.test(h) || /motivasi/i.test(h)
   );
 
   const updatedScores: Record<string, StudentScoreDetail> = { ...currentScores };
@@ -1170,54 +1210,6 @@ export const importNilaiFromExcel = async (
       teacherNote: '',
     };
 
-    const newTpScores = { ...existing.tpScores };
-    const newTpAchieved: Record<string, boolean> = { ...(existing.tpAchieved || {}) };
-
-    // Read TP checklist: "L" = Lulus/Tercapai, "TL" or empty = Belum Tercapai
-    tpColMap.forEach(({ tpId, colIdx }) => {
-      const rawVal = row[colIdx];
-      const strVal = String(rawVal ?? '').trim().toUpperCase();
-
-      if (
-        strVal === 'L' ||
-        strVal === '1' ||
-        strVal === 'V' ||
-        strVal === '✔' ||
-        strVal === '✓' ||
-        strVal === 'YA' ||
-        strVal === 'TERCAPAI' ||
-        strVal === 'LULUS' ||
-        strVal === 'TUNTAS'
-      ) {
-        newTpAchieved[tpId] = true;
-        newTpScores[tpId] = 100;
-      } else if (
-        strVal === 'TL' ||
-        strVal === '0' ||
-        strVal === 'TIDAK' ||
-        strVal === 'BELUM' ||
-        strVal === 'X'
-      ) {
-        newTpAchieved[tpId] = false;
-        newTpScores[tpId] = 0;
-      } else if (strVal !== '') {
-        // In case teacher inputted a numeric score (e.g. 85 or 60)
-        const num = parseFloat(strVal.replace(',', '.'));
-        if (!isNaN(num)) {
-          const isAchieved = num >= config.passingGrade;
-          newTpAchieved[tpId] = isAchieved;
-          newTpScores[tpId] = Math.min(100, Math.max(0, Math.round(num)));
-        } else {
-          newTpAchieved[tpId] = false;
-          newTpScores[tpId] = 0;
-        }
-      } else {
-        // Empty cell means not achieved / belum
-        newTpAchieved[tpId] = false;
-        newTpScores[tpId] = 0;
-      }
-    });
-
     // Read STS score
     let newStsScore = existing.stsScore;
     if (stsColIdx !== -1) {
@@ -1247,7 +1239,7 @@ export const importNilaiFromExcel = async (
 
     const autoDesc = generateCompetencyDescription(
       matchedStudent.name,
-      newTpAchieved,
+      {},
       activeTps,
       newStsScore,
       config.passingGrade
@@ -1255,8 +1247,6 @@ export const importNilaiFromExcel = async (
 
     updatedScores[stId] = {
       ...existing,
-      tpScores: newTpScores,
-      tpAchieved: newTpAchieved,
       stsScore: newStsScore,
       finalScore,
       autoDescription: autoDesc,

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   ArrowLeft,
-  Settings2,
   Cloud,
   Check,
   Save,
@@ -38,6 +37,7 @@ import {
   Plus,
   Zap,
   X,
+  HeartHandshake,
 } from 'lucide-react';
 import {
   RaporStsClassData,
@@ -45,6 +45,8 @@ import {
   RaporSubject,
   StudentSubjectRecord,
   StudentAdditionalInfo,
+  CharacterDescriptor,
+  StudentCharacterRecord,
 } from '../../types/raporSts';
 import {
   getGradeLevel,
@@ -52,12 +54,20 @@ import {
   saveRaporWorkspaceToSupabase,
 } from '../../services/raporScoreStorageService';
 import { getStoredStudentsLocal, subscribeToStudents, Student } from '../../services/studentStorage';
-import { RaporTpSetup } from './RaporTpSetup';
 import { RaporScoreGrid } from './RaporScoreGrid';
+import { RaporCharacterGrid } from './RaporCharacterGrid';
 import { RaporPrintPreview } from './RaporPrintPreview';
 import { RaporLegerTable } from './RaporLegerTable';
-import { RaporSettingsModal } from './RaporSettingsModal';
 import { RaporAnalysisSyncModal } from './RaporAnalysisSyncModal';
+import {
+  fetchGlobalRaporConfig,
+} from '../../services/raporStsService';
+import {
+  fetchCharacterDescriptors,
+  saveCharacterDescriptors,
+  loadClassCharacterRecords,
+  saveClassCharacterRecords,
+} from '../../services/raporCharacterService';
 import type { AnalysisSyncResult } from '../../services/analysisToRaporSyncService';
 import { getActiveTeacherSession, logoutTeacher } from '../../services/teacherStorage';
 import { clearEraporSession } from '../../services/teacherEraporAuthService';
@@ -87,7 +97,7 @@ interface RaporWorkspaceProps {
   onLogoutTeacher?: () => void;
 }
 
-type WorkspaceTab = 'tp_setup' | 'scores' | 'print' | 'leger';
+type WorkspaceTab = 'scores' | 'character' | 'print' | 'leger';
 
 export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   onBack,
@@ -118,7 +128,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   const selectedSchoolYear = academicAccess?.academicPeriod?.schoolYear || '';
   const isAuthorized = !!selectedContext;
 
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('tp_setup');
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('scores');
+  const [characterDescriptors, setCharacterDescriptors] = useState<CharacterDescriptor[]>([]);
+  const [characterRecords, setCharacterRecords] = useState<Record<string, StudentCharacterRecord>>({});
+  const [isSavingCharacter, setIsSavingCharacter] = useState<boolean>(false);
   const [allStudents, setAllStudents] = useState<Student[]>(() => getStoredStudentsLocal());
   const [classData, setClassData] = useState<RaporStsClassData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -136,8 +149,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
   // Modals & Navigation guard
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
-  const [settingsTab, setSettingsTab] = useState<'general'>('general');
   const [showExitConfirmModal, setShowExitConfirmModal] = useState<boolean>(false);
   const [pendingExitAction, setPendingExitAction] = useState<'back' | 'change_class' | null>(null);
 
@@ -257,6 +268,25 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         teacherName: activeTeacher?.name,
       });
 
+      // Ensure latest global admin settings (kop sekolah, titimangsa, kepsek, passingGrade, walas) are merged
+      try {
+        const globalConfig = await fetchGlobalRaporConfig();
+        if (globalConfig) {
+          const classWalas = globalConfig.classTeachers?.[selectedClass];
+          data.config = {
+            ...data.config,
+            ...globalConfig,
+            classLevel: selectedClass,
+            semester: selectedSemester,
+            schoolYear: selectedSchoolYear,
+            teacherName: activeTeacher?.name || classWalas?.name || globalConfig.teacherName || data.config.teacherName,
+            teacherNip: classWalas?.nip || globalConfig.teacherNip || data.config.teacherNip,
+          };
+        }
+      } catch (configErr) {
+        console.warn('Could not refresh global config on load:', configErr);
+      }
+
       setClassData(data);
       loadedClassRef.current = { classId: targetClassId, periodId: activePeriodId };
       setCloudStatus('saved');
@@ -301,6 +331,60 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
   const [isAnalysisSyncModalOpen, setIsAnalysisSyncModalOpen] = useState<boolean>(false);
   const [syncSuccessToast, setSyncSuccessToast] = useState<string | null>(null);
+
+  // Load character descriptors and class character records
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCharData() {
+      if (!selectedClass) return;
+      try {
+        const descs = await fetchCharacterDescriptors();
+        if (isMounted) setCharacterDescriptors(descs);
+
+        const cleanClass = (selectedClass || '1A').replace(/[^a-zA-Z0-9]/g, '_');
+        const cleanYear = (selectedSchoolYear || '2024/2025').replace(/[^a-zA-Z0-9]/g, '-');
+        const classKey = `${cleanClass}_sem${selectedSemester}_${cleanYear}`.toLowerCase();
+
+        const records = await loadClassCharacterRecords(classKey);
+        if (isMounted) {
+          setCharacterRecords(records);
+          setClassData((prev) => (prev ? { ...prev, characterRecords: records } : null));
+        }
+      } catch (err) {
+        console.warn('Error loading character data:', err);
+      }
+    }
+    void loadCharData();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedClass, selectedSemester, selectedSchoolYear]);
+
+  const handleUpdateCharacterRecords = (updated: Record<string, StudentCharacterRecord>) => {
+    setCharacterRecords(updated);
+    setHasUnsavedChanges(true);
+    setClassData((prev) => (prev ? { ...prev, characterRecords: updated } : null));
+  };
+
+  const handleSaveCharacterRecords = async () => {
+    if (!selectedClass) return;
+    setIsSavingCharacter(true);
+    try {
+      const cleanClass = (selectedClass || '1A').replace(/[^a-zA-Z0-9]/g, '_');
+      const cleanYear = (selectedSchoolYear || '2024/2025').replace(/[^a-zA-Z0-9]/g, '-');
+      const classKey = `${cleanClass}_sem${selectedSemester}_${cleanYear}`.toLowerCase();
+
+      await saveClassCharacterRecords(classKey, characterRecords);
+      setHasUnsavedChanges(false);
+      setLastSavedTime(
+        new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      );
+    } catch (err) {
+      console.error('Failed to save character records:', err);
+    } finally {
+      setIsSavingCharacter(false);
+    }
+  };
 
   // Save to Supabase
   const handleSaveToCloud = async (dataToSave?: RaporStsClassData) => {
@@ -516,7 +600,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
     }
 
     setSelectedContext(context);
-    setActiveTab('tp_setup');
+    setActiveTab('scores');
   };
 
   // Handle Back to Dashboard with Unsaved Check
@@ -570,13 +654,29 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
     return academicAccess.classes.map((academicClass) => {
       const contexts = getSubjectsForClass(academicAccess, academicClass.id);
+      const normalizedClassId = (academicClass.id || '').trim().toLowerCase();
+      const normalizedClassName = (academicClass.name || '').trim().toLowerCase();
+
+      const isHomeroom =
+        isHomeroomTeacherForClass(academicAccess, academicClass.id) ||
+        academicAccess.homeroomAssignments.some((a) => {
+          const aId = (a.classId || '').trim().toLowerCase();
+          return aId === normalizedClassId || aId === normalizedClassName;
+        }) ||
+        Boolean(
+          activeTeacher?.roleTitle &&
+            activeTeacher.roleTitle.toLowerCase().includes('wali') &&
+            (activeTeacher.roleTitle.toLowerCase().includes(normalizedClassName) ||
+              activeTeacher.roleTitle.toLowerCase().includes(normalizedClassId))
+        );
+
       return {
         academicClass,
         contexts,
-        isHomeroom: isHomeroomTeacherForClass(academicAccess, academicClass.id),
+        isHomeroom,
       };
     });
-  }, [academicAccess]);
+  }, [academicAccess, activeTeacher]);
 
   const teacherName = academicAccess?.teacherName || activeTeacher?.name || 'Bapak/Ibu Guru';
   const teacherInitials = useMemo(() => {
@@ -627,9 +727,36 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   }, [academicAccess, selectedContext]);
 
   const selectedIsHomeroom = useMemo(() => {
+    if (isAdmin) return true;
     if (!academicAccess || !selectedContext) return false;
-    return isHomeroomTeacherForClass(academicAccess, selectedContext.classId);
-  }, [academicAccess, selectedContext]);
+    const directMatch = isHomeroomTeacherForClass(academicAccess, selectedContext.classId);
+    if (directMatch) return true;
+
+    const normalizedClassId = (selectedContext.classId || '').trim().toLowerCase();
+    const normalizedClassName = (selectedContext.className || '').trim().toLowerCase();
+
+    const assignmentMatch = academicAccess.homeroomAssignments.some((assignment) => {
+      const aClassId = (assignment.classId || '').trim().toLowerCase();
+      return aClassId === normalizedClassId || (normalizedClassName && aClassId === normalizedClassName);
+    });
+    if (assignmentMatch) return true;
+
+    if (activeTeacher?.roleTitle) {
+      const rt = activeTeacher.roleTitle.toLowerCase();
+      if (rt.includes('wali') && (rt.includes(normalizedClassName) || (normalizedClassId && rt.includes(normalizedClassId)))) {
+        return true;
+      }
+    }
+
+    return false;
+  }, [isAdmin, academicAccess, selectedContext, activeTeacher]);
+
+  // Guard: Penilaian Karakter hanya dapat diakses oleh Wali Kelas atau Admin
+  useEffect(() => {
+    if (!selectedIsHomeroom && !isAdmin && activeTab === 'character') {
+      setActiveTab('scores');
+    }
+  }, [selectedIsHomeroom, isAdmin, activeTab]);
 
   const renderCloudStatus = () => {
     if (cloudStatus === 'saving') {
@@ -952,17 +1079,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   onLogout={handleTeacherLogoutAction}
                 />
               </div>
-
-              {isAdmin && (
-                <button
-                  type="button"
-                  onClick={() => { setSettingsTab('general'); setIsSettingsModalOpen(true); }}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-white/[0.09] bg-white/[0.035] hover:bg-white/[0.08] hover:border-white/[0.16] text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-                  title="Pengaturan Rapor"
-                >
-                  <Settings2 className="w-4 h-4" />
-                </button>
-              )}
 
               {isAuthorized && classData && (
                 <button
@@ -1467,12 +1583,16 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
                 {/* Center: Segmented Navigation Pills */}
                 <nav className="flex items-center justify-start lg:justify-center gap-1.5 p-1 rounded-xl bg-slate-950/60 border border-white/[0.06] overflow-x-auto custom-scrollbar">
-                  {([
-                    ['tp_setup', Layers, 'TP & Capaian'],
-                    ['scores', BookOpen, 'Input Nilai'],
-                    ['leger', FileSpreadsheet, 'Leger'],
-                    ['print', Printer, 'Cetak Rapor'],
-                  ] as const).map(([tab, Icon, label]) => {
+                  {(
+                    [
+                      ['scores', BookOpen, 'Input Nilai Akademik'],
+                      ...(selectedIsHomeroom || isAdmin
+                        ? [['character', HeartHandshake, 'Penilaian Karakter'] as const]
+                        : []),
+                      ['leger', FileSpreadsheet, 'Leger Rapor STS'],
+                      ['print', Printer, 'Cetak Rapor (2 Lembar)'],
+                    ] as const
+                  ).map(([tab, Icon, label]) => {
                     const isActive = activeTab === tab;
                     return (
                       <button
@@ -1517,37 +1637,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
             {/* Active content: deliberately not wrapped in another decorative
                 card so child components can own their own visual hierarchy. */}
             <section className="min-h-[calc(100vh-13rem)]">
-              {activeTab === 'tp_setup' && (
-                <RaporTpSetup
-                  subjects={classData.subjects}
-                  onUpdateSubjects={handleUpdateSubjects}
-                  fase={classData.config.fase}
-                  gradeLevel={getGradeLevel(selectedClass)}
-                  classLevel={selectedClass}
-                  initialSubjectId={selectedContext.subjectId}
-                  allowedSubjectIds={selectedClassContexts.map((c) => c.subjectId)}
-                  isHomeroom={selectedIsHomeroom}
-                  onSelectSubject={(subjectId) => {
-                    const ctx = selectedClassContexts.find((c) => c.subjectId === subjectId);
-                    if (ctx) {
-                      setSelectedContext(ctx);
-                    } else {
-                      const subj = classData.subjects.find((s) => s.id === subjectId);
-                      if (subj) {
-                        setSelectedContext((prev) => ({
-                          ...prev!,
-                          subjectId: subj.id,
-                          subjectName: subj.name,
-                          subjectCode: subj.code || null,
-                        }));
-                      }
-                    }
-                  }}
-                  onNextToScores={() => setActiveTab('scores')}
-                  readOnly={!!previewTeacher}
-                />
-              )}
-
               {activeTab === 'scores' && (
                 <RaporScoreGrid
                   subjects={classData.subjects}
@@ -1578,9 +1667,28 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   }}
                   onUpdateAdditionalInfo={handleUpdateAdditionalInfo}
                   onUpdateSubjectRecord={handleUpdateSubjectRecord}
-                  onGoToTpSetup={() => setActiveTab('tp_setup')}
                   onOpenAnalysisSync={() => setIsAnalysisSyncModalOpen(true)}
                 />
+              )}
+
+              {activeTab === 'character' && classData && (
+                selectedIsHomeroom || isAdmin ? (
+                  <RaporCharacterGrid
+                    classData={classData}
+                    students={classStudents}
+                    descriptors={characterDescriptors}
+                    characterRecords={characterRecords}
+                    onUpdateCharacterRecords={handleUpdateCharacterRecords}
+                    onSaveCharacterRecords={handleSaveCharacterRecords}
+                    isSaving={isSavingCharacter}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-white/[0.08] bg-slate-900/60 p-8 text-center text-slate-300">
+                    <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-white">Akses Khusus Wali Kelas</p>
+                    <p className="text-xs text-slate-400 mt-1">Penilaian Karakter (18 Karakter) hanya dapat dikelola oleh Wali Kelas {selectedClass}.</p>
+                  </div>
+                )
               )}
 
               {activeTab === 'leger' && (
@@ -1596,6 +1704,8 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   students={classStudents}
                   semester={selectedSemester}
                   schoolYear={selectedSchoolYear}
+                  descriptors={characterDescriptors}
+                  characterRecords={characterRecords}
                 />
               )}
             </section>
@@ -1639,20 +1749,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
               </div>
             </div>
           </div>
-        )}
-
-        {/* Settings Modal */}
-        {classData && (
-          <RaporSettingsModal
-            isOpen={isSettingsModalOpen}
-            onClose={() => setIsSettingsModalOpen(false)}
-            config={classData.config}
-            activeClass={selectedClass}
-            gradeLevel={getGradeLevel(selectedClass)}
-            initialTab={settingsTab}
-            onSaveConfig={handleUpdateConfig}
-            isAdmin={isAdmin}
-          />
         )}
 
         {/* Analysis To e-Rapor Sync Modal */}

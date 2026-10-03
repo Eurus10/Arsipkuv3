@@ -41,6 +41,8 @@ import {
   StudentSubjectRecord,
   StudentAdditionalInfo,
   RaporStsConfig,
+  getScorePredicate,
+  getMasteryStatusFromPredicate,
 } from '../../types/raporSts';
 import { Student } from '../../services/studentStorage';
 import {
@@ -65,7 +67,6 @@ interface RaporScoreGridProps {
   schoolYear?: string;
   onUpdateSubjectRecord: (subjectId: string, record: StudentSubjectRecord) => void;
   onUpdateAdditionalInfo?: (updated: Record<string, StudentAdditionalInfo>) => void;
-  onGoToTpSetup?: () => void;
   initialSubjectId?: string;
   onSelectSubject?: (subjectId: string) => void;
   onOpenAnalysisSync?: () => void;
@@ -153,7 +154,6 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
   schoolYear = '2024/2025',
   onUpdateSubjectRecord,
   onUpdateAdditionalInfo,
-  onGoToTpSetup,
   initialSubjectId,
   onSelectSubject,
   onOpenAnalysisSync,
@@ -184,6 +184,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [generatingStudentId, setGeneratingStudentId] = useState<string | null>(null);
+  const [showTpColumns, setShowTpColumns] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -929,10 +930,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                       </div>
                     </div>
 
-                    {/* TP Count Badge */}
-                    <span className="shrink-0 text-[11px] font-medium text-slate-400 whitespace-nowrap pl-1">
-                      {tpCount} TP
-                    </span>
+                    {/* Subject Code Badge */}
+                    {subj.code && (
+                      <span className="shrink-0 text-[10px] font-bold text-amber-400/80 uppercase tracking-wider pl-1">
+                        {subj.code}
+                      </span>
+                    )}
                   </button>
                 );
               })
@@ -972,23 +975,17 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               </div>
             </div>
 
-            {/* Right Quick Summary Widget: 8 TP Total Tujuan Pembelajaran > */}
-            <button
-              type="button"
-              onClick={onGoToTpSetup}
-              className="rounded-xl border border-white/[0.08] bg-slate-950/70 hover:bg-slate-900 px-4 py-2 text-left flex items-center gap-3 transition-colors group cursor-pointer self-start sm:self-auto shrink-0"
-              title="Atur Tujuan Pembelajaran"
-            >
+            {/* Right Quick Summary Widget: KKTP Passing Grade Info */}
+            <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-4 py-2 text-left flex items-center gap-3 self-start sm:self-auto shrink-0 shadow-sm">
               <div>
-                <p className="text-xs sm:text-sm font-bold text-white leading-tight">
-                  {activeTps.length} TP
+                <p className="text-xs sm:text-sm font-bold text-amber-300 leading-tight">
+                  KKTP: {config.passingGrade || 75}
                 </p>
                 <p className="text-[11px] text-slate-400 font-normal mt-0.5">
-                  Total Tujuan Pembelajaran
+                  Kriteria Ketuntasan Minimal
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
-            </button>
+            </div>
           </div>
 
           {/* 2. ACTION & SEARCH TOOLBAR */}
@@ -1100,34 +1097,8 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
           </div>
 
           {/* 3. MAIN SPREADSHEET TABLE GRID */}
-          {!isTpAvailable ? (
-            <div className="p-10 rounded-2xl bg-[#07111E] border border-white/[0.08] text-center space-y-4 shadow-xl flex-1 min-h-0 flex flex-col justify-center items-center">
-              <div className="w-12 h-12 rounded-xl bg-amber-400/10 border border-amber-400/25 text-amber-300 flex items-center justify-center mx-auto shadow-inner">
-                <Lock className="w-6 h-6" />
-              </div>
-              <div className="max-w-md mx-auto space-y-1">
-                <h3 className="text-base font-bold text-white">
-                  Tujuan Pembelajaran (TP) Belum Dibuat
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                  Sebelum menginput nilai <strong className="text-slate-200 font-semibold">{currentSubject.name}</strong>,
-                  silakan buat butir TP terlebih dahulu pada tab TP & Capaian.
-                </p>
-              </div>
-              {onGoToTpSetup && (
-                <button
-                  type="button"
-                  onClick={onGoToTpSetup}
-                  className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-semibold inline-flex items-center gap-1.5 shadow-md shadow-emerald-400/20 cursor-pointer"
-                >
-                  <span>Buka Pengaturan TP</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 overflow-hidden flex-1 flex flex-col min-h-0">
-              <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 overflow-hidden flex-1 flex flex-col min-h-0">
+            <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-[#0A1626] text-slate-300 border-b border-white/[0.08] sticky top-0 z-20">
@@ -1144,32 +1115,49 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         </div>
                       </th>
 
-                      {/* TP Headers - CLEAN WITHOUT ICONS as requested */}
-                      {activeTps.map((tp, tpIdx) => (
-                        <th
-                          key={tp.id}
-                          className="py-3 px-2 text-center w-[72px] font-semibold border-l border-white/[0.06]"
-                          title={tp.desc || `Tujuan Pembelajaran ${tpIdx + 1}`}
-                        >
-                          <div className="text-cyan-300 font-semibold text-xs">
-                            {tp.code || `TP ${tpIdx + 1}`}
-                          </div>
-                          <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
-                            Tercapai
-                          </div>
-                        </th>
-                      ))}
+                      {/* TP Headers - CLEAN WITHOUT ICONS (Conditionally displayed via showTpColumns) */}
+                      {showTpColumns &&
+                        activeTps.map((tp, tpIdx) => (
+                          <th
+                            key={tp.id}
+                            className="py-3 px-2 text-center w-[72px] font-semibold border-l border-white/[0.06]"
+                            title={tp.desc || `Tujuan Pembelajaran ${tpIdx + 1}`}
+                          >
+                            <div className="text-cyan-300 font-semibold text-xs">
+                              {tp.code || `TP ${tpIdx + 1}`}
+                            </div>
+                            <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                              Tercapai
+                            </div>
+                          </th>
+                        ))}
 
                       {/* Nilai Sumatif */}
                       <th className="py-3 px-3 text-center w-24 font-semibold border-l border-white/[0.06]">
-                        <div className="text-xs font-semibold text-white">Nilai</div>
+                        <div className="text-xs font-semibold text-white">Nilai STS</div>
                         <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
                           0 - 100
                         </div>
                       </th>
 
+                      {/* Predikat (Auto A/B/C/D) */}
+                      <th className="py-3 px-3 text-center w-20 font-semibold border-l border-white/[0.06]">
+                        <div className="text-xs font-semibold text-emerald-300">Predikat</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                          A / B / C / D
+                        </div>
+                      </th>
+
+                      {/* Status Penguasaan (Auto) */}
+                      <th className="py-3 px-3.5 min-w-[140px] font-semibold border-l border-white/[0.06]">
+                        <div className="text-xs font-semibold text-cyan-300">Penguasaan</div>
+                        <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                          Status Capaian
+                        </div>
+                      </th>
+
                       {/* Catatan Guru with AI Sparkle Button */}
-                      <th className="py-3 px-3.5 min-w-[240px] font-semibold border-l border-white/[0.06]">
+                      <th className="py-3 px-3.5 min-w-[220px] font-semibold border-l border-white/[0.06]">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-slate-200 text-xs font-semibold">Catatan Guru</span>
                           <button
@@ -1194,10 +1182,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         </div>
                       </th>
 
-                      {/* Capaian Kompetensi */}
-                      <th className="py-3 px-3.5 min-w-[220px] font-semibold border-l border-white/[0.06] text-slate-200 text-xs">
-                        Capaian Kompetensi
-                      </th>
+                      {/* Capaian Kompetensi (Hanya tampil jika rincian TP dibuka) */}
+                      {showTpColumns && (
+                        <th className="py-3 px-3.5 min-w-[220px] font-semibold border-l border-white/[0.06] text-slate-200 text-xs">
+                          Capaian Kompetensi (TP)
+                        </th>
+                      )}
                     </tr>
                   </thead>
 
@@ -1205,7 +1195,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                     {displayedStudents.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={5 + activeTps.length}
+                          colSpan={showTpColumns ? 6 + activeTps.length : 6}
                           className="text-center py-12 text-slate-400 text-xs font-normal"
                         >
                           Tidak ada siswa yang cocok dengan pencarian.
@@ -1224,6 +1214,16 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         };
 
                         const hasCustomDesc = !!scoreData.customDescription;
+
+                        // Hitung Predikat & Penguasaan seketika berdasarkan nilai STS
+                        const numericScore =
+                          typeof scoreData.stsScore === 'number'
+                            ? scoreData.stsScore
+                            : typeof scoreData.finalScore === 'number'
+                            ? scoreData.finalScore
+                            : null;
+                        const predicate = getScorePredicate(numericScore, config.passingGrade || 75);
+                        const mastery = getMasteryStatusFromPredicate(predicate);
 
                         return (
                           <tr
@@ -1245,43 +1245,44 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                               </div>
                             </td>
 
-                            {/* TP Checkbox Inputs */}
-                            {activeTps.map((tp, tpIdx) => {
-                              const isAchieved =
-                                scoreData.tpAchieved?.[tp.id] === true ||
-                                (typeof scoreData.tpScores?.[tp.id] === 'number' &&
-                                  (scoreData.tpScores[tp.id]! >= config.passingGrade ||
-                                    scoreData.tpScores[tp.id] === 1 ||
-                                    scoreData.tpScores[tp.id] === 100));
+                            {/* TP Checkbox Inputs (Hanya tampil jika mode TP aktif) */}
+                            {showTpColumns &&
+                              activeTps.map((tp, tpIdx) => {
+                                const isAchieved =
+                                  scoreData.tpAchieved?.[tp.id] === true ||
+                                  (typeof scoreData.tpScores?.[tp.id] === 'number' &&
+                                    (scoreData.tpScores[tp.id]! >= config.passingGrade ||
+                                      scoreData.tpScores[tp.id] === 1 ||
+                                      scoreData.tpScores[tp.id] === 100));
 
-                              return (
-                                <td
-                                  key={tp.id}
-                                  className="py-2.5 px-2 text-center border-l border-white/[0.05]"
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleToggleTpAchieved(st.id, st.name, tp.id)
-                                    }
-                                    className={`w-6 h-6 mx-auto rounded-md flex items-center justify-center transition-all cursor-pointer select-none ${
-                                      isAchieved
-                                        ? 'bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                                        : 'border border-white/[0.15] bg-[#0A1626] hover:border-white/[0.3]'
-                                    }`}
-                                    title={
-                                      isAchieved
-                                        ? `${tp.code || `TP ${tpIdx + 1}`}: Tercapai`
-                                        : `${tp.code || `TP ${tpIdx + 1}`}: Belum Tercapai`
-                                    }
+                                return (
+                                  <td
+                                    key={tp.id}
+                                    className="py-2.5 px-2 text-center border-l border-white/[0.05]"
                                   >
-                                    {isAchieved && (
-                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                    )}
-                                  </button>
-                                </td>
-                              );
-                            })}
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleToggleTpAchieved(st.id, st.name, tp.id)
+                                      }
+                                      className={`w-6 h-6 mx-auto rounded-md flex items-center justify-center transition-all cursor-pointer select-none ${
+                                        isAchieved
+                                          ? 'bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                                          : 'border border-white/[0.15] bg-[#0A1626] hover:border-white/[0.3]'
+                                      }`}
+                                      title={
+                                        isAchieved
+                                          ? `${tp.code || `TP ${tpIdx + 1}`}: Tercapai`
+                                          : `${tp.code || `TP ${tpIdx + 1}`}: Belum Tercapai`
+                                      }
+                                    >
+                                      {isAchieved && (
+                                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                      )}
+                                    </button>
+                                  </td>
+                                );
+                              })}
 
                             {/* STS Final Score Input */}
                             <td className="py-2.5 px-2 text-center border-l border-white/[0.05]">
@@ -1302,8 +1303,61 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                                     e.target.value
                                   )
                                 }
-                                className="w-14 h-8 text-center rounded-lg font-semibold text-[13px] border border-white/[0.1] bg-[#0A1626] text-white focus:outline-none focus:border-emerald-400 transition-colors no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-16 h-8 text-center rounded-lg font-bold text-sm border border-emerald-400/30 bg-[#0A1626] text-emerald-300 focus:outline-none focus:border-emerald-400 transition-colors no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
+                            </td>
+
+                            {/* Predikat (A / B / C / D) */}
+                            <td className="py-2.5 px-2 text-center border-l border-white/[0.05]">
+                              {predicate === '-' ? (
+                                <span className="text-slate-500 font-medium text-xs">-</span>
+                              ) : (
+                                <span
+                                  className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold border ${
+                                    predicate === 'A'
+                                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-sm shadow-emerald-500/10'
+                                      : predicate === 'B'
+                                      ? 'bg-sky-500/20 text-sky-300 border-sky-400/40 shadow-sm shadow-sky-500/10'
+                                      : predicate === 'C'
+                                      ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                                      : 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+                                  }`}
+                                >
+                                  {predicate}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Status Penguasaan (Sangat Baik / Baik / Cukup / Perlu Bimbingan) */}
+                            <td className="py-2.5 px-3 border-l border-white/[0.05]">
+                              {mastery === '-' ? (
+                                <span className="text-slate-500 font-medium text-xs italic">-</span>
+                              ) : (
+                                <span
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${
+                                    predicate === 'A'
+                                      ? 'bg-emerald-500/10 text-emerald-300'
+                                      : predicate === 'B'
+                                      ? 'bg-sky-500/10 text-sky-300'
+                                      : predicate === 'C'
+                                      ? 'bg-amber-500/10 text-amber-300'
+                                      : 'bg-rose-500/10 text-rose-300'
+                                  }`}
+                                >
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      predicate === 'A'
+                                        ? 'bg-emerald-400'
+                                        : predicate === 'B'
+                                        ? 'bg-sky-400'
+                                        : predicate === 'C'
+                                        ? 'bg-amber-400'
+                                        : 'bg-rose-400'
+                                    }`}
+                                  />
+                                  <span>{mastery}</span>
+                                </span>
+                              )}
                             </td>
 
                             {/* Catatan Guru Input with individual AI button */}
@@ -1338,33 +1392,35 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                               </div>
                             </td>
 
-                            {/* Capaian Kompetensi */}
-                            <td className="py-2.5 px-3.5 border-l border-white/[0.05]">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs font-normal text-slate-300 leading-[1.4] truncate max-w-[220px]">
-                                  {scoreData.customDescription ||
-                                    scoreData.autoDescription || (
-                                      <span className="text-slate-500 italic font-normal">
-                                        Belum dinilai
-                                      </span>
-                                    )}
-                                </p>
+                            {/* Capaian Kompetensi (Hanya tampil jika mode TP dibuka) */}
+                            {showTpColumns && (
+                              <td className="py-2.5 px-3.5 border-l border-white/[0.05]">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-xs font-normal text-slate-300 leading-[1.4] truncate max-w-[220px]">
+                                    {scoreData.customDescription ||
+                                      scoreData.autoDescription || (
+                                        <span className="text-slate-500 italic font-normal">
+                                          Belum dinilai
+                                        </span>
+                                      )}
+                                  </p>
 
-                                <button
-                                  type="button"
-                                  onClick={() => openCustomDescModal(st.id)}
-                                  className="p-1 rounded-md text-slate-400 hover:text-white transition-colors shrink-0 cursor-pointer"
-                                  title="Lihat & sesuaikan narasi capaian"
-                                >
-                                  <ChevronDown className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                              {hasCustomDesc && (
-                                <span className="text-[10px] font-medium text-amber-300 block mt-0.5">
-                                  (Kustom Guru)
-                                </span>
-                              )}
-                            </td>
+                                  <button
+                                    type="button"
+                                    onClick={() => openCustomDescModal(st.id)}
+                                    className="p-1 rounded-md text-slate-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+                                    title="Lihat & sesuaikan narasi capaian"
+                                  >
+                                    <ChevronDown className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                                {hasCustomDesc && (
+                                  <span className="text-[10px] font-medium text-amber-300 block mt-0.5">
+                                    (Kustom Guru)
+                                  </span>
+                                )}
+                              </td>
+                            )}
                           </tr>
                         );
                       })
@@ -1373,7 +1429,6 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 </table>
               </div>
             </div>
-          )}
         </section>
       </div>
 

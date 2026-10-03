@@ -11,7 +11,6 @@ import {
   WidthType,
   BorderStyle,
   PageBreak,
-  HeightRule,
   VerticalAlign,
   ShadingType,
 } from 'docx';
@@ -19,6 +18,11 @@ import {
   RaporStsClassData,
   RaporSubject,
   StudentScoreDetail,
+  CharacterDescriptor,
+  StudentCharacterRecord,
+  DEFAULT_CHARACTER_DESCRIPTORS,
+  getScorePredicate,
+  getMasteryStatusFromPredicate,
 } from '../types/raporSts';
 import { Student } from './studentStorage';
 
@@ -118,34 +122,38 @@ const BORDER_BLACK_THIN = {
 };
 
 const FILL_YELLOW_STYLE = {
+  fillType: 'pattern',
   patternType: 'solid',
   fgColor: { rgb: YELLOW_BRIGHT_RGB },
 };
 
 /**
- * Builds a single student's Rapor STS worksheet in an Excel workbook
+ * Build Lembar 1: Laporan Penilaian Akademik Worksheet
  */
-function buildStudentRaporWorksheet(
+function buildAcademicWorksheet(
   classData: RaporStsClassData,
   student: Student,
   activeSemester: string,
   activeSchoolYear: string
-) {
+): XLSX.WorkSheet {
   const { config, subjects, subjectRecords, additionalInfo } = classData;
-  const ws: any = {};
-  const rowHeights: { hpt: number }[] = [];
+  const ws: XLSX.WorkSheet = {};
+  const merges: XLSX.Range[] = [];
+  const rowHeights: XLSX.RowInfo[] = [];
   let r = 0;
 
-  const setCell = (rowIdx: number, colIdx: number, val: any, style?: any) => {
-    const ref = XLSX.utils.encode_cell({ r: rowIdx, c: colIdx });
-    ws[ref] = {
-      v: val,
+  const setCell = (row: number, col: number, val: any, style?: any) => {
+    const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+    const cell: XLSX.CellObject = {
+      v: val !== null && val !== undefined ? val : '',
       t: typeof val === 'number' ? 'n' : 's',
-      s: style || {},
     };
+    if (style) {
+      (cell as any).s = style;
+    }
+    ws[cellRef] = cell;
   };
 
-  const merges: any[] = [];
   const addMerge = (sR: number, sC: number, eR: number, eC: number) => {
     merges.push({ s: { r: sR, c: sC }, e: { r: eR, c: eC } });
   };
@@ -159,119 +167,75 @@ function buildStudentRaporWorksheet(
     : activeSchoolYear;
   const activeClass = config.classLevel || '1A';
 
-  // 1. JUDUL RESMI
-  setCell(r, 0, 'LAPORAN', {
+  // 1. JUDUL RESMI LEMBAR 1
+  setCell(r, 0, 'LAPORAN PENILAIAN AKADEMIK', {
     font: { name: EXCEL_FONT_NAME, sz: 12, bold: true },
     alignment: { horizontal: 'center' },
   });
-  addMerge(r, 0, r, 3);
+  addMerge(r, 0, r, 4);
   r++;
 
   setCell(r, 0, semesterTitle, {
     font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
     alignment: { horizontal: 'center' },
   });
-  addMerge(r, 0, r, 3);
+  addMerge(r, 0, r, 4);
   r++;
 
   setCell(r, 0, `TAHUN PELAJARAN ${schoolYearTitle}`, {
     font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
     alignment: { horizontal: 'center' },
   });
-  addMerge(r, 0, r, 3);
+  addMerge(r, 0, r, 4);
   r += 2; // Spasi
 
   // 2. IDENTITAS SISWA
-  // Baris 1: NAMA (Kiri) | NIM/NISN (Kanan)
   setCell(r, 0, 'NAMA', {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
   setCell(r, 1, `:  ${student.name.toUpperCase()}`, {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
   });
-  setCell(r, 2, 'NIM/NISN', {
+  setCell(r, 3, 'NIM/NISN', {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
-  setCell(r, 3, `:  ${formatStudentNimNisn(student.nim, student.nisn)}`, {
+  setCell(r, 4, `:  ${formatStudentNimNisn(student.nim, student.nisn)}`, {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
   r++;
 
-  // Baris 2: TEMPAT, TANGGAL LAHIR (Kiri) | KELAS (Kanan)
   setCell(r, 0, 'TEMPAT, TANGGAL LAHIR', {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
   setCell(r, 1, `:  ${formatStudentTTL(student.tempatLahir, student.tanggalLahir)}`, {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
-  setCell(r, 2, 'KELAS', {
+  setCell(r, 3, 'KELAS', {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
-  setCell(r, 3, `:  ${activeClass}`, {
+  setCell(r, 4, `:  ${activeClass}`, {
     font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
   });
   r += 2; // Spasi sebelum tabel
 
-  // 3. HEADER TABEL HASIL CAPAIAN KOMPETENSI
-  const headerRow1 = r;
-  const headerRow2 = r + 1;
+  // 3. HEADER TABEL HASIL CAPAIAN AKADEMIK (NO, MATA PELAJARAN, NILAI AKHIR, PREDIKAT, PENGUASAAN)
+  const headerCols = [
+    { title: 'NO', w: 6 },
+    { title: 'MATA PELAJARAN', w: 32 },
+    { title: 'NILAI AKHIR', w: 14 },
+    { title: 'PREDIKAT', w: 12 },
+    { title: 'PENGUASAAN', w: 22 },
+  ];
 
-  // Kolom 0: NO
-  setCell(headerRow1, 0, 'NO', {
-    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
-    fill: FILL_YELLOW_STYLE,
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: BORDER_BLACK_THIN,
+  headerCols.forEach((col, idx) => {
+    setCell(r, idx, col.title, {
+      font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+      fill: FILL_YELLOW_STYLE,
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: BORDER_BLACK_THIN,
+    });
   });
-  setCell(headerRow2, 0, '', {
-    fill: FILL_YELLOW_STYLE,
-    border: BORDER_BLACK_THIN,
-  });
-  addMerge(headerRow1, 0, headerRow2, 0);
-
-  // Kolom 1: MATA PELAJARAN
-  setCell(headerRow1, 1, 'MATA PELAJARAN', {
-    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
-    fill: FILL_YELLOW_STYLE,
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: BORDER_BLACK_THIN,
-  });
-  setCell(headerRow2, 1, '', {
-    fill: FILL_YELLOW_STYLE,
-    border: BORDER_BLACK_THIN,
-  });
-  addMerge(headerRow1, 1, headerRow2, 1);
-
-  // Kolom 2-3: HASIL CAPAIAN KOMPETENSI
-  setCell(headerRow1, 2, 'HASIL CAPAIAN KOMPETENSI', {
-    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
-    fill: FILL_YELLOW_STYLE,
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: BORDER_BLACK_THIN,
-  });
-  setCell(headerRow1, 3, '', {
-    fill: FILL_YELLOW_STYLE,
-    border: BORDER_BLACK_THIN,
-  });
-  addMerge(headerRow1, 2, headerRow1, 3);
-
-  // Sub-header Kolom 2: NILAI AKHIR
-  setCell(headerRow2, 2, 'NILAI AKHIR', {
-    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
-    fill: FILL_YELLOW_STYLE,
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: BORDER_BLACK_THIN,
-  });
-
-  // Sub-header Kolom 3: CAPAIAN KOMPETENSI
-  setCell(headerRow2, 3, 'CAPAIAN KOMPETENSI', {
-    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
-    fill: FILL_YELLOW_STYLE,
-    alignment: { horizontal: 'center', vertical: 'center' },
-    border: BORDER_BLACK_THIN,
-  });
-
-  r += 2;
+  r++;
 
   // Helper untuk menambahkan baris kategori (Agama, Umum, Mulok)
   const addCategoryHeader = (roman: string, title: string) => {
@@ -286,14 +250,10 @@ function buildStudentRaporWorksheet(
       fill: FILL_YELLOW_STYLE,
       border: BORDER_BLACK_THIN,
     });
-    setCell(r, 2, '', {
-      fill: FILL_YELLOW_STYLE,
-      border: BORDER_BLACK_THIN,
-    });
-    setCell(r, 3, '', {
-      fill: FILL_YELLOW_STYLE,
-      border: BORDER_BLACK_THIN,
-    });
+    setCell(r, 2, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+    setCell(r, 3, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+    setCell(r, 4, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+    addMerge(r, 1, r, 4);
     r++;
   };
 
@@ -302,11 +262,9 @@ function buildStudentRaporWorksheet(
     subjs.forEach((subj, idx) => {
       const scoreData: StudentScoreDetail | undefined =
         subjectRecords[subj.id]?.scores[student.id];
-      const score = scoreData?.finalScore;
-      const desc =
-        scoreData?.customDescription ||
-        scoreData?.autoDescription ||
-        '-';
+      const score = scoreData?.finalScore ?? scoreData?.stsScore ?? null;
+      const pred = getScorePredicate(score, config.passingGrade || 75);
+      const mastery = getMasteryStatusFromPredicate(pred);
 
       // No
       setCell(r, 0, `${idx + 1}.`, {
@@ -315,7 +273,7 @@ function buildStudentRaporWorksheet(
         border: BORDER_BLACK_THIN,
       });
 
-      // Nama Mapel (Tidak bold, uppercase)
+      // Nama Mapel (uppercase)
       setCell(r, 1, subj.name.toUpperCase(), {
         font: { name: EXCEL_FONT_NAME, sz: 9, bold: false },
         alignment: { horizontal: 'left', vertical: 'top' },
@@ -329,17 +287,21 @@ function buildStudentRaporWorksheet(
         border: BORDER_BLACK_THIN,
       });
 
-      // Capaian Kompetensi
-      setCell(r, 3, desc, {
-        font: { name: EXCEL_FONT_NAME, sz: 8.5, bold: false },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+      // Predikat (A/B/C/D)
+      setCell(r, 3, pred, {
+        font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+        alignment: { horizontal: 'center', vertical: 'top' },
         border: BORDER_BLACK_THIN,
       });
 
-      // Calculate dynamic row height based on description length to avoid text clipping
-      const descLines = Math.max(1, Math.ceil((desc || '').length / 45));
-      rowHeights[r] = { hpt: Math.max(22, descLines * 15) };
+      // Penguasaan (Sangat Baik / Baik / Cukup / Perlu Bimbingan)
+      setCell(r, 4, mastery, {
+        font: { name: EXCEL_FONT_NAME, sz: 9, bold: false },
+        alignment: { horizontal: 'center', vertical: 'top' },
+        border: BORDER_BLACK_THIN,
+      });
 
+      rowHeights[r] = { hpt: 20 };
       r++;
     });
   };
@@ -388,21 +350,336 @@ function buildStudentRaporWorksheet(
     alignment: { vertical: 'center', wrapText: true },
     border: BORDER_BLACK_THIN,
   });
-  setCell(r, 1, '', { border: BORDER_BLACK_THIN });
-  setCell(r, 2, '', { border: BORDER_BLACK_THIN });
-  setCell(r, 3, '', { border: BORDER_BLACK_THIN });
-  addMerge(r, 0, r + 1, 3);
+  for (let c = 1; c <= 4; c++) {
+    setCell(r, c, '', { border: BORDER_BLACK_THIN });
+  }
+  addMerge(r, 0, r + 1, 4);
   r += 3; // Spasi sebelum TTD
 
   // 5. TANDA TANGAN RESMI
-  const datePlace = config.reportDatePlace || 'Tangerang, 20 Maret 2027';
+  const datePlace = config.reportDatePlace || 'Depok, 20 Maret 2025';
   setCell(r, 3, datePlace, {
     font: { name: EXCEL_FONT_NAME, sz: 9 },
     alignment: { horizontal: 'right' },
   });
+  addMerge(r, 3, r, 4);
   r += 2;
 
   // Baris Mengetahui Orang Tua & Guru Kelas
+  setCell(r, 0, 'Mengetahui,', {
+    font: { name: EXCEL_FONT_NAME, sz: 9 },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 1);
+
+  setCell(r, 3, 'Mengetahui,', {
+    font: { name: EXCEL_FONT_NAME, sz: 9 },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 3, r, 4);
+  r++;
+
+  setCell(r, 0, 'Orang Tua / Wali Siswa', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 1);
+
+  setCell(r, 3, 'Guru Kelas,', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 3, r, 4);
+  r += 4; // Spasi tanda tangan
+
+  setCell(r, 0, '..................................................', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 1);
+
+  const teacherFormatted = formatPersonNameWithDegree(config.teacherName || 'Guru Kelas');
+  setCell(r, 3, teacherFormatted, {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true, underline: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 3, r, 4);
+  r++;
+
+  setCell(r, 3, `NIP. ${config.teacherNip || '-'}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 8 },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 3, r, 4);
+  r += 2;
+
+  // Kepala Sekolah (Tengah)
+  setCell(r, 0, 'Mengetahui,', {
+    font: { name: EXCEL_FONT_NAME, sz: 9 },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 4);
+  r++;
+
+  setCell(r, 0, `Kepala Sekolah ${config.schoolName || 'SDIT AL FIKRI'}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 4);
+  r += 4; // Spasi tanda tangan
+
+  const headmasterFormatted = formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah');
+  setCell(r, 0, headmasterFormatted, {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true, underline: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 4);
+  r++;
+
+  setCell(r, 0, `NIP. ${config.headmasterNip || '-'}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 8 },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 4);
+  r += 2;
+
+  // Running footer Lembar 1 (Italic, Hal 1/2)
+  setCell(r, 0, `${student.name} • NISN: ${formatStudentNimNisn(student.nim, student.nisn)} • Kelas ${activeClass} • ${config.schoolName || 'SDIT AL FIKRI'}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 8, italic: true },
+    alignment: { horizontal: 'left' },
+  });
+  addMerge(r, 0, r, 3);
+  setCell(r, 4, 'Halaman 1/2', {
+    font: { name: EXCEL_FONT_NAME, sz: 8, bold: true },
+    alignment: { horizontal: 'right' },
+  });
+
+  // Set Kolom Widths
+  ws['!cols'] = [
+    { wch: 6 },  // Kolom A: NO
+    { wch: 34 }, // Kolom B: MATA PELAJARAN
+    { wch: 14 }, // Kolom C: NILAI AKHIR
+    { wch: 12 }, // Kolom D: PREDIKAT
+    { wch: 24 }, // Kolom E: PENGUASAAN
+  ];
+
+  ws['!rows'] = rowHeights;
+  ws['!pageSetup'] = {
+    orientation: 'portrait',
+    paperSize: 9, // A4
+    fitToWidth: 1,
+    fitToHeight: 0,
+    fitToPage: true,
+  };
+
+  ws['!margins'] = {
+    left: 0.4,
+    right: 0.4,
+    top: 0.5,
+    bottom: 0.5,
+    header: 0.2,
+    footer: 0.2,
+  };
+
+  ws['!merges'] = merges;
+  ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r + 1, c: 4 } });
+
+  return ws;
+}
+
+/**
+ * Build Lembar 2: Laporan Penilaian Karakter Worksheet
+ */
+function buildCharacterWorksheet(
+  classData: RaporStsClassData,
+  student: Student,
+  activeSemester: string,
+  activeSchoolYear: string,
+  descriptors?: CharacterDescriptor[],
+  characterRecords?: Record<string, StudentCharacterRecord>
+): XLSX.WorkSheet {
+  const { config } = classData;
+  const activeDescriptors =
+    descriptors && descriptors.length > 0
+      ? descriptors
+      : classData.customCharacterDescriptors && classData.customCharacterDescriptors.length > 0
+      ? classData.customCharacterDescriptors
+      : DEFAULT_CHARACTER_DESCRIPTORS;
+
+  const studentCharRecord =
+    characterRecords?.[student.id] || classData.characterRecords?.[student.id];
+
+  const ws: XLSX.WorkSheet = {};
+  const merges: XLSX.Range[] = [];
+  const rowHeights: XLSX.RowInfo[] = [];
+  let r = 0;
+
+  const setCell = (row: number, col: number, val: any, style?: any) => {
+    const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+    const cell: XLSX.CellObject = {
+      v: val !== null && val !== undefined ? val : '',
+      t: typeof val === 'number' ? 'n' : 's',
+    };
+    if (style) {
+      (cell as any).s = style;
+    }
+    ws[cellRef] = cell;
+  };
+
+  const addMerge = (sR: number, sC: number, eR: number, eC: number) => {
+    merges.push({ s: { r: sR, c: sC }, e: { r: eR, c: eC } });
+  };
+
+  const semesterTitle =
+    activeSemester === '1'
+      ? 'SUMATIF TENGAH SEMESTER GANJIL (STS 1)'
+      : 'SUMATIF TENGAH SEMESTER GENAP (STS 2)';
+  const schoolYearTitle = activeSchoolYear.includes('/')
+    ? activeSchoolYear.replace('/', '-')
+    : activeSchoolYear;
+  const activeClass = config.classLevel || '1A';
+
+  // 1. JUDUL RESMI LEMBAR 2
+  setCell(r, 0, 'LAPORAN PENILAIAN KARAKTER', {
+    font: { name: EXCEL_FONT_NAME, sz: 12, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 3);
+  r++;
+
+  setCell(r, 0, semesterTitle, {
+    font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 3);
+  r++;
+
+  setCell(r, 0, `TAHUN PELAJARAN ${schoolYearTitle}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
+    alignment: { horizontal: 'center' },
+  });
+  addMerge(r, 0, r, 3);
+  r += 2; // Spasi
+
+  // 2. IDENTITAS SISWA
+  setCell(r, 0, 'NAMA', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  setCell(r, 1, `:  ${student.name.toUpperCase()}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+  });
+  setCell(r, 2, 'NIM/NISN', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  setCell(r, 3, `:  ${formatStudentNimNisn(student.nim, student.nisn)}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  r++;
+
+  setCell(r, 0, 'TEMPAT, TANGGAL LAHIR', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  setCell(r, 1, `:  ${formatStudentTTL(student.tempatLahir, student.tanggalLahir)}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  setCell(r, 2, 'KELAS', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  setCell(r, 3, `:  ${activeClass}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: false },
+  });
+  r += 2; // Spasi sebelum tabel
+
+  // 3. HEADER TABEL KARAKTER (NO, ASPEK KARAKTER, PREDIKAT, DESKRIPSI)
+  const headerCols = [
+    { title: 'NO', w: 6 },
+    { title: 'ASPEK KARAKTER', w: 26 },
+    { title: 'PREDIKAT', w: 12 },
+    { title: 'DESKRIPSI CAPAIAN PERKEMBANGAN', w: 56 },
+  ];
+
+  headerCols.forEach((col, idx) => {
+    setCell(r, idx, col.title, {
+      font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+      fill: FILL_YELLOW_STYLE,
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: BORDER_BLACK_THIN,
+    });
+  });
+  r++;
+
+  // 4. 18 ASPEK KARAKTER ROWS
+  activeDescriptors.forEach((desc, idx) => {
+    const charScore = studentCharRecord?.characterScores?.[desc.id];
+    const p = charScore?.predicate || '-';
+    const d =
+      charScore?.description ||
+      (charScore?.predicate ? desc.indicators[charScore.predicate] : '-');
+
+    setCell(r, 0, `${idx + 1}.`, {
+      font: { name: EXCEL_FONT_NAME, sz: 9, bold: false },
+      alignment: { horizontal: 'center', vertical: 'top' },
+      border: BORDER_BLACK_THIN,
+    });
+
+    setCell(r, 1, desc.name, {
+      font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+      alignment: { horizontal: 'left', vertical: 'top' },
+      border: BORDER_BLACK_THIN,
+    });
+
+    setCell(r, 2, p, {
+      font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+      alignment: { horizontal: 'center', vertical: 'top' },
+      border: BORDER_BLACK_THIN,
+    });
+
+    setCell(r, 3, d, {
+      font: { name: EXCEL_FONT_NAME, sz: 8.5, bold: false },
+      alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+      border: BORDER_BLACK_THIN,
+    });
+
+    const descLines = Math.max(1, Math.ceil((d || '').length / 50));
+    rowHeights[r] = { hpt: Math.max(18, descLines * 13) };
+    r++;
+  });
+
+  r++; // Spasi
+
+  // 5. KETERANGAN PREDIKAT
+  setCell(r, 0, 'Keterangan Predikat: [A] Sangat Baik   •   [B] Baik   •   [C] Cukup   •   [D] Perlu Bimbingan', {
+    font: { name: EXCEL_FONT_NAME, sz: 8.5, bold: true },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+    fill: {
+      fillType: 'pattern',
+      patternType: 'solid',
+      fgColor: { rgb: 'FEF9C3' },
+    },
+  });
+  addMerge(r, 0, r, 3);
+  r += 2;
+
+  // Catatan Karakter Wali Kelas jika ada
+  if (studentCharRecord?.teacherNote) {
+    setCell(r, 0, `Catatan Perkembangan Karakter: "${studentCharRecord.teacherNote}"`, {
+      font: { name: EXCEL_FONT_NAME, sz: 8.5, italic: true },
+      border: BORDER_BLACK_THIN,
+    });
+    addMerge(r, 0, r, 3);
+    r += 2;
+  }
+
+  // 6. TANDA TANGAN RESMI
+  const datePlace = config.reportDatePlace || 'Depok, 20 Maret 2025';
+  setCell(r, 2, datePlace, {
+    font: { name: EXCEL_FONT_NAME, sz: 9 },
+    alignment: { horizontal: 'right' },
+  });
+  addMerge(r, 2, r, 3);
+  r += 2;
+
   setCell(r, 0, 'Mengetahui,', {
     font: { name: EXCEL_FONT_NAME, sz: 9 },
     alignment: { horizontal: 'center' },
@@ -478,18 +755,28 @@ function buildStudentRaporWorksheet(
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 0, r, 3);
+  r += 2;
+
+  // Running footer Lembar 2 (Italic, Hal 2/2)
+  setCell(r, 0, `${student.name} • NISN: ${formatStudentNimNisn(student.nim, student.nisn)} • Kelas ${activeClass} • ${config.schoolName || 'SDIT AL FIKRI'}`, {
+    font: { name: EXCEL_FONT_NAME, sz: 8, italic: true },
+    alignment: { horizontal: 'left' },
+  });
+  addMerge(r, 0, r, 2);
+  setCell(r, 3, 'Halaman 2/2', {
+    font: { name: EXCEL_FONT_NAME, sz: 8, bold: true },
+    alignment: { horizontal: 'right' },
+  });
 
   // Set Kolom Widths
   ws['!cols'] = [
     { wch: 6 },  // Kolom A: NO
-    { wch: 34 }, // Kolom B: MATA PELAJARAN
-    { wch: 14 }, // Kolom C: NILAI AKHIR
-    { wch: 72 }, // Kolom D: CAPAIAN KOMPETENSI
+    { wch: 28 }, // Kolom B: ASPEK KARAKTER
+    { wch: 12 }, // Kolom C: PREDIKAT
+    { wch: 62 }, // Kolom D: DESKRIPSI
   ];
 
   ws['!rows'] = rowHeights;
-
-  // Standar Halaman Cetak Excel (A4, Fit to 1 Page Width, Dynamic Vertical Flow)
   ws['!pageSetup'] = {
     orientation: 'portrait',
     paperSize: 9, // A4
@@ -516,25 +803,39 @@ function buildStudentRaporWorksheet(
 /**
  * Clean sheet name to conform to Excel limits (max 31 chars, no illegal characters)
  */
-function sanitizeSheetName(name: string, index: number): string {
+function sanitizeSheetName(name: string, prefix = ''): string {
   const cleaned = name.replace(/[\\/*?[\]:]/g, '').trim();
-  const title = `${index + 1}. ${cleaned}`;
+  const title = prefix ? `${prefix} ${cleaned}` : cleaned;
   return title.slice(0, 31);
 }
 
 /**
- * Export Single Student Rapor to Excel (.xlsx)
+ * Export Single Student Rapor to Excel (.xlsx) — Includes Lembar 1 (Akademik) & Lembar 2 (Karakter)
  */
 export const exportStudentRaporToExcel = (
   classData: RaporStsClassData,
   student: Student,
   activeSemester: string,
-  activeSchoolYear: string
+  activeSchoolYear: string,
+  descriptors?: CharacterDescriptor[],
+  characterRecords?: Record<string, StudentCharacterRecord>
 ): void => {
   const wb = XLSX.utils.book_new();
-  const ws = buildStudentRaporWorksheet(classData, student, activeSemester, activeSchoolYear);
-  const sheetName = sanitizeSheetName(student.name, 0);
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+  // Sheet 1: Akademik
+  const wsAkademik = buildAcademicWorksheet(classData, student, activeSemester, activeSchoolYear);
+  XLSX.utils.book_append_sheet(wb, wsAkademik, sanitizeSheetName(student.name, 'Akademik -'));
+
+  // Sheet 2: Karakter
+  const wsKarakter = buildCharacterWorksheet(
+    classData,
+    student,
+    activeSemester,
+    activeSchoolYear,
+    descriptors,
+    characterRecords
+  );
+  XLSX.utils.book_append_sheet(wb, wsKarakter, sanitizeSheetName(student.name, 'Karakter -'));
 
   const cleanName = student.name.replace(/[^a-zA-Z0-9]/g, '_');
   const fileName = `Rapor_STS_${classData.config.classLevel || 'Kelas'}_Sem${activeSemester}_${cleanName}.xlsx`;
@@ -542,20 +843,35 @@ export const exportStudentRaporToExcel = (
 };
 
 /**
- * Export Whole Class Rapor to Excel (.xlsx)
+ * Export Whole Class Rapor to Excel (.xlsx) — Includes both Academic & Character sheets per student
  */
 export const exportClassRaporToExcel = (
   classData: RaporStsClassData,
   students: Student[],
   activeSemester: string,
-  activeSchoolYear: string
+  activeSchoolYear: string,
+  descriptors?: CharacterDescriptor[],
+  characterRecords?: Record<string, StudentCharacterRecord>
 ): void => {
   const wb = XLSX.utils.book_new();
 
   students.forEach((student, idx) => {
-    const ws = buildStudentRaporWorksheet(classData, student, activeSemester, activeSchoolYear);
-    const sheetName = sanitizeSheetName(student.name, idx);
-    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    // Sheet Akademik
+    const wsAkad = buildAcademicWorksheet(classData, student, activeSemester, activeSchoolYear);
+    const akadName = sanitizeSheetName(student.name, `${idx + 1}A.`);
+    XLSX.utils.book_append_sheet(wb, wsAkad, akadName);
+
+    // Sheet Karakter
+    const wsChar = buildCharacterWorksheet(
+      classData,
+      student,
+      activeSemester,
+      activeSchoolYear,
+      descriptors,
+      characterRecords
+    );
+    const charName = sanitizeSheetName(student.name, `${idx + 1}K.`);
+    XLSX.utils.book_append_sheet(wb, wsChar, charName);
   });
 
   const cleanYear = activeSchoolYear.replace(/[^a-zA-Z0-9]/g, '-');
@@ -564,7 +880,7 @@ export const exportClassRaporToExcel = (
 };
 
 /* ============================================================================
- * WORD EXPORT SERVICE (.DOCX)
+ * WORD EXPORT SERVICE (.DOCX) — 2 LEMBAR RESMI
  * ========================================================================== */
 
 const DOCX_FONT_FAMILY = 'Bookman Old Style';
@@ -575,10 +891,22 @@ function createDocxStudentSection(
   student: Student,
   activeSemester: string,
   activeSchoolYear: string,
-  isFirst: boolean
+  isFirst: boolean,
+  descriptors?: CharacterDescriptor[],
+  characterRecords?: Record<string, StudentCharacterRecord>
 ): (Paragraph | Table)[] {
   const { config, subjects, subjectRecords, additionalInfo } = classData;
   const elements: (Paragraph | Table)[] = [];
+
+  const activeDescriptors =
+    descriptors && descriptors.length > 0
+      ? descriptors
+      : classData.customCharacterDescriptors && classData.customCharacterDescriptors.length > 0
+      ? classData.customCharacterDescriptors
+      : DEFAULT_CHARACTER_DESCRIPTORS;
+
+  const studentCharRecord =
+    characterRecords?.[student.id] || classData.characterRecords?.[student.id];
 
   if (!isFirst) {
     elements.push(new Paragraph({ children: [new PageBreak()] }));
@@ -593,47 +921,6 @@ function createDocxStudentSection(
     : activeSchoolYear;
   const activeClass = config.classLevel || '1A';
 
-  // 1. JUDUL
-  elements.push(
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 60 },
-      children: [
-        new TextRun({
-          text: 'LAPORAN',
-          bold: true,
-          font: DOCX_FONT_FAMILY,
-          size: 24, // 12pt
-        }),
-      ],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 60 },
-      children: [
-        new TextRun({
-          text: semesterTitle,
-          bold: true,
-          font: DOCX_FONT_FAMILY,
-          size: 22, // 11pt
-        }),
-      ],
-    }),
-    new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: { after: 240 },
-      children: [
-        new TextRun({
-          text: `TAHUN PELAJARAN ${schoolYearTitle}`,
-          bold: true,
-          font: DOCX_FONT_FAMILY,
-          size: 22, // 11pt
-        }),
-      ],
-    })
-  );
-
-  // 2. IDENTITAS SISWA (Tabel 6 kolom tanpa border untuk presisi titik dua)
   const identityBorderNone = { style: BorderStyle.NONE };
   const cellBorderNone = {
     top: identityBorderNone,
@@ -642,185 +929,182 @@ function createDocxStudentSection(
     right: identityBorderNone,
   };
 
-  const identityTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: {
-      top: identityBorderNone,
-      bottom: identityBorderNone,
-      left: identityBorderNone,
-      right: identityBorderNone,
-      insideHorizontal: identityBorderNone,
-      insideVertical: identityBorderNone,
-    },
-    rows: [
-      // Baris 1: NAMA (Kiri) | NIM/NISN (Kanan)
-      new TableRow({
-        cantSplit: true,
-        children: [
-          new TableCell({
-            width: { size: 24, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 40 },
-                children: [new TextRun({ text: 'NAMA', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 3, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 40 },
-                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 28, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 40 },
-                children: [
-                  new TextRun({
-                    text: student.name.toUpperCase(),
-                    bold: true,
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                ],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 16, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 40 },
-                children: [new TextRun({ text: 'NIM / NISN', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 3, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 40 },
-                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 26, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 40 },
-                children: [
-                  new TextRun({
-                    text: formatStudentNimNisn(student.nim, student.nisn),
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      }),
-      // Baris 2: TEMPAT, TANGGAL LAHIR (Kiri) | KELAS (Kanan)
-      new TableRow({
-        cantSplit: true,
-        children: [
-          new TableCell({
-            width: { size: 24, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 120 },
-                children: [
-                  new TextRun({
-                    text: 'TEMPAT, TANGGAL LAHIR',
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                ],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 3, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 120 },
-                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 28, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 120 },
-                children: [
-                  new TextRun({
-                    text: formatStudentTTL(student.tempatLahir, student.tanggalLahir),
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                ],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 16, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 120 },
-                children: [new TextRun({ text: 'KELAS', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 3, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 120 },
-                children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
-              }),
-            ],
-          }),
-          new TableCell({
-            width: { size: 26, type: WidthType.PERCENTAGE },
-            borders: cellBorderNone,
-            children: [
-              new Paragraph({
-                spacing: { after: 120 },
-                children: [
-                  new TextRun({
-                    text: activeClass,
-                    font: DOCX_FONT_FAMILY,
-                    size: 19,
-                  }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      }),
-    ],
-  });
-  elements.push(identityTable);
+  const createIdentityTable = () =>
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: {
+        top: identityBorderNone,
+        bottom: identityBorderNone,
+        left: identityBorderNone,
+        right: identityBorderNone,
+        insideHorizontal: identityBorderNone,
+        insideVertical: identityBorderNone,
+      },
+      rows: [
+        new TableRow({
+          cantSplit: true,
+          children: [
+            new TableCell({
+              width: { size: 24, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 30 },
+                  children: [new TextRun({ text: 'NAMA', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 30 },
+                  children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 30 },
+                  children: [
+                    new TextRun({
+                      text: student.name.toUpperCase(),
+                      bold: true,
+                      font: DOCX_FONT_FAMILY,
+                      size: 19,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 16, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 30 },
+                  children: [new TextRun({ text: 'NIM / NISN', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 30 },
+                  children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 24, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 30 },
+                  children: [
+                    new TextRun({
+                      text: formatStudentNimNisn(student.nim, student.nisn),
+                      font: DOCX_FONT_FAMILY,
+                      size: 19,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableRow({
+          cantSplit: true,
+          children: [
+            new TableCell({
+              width: { size: 24, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 80 },
+                  children: [
+                    new TextRun({
+                      text: 'TEMPAT, TANGGAL LAHIR',
+                      font: DOCX_FONT_FAMILY,
+                      size: 19,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 80 },
+                  children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 80 },
+                  children: [
+                    new TextRun({
+                      text: formatStudentTTL(student.tempatLahir, student.tanggalLahir),
+                      font: DOCX_FONT_FAMILY,
+                      size: 19,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 16, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 80 },
+                  children: [new TextRun({ text: 'KELAS', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 3, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 80 },
+                  children: [new TextRun({ text: ':', font: DOCX_FONT_FAMILY, size: 19 })],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 24, type: WidthType.PERCENTAGE },
+              borders: cellBorderNone,
+              children: [
+                new Paragraph({
+                  spacing: { after: 80 },
+                  children: [
+                    new TextRun({
+                      text: activeClass,
+                      font: DOCX_FONT_FAMILY,
+                      size: 19,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    });
 
-  // 3. TABEL CAPAIAN KOMPETENSI
   const tableBorder = { style: BorderStyle.SINGLE, size: 4, color: '000000' };
   const cellBorders = {
     top: tableBorder,
@@ -829,16 +1113,58 @@ function createDocxStudentSection(
     right: tableBorder,
   };
 
-  const tableRows: TableRow[] = [];
+  /* ============================================================
+   * LEMBAR 1: LAPORAN PENILAIAN AKADEMIK
+   * ============================================================ */
+  elements.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 40 },
+      children: [
+        new TextRun({
+          text: 'LAPORAN PENILAIAN AKADEMIK',
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 24, // 12pt
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 30 },
+      children: [
+        new TextRun({
+          text: semesterTitle,
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 21,
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 180 },
+      children: [
+        new TextRun({
+          text: `TAHUN PELAJARAN ${schoolYearTitle}`,
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 21,
+        }),
+      ],
+    })
+  );
 
-  // Header Baris 1
-  tableRows.push(
+  elements.push(createIdentityTable());
+
+  // Tabel Akademik (NO, MATA PELAJARAN, NILAI AKHIR, PREDIKAT, PENGUASAAN)
+  const akadRows: TableRow[] = [];
+  akadRows.push(
     new TableRow({
       tableHeader: true,
       cantSplit: true,
       children: [
         new TableCell({
-          rowSpan: 2,
           width: { size: 6, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
@@ -846,15 +1172,12 @@ function createDocxStudentSection(
           children: [
             new Paragraph({
               alignment: AlignmentType.CENTER,
-              children: [
-                new TextRun({ text: 'NO', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
-              ],
+              children: [new TextRun({ text: 'NO', bold: true, font: DOCX_FONT_FAMILY, size: 18 })],
             }),
           ],
         }),
         new TableCell({
-          rowSpan: 2,
-          width: { size: 34, type: WidthType.PERCENTAGE },
+          width: { size: 38, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
           verticalAlign: VerticalAlign.CENTER,
@@ -862,19 +1185,13 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({
-                  text: 'MATA PELAJARAN',
-                  bold: true,
-                  font: DOCX_FONT_FAMILY,
-                  size: 18,
-                }),
+                new TextRun({ text: 'MATA PELAJARAN', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
               ],
             }),
           ],
         }),
         new TableCell({
-          columnSpan: 2,
-          width: { size: 60, type: WidthType.PERCENTAGE },
+          width: { size: 16, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
           verticalAlign: VerticalAlign.CENTER,
@@ -882,26 +1199,11 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({
-                  text: 'HASIL CAPAIAN KOMPETENSI',
-                  bold: true,
-                  font: DOCX_FONT_FAMILY,
-                  size: 18,
-                }),
+                new TextRun({ text: 'NILAI AKHIR', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
               ],
             }),
           ],
         }),
-      ],
-    })
-  );
-
-  // Header Baris 2
-  tableRows.push(
-    new TableRow({
-      tableHeader: true,
-      cantSplit: true,
-      children: [
         new TableCell({
           width: { size: 14, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
@@ -911,18 +1213,13 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({
-                  text: 'NILAI AKHIR',
-                  bold: true,
-                  font: DOCX_FONT_FAMILY,
-                  size: 17,
-                }),
+                new TextRun({ text: 'PREDIKAT', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
               ],
             }),
           ],
         }),
         new TableCell({
-          width: { size: 46, type: WidthType.PERCENTAGE },
+          width: { size: 26, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
           verticalAlign: VerticalAlign.CENTER,
@@ -930,12 +1227,7 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({
-                  text: 'CAPAIAN KOMPETENSI',
-                  bold: true,
-                  font: DOCX_FONT_FAMILY,
-                  size: 17,
-                }),
+                new TextRun({ text: 'PENGUASAAN', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
               ],
             }),
           ],
@@ -945,7 +1237,7 @@ function createDocxStudentSection(
   );
 
   const addDocxCategory = (roman: string, catTitle: string) => {
-    tableRows.push(
+    akadRows.push(
       new TableRow({
         cantSplit: true,
         children: [
@@ -953,6 +1245,7 @@ function createDocxStudentSection(
             width: { size: 6, type: WidthType.PERCENTAGE },
             shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
             borders: cellBorders,
+            verticalAlign: VerticalAlign.CENTER,
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
@@ -963,9 +1256,11 @@ function createDocxStudentSection(
             ],
           }),
           new TableCell({
-            width: { size: 34, type: WidthType.PERCENTAGE },
+            columnSpan: 4,
+            width: { size: 94, type: WidthType.PERCENTAGE },
             shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
             borders: cellBorders,
+            verticalAlign: VerticalAlign.CENTER,
             children: [
               new Paragraph({
                 children: [
@@ -973,18 +1268,6 @@ function createDocxStudentSection(
                 ],
               }),
             ],
-          }),
-          new TableCell({
-            width: { size: 14, type: WidthType.PERCENTAGE },
-            shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
-            borders: cellBorders,
-            children: [new Paragraph({})],
-          }),
-          new TableCell({
-            width: { size: 46, type: WidthType.PERCENTAGE },
-            shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
-            borders: cellBorders,
-            children: [new Paragraph({})],
           }),
         ],
       })
@@ -995,13 +1278,11 @@ function createDocxStudentSection(
     subjs.forEach((subj, idx) => {
       const scoreData: StudentScoreDetail | undefined =
         subjectRecords[subj.id]?.scores[student.id];
-      const score = scoreData?.finalScore;
-      const desc =
-        scoreData?.customDescription ||
-        scoreData?.autoDescription ||
-        '-';
+      const score = scoreData?.finalScore ?? scoreData?.stsScore ?? null;
+      const pred = getScorePredicate(score, config.passingGrade || 75);
+      const mastery = getMasteryStatusFromPredicate(pred);
 
-      tableRows.push(
+      akadRows.push(
         new TableRow({
           cantSplit: true,
           children: [
@@ -1012,17 +1293,13 @@ function createDocxStudentSection(
                 new Paragraph({
                   alignment: AlignmentType.CENTER,
                   children: [
-                    new TextRun({
-                      text: `${idx + 1}.`,
-                      font: DOCX_FONT_FAMILY,
-                      size: 18,
-                    }),
+                    new TextRun({ text: `${idx + 1}.`, font: DOCX_FONT_FAMILY, size: 17 }),
                   ],
                 }),
               ],
             }),
             new TableCell({
-              width: { size: 34, type: WidthType.PERCENTAGE },
+              width: { size: 38, type: WidthType.PERCENTAGE },
               borders: cellBorders,
               children: [
                 new Paragraph({
@@ -1030,7 +1307,23 @@ function createDocxStudentSection(
                     new TextRun({
                       text: subj.name.toUpperCase(),
                       font: DOCX_FONT_FAMILY,
-                      size: 18,
+                      size: 17,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            new TableCell({
+              width: { size: 16, type: WidthType.PERCENTAGE },
+              borders: cellBorders,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.CENTER,
+                  children: [
+                    new TextRun({
+                      text: typeof score === 'number' ? String(score) : '-',
+                      font: DOCX_FONT_FAMILY,
+                      size: 17,
                     }),
                   ],
                 }),
@@ -1044,25 +1337,26 @@ function createDocxStudentSection(
                   alignment: AlignmentType.CENTER,
                   children: [
                     new TextRun({
-                      text: typeof score === 'number' ? `${score}` : '-',
+                      text: pred,
+                      bold: true,
                       font: DOCX_FONT_FAMILY,
-                      size: 18,
+                      size: 17,
                     }),
                   ],
                 }),
               ],
             }),
             new TableCell({
-              width: { size: 46, type: WidthType.PERCENTAGE },
+              width: { size: 26, type: WidthType.PERCENTAGE },
               borders: cellBorders,
               children: [
                 new Paragraph({
-                  alignment: AlignmentType.BOTH,
+                  alignment: AlignmentType.CENTER,
                   children: [
                     new TextRun({
-                      text: desc,
+                      text: mastery,
                       font: DOCX_FONT_FAMILY,
-                      size: 16,
+                      size: 17,
                     }),
                   ],
                 }),
@@ -1091,14 +1385,15 @@ function createDocxStudentSection(
     addDocxSubjects(mulokSubjects);
   }
 
-  const scoreTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: cellBorders,
-    rows: tableRows,
-  });
-  elements.push(scoreTable);
+  elements.push(
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: cellBorders,
+      rows: akadRows,
+    })
+  );
 
-  // 4. CATATAN GURU / WALI KELAS
+  // Catatan Guru / Wali Kelas
   const subjectNote = Object.values(subjectRecords)
     .map((sr) => sr.scores[student.id]?.teacherNote)
     .find((note) => note && note.trim().length > 0);
@@ -1112,7 +1407,7 @@ function createDocxStudentSection(
 
   elements.push(
     new Paragraph({
-      spacing: { before: 180, after: 60 },
+      spacing: { before: 140, after: 40 },
       children: [
         new TextRun({
           text: 'CATATAN GURU / WALI KELAS:',
@@ -1121,73 +1416,61 @@ function createDocxStudentSection(
           size: 18,
         }),
       ],
-    })
-  );
-
-  const noteTable = new Table({
-    width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: cellBorders,
-    rows: [
-      new TableRow({
-        cantSplit: true,
-        children: [
-          new TableCell({
-            borders: cellBorders,
-            children: [
-              new Paragraph({
-                spacing: { before: 80, after: 80 },
-                children: [
-                  new TextRun({
-                    text: `"${displayNote}"`,
-                    italics: true,
-                    font: DOCX_FONT_FAMILY,
-                    size: 17,
-                  }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      }),
-    ],
-  });
-  elements.push(noteTable);
-
-  // 5. TANDA TANGAN
-  const datePlace = config.reportDatePlace || 'Tangerang, 20 Maret 2027';
-  elements.push(
-    new Paragraph({
-      alignment: AlignmentType.RIGHT,
-      spacing: { before: 180, after: 120 },
-      children: [
-        new TextRun({
-          text: datePlace,
-          font: DOCX_FONT_FAMILY,
-          size: 18,
+    }),
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: cellBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              borders: cellBorders,
+              children: [
+                new Paragraph({
+                  spacing: { before: 40, after: 40 },
+                  children: [
+                    new TextRun({
+                      text: `"${displayNote}"`,
+                      italics: true,
+                      font: DOCX_FONT_FAMILY,
+                      size: 17,
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
         }),
       ],
     })
   );
 
-  const teacherFormatted = formatPersonNameWithDegree(config.teacherName || 'Guru Kelas');
-  const headmasterFormatted = formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah');
+  // Tanda Tangan Resmi
+  const datePlace = config.reportDatePlace || 'Depok, 20 Maret 2025';
+  elements.push(
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      spacing: { before: 140, after: 60 },
+      children: [new TextRun({ text: datePlace, font: DOCX_FONT_FAMILY, size: 18 })],
+    })
+  );
 
-  const signTable1 = new Table({
+  const ttdTable1 = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: {
-      top: { style: BorderStyle.NONE },
-      bottom: { style: BorderStyle.NONE },
-      left: { style: BorderStyle.NONE },
-      right: { style: BorderStyle.NONE },
-      insideHorizontal: { style: BorderStyle.NONE },
-      insideVertical: { style: BorderStyle.NONE },
+      top: identityBorderNone,
+      bottom: identityBorderNone,
+      left: identityBorderNone,
+      right: identityBorderNone,
+      insideHorizontal: identityBorderNone,
+      insideVertical: identityBorderNone,
     },
     rows: [
       new TableRow({
-        cantSplit: true,
         children: [
           new TableCell({
             width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
@@ -1195,9 +1478,14 @@ function createDocxStudentSection(
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { after: 700 }, // Spasi TTD
+                spacing: { after: 600 },
                 children: [
-                  new TextRun({ text: 'Orang Tua / Wali Siswa', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
+                  new TextRun({
+                    text: 'Orang Tua / Wali Siswa',
+                    bold: true,
+                    font: DOCX_FONT_FAMILY,
+                    size: 18,
+                  }),
                 ],
               }),
               new Paragraph({
@@ -1215,6 +1503,7 @@ function createDocxStudentSection(
           }),
           new TableCell({
             width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
@@ -1222,7 +1511,7 @@ function createDocxStudentSection(
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { after: 700 }, // Spasi TTD
+                spacing: { after: 600 },
                 children: [
                   new TextRun({ text: 'Guru Kelas,', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
                 ],
@@ -1231,7 +1520,7 @@ function createDocxStudentSection(
                 alignment: AlignmentType.CENTER,
                 children: [
                   new TextRun({
-                    text: teacherFormatted,
+                    text: formatPersonNameWithDegree(config.teacherName || 'Guru Kelas'),
                     bold: true,
                     underline: {},
                     font: DOCX_FONT_FAMILY,
@@ -1255,34 +1544,31 @@ function createDocxStudentSection(
       }),
     ],
   });
-  elements.push(signTable1);
 
-  // Kepala Sekolah (Bawah)
-  const signTable2 = new Table({
+  const ttdTable2 = new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     borders: {
-      top: { style: BorderStyle.NONE },
-      bottom: { style: BorderStyle.NONE },
-      left: { style: BorderStyle.NONE },
-      right: { style: BorderStyle.NONE },
-      insideHorizontal: { style: BorderStyle.NONE },
-      insideVertical: { style: BorderStyle.NONE },
+      top: identityBorderNone,
+      bottom: identityBorderNone,
+      left: identityBorderNone,
+      right: identityBorderNone,
+      insideHorizontal: identityBorderNone,
+      insideVertical: identityBorderNone,
     },
     rows: [
       new TableRow({
-        cantSplit: true,
         children: [
           new TableCell({
             width: { size: 100, type: WidthType.PERCENTAGE },
+            borders: cellBorderNone,
             children: [
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { before: 180 },
                 children: [new TextRun({ text: 'Mengetahui,', font: DOCX_FONT_FAMILY, size: 18 })],
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER,
-                spacing: { after: 700 }, // Spasi TTD
+                spacing: { after: 600 },
                 children: [
                   new TextRun({
                     text: `Kepala Sekolah ${config.schoolName || 'SDIT AL FIKRI'}`,
@@ -1296,7 +1582,7 @@ function createDocxStudentSection(
                 alignment: AlignmentType.CENTER,
                 children: [
                   new TextRun({
-                    text: headmasterFormatted,
+                    text: formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah'),
                     bold: true,
                     underline: {},
                     font: DOCX_FONT_FAMILY,
@@ -1320,21 +1606,310 @@ function createDocxStudentSection(
       }),
     ],
   });
-  elements.push(signTable2);
+
+  elements.push(ttdTable1);
+  elements.push(new Paragraph({ spacing: { before: 80 } }));
+  elements.push(ttdTable2);
+
+  // Running Footer Lembar 1
+  elements.push(
+    new Paragraph({
+      spacing: { before: 180 },
+      alignment: AlignmentType.BOTH,
+      children: [
+        new TextRun({
+          text: `${student.name} • NISN: ${formatStudentNimNisn(student.nim, student.nisn)} • Kelas ${activeClass} • ${config.schoolName || 'SDIT AL FIKRI'}`,
+          italics: true,
+          font: DOCX_FONT_FAMILY,
+          size: 16,
+        }),
+        new TextRun({
+          text: '\t\t\t\tHalaman 1/2',
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 16,
+        }),
+      ],
+    })
+  );
+
+  /* ============================================================
+   * LEMBAR 2: LAPORAN PENILAIAN KARAKTER (18 ASPEK)
+   * ============================================================ */
+  elements.push(new Paragraph({ children: [new PageBreak()] }));
+
+  elements.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 40 },
+      children: [
+        new TextRun({
+          text: 'LAPORAN PENILAIAN KARAKTER',
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 24, // 12pt
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 30 },
+      children: [
+        new TextRun({
+          text: semesterTitle,
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 21,
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { after: 180 },
+      children: [
+        new TextRun({
+          text: `TAHUN PELAJARAN ${schoolYearTitle}`,
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 21,
+        }),
+      ],
+    })
+  );
+
+  elements.push(createIdentityTable());
+
+  // Tabel 18 Karakter
+  const charRows: TableRow[] = [];
+  charRows.push(
+    new TableRow({
+      tableHeader: true,
+      cantSplit: true,
+      children: [
+        new TableCell({
+          width: { size: 6, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: 'NO', bold: true, font: DOCX_FONT_FAMILY, size: 18 })],
+            }),
+          ],
+        }),
+        new TableCell({
+          width: { size: 30, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: 'ASPEK KARAKTER', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
+              ],
+            }),
+          ],
+        }),
+        new TableCell({
+          width: { size: 14, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({ text: 'PREDIKAT', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
+              ],
+            }),
+          ],
+        }),
+        new TableCell({
+          width: { size: 50, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: 'DESKRIPSI CAPAIAN PERKEMBANGAN',
+                  bold: true,
+                  font: DOCX_FONT_FAMILY,
+                  size: 18,
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    })
+  );
+
+  activeDescriptors.forEach((desc, idx) => {
+    const charScore = studentCharRecord?.characterScores?.[desc.id];
+    const p = charScore?.predicate || '-';
+    const d =
+      charScore?.description ||
+      (charScore?.predicate ? desc.indicators[charScore.predicate] : '-');
+
+    charRows.push(
+      new TableRow({
+        cantSplit: true,
+        children: [
+          new TableCell({
+            width: { size: 6, type: WidthType.PERCENTAGE },
+            borders: cellBorders,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: `${idx + 1}.`, font: DOCX_FONT_FAMILY, size: 17 }),
+                ],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 30, type: WidthType.PERCENTAGE },
+            borders: cellBorders,
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({ text: desc.name, bold: true, font: DOCX_FONT_FAMILY, size: 17 }),
+                ],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 14, type: WidthType.PERCENTAGE },
+            borders: cellBorders,
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({ text: p, bold: true, font: DOCX_FONT_FAMILY, size: 17 }),
+                ],
+              }),
+            ],
+          }),
+          new TableCell({
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            borders: cellBorders,
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({ text: d, font: DOCX_FONT_FAMILY, size: 16 }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+  });
+
+  elements.push(
+    new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: cellBorders,
+      rows: charRows,
+    })
+  );
+
+  // Keterangan Predikat
+  elements.push(
+    new Paragraph({
+      spacing: { before: 100, after: 60 },
+      alignment: AlignmentType.CENTER,
+      children: [
+        new TextRun({
+          text: 'Keterangan Predikat: [A] Sangat Baik   •   [B] Baik   •   [C] Cukup   •   [D] Perlu Bimbingan',
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 16,
+        }),
+      ],
+    })
+  );
+
+  // Catatan Perkembangan Karakter Wali Kelas jika ada
+  if (studentCharRecord?.teacherNote) {
+    elements.push(
+      new Paragraph({
+        spacing: { before: 60, after: 60 },
+        children: [
+          new TextRun({
+            text: `Catatan Perkembangan Karakter: "${studentCharRecord.teacherNote}"`,
+            italics: true,
+            font: DOCX_FONT_FAMILY,
+            size: 17,
+          }),
+        ],
+      })
+    );
+  }
+
+  // Tanda Tangan Resmi Lembar 2
+  elements.push(
+    new Paragraph({
+      alignment: AlignmentType.RIGHT,
+      spacing: { before: 120, after: 60 },
+      children: [new TextRun({ text: datePlace, font: DOCX_FONT_FAMILY, size: 18 })],
+    })
+  );
+
+  elements.push(ttdTable1);
+  elements.push(new Paragraph({ spacing: { before: 80 } }));
+  elements.push(ttdTable2);
+
+  // Running Footer Lembar 2
+  elements.push(
+    new Paragraph({
+      spacing: { before: 180 },
+      alignment: AlignmentType.BOTH,
+      children: [
+        new TextRun({
+          text: `${student.name} • NISN: ${formatStudentNimNisn(student.nim, student.nisn)} • Kelas ${activeClass} • ${config.schoolName || 'SDIT AL FIKRI'}`,
+          italics: true,
+          font: DOCX_FONT_FAMILY,
+          size: 16,
+        }),
+        new TextRun({
+          text: '\t\t\t\tHalaman 2/2',
+          bold: true,
+          font: DOCX_FONT_FAMILY,
+          size: 16,
+        }),
+      ],
+    })
+  );
 
   return elements;
 }
 
 /**
- * Export Single Student Rapor to Word (.docx)
+ * Export Single Student Rapor to Word (.docx) — Includes Lembar 1 + Lembar 2
  */
 export const exportStudentRaporToWord = async (
   classData: RaporStsClassData,
   student: Student,
   activeSemester: string,
-  activeSchoolYear: string
+  activeSchoolYear: string,
+  descriptors?: CharacterDescriptor[],
+  characterRecords?: Record<string, StudentCharacterRecord>
 ): Promise<void> => {
-  const elements = createDocxStudentSection(classData, student, activeSemester, activeSchoolYear, true);
+  const elements = createDocxStudentSection(
+    classData,
+    student,
+    activeSemester,
+    activeSchoolYear,
+    true,
+    descriptors,
+    characterRecords
+  );
 
   const doc = new Document({
     sections: [
@@ -1342,9 +1917,9 @@ export const exportStudentRaporToWord = async (
         properties: {
           page: {
             margin: {
-              top: 720,    // 0.5 inch / ~12.7 mm
+              top: 720,
               bottom: 720,
-              left: 1080,  // 0.75 inch / ~19 mm
+              left: 1080,
               right: 1080,
             },
           },
@@ -1369,13 +1944,15 @@ export const exportStudentRaporToWord = async (
 };
 
 /**
- * Export Whole Class Rapor to Word (.docx)
+ * Export Whole Class Rapor to Word (.docx) — 2 Lembar per siswa
  */
 export const exportClassRaporToWord = async (
   classData: RaporStsClassData,
   students: Student[],
   activeSemester: string,
-  activeSchoolYear: string
+  activeSchoolYear: string,
+  descriptors?: CharacterDescriptor[],
+  characterRecords?: Record<string, StudentCharacterRecord>
 ): Promise<void> => {
   const allElements: (Paragraph | Table)[] = [];
 
@@ -1385,7 +1962,9 @@ export const exportClassRaporToWord = async (
       student,
       activeSemester,
       activeSchoolYear,
-      idx === 0
+      idx === 0,
+      descriptors,
+      characterRecords
     );
     allElements.push(...studentElements);
   });

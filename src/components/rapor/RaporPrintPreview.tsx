@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Printer,
   ChevronLeft,
@@ -18,6 +18,11 @@ import {
   RaporSubject,
   StudentScoreDetail,
   StudentAdditionalInfo,
+  CharacterDescriptor,
+  StudentCharacterRecord,
+  DEFAULT_CHARACTER_DESCRIPTORS,
+  getScorePredicate,
+  getMasteryStatusFromPredicate,
 } from '../../types/raporSts';
 import { Student } from '../../services/studentStorage';
 import {
@@ -33,6 +38,8 @@ interface RaporPrintPreviewProps {
   students: Student[];
   semester?: '1' | '2';
   schoolYear?: string;
+  descriptors?: CharacterDescriptor[];
+  characterRecords?: Record<string, StudentCharacterRecord>;
 }
 
 /**
@@ -190,6 +197,22 @@ async function addElementToPdf(
   document.body.appendChild(offscreenContainer);
 
   try {
+    // Check if cleanClone contains distinct .rapor-page elements (e.g. Page 1: Akademik, Page 2: Karakter)
+    const pageEls = cleanClone.querySelectorAll<HTMLElement>('.rapor-page');
+    if (pageEls.length > 0) {
+      for (let pIdx = 0; pIdx < pageEls.length; pIdx++) {
+        const pageEl = pageEls[pIdx];
+        if (pIdx > 0 || !isFirstPageInDocument) {
+          pdf.addPage();
+        }
+        const pageCanvas = await renderElementToCanvas(pageEl);
+        const finalHeightMm = (pageCanvas.height * usableWidth) / pageCanvas.width;
+        const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+        pdf.addImage(imgData, 'JPEG', margin, margin, usableWidth, Math.min(usableHeight, finalHeightMm));
+      }
+      return;
+    }
+
     const fullCanvas = await renderElementToCanvas(cleanClone);
     const pxPerMm = fullCanvas.width / usableWidth;
     const maxPageHeightPx = usableHeight * pxPerMm;
@@ -363,6 +386,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
   students,
   semester,
   schoolYear,
+  descriptors,
+  characterRecords,
 }) => {
   const [selectedStudentIndex, setSelectedStudentIndex] = useState(0);
   const [isBatchMode, setIsBatchMode] = useState(false);
@@ -376,6 +401,14 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
   const { config, subjects, subjectRecords, additionalInfo } = classData;
   const currentStudent = students[selectedStudentIndex] || students[0];
+
+  const activeDescriptors = useMemo(() => {
+    return descriptors && descriptors.length > 0
+      ? descriptors
+      : classData.customCharacterDescriptors && classData.customCharacterDescriptors.length > 0
+      ? classData.customCharacterDescriptors
+      : DEFAULT_CHARACTER_DESCRIPTORS;
+  }, [descriptors, classData.customCharacterDescriptors]);
 
   // Active semester & school year (dynamic from setting / workspace selection)
   const activeSemester = semester || config.semester || '1';
@@ -433,9 +466,23 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
     setIsExportingExcel(true);
     try {
       if (exportScope === 'single') {
-        exportStudentRaporToExcel(classData, currentStudent, activeSemester, activeSchoolYear);
+        exportStudentRaporToExcel(
+          classData,
+          currentStudent,
+          activeSemester,
+          activeSchoolYear,
+          activeDescriptors,
+          characterRecords
+        );
       } else {
-        exportClassRaporToExcel(classData, students, activeSemester, activeSchoolYear);
+        exportClassRaporToExcel(
+          classData,
+          students,
+          activeSemester,
+          activeSchoolYear,
+          activeDescriptors,
+          characterRecords
+        );
       }
     } catch (err) {
       console.error('Failed to export Excel:', err);
@@ -450,9 +497,23 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
     setIsExportingWord(true);
     try {
       if (exportScope === 'single') {
-        await exportStudentRaporToWord(classData, currentStudent, activeSemester, activeSchoolYear);
+        await exportStudentRaporToWord(
+          classData,
+          currentStudent,
+          activeSemester,
+          activeSchoolYear,
+          activeDescriptors,
+          characterRecords
+        );
       } else {
-        await exportClassRaporToWord(classData, students, activeSemester, activeSchoolYear);
+        await exportClassRaporToWord(
+          classData,
+          students,
+          activeSemester,
+          activeSchoolYear,
+          activeDescriptors,
+          characterRecords
+        );
       }
     } catch (err) {
       console.error('Failed to export Word:', err);
@@ -612,538 +673,805 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
     // Bookman Old Style font family (as requested in item 1)
     const BOOKMAN_FONT_FAMILY = "'Bookman Old Style', 'URW Bookman', 'Bookman', 'Palatino Linotype', serif";
 
+    const studentCharRecord =
+      characterRecords?.[student.id] || classData.characterRecords?.[student.id];
+
     return (
       <div
         id={domId}
         key={student.id}
-        className={`rapor-sheet bg-white text-black p-6 sm:p-8 mx-auto ${
+        className={`rapor-student-bundle mx-auto ${
           paperSize === 'f4' ? 'max-w-[880px]' : 'max-w-[850px]'
-        } rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none print:max-w-none ${
-          isPrintBatch ? 'page-break-after mb-12 print:mb-0' : ''
-        }`}
-        style={{
-          fontFamily: BOOKMAN_FONT_FAMILY,
-          backgroundColor: '#ffffff',
-          color: '#000000',
-          border: '1px solid #d1d5db',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-        }}
+        } ${isPrintBatch ? 'page-break-after mb-12 print:mb-0' : ''}`}
       >
-        {/* KOP SEKOLAH RESMI (OPSIONAL / TOGGLEABLE) */}
-        {includeKopSekolah && (
-          <div className="border-b-2 border-black pb-2.5 mb-3 text-center">
-            <h1 className="text-base font-bold uppercase tracking-wider text-black m-0 leading-tight">
-              {config.schoolName || 'SDIT AL FIKRI'}
-            </h1>
-            <p className="text-[11px] font-semibold text-black m-0 mt-0.5">
-              NPSN: {config.npsn || '69978648'} • Terakreditasi
-            </p>
-            <p className="text-[10px] text-gray-800 m-0 leading-tight">
-              {config.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok'}
-            </p>
-          </div>
-        )}
+        {/* ============================================================
+            LEMBAR 1: LAPORAN PENILAIAN AKADEMIK
+        ============================================================ */}
+        <div
+          className="rapor-page rapor-page-akademik bg-white text-black p-6 sm:p-8 mx-auto rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none mb-8 print:mb-0"
+          style={{
+            fontFamily: BOOKMAN_FONT_FAMILY,
+            backgroundColor: '#ffffff',
+            color: '#000000',
+            border: '1px solid #d1d5db',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            breakAfter: 'page',
+            pageBreakAfter: 'always',
+          }}
+        >
+          {/* KOP SEKOLAH RESMI (OPSIONAL / TOGGLEABLE) */}
+          {includeKopSekolah && (
+            <div className="border-b-2 border-black pb-2.5 mb-3 text-center">
+              <h1 className="text-base font-bold uppercase tracking-wider text-black m-0 leading-tight">
+                {config.schoolName || 'SDIT AL FIKRI'}
+              </h1>
+              <p className="text-[11px] font-semibold text-black m-0 mt-0.5">
+                NPSN: {config.npsn || '69978648'} • Terakreditasi
+              </p>
+              <p className="text-[10px] text-gray-800 m-0 leading-tight">
+                {config.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok'}
+              </p>
+            </div>
+          )}
 
-        {/* JUDUL RESMI (SESUAI GAMBAR & SETTING AKTIF) */}
-        <div className="text-center mb-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0">
-            LAPORAN
-          </h2>
-          <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
-            {semesterTitle}
-          </h3>
-          <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
-            TAHUN PELAJARAN {schoolYearTitle}
-          </h4>
+          {/* JUDUL RESMI LEMBAR 1 */}
+          <div className="text-center mb-3">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0">
+              LAPORAN PENILAIAN AKADEMIK
+            </h2>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+              {semesterTitle}
+            </h3>
+            <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+              TAHUN PELAJARAN {schoolYearTitle}
+            </h4>
+          </div>
+
+          {/* IDENTITAS SISWA */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-3 text-black font-normal">
+            {/* Kolom Kiri */}
+            <div className="space-y-0.5">
+              <div className="flex items-start">
+                <span className="w-44 font-normal">NAMA</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-bold uppercase flex-1">{student.name}</span>
+              </div>
+              <div className="flex items-start">
+                <span className="w-44 font-normal">TEMPAT, TANGGAL LAHIR</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-normal flex-1">
+                  {formatTTL(student.tempatLahir, student.tanggalLahir)}
+                </span>
+              </div>
+            </div>
+
+            {/* Kolom Kanan */}
+            <div className="space-y-0.5">
+              <div className="flex items-start">
+                <span className="w-24 font-normal">NIM/NISN</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-normal flex-1">
+                  {formatNimNisn(student.nim, student.nisn)}
+                </span>
+              </div>
+              <div className="flex items-start">
+                <span className="w-24 font-normal">KELAS</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-normal flex-1">{activeClass}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* TABEL HASIL CAPAIAN AKADEMIK (NILAI, PREDIKAT, PENGUASAAN) */}
+          <div className="mb-4">
+            <table
+              className="w-full text-xs text-black border-collapse"
+              style={{
+                borderCollapse: 'collapse',
+                border: '1px solid #000000',
+                width: '100%',
+                fontFamily: BOOKMAN_FONT_FAMILY,
+                pageBreakInside: 'auto',
+              }}
+            >
+              <thead style={{ display: 'table-header-group' }}>
+                <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '6px 4px',
+                      width: '36px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    NO
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '6px 8px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    MATA PELAJARAN
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '6px 4px',
+                      width: '80px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    NILAI AKHIR
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '6px 4px',
+                      width: '70px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    PREDIKAT
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '6px 8px',
+                      width: '140px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    PENGUASAAN
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {/* I. PENDIDIKAN AGAMA */}
+                <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                  <td
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '4px 4px',
+                      textAlign: 'center',
+                      color: '#000000',
+                    }}
+                  >
+                    I.
+                  </td>
+                  <td
+                    colSpan={4}
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '4px 8px',
+                      color: '#000000',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    PENDIDIKAN AGAMA
+                  </td>
+                </tr>
+
+                {/* DAFTAR MAPEL AGAMA */}
+                {agamaSubjects.map((subj, idx) => {
+                  const scoreData: StudentScoreDetail | undefined =
+                    subjectRecords[subj.id]?.scores[student.id];
+                  const score = scoreData?.finalScore ?? scoreData?.stsScore ?? null;
+                  const pred = getScorePredicate(score, config.passingGrade || 75);
+                  const mastery = getMasteryStatusFromPredicate(pred);
+
+                  return (
+                    <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                        }}
+                      >
+                        {idx + 1}.
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 8px',
+                          fontWeight: 'normal',
+                          textTransform: 'uppercase',
+                          color: '#000000',
+                        }}
+                      >
+                        {subj.name}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                          color: '#000000',
+                        }}
+                      >
+                        {typeof score === 'number' ? score : '-'}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          color: '#000000',
+                        }}
+                      >
+                        {pred}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 8px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                          color: '#000000',
+                        }}
+                      >
+                        {mastery}
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {/* II. PENDIDIKAN UMUM */}
+                <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                  <td
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '4px 4px',
+                      textAlign: 'center',
+                      color: '#000000',
+                    }}
+                  >
+                    II.
+                  </td>
+                  <td
+                    colSpan={4}
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '4px 8px',
+                      color: '#000000',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    PENDIDIKAN UMUM
+                  </td>
+                </tr>
+
+                {/* DAFTAR MAPEL UMUM */}
+                {umumSubjects.map((subj, idx) => {
+                  const scoreData: StudentScoreDetail | undefined =
+                    subjectRecords[subj.id]?.scores[student.id];
+                  const score = scoreData?.finalScore ?? scoreData?.stsScore ?? null;
+                  const pred = getScorePredicate(score, config.passingGrade || 75);
+                  const mastery = getMasteryStatusFromPredicate(pred);
+
+                  return (
+                    <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                        }}
+                      >
+                        {idx + 1}.
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 8px',
+                          fontWeight: 'normal',
+                          textTransform: 'uppercase',
+                          color: '#000000',
+                        }}
+                      >
+                        {subj.name}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                          color: '#000000',
+                        }}
+                      >
+                        {typeof score === 'number' ? score : '-'}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          color: '#000000',
+                        }}
+                      >
+                        {pred}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '5px 8px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                          color: '#000000',
+                        }}
+                      >
+                        {mastery}
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {/* III. MUATAN LOKAL */}
+                {finalMulokSubjects.length > 0 && (
+                  <>
+                    <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '4px 4px',
+                          textAlign: 'center',
+                          color: '#000000',
+                        }}
+                      >
+                        III.
+                      </td>
+                      <td
+                        colSpan={4}
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '4px 8px',
+                          color: '#000000',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        MUATAN LOKAL
+                      </td>
+                    </tr>
+
+                    {finalMulokSubjects.map((subj, idx) => {
+                      const scoreData: StudentScoreDetail | undefined =
+                        subjectRecords[subj.id]?.scores[student.id];
+                      const score = scoreData?.finalScore ?? scoreData?.stsScore ?? null;
+                      const pred = getScorePredicate(score, config.passingGrade || 75);
+                      const mastery = getMasteryStatusFromPredicate(pred);
+
+                      return (
+                        <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                          <td
+                            style={{
+                              border: '1px solid #000000',
+                              padding: '5px 4px',
+                              textAlign: 'center',
+                              fontWeight: 'normal',
+                            }}
+                          >
+                            {idx + 1}.
+                          </td>
+                          <td
+                            style={{
+                              border: '1px solid #000000',
+                              padding: '5px 8px',
+                              fontWeight: 'normal',
+                              textTransform: 'uppercase',
+                              color: '#000000',
+                            }}
+                          >
+                            {subj.name}
+                          </td>
+                          <td
+                            style={{
+                              border: '1px solid #000000',
+                              padding: '5px 4px',
+                              textAlign: 'center',
+                              fontWeight: 'normal',
+                              color: '#000000',
+                            }}
+                          >
+                            {typeof score === 'number' ? score : '-'}
+                          </td>
+                          <td
+                            style={{
+                              border: '1px solid #000000',
+                              padding: '5px 4px',
+                              textAlign: 'center',
+                              fontWeight: 'bold',
+                              color: '#000000',
+                            }}
+                          >
+                            {pred}
+                          </td>
+                          <td
+                            style={{
+                              border: '1px solid #000000',
+                              padding: '5px 8px',
+                              textAlign: 'center',
+                              fontWeight: 'normal',
+                              color: '#000000',
+                            }}
+                          >
+                            {mastery}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* CATATAN GURU / WALI KELAS */}
+          {displayNote && (
+            <div className="catatan-guru-section mb-4" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              <div className="text-xs font-bold text-black uppercase mb-1">
+                CATATAN GURU / WALI KELAS:
+              </div>
+              <div
+                style={{
+                  border: '1px solid #000000',
+                  padding: '6px 10px',
+                  fontSize: '11px',
+                  fontStyle: 'italic',
+                  lineHeight: '1.45',
+                }}
+              >
+                "{displayNote}"
+              </div>
+            </div>
+          )}
+
+          {/* TANDA TANGAN RESMI */}
+          <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="text-right mb-3">
+              {config.reportDatePlace || 'Depok, 20 Maret 2025'}
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 text-center mb-6">
+              <div>
+                <p className="m-0">Mengetahui,</p>
+                <p className="font-bold m-0 mb-12">Orang Tua / Wali Siswa</p>
+                <p className="font-bold m-0">..................................................</p>
+              </div>
+
+              <div>
+                <p className="m-0">Mengetahui,</p>
+                <p className="font-bold m-0 mb-12">Guru Kelas,</p>
+                <p className="font-bold underline m-0">
+                  {formatPersonNameWithDegree(config.teacherName || 'Guru Kelas')}
+                </p>
+                <p className="text-[10px] m-0">
+                  NIP. {config.teacherNip || '-'}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <p className="m-0">Mengetahui,</p>
+              <p className="font-bold m-0 mb-12">
+                Kepala Sekolah {config.schoolName || 'SDIT AL FIKRI'}
+              </p>
+              <p className="font-bold underline m-0">
+                {formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah')}
+              </p>
+              <p className="text-[10px] m-0">
+                NIP. {config.headmasterNip || '-'}
+              </p>
+            </div>
+          </div>
+
+          {/* RUNNING FOOTER LEMBAR 1 (NAMA SISWA ITALIC & HALAMAN 1/2) */}
+          <div className="flex justify-between items-center text-[10px] text-gray-700 italic pt-2 border-t border-gray-400 mt-4 font-serif">
+            <span>{student.name} • NISN: {formatNimNisn(student.nim, student.nisn)} • Kelas {activeClass} • {config.schoolName || 'SDIT AL FIKRI'}</span>
+            <span className="font-semibold not-italic">Halaman 1/2</span>
+          </div>
         </div>
 
-        {/* IDENTITAS SISWA (HANYA NAMA SISWA YANG BOLD, LABEL & TTL REGULER) */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-3 text-black font-normal">
-          {/* Kolom Kiri */}
-          <div className="space-y-0.5">
-            <div className="flex items-start">
-              <span className="w-44 font-normal">NAMA</span>
-              <span className="w-3 font-normal">:</span>
-              <span className="font-bold uppercase flex-1">{student.name}</span>
-            </div>
-            <div className="flex items-start">
-              <span className="w-44 font-normal">TEMPAT, TANGGAL LAHIR</span>
-              <span className="w-3 font-normal">:</span>
-              <span className="font-normal flex-1">
-                {formatTTL(student.tempatLahir, student.tanggalLahir)}
-              </span>
-            </div>
-          </div>
-
-          {/* Kolom Kanan */}
-          <div className="space-y-0.5">
-            <div className="flex items-start">
-              <span className="w-24 font-normal">NIM/NISN</span>
-              <span className="w-3 font-normal">:</span>
-              <span className="font-normal flex-1">
-                {formatNimNisn(student.nim, student.nisn)}
-              </span>
-            </div>
-            <div className="flex items-start">
-              <span className="w-24 font-normal">KELAS</span>
-              <span className="w-3 font-normal">:</span>
-              <span className="font-normal flex-1">{activeClass}</span>
-            </div>
-          </div>
+        {/* PEMBATAS VISUAL HALAMAN / PAGE BREAK PRINT */}
+        <div className="page-break-after my-6 print:hidden border-b border-dashed border-gray-400 text-center relative">
+          <span className="bg-slate-900 text-slate-400 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider relative -top-3">
+            Batas Halaman Cetak (Lembar 1 Selesai • Lanjut Lembar 2)
+          </span>
         </div>
 
-        {/* TABEL HASIL CAPAIAN KOMPETENSI */}
-        <div className="mb-6">
-          <table
-            className="w-full text-xs text-black border-collapse"
+        {/* ============================================================
+            LEMBAR 2: LAPORAN PENILAIAN KARAKTER (18 KARAKTER SISWA)
+        ============================================================ */}
+        <div
+          className="rapor-page rapor-page-karakter bg-white text-black p-6 sm:p-8 mx-auto rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none"
+          style={{
+            fontFamily: BOOKMAN_FONT_FAMILY,
+            backgroundColor: '#ffffff',
+            color: '#000000',
+            border: '1px solid #d1d5db',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          {/* KOP SEKOLAH RESMI (OPSIONAL / TOGGLEABLE) */}
+          {includeKopSekolah && (
+            <div className="border-b-2 border-black pb-2.5 mb-3 text-center">
+              <h1 className="text-base font-bold uppercase tracking-wider text-black m-0 leading-tight">
+                {config.schoolName || 'SDIT AL FIKRI'}
+              </h1>
+              <p className="text-[11px] font-semibold text-black m-0 mt-0.5">
+                NPSN: {config.npsn || '69978648'} • Terakreditasi
+              </p>
+              <p className="text-[10px] text-gray-800 m-0 leading-tight">
+                {config.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok'}
+              </p>
+            </div>
+          )}
+
+          {/* JUDUL RESMI LEMBAR 2 */}
+          <div className="text-center mb-3">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0">
+              LAPORAN PENILAIAN KARAKTER
+            </h2>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+              {semesterTitle}
+            </h3>
+            <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+              TAHUN PELAJARAN {schoolYearTitle}
+            </h4>
+          </div>
+
+          {/* IDENTITAS SISWA */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-3 text-black font-normal">
+            {/* Kolom Kiri */}
+            <div className="space-y-0.5">
+              <div className="flex items-start">
+                <span className="w-44 font-normal">NAMA</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-bold uppercase flex-1">{student.name}</span>
+              </div>
+              <div className="flex items-start">
+                <span className="w-44 font-normal">TEMPAT, TANGGAL LAHIR</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-normal flex-1">
+                  {formatTTL(student.tempatLahir, student.tanggalLahir)}
+                </span>
+              </div>
+            </div>
+
+            {/* Kolom Kanan */}
+            <div className="space-y-0.5">
+              <div className="flex items-start">
+                <span className="w-24 font-normal">NIM/NISN</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-normal flex-1">
+                  {formatNimNisn(student.nim, student.nisn)}
+                </span>
+              </div>
+              <div className="flex items-start">
+                <span className="w-24 font-normal">KELAS</span>
+                <span className="w-3 font-normal">:</span>
+                <span className="font-normal flex-1">{activeClass}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* TABEL 18 ASPEK KARAKTER (NO, ASPEK KARAKTER, PREDIKAT, DESKRIPSI) */}
+          <div className="mb-3">
+            <table
+              className="w-full text-xs text-black border-collapse"
+              style={{
+                borderCollapse: 'collapse',
+                border: '1px solid #000000',
+                width: '100%',
+                fontFamily: BOOKMAN_FONT_FAMILY,
+                pageBreakInside: 'auto',
+              }}
+            >
+              <thead>
+                <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '5px 4px',
+                      width: '32px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    NO
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '5px 8px',
+                      width: '175px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    ASPEK KARAKTER
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '5px 4px',
+                      width: '60px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    PREDIKAT
+                  </th>
+                  <th
+                    style={{
+                      border: '1px solid #000000',
+                      padding: '5px 8px',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      color: '#000000',
+                    }}
+                  >
+                    DESKRIPSI CAPAIAN PERKEMBANGAN
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {activeDescriptors.map((desc, idx) => {
+                  const charScore = studentCharRecord?.characterScores?.[desc.id];
+                  const p = charScore?.predicate || '-';
+                  const d =
+                    charScore?.description ||
+                    (charScore?.predicate ? desc.indicators[charScore.predicate] : '-');
+
+                  return (
+                    <tr key={desc.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '3px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'normal',
+                        }}
+                      >
+                        {idx + 1}.
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '3px 8px',
+                          fontWeight: 'bold',
+                          color: '#000000',
+                        }}
+                      >
+                        {desc.name}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '3px 4px',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                          color: '#000000',
+                        }}
+                      >
+                        {p}
+                      </td>
+                      <td
+                        style={{
+                          border: '1px solid #000000',
+                          padding: '3px 8px',
+                          fontSize: '10px',
+                          lineHeight: '1.3',
+                          textAlign: 'justify',
+                          color: '#000000',
+                        }}
+                      >
+                        {d}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* KOTAK KETERANGAN PREDIKAT */}
+          <div
             style={{
-              borderCollapse: 'collapse',
               border: '1px solid #000000',
-              width: '100%',
-              fontFamily: BOOKMAN_FONT_FAMILY,
-              pageBreakInside: 'auto',
+              backgroundColor: '#FEF9C3',
+              padding: '4px 8px',
+              marginBottom: '6px',
+              fontSize: '10px',
+              color: '#000000',
             }}
           >
-            <thead style={{ display: 'table-header-group' }}>
-              {/* Header Baris 1 */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                <th
-                  rowSpan={2}
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '6px 4px',
-                    width: '36px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    color: '#000000',
-                  }}
-                >
-                  NO
-                </th>
-                <th
-                  rowSpan={2}
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '6px 8px',
-                    width: '210px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    color: '#000000',
-                  }}
-                >
-                  MATA PELAJARAN
-                </th>
-                <th
-                  colSpan={2}
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '6px 8px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    color: '#000000',
-                  }}
-                >
-                  HASIL CAPAIAN KOMPETENSI
-                </th>
-              </tr>
-              {/* Header Baris 2: Sub-Kolom */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                <th
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '6px 4px',
-                    width: '70px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    color: '#000000',
-                  }}
-                >
-                  NILAI AKHIR
-                </th>
-                <th
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '6px 8px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    color: '#000000',
-                  }}
-                >
-                  CAPAIAN KOMPETENSI
-                </th>
-              </tr>
-            </thead>
+            <strong>Keterangan Predikat: </strong>
+            <span>[A] Sangat Baik</span> &nbsp;•&nbsp; <span>[B] Baik</span> &nbsp;•&nbsp; <span>[C] Cukup</span> &nbsp;•&nbsp; <span>[D] Perlu Bimbingan</span>
+          </div>
 
-            <tbody>
-              {/* I. PENDIDIKAN AGAMA */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 4px',
-                    textAlign: 'center',
-                    color: '#000000',
-                  }}
-                >
-                  I.
-                </td>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 8px',
-                    color: '#000000',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  PENDIDIKAN AGAMA
-                </td>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 4px',
-                    backgroundColor: YELLOW_BRIGHT_BG,
-                  }}
-                ></td>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 8px',
-                    backgroundColor: YELLOW_BRIGHT_BG,
-                  }}
-                ></td>
-              </tr>
-
-              {/* DAFTAR MAPEL AGAMA */}
-              {agamaSubjects.map((subj, idx) => {
-                const scoreData: StudentScoreDetail | undefined =
-                  subjectRecords[subj.id]?.scores[student.id];
-                const score = scoreData?.finalScore;
-                const desc =
-                  scoreData?.customDescription ||
-                  scoreData?.autoDescription ||
-                  '';
-
-                return (
-                  <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 4px',
-                        textAlign: 'center',
-                        fontWeight: 'normal',
-                      }}
-                    >
-                      {idx + 1}.
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 8px',
-                        fontWeight: 'normal',
-                        textTransform: 'uppercase',
-                        color: '#000000',
-                      }}
-                    >
-                      {subj.name}
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 4px',
-                        textAlign: 'center',
-                        fontWeight: 'normal',
-                        color: '#000000',
-                      }}
-                    >
-                      {typeof score === 'number' ? score : '-'}
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 8px',
-                        textAlign: 'justify',
-                        fontSize: '11px',
-                        lineHeight: '1.4',
-                        fontWeight: 'normal',
-                        color: '#000000',
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {desc || '-'}
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {/* II. PENDIDIKAN UMUM */}
-              <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 4px',
-                    textAlign: 'center',
-                    color: '#000000',
-                  }}
-                >
-                  II.
-                </td>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 8px',
-                    color: '#000000',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  PENDIDIKAN UMUM
-                </td>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 4px',
-                    backgroundColor: YELLOW_BRIGHT_BG,
-                  }}
-                ></td>
-                <td
-                  style={{
-                    border: '1px solid #000000',
-                    padding: '4px 8px',
-                    backgroundColor: YELLOW_BRIGHT_BG,
-                  }}
-                ></td>
-              </tr>
-
-              {/* DAFTAR MAPEL UMUM */}
-              {umumSubjects.map((subj, idx) => {
-                const scoreData: StudentScoreDetail | undefined =
-                  subjectRecords[subj.id]?.scores[student.id];
-                const score = scoreData?.finalScore;
-                const desc =
-                  scoreData?.customDescription ||
-                  scoreData?.autoDescription ||
-                  '';
-
-                return (
-                  <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 4px',
-                        textAlign: 'center',
-                        fontWeight: 'normal',
-                      }}
-                    >
-                      {idx + 1}.
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 8px',
-                        fontWeight: 'normal',
-                        textTransform: 'uppercase',
-                        color: '#000000',
-                      }}
-                    >
-                      {subj.name}
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 4px',
-                        textAlign: 'center',
-                        fontWeight: 'normal',
-                        color: '#000000',
-                      }}
-                    >
-                      {typeof score === 'number' ? score : '-'}
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '5px 8px',
-                        textAlign: 'justify',
-                        fontSize: '11px',
-                        lineHeight: '1.4',
-                        fontWeight: 'normal',
-                        color: '#000000',
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {desc || '-'}
-                    </td>
-                  </tr>
-                );
-              })}
-
-              {/* III. MUATAN LOKAL (SESUAI PENGATURAN MAPEL MULOK DI PENGATURAN RAPOR) */}
-              {finalMulokSubjects.length > 0 && (
-                <>
-                  <tr style={{ backgroundColor: YELLOW_BRIGHT_BG, fontWeight: 'bold', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '4px 4px',
-                        textAlign: 'center',
-                        color: '#000000',
-                      }}
-                    >
-                      III.
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '4px 8px',
-                        color: '#000000',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      MUATAN LOKAL
-                    </td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '4px 4px',
-                        backgroundColor: YELLOW_BRIGHT_BG,
-                      }}
-                    ></td>
-                    <td
-                      style={{
-                        border: '1px solid #000000',
-                        padding: '4px 8px',
-                        backgroundColor: YELLOW_BRIGHT_BG,
-                      }}
-                    ></td>
-                  </tr>
-
-                  {finalMulokSubjects.map((subj, idx) => {
-                    const scoreData: StudentScoreDetail | undefined =
-                      subjectRecords[subj.id]?.scores[student.id];
-                    const score = scoreData?.finalScore;
-                    const desc =
-                      scoreData?.customDescription ||
-                      scoreData?.autoDescription ||
-                      '';
-
-                    return (
-                      <tr key={subj.id} className="align-top" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                        <td
-                          style={{
-                            border: '1px solid #000000',
-                            padding: '5px 4px',
-                            textAlign: 'center',
-                            fontWeight: 'normal',
-                          }}
-                        >
-                          {idx + 1}.
-                        </td>
-                        <td
-                          style={{
-                            border: '1px solid #000000',
-                            padding: '5px 8px',
-                            fontWeight: 'normal',
-                            textTransform: 'uppercase',
-                            color: '#000000',
-                          }}
-                        >
-                          {subj.name}
-                        </td>
-                        <td
-                          style={{
-                            border: '1px solid #000000',
-                            padding: '5px 4px',
-                            textAlign: 'center',
-                            fontWeight: 'normal',
-                            color: '#000000',
-                          }}
-                        >
-                          {typeof score === 'number' ? score : '-'}
-                        </td>
-                        <td
-                          style={{
-                            border: '1px solid #000000',
-                            padding: '5px 8px',
-                            textAlign: 'justify',
-                            fontSize: '11px',
-                            lineHeight: '1.4',
-                            fontWeight: 'normal',
-                            color: '#000000',
-                            wordBreak: 'break-word',
-                          }}
-                        >
-                          {desc || '-'}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* CATATAN GURU / WALI KELAS */}
-        {displayNote && (
-          <div className="catatan-guru-section mb-4" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-            <div className="text-xs font-bold text-black uppercase mb-1">
-              CATATAN GURU / WALI KELAS:
-            </div>
+          {/* CATATAN PERKEMBANGAN KARAKTER WALI KELAS */}
+          {studentCharRecord?.teacherNote && (
             <div
               style={{
                 border: '1px solid #000000',
-                padding: '6px 10px',
-                fontSize: '11px',
-                fontStyle: 'italic',
-                lineHeight: '1.45',
+                padding: '4px 8px',
+                marginBottom: '8px',
+                fontSize: '10.5px',
+                color: '#000000',
               }}
             >
-              "{displayNote}"
+              <strong>Catatan Perkembangan Karakter: </strong>
+              <span style={{ fontStyle: 'italic' }}>"{studentCharRecord.teacherNote}"</span>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* TANDA TANGAN RESMI (SESUAI PERMINTAAN: TTD GURU KELAS TANPA NAMA KELAS, GELAR TIDAK KAPITAL SEMUA) */}
-        <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-          <div className="text-right mb-3">
-            {config.reportDatePlace || 'Tangerang, 20 Maret 2027'}
-          </div>
-
-          <div className="grid grid-cols-2 gap-8 text-center mb-6">
-            <div>
-              <p className="m-0">Mengetahui,</p>
-              <p className="font-bold m-0 mb-12">Orang Tua / Wali Siswa</p>
-              <p className="font-bold m-0">..................................................</p>
+          {/* TANDA TANGAN RESMI LEMBAR 2 */}
+          <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="text-right mb-3">
+              {config.reportDatePlace || 'Depok, 20 Maret 2025'}
             </div>
 
-            <div>
+            <div className="grid grid-cols-2 gap-8 text-center mb-6">
+              <div>
+                <p className="m-0">Mengetahui,</p>
+                <p className="font-bold m-0 mb-12">Orang Tua / Wali Siswa</p>
+                <p className="font-bold m-0">..................................................</p>
+              </div>
+
+              <div>
+                <p className="m-0">Mengetahui,</p>
+                <p className="font-bold m-0 mb-12">Guru Kelas,</p>
+                <p className="font-bold underline m-0">
+                  {formatPersonNameWithDegree(config.teacherName || 'Guru Kelas')}
+                </p>
+                <p className="text-[10px] m-0">
+                  NIP. {config.teacherNip || '-'}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center">
               <p className="m-0">Mengetahui,</p>
-              <p className="font-bold m-0 mb-12">Guru Kelas,</p>
+              <p className="font-bold m-0 mb-12">
+                Kepala Sekolah {config.schoolName || 'SDIT AL FIKRI'}
+              </p>
               <p className="font-bold underline m-0">
-                {formatPersonNameWithDegree(config.teacherName || 'Guru Kelas')}
+                {formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah')}
               </p>
               <p className="text-[10px] m-0">
-                NIP. {config.teacherNip || '-'}
+                NIP. {config.headmasterNip || '-'}
               </p>
             </div>
           </div>
 
-          <div className="text-center">
-            <p className="m-0">Mengetahui,</p>
-            <p className="font-bold m-0 mb-12">
-              Kepala Sekolah {config.schoolName || 'SDIT AL FIKRI'}
-            </p>
-            <p className="font-bold underline m-0">
-              {formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah')}
-            </p>
-            <p className="text-[10px] m-0">
-              NIP. {config.headmasterNip || '-'}
-            </p>
+          {/* RUNNING FOOTER LEMBAR 2 (NAMA SISWA ITALIC & HALAMAN 2/2) */}
+          <div className="flex justify-between items-center text-[10px] text-gray-700 italic pt-2 border-t border-gray-400 mt-4 font-serif">
+            <span>{student.name} • NISN: {formatNimNisn(student.nim, student.nisn)} • Kelas {activeClass} • {config.schoolName || 'SDIT AL FIKRI'}</span>
+            <span className="font-semibold not-italic">Halaman 2/2</span>
           </div>
-        </div>
-
-        {/* Footer Cetak Bersih */}
-        <div className="print:flex hidden justify-between items-center text-[9.5px] text-gray-600 pt-2.5 border-t border-gray-400 mt-4 font-sans">
-          <span>Rapor STS • {config.schoolName || 'SDIT AL FIKRI'} • Kelas {activeClass}</span>
-          <span>Semester {activeSemester} • TA {schoolYearTitle}</span>
         </div>
       </div>
     );

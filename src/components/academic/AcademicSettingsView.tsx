@@ -18,30 +18,40 @@ import {
   X,
   School,
   KeyRound,
+  HeartHandshake,
+  Search,
+  Filter,
 } from 'lucide-react';
 import TeacherAssignmentPanel from './TeacherAssignmentPanel';
 import AcademicPeriodPanel from './AcademicPeriodPanel';
 import SchoolIdentityPanel from './SchoolIdentityPanel';
 import TeacherPinSecurityPanel from './TeacherPinSecurityPanel';
+import { GradeRangePanel } from './GradeRangePanel';
+import { CharacterMasterPanel } from './CharacterMasterPanel';
 import {
   AcademicLevel,
   AcademicSubject,
-  LearningObjective,
   SubjectCategory,
   copySubjectsFromLevel,
   createAcademicSubject,
-  createLearningObjective,
   detectCategoryFromName,
   fetchAcademicLevels,
   fetchAcademicSubjects,
-  fetchLearningObjectives,
   updateAcademicSubject,
-  updateLearningObjective,
 } from '../../services/academicSubjectStorage';
+
+export type AcademicSectionType =
+  | 'master'
+  | 'grade_range'
+  | 'character'
+  | 'assignments'
+  | 'periods'
+  | 'school_identity'
+  | 'security_pins';
 
 interface AcademicSettingsViewProps {
   showNotification?: (message: string, type?: 'success' | 'info') => void;
-  initialSection?: 'master' | 'assignments' | 'periods' | 'school_identity' | 'security_pins';
+  initialSection?: AcademicSectionType;
   hideHeader?: boolean;
   hideTabs?: boolean;
 }
@@ -53,22 +63,10 @@ type SubjectFormState = {
   displayOrder: string;
 };
 
-type ObjectiveFormState = {
-  code: string;
-  description: string;
-  displayOrder: string;
-};
-
 const emptySubjectForm: SubjectFormState = {
   name: '',
   code: '',
   category: 'umum',
-  displayOrder: '0',
-};
-
-const emptyObjectiveForm: ObjectiveFormState = {
-  code: '',
-  description: '',
   displayOrder: '0',
 };
 
@@ -92,30 +90,24 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
   const [levels, setLevels] = useState<AcademicLevel[]>([]);
   const [selectedLevelId, setSelectedLevelId] = useState('');
   const [subjects, setSubjects] = useState<AcademicSubject[]>([]);
-  const [selectedSubjectId, setSelectedSubjectId] = useState('');
-  const [objectives, setObjectives] = useState<LearningObjective[]>([]);
+  const [subjectSearchQuery, setSubjectSearchQuery] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | SubjectCategory>('all');
 
   const [isLoadingLevels, setIsLoadingLevels] = useState(true);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(false);
-  const [isLoadingObjectives, setIsLoadingObjectives] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [subjectModal, setSubjectModal] = useState<{ mode: 'add' | 'edit'; item?: AcademicSubject } | null>(null);
-  const [objectiveModal, setObjectiveModal] = useState<
-    { mode: 'add' | 'edit'; item?: LearningObjective } | null
-  >(null);
   const [subjectForm, setSubjectForm] = useState<SubjectFormState>(emptySubjectForm);
-  const [objectiveForm, setObjectiveForm] = useState<ObjectiveFormState>(emptyObjectiveForm);
   const [userExplicitlyChangedCategory, setUserExplicitlyChangedCategory] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'master' | 'assignments' | 'periods' | 'school_identity' | 'security_pins'>(initialSection);
+  const [activeSection, setActiveSection] = useState<AcademicSectionType>(initialSection);
 
   // Copy Modal State
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [copySourceLevelId, setCopySourceLevelId] = useState('');
   const [sourceLevelSubjects, setSourceLevelSubjects] = useState<AcademicSubject[]>([]);
   const [selectedSubjectIdsToCopy, setSelectedSubjectIdsToCopy] = useState<string[]>([]);
-  const [copyObjectivesAlso, setCopyObjectivesAlso] = useState(true);
   const [isLoadingSourceSubjects, setIsLoadingSourceSubjects] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [copyError, setCopyError] = useState<string | null>(null);
@@ -128,13 +120,35 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
     [levels, selectedLevelId]
   );
 
-  const selectedSubject = useMemo(
-    () => subjects.find((subject) => subject.id === selectedSubjectId) || null,
-    [subjects, selectedSubjectId]
-  );
-
   const activeSubjects = useMemo(() => subjects.filter((subject) => subject.active), [subjects]);
-  const activeObjectives = useMemo(() => objectives.filter((objective) => objective.active), [objectives]);
+
+  const filteredSubjects = useMemo(() => {
+    return subjects.filter((s) => {
+      const matchSearch =
+        !subjectSearchQuery.trim() ||
+        s.name.toLowerCase().includes(subjectSearchQuery.toLowerCase()) ||
+        (s.code && s.code.toLowerCase().includes(subjectSearchQuery.toLowerCase()));
+
+      const cat = s.category || detectCategoryFromName(s.name);
+      const matchCat = selectedCategoryFilter === 'all' || cat === selectedCategoryFilter;
+
+      return matchSearch && matchCat;
+    });
+  }, [subjects, subjectSearchQuery, selectedCategoryFilter]);
+
+  const categoryStats = useMemo(() => {
+    let agama = 0;
+    let umum = 0;
+    let mulok = 0;
+    subjects.forEach((s) => {
+      if (!s.active) return;
+      const cat = s.category || detectCategoryFromName(s.name);
+      if (cat === 'agama') agama++;
+      else if (cat === 'mulok') mulok++;
+      else umum++;
+    });
+    return { total: activeSubjects.length, agama, umum, mulok };
+  }, [subjects, activeSubjects]);
 
   const notify = (message: string, type: 'success' | 'info' = 'success') => {
     showNotification?.(message, type);
@@ -170,10 +184,9 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
     }
   };
 
-  const loadSubjects = async (levelId: string, keepSelection = true) => {
+  const loadSubjects = async (levelId: string) => {
     if (!levelId) {
       setSubjects([]);
-      setSelectedSubjectId('');
       return;
     }
 
@@ -187,32 +200,10 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         ...prev,
         [levelId]: data.filter((s) => s.active).length,
       }));
-
-      if (!keepSelection || !data.some((subject) => subject.id === selectedSubjectId)) {
-        setSelectedSubjectId('');
-      }
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
       setIsLoadingSubjects(false);
-    }
-  };
-
-  const loadObjectives = async (subjectId: string) => {
-    if (!subjectId) {
-      setObjectives([]);
-      return;
-    }
-
-    setIsLoadingObjectives(true);
-    setError(null);
-    try {
-      const data = await fetchLearningObjectives(subjectId);
-      setObjectives(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoadingObjectives(false);
     }
   };
 
@@ -223,14 +214,9 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
   }, []);
 
   useEffect(() => {
-    loadSubjects(selectedLevelId, true);
+    loadSubjects(selectedLevelId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLevelId]);
-
-  useEffect(() => {
-    loadObjectives(selectedSubjectId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSubjectId]);
 
   const openAddSubject = () => {
     setError(null);
@@ -253,25 +239,6 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
       displayOrder: String(subject.display_order),
     });
     setSubjectModal({ mode: 'edit', item: subject });
-  };
-
-  const openAddObjective = () => {
-    setError(null);
-    setObjectiveForm({
-      ...emptyObjectiveForm,
-      displayOrder: String((activeObjectives.length + 1) * 10),
-    });
-    setObjectiveModal({ mode: 'add' });
-  };
-
-  const openEditObjective = (objective: LearningObjective) => {
-    setError(null);
-    setObjectiveForm({
-      code: objective.code || '',
-      description: objective.description,
-      displayOrder: String(objective.display_order),
-    });
-    setObjectiveModal({ mode: 'edit', item: objective });
   };
 
   const handleSaveSubject = async () => {
@@ -301,8 +268,9 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         });
         notify('Mata pelajaran berhasil ditambahkan.');
       }
+
       setSubjectModal(null);
-      await loadSubjects(selectedLevelId, false);
+      await loadSubjects(selectedLevelId);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -315,63 +283,11 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
     setError(null);
     try {
       await updateAcademicSubject(subject.id, { active: !subject.active });
-      notify(subject.active ? 'Mata pelajaran dinonaktifkan.' : 'Mata pelajaran diaktifkan.', 'info');
-      await loadSubjects(selectedLevelId, true);
-      if (selectedSubjectId === subject.id && subject.active) {
-        setSelectedSubjectId('');
-      }
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveObjective = async () => {
-    if (!selectedSubjectId || !objectiveForm.description.trim()) {
-      setError('Deskripsi tujuan pembelajaran wajib diisi.');
-      return;
-    }
-
-    setSaving(true);
-    setError(null);
-    try {
-      if (objectiveModal?.mode === 'edit' && objectiveModal.item) {
-        await updateLearningObjective(objectiveModal.item.id, {
-          code: objectiveForm.code,
-          description: objectiveForm.description,
-          display_order: Number(objectiveForm.displayOrder) || 0,
-        });
-        notify('Tujuan pembelajaran berhasil diperbarui.');
-      } else {
-        await createLearningObjective({
-          subject_id: selectedSubjectId,
-          code: objectiveForm.code,
-          description: objectiveForm.description,
-          display_order: Number(objectiveForm.displayOrder) || 0,
-        });
-        notify('Tujuan pembelajaran berhasil ditambahkan.');
-      }
-      setObjectiveModal(null);
-      await loadObjectives(selectedSubjectId);
-      await loadSubjects(selectedLevelId, true);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleToggleObjective = async (objective: LearningObjective) => {
-    setSaving(true);
-    setError(null);
-    try {
-      await updateLearningObjective(objective.id, { active: !objective.active });
       notify(
-        objective.active ? 'Tujuan pembelajaran dinonaktifkan.' : 'Tujuan pembelajaran diaktifkan.',
+        `Mata pelajaran "${subject.name}" ${subject.active ? 'dinonaktifkan' : 'diaktifkan'}.`,
         'info'
       );
-      await loadObjectives(selectedSubjectId);
+      await loadSubjects(selectedLevelId);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -379,24 +295,33 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
     }
   };
 
-  // --- Copy Modal Handlers ---
+  // Copy Modal logic
+  const openCopyModal = async () => {
+    const otherLevels = levels.filter((l) => l.id !== selectedLevelId);
+    if (otherLevels.length === 0) return;
+
+    const initialSource = otherLevels[0].id;
+    setCopySourceLevelId(initialSource);
+    setSelectedSubjectIdsToCopy([]);
+    setCopyError(null);
+    setIsCopyModalOpen(true);
+    await loadSourceSubjects(initialSource);
+  };
+
   const loadSourceSubjects = async (sourceId: string) => {
     setIsLoadingSourceSubjects(true);
     setCopyError(null);
     try {
-      const srcSubs = await fetchAcademicSubjects(sourceId);
-      const activeSrc = srcSubs.filter((s) => s.active);
-      setSourceLevelSubjects(activeSrc);
+      const data = await fetchAcademicSubjects(sourceId);
+      const activeOnly = data.filter((s) => s.active);
+      setSourceLevelSubjects(activeOnly);
 
-      // Pre-select subjects whose names are not yet present in current target level
-      const currentNames = new Set(
-        subjects.map((s) => s.name.trim().toLowerCase())
-      );
-      const availableIds = activeSrc
-        .filter((s) => !currentNames.has(s.name.trim().toLowerCase()))
+      // Pre-select subjects that do not already exist in target level by name
+      const targetNames = new Set(subjects.map((s) => s.name.trim().toLowerCase()));
+      const availableToCopy = activeOnly
+        .filter((s) => !targetNames.has(s.name.trim().toLowerCase()))
         .map((s) => s.id);
-
-      setSelectedSubjectIdsToCopy(availableIds);
+      setSelectedSubjectIdsToCopy(availableToCopy);
     } catch (err) {
       setCopyError(getErrorMessage(err));
     } finally {
@@ -404,41 +329,23 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
     }
   };
 
-  const openCopyModal = async () => {
-    setCopyError(null);
-    const otherLevels = levels.filter((lvl) => lvl.id !== selectedLevelId);
-    const defaultSource = otherLevels[0]?.id || '';
-    setCopySourceLevelId(defaultSource);
-    setCopyObjectivesAlso(true);
-    setIsCopyModalOpen(true);
-
-    if (defaultSource) {
-      await loadSourceSubjects(defaultSource);
-    } else {
-      setSourceLevelSubjects([]);
-      setSelectedSubjectIdsToCopy([]);
-    }
+  const handleSourceLevelChange = async (newSourceId: string) => {
+    setCopySourceLevelId(newSourceId);
+    await loadSourceSubjects(newSourceId);
   };
 
-  const handleSourceLevelChange = async (sourceId: string) => {
-    setCopySourceLevelId(sourceId);
-    await loadSourceSubjects(sourceId);
-  };
-
-  const handleToggleSelectSubjectToCopy = (subjectId: string) => {
+  const handleToggleSelectSubjectToCopy = (id: string) => {
     setSelectedSubjectIdsToCopy((prev) =>
-      prev.includes(subjectId) ? prev.filter((id) => id !== subjectId) : [...prev, subjectId]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
   const handleSelectAllAvailable = () => {
-    const currentNames = new Set(
-      subjects.map((s) => s.name.trim().toLowerCase())
-    );
-    const availableIds = sourceLevelSubjects
-      .filter((s) => !currentNames.has(s.name.trim().toLowerCase()))
+    const targetNames = new Set(subjects.map((s) => s.name.trim().toLowerCase()));
+    const available = sourceLevelSubjects
+      .filter((s) => !targetNames.has(s.name.trim().toLowerCase()))
       .map((s) => s.id);
-    setSelectedSubjectIdsToCopy(availableIds);
+    setSelectedSubjectIdsToCopy(available);
   };
 
   const handleDeselectAll = () => {
@@ -446,7 +353,8 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
   };
 
   const handleExecuteCopy = async () => {
-    if (!copySourceLevelId || !selectedLevelId || selectedSubjectIdsToCopy.length === 0) {
+    if (!copySourceLevelId || !selectedLevelId) return;
+    if (selectedSubjectIdsToCopy.length === 0) {
       setCopyError('Pilih minimal satu mata pelajaran untuk disalin.');
       return;
     }
@@ -458,15 +366,15 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         sourceLevelId: copySourceLevelId,
         targetLevelId: selectedLevelId,
         subjectIdsToCopy: selectedSubjectIdsToCopy,
-        copyObjectives: copyObjectivesAlso,
+        copyObjectives: false,
       });
 
       notify(
-        `${result.copiedSubjectsCount} mapel${copyObjectivesAlso && result.copiedObjectivesCount > 0 ? ` dan ${result.copiedObjectivesCount} TP` : ''} berhasil disalin ke Kelas ${selectedLevel?.grade}.`
+        `${result.copiedSubjectsCount} mata pelajaran berhasil disalin ke Kelas ${selectedLevel?.grade}.`
       );
 
       setIsCopyModalOpen(false);
-      await loadSubjects(selectedLevelId, true);
+      await loadSubjects(selectedLevelId);
     } catch (err) {
       setCopyError(getErrorMessage(err));
     } finally {
@@ -506,11 +414,11 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
                     Pengaturan Akademik
                   </h1>
                   <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-cyan-400/20 bg-cyan-400/[0.08] text-cyan-300 text-[9px] font-black uppercase tracking-wider">
-                    Master Sekolah
+                    Master Standar Sekolah
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 truncate">
-                  Master Mata Pelajaran, Capaian TP, dan Penugasan Guru SDIT AL FIKRI
+                  Master Mata Pelajaran, Rentang Predikat, 18 Karakter, dan Penugasan Guru SDIT AL FIKRI
                 </p>
               </div>
             </div>
@@ -520,8 +428,7 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
                 type="button"
                 onClick={() => {
                   loadLevels(true);
-                  if (selectedLevelId) loadSubjects(selectedLevelId, true);
-                  if (selectedSubjectId) loadObjectives(selectedSubjectId);
+                  if (selectedLevelId) loadSubjects(selectedLevelId);
                 }}
                 className="px-3 py-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                 title="Muat ulang data"
@@ -544,7 +451,7 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         </div>
       )}
 
-      {/* Modern Glass Segmented Tab Switcher */}
+      {/* Modern Glass Segmented Tab Switcher (7 Tabs) */}
       {!hideTabs && (
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl w-fit flex-wrap">
           <button
@@ -557,7 +464,31 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Master Mapel & TP</span>
+            <span>Master Mapel</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('grade_range')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeSection === 'grade_range'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <Target className="w-3.5 h-3.5" />
+            <span>Rentang Predikat & KKTP</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('character')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeSection === 'character'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <HeartHandshake className="w-3.5 h-3.5" />
+            <span>Master 18 Karakter</span>
           </button>
           <button
             type="button"
@@ -605,12 +536,17 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
             }`}
           >
             <KeyRound className="w-3.5 h-3.5" />
-            <span>Keamanan & Reset PIN Guru</span>
+            <span>Keamanan PIN Guru</span>
           </button>
         </div>
       )}
 
-      {activeSection === 'assignments' ? (
+      {/* Render Sub-Panels based on Active Section */}
+      {activeSection === 'grade_range' ? (
+        <GradeRangePanel showNotification={showNotification} />
+      ) : activeSection === 'character' ? (
+        <CharacterMasterPanel showNotification={showNotification} />
+      ) : activeSection === 'assignments' ? (
         <TeacherAssignmentPanel showNotification={showNotification} />
       ) : activeSection === 'periods' ? (
         <AcademicPeriodPanel showNotification={showNotification} />
@@ -619,7 +555,8 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
       ) : activeSection === 'security_pins' ? (
         <TeacherPinSecurityPanel showNotification={showNotification} />
       ) : (
-        <>
+        /* Section Master Mapel (Restrukturisasi Bersih & Praktis) */
+        <div className="space-y-4 sm:space-y-5">
           {/* Level/Jenjang Pills with Subject Count */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {levels.map((level) => {
@@ -631,9 +568,8 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
                   type="button"
                   onClick={() => {
                     setSelectedLevelId(level.id);
-                    setSelectedSubjectId('');
                   }}
-                  className={`group shrink-0 px-4 py-2 rounded-2xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-2.5 ${
+                  className={`group shrink-0 px-4 py-2.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-2.5 ${
                     active
                       ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-200 shadow-lg shadow-cyan-500/10 ring-1 ring-cyan-400/30'
                       : 'bg-slate-950/45 border-white/[0.07] text-slate-400 hover:text-white hover:border-white/[0.15] hover:bg-white/[0.04]'
@@ -654,286 +590,295 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
             })}
           </div>
 
-          {/* Balanced Two-Column Glassmorphism Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5 items-start">
-            {/* Left Panel: Mata Pelajaran */}
-            <section className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-2xl overflow-hidden shadow-2xl">
-              <div className="p-3.5 sm:p-4 border-b border-white/[0.08] flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 flex items-center justify-center shrink-0">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-sm sm:text-base font-black text-white truncate">Mata Pelajaran</h2>
-                    <p className="text-[10px] text-slate-400">
-                      {selectedLevel ? `Jenjang Kelas ${selectedLevel.grade}` : 'Pilih jenjang'} • {activeSubjects.length} aktif
-                    </p>
-                  </div>
+          {/* Quick Category Metric Badges */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+            <div className="rounded-2xl border border-white/[0.08] bg-slate-950/50 p-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Total Mapel Aktif</p>
+                <p className="text-lg font-black text-white mt-0.5">{categoryStats.total}</p>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-400/25 text-cyan-300 flex items-center justify-center font-bold text-xs">
+                {selectedLevel ? `K${selectedLevel.grade}` : 'SD'}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">Pendidikan Agama</p>
+                <p className="text-lg font-black text-white mt-0.5">{categoryStats.agama} <span className="text-xs font-normal text-emerald-300/70">Mapel</span></p>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center font-bold text-xs">
+                PAI
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/[0.04] p-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-wider">Mapel Umum</p>
+                <p className="text-lg font-black text-white mt-0.5">{categoryStats.umum} <span className="text-xs font-normal text-cyan-300/70">Mapel</span></p>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 flex items-center justify-center font-bold text-xs">
+                UM
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.04] p-3 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider">Muatan Lokal</p>
+                <p className="text-lg font-black text-white mt-0.5">{categoryStats.mulok} <span className="text-xs font-normal text-amber-300/70">Mapel</span></p>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center justify-center font-bold text-xs">
+                MLK
+              </div>
+            </div>
+          </div>
+
+          {/* Full-width Comprehensive Mata Pelajaran Panel */}
+          <section className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-2xl overflow-hidden shadow-2xl">
+            <div className="p-3.5 sm:p-4 border-b border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-300 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-5 h-5" />
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={openCopyModal}
-                    disabled={!selectedLevelId || levels.length <= 1 || saving}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-cyan-400/25 bg-cyan-400/[0.08] hover:bg-cyan-400/[0.16] hover:border-cyan-400/40 text-cyan-200 text-xs font-bold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    title="Salin mapel dari kelas/jenjang lain"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Salin Mapel</span>
-                    <span className="sm:hidden">Salin</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={openAddSubject}
-                    disabled={!selectedLevelId || saving}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-emerald-500/20"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Tambah Mapel</span>
-                    <span className="sm:hidden">Tambah</span>
-                  </button>
+                <div className="min-w-0">
+                  <h2 className="text-sm sm:text-base font-black text-white truncate">
+                    Daftar Mata Pelajaran Kelas {selectedLevel?.grade}
+                  </h2>
+                  <p className="text-[10px] text-slate-400">
+                    Mata pelajaran yang akan tampil pada e-Rapor STS dan penugasan guru
+                  </p>
                 </div>
               </div>
 
-              {isLoadingSubjects ? (
-                <div className="min-h-[320px] flex items-center justify-center text-slate-500">
-                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
-                </div>
-              ) : subjects.length === 0 ? (
-                <div className="min-h-[320px] flex flex-col items-center justify-center text-center px-6 py-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-slate-500 flex items-center justify-center mb-3">
-                    <BookOpen className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-200">Belum ada mata pelajaran</h3>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
-                    Data Mapel pada Kelas {selectedLevel?.grade} masih kosong. Anda dapat menyalin dari kelas lain atau menambahkannya secara manual.
-                  </p>
-                  <div className="mt-4 flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={openCopyModal}
-                      className="px-3.5 py-1.5 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.1] hover:bg-cyan-400/[0.18] text-cyan-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                      Salin dari Kelas Lain
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openAddSubject}
-                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Tambah Baru
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="max-h-[580px] overflow-y-auto custom-scrollbar divide-y divide-white/[0.05]">
-                  {subjects.map((subject) => {
-                    const isSelected = selectedSubjectId === subject.id;
-                    const cat = subject.category || detectCategoryFromName(subject.name);
-
-                    return (
-                      <div
-                        key={subject.id}
-                        className={`p-3 sm:p-3.5 flex items-center gap-3 transition-colors ${
-                          isSelected
-                            ? 'bg-cyan-500/[0.08] border-l-2 border-l-cyan-400'
-                            : 'hover:bg-white/[0.025]'
-                        }`}
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[10px] font-black text-slate-400 shrink-0">
-                          {String(subject.display_order || 0).padStart(2, '0')}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => subject.active && setSelectedSubjectId(subject.id)}
-                          className="flex-1 min-w-0 text-left cursor-pointer disabled:cursor-default"
-                          disabled={!subject.active}
-                        >
-                          <div className={`text-xs sm:text-sm font-bold truncate ${subject.active ? 'text-white' : 'text-slate-500 line-through'}`}>
-                            {subject.name}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            {cat === 'agama' ? (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
-                                Agama
-                              </span>
-                            ) : cat === 'mulok' ? (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-300 border border-amber-500/25">
-                                Mulok
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-                                Umum
-                              </span>
-                            )}
-
-                            {subject.code ? (
-                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/[0.04] text-slate-400 border border-white/[0.06]">
-                                {subject.code}
-                              </span>
-                            ) : null}
-
-                            {!subject.active && <span className="text-[9px] font-bold text-amber-400">Nonaktif</span>}
-                          </div>
-                        </button>
-
-                        <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => openEditSubject(subject)}
-                            title="Edit Mapel"
-                            className="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] flex items-center justify-center transition-all cursor-pointer"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleSubject(subject)}
-                            disabled={saving}
-                            title={subject.active ? 'Nonaktifkan Mapel' : 'Aktifkan Mapel'}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                              subject.active
-                                ? 'text-emerald-400 hover:bg-rose-500/10 hover:text-rose-300'
-                                : 'text-amber-400 hover:bg-emerald-500/10'
-                            }`}
-                          >
-                            <Power className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => subject.active && setSelectedSubjectId(subject.id)}
-                            disabled={!subject.active}
-                            title="Kelola TP"
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? 'bg-cyan-500/20 text-cyan-300 ring-1 ring-cyan-400/40'
-                                : 'text-slate-400 hover:text-cyan-300 hover:bg-cyan-500/10'
-                            } disabled:opacity-30 disabled:cursor-default`}
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-
-            {/* Right Panel: Tujuan Pembelajaran (TP) */}
-            <section className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-2xl overflow-hidden shadow-2xl">
-              <div className="p-3.5 sm:p-4 border-b border-white/[0.08] flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-violet-500/15 border border-violet-500/25 text-violet-300 flex items-center justify-center shrink-0">
-                    <Target className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-sm sm:text-base font-black text-white truncate">Tujuan Pembelajaran</h2>
-                    <p className="text-[10px] text-slate-400 truncate">
-                      {selectedSubject ? selectedSubject.name : 'Pilih Mapel di panel kiri'} • {activeObjectives.length} aktif
-                    </p>
-                  </div>
-                </div>
+              {/* Action Toolbar */}
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <button
+                  type="button"
+                  onClick={openCopyModal}
+                  disabled={!selectedLevelId || levels.length <= 1 || saving}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-cyan-400/25 bg-cyan-400/[0.08] hover:bg-cyan-400/[0.16] hover:border-cyan-400/40 text-cyan-200 text-xs font-bold transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                  title="Salin mapel dari kelas/jenjang lain"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Salin Mapel</span>
+                </button>
 
                 <button
                   type="button"
-                  onClick={openAddObjective}
-                  disabled={!selectedSubjectId || !selectedSubject?.active || saving}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500 hover:bg-violet-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black transition-all cursor-pointer shadow-md shadow-violet-500/20 shrink-0"
+                  onClick={openAddSubject}
+                  disabled={!selectedLevelId || saving}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-emerald-500/20"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Tambah TP</span>
-                  <span className="sm:hidden">Tambah</span>
+                  <span>Tambah Mapel</span>
                 </button>
               </div>
+            </div>
 
-              {!selectedSubjectId ? (
-                <div className="min-h-[320px] flex flex-col items-center justify-center text-center px-6 py-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-slate-500 flex items-center justify-center mb-3">
-                    <Target className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-200">Pilih mata pelajaran</h3>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
-                    Klik salah satu mata pelajaran di panel sebelah kiri untuk melihat dan mengelola daftar Tujuan Pembelajaran (TP).
-                  </p>
-                </div>
-              ) : isLoadingObjectives ? (
-                <div className="min-h-[320px] flex items-center justify-center text-slate-500">
-                  <Loader2 className="w-6 h-6 animate-spin text-violet-400" />
-                </div>
-              ) : objectives.length === 0 ? (
-                <div className="min-h-[320px] flex flex-col items-center justify-center text-center px-6 py-10">
-                  <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-slate-500 flex items-center justify-center mb-3">
-                    <Target className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-200">Belum ada TP</h3>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
-                    Belum ada Tujuan Pembelajaran untuk mata pelajaran {selectedSubject?.name}.
-                  </p>
+            {/* Filter and Search Bar */}
+            <div className="p-3 sm:px-4 bg-white/[0.015] border-b border-white/[0.06] flex flex-wrap items-center justify-between gap-2.5">
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Cari mata pelajaran atau kode..."
+                  value={subjectSearchQuery}
+                  onChange={(e) => setSubjectSearchQuery(e.target.value)}
+                  className="w-full h-8.5 pl-9 pr-7 rounded-xl border border-white/[0.08] bg-slate-900/80 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400/40 transition-all"
+                />
+                {subjectSearchQuery && (
                   <button
                     type="button"
-                    onClick={openAddObjective}
-                    className="mt-4 px-3.5 py-1.5 rounded-xl bg-violet-500 hover:bg-violet-400 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                    onClick={() => setSubjectSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Category Segmented Filter */}
+              <div className="flex items-center gap-1 bg-slate-900/60 p-0.5 rounded-xl border border-white/[0.06]">
+                {(
+                  [
+                    ['all', 'Semua'],
+                    ['agama', 'Agama'],
+                    ['umum', 'Umum'],
+                    ['mulok', 'Mulok'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedCategoryFilter(key)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                      selectedCategoryFilter === key
+                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Subject Table Grid */}
+            {isLoadingSubjects ? (
+              <div className="min-h-[280px] flex items-center justify-center text-slate-500">
+                <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+              </div>
+            ) : subjects.length === 0 ? (
+              <div className="min-h-[280px] flex flex-col items-center justify-center text-center px-6 py-10">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-slate-500 flex items-center justify-center mb-3">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-200">Belum ada mata pelajaran</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
+                  Data Mapel pada Kelas {selectedLevel?.grade} masih kosong. Anda dapat menyalin dari kelas lain atau menambahkannya secara manual.
+                </p>
+                <div className="mt-4 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={openCopyModal}
+                    className="px-3.5 py-1.5 rounded-xl border border-cyan-400/30 bg-cyan-400/[0.1] hover:bg-cyan-400/[0.18] text-cyan-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    Salin dari Kelas Lain
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openAddSubject}
+                    className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Tambah TP Pertama
+                    Tambah Baru
                   </button>
                 </div>
-              ) : (
-                <div className="max-h-[580px] overflow-y-auto custom-scrollbar divide-y divide-white/[0.05]">
-                  {objectives.map((objective) => (
-                    <div key={objective.id} className="p-3 sm:p-3.5 flex items-start gap-3 hover:bg-white/[0.025] transition-colors">
-                      <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-[9px] font-black text-slate-400 shrink-0 mt-0.5">
-                        {String(objective.display_order || 0).padStart(2, '0')}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {objective.code && (
-                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20 font-bold">
-                              {objective.code}
+              </div>
+            ) : filteredSubjects.length === 0 ? (
+              <div className="min-h-[200px] flex flex-col items-center justify-center text-center p-6 text-slate-400 text-xs">
+                Tidak ada mata pelajaran yang cocok dengan kata kunci pencarian / filter.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/[0.08] bg-slate-900/70 text-slate-300 font-semibold">
+                      <th className="py-3 px-3.5 w-14 text-center">Urutan</th>
+                      <th className="py-3 px-4 min-w-[220px]">Nama Mata Pelajaran</th>
+                      <th className="py-3 px-3 w-28">Kode Mapel</th>
+                      <th className="py-3 px-3 w-36">Kelompok / Kategori</th>
+                      <th className="py-3 px-3 w-28 text-center">Status</th>
+                      <th className="py-3 px-4 w-32 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.04]">
+                    {filteredSubjects.map((subject) => {
+                      const cat = subject.category || detectCategoryFromName(subject.name);
+
+                      return (
+                        <tr
+                          key={subject.id}
+                          className="hover:bg-white/[0.025] transition-colors group"
+                        >
+                          {/* Urutan */}
+                          <td className="py-3 px-3.5 text-center">
+                            <span className="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-white/[0.04] border border-white/[0.06] text-[11px] font-black text-slate-300">
+                              {String(subject.display_order || 0).padStart(2, '0')}
                             </span>
-                          )}
-                          {!objective.active && <span className="text-[9px] font-bold text-amber-400">Nonaktif</span>}
-                        </div>
-                        <p className={`text-xs leading-relaxed mt-1 ${objective.active ? 'text-slate-200' : 'text-slate-500 line-through'}`}>
-                          {objective.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => openEditObjective(objective)}
-                          title="Edit TP"
-                          className="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] flex items-center justify-center transition-all cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleObjective(objective)}
-                          disabled={saving}
-                          title={objective.active ? 'Nonaktifkan TP' : 'Aktifkan TP'}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                            objective.active
-                              ? 'text-violet-400 hover:bg-rose-500/10 hover:text-rose-300'
-                              : 'text-amber-400 hover:bg-violet-500/10'
-                          }`}
-                        >
-                          <Power className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-        </>
+                          </td>
+
+                          {/* Nama Mapel */}
+                          <td className="py-3 px-4">
+                            <div className={`text-xs sm:text-sm font-bold ${subject.active ? 'text-white' : 'text-slate-500 line-through'}`}>
+                              {subject.name}
+                            </div>
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              Jenjang Kelas {selectedLevel?.grade}
+                            </div>
+                          </td>
+
+                          {/* Kode */}
+                          <td className="py-3 px-3">
+                            {subject.code ? (
+                              <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/[0.06] text-amber-300 border border-white/[0.08]">
+                                {subject.code}
+                              </span>
+                            ) : (
+                              <span className="text-slate-500 text-[11px]">-</span>
+                            )}
+                          </td>
+
+                          {/* Kategori */}
+                          <td className="py-3 px-3">
+                            {cat === 'agama' ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+                                🟢 Pendidikan Agama
+                              </span>
+                            ) : cat === 'mulok' ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/25">
+                                🟠 Muatan Lokal
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                                🔵 Mapel Umum
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3 px-3 text-center">
+                            {subject.active ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                <Check className="w-3 h-3" />
+                                Aktif
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                                Nonaktif
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Aksi */}
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => openEditSubject(subject)}
+                                title="Edit Mata Pelajaran"
+                                className="h-8 px-2.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
+                                <span className="hidden sm:inline">Edit</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleToggleSubject(subject)}
+                                disabled={saving}
+                                title={subject.active ? 'Nonaktifkan Mapel' : 'Aktifkan Mapel'}
+                                className={`h-8 px-2.5 rounded-lg border text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer ${
+                                  subject.active
+                                    ? 'border-rose-500/20 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20'
+                                    : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
+                                }`}
+                              >
+                                <Power className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{subject.active ? 'Nonaktif' : 'Aktifkan'}</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </div>
       )}
 
       {/* Modal Salin Mapel dari Kelas Lain */}
@@ -992,22 +937,6 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
                     ))}
                 </select>
               </div>
-
-              {/* Toggle Copy Objectives */}
-              <label className="flex items-start gap-3 p-3 rounded-xl border border-white/[0.08] bg-white/[0.025] hover:bg-white/[0.04] transition-all cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={copyObjectivesAlso}
-                  onChange={(e) => setCopyObjectivesAlso(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded text-cyan-500 focus:ring-cyan-400/40 bg-slate-900 border-white/[0.2] cursor-pointer"
-                />
-                <div>
-                  <p className="text-xs font-bold text-white">Salin juga Tujuan Pembelajaran (TP)</p>
-                  <p className="text-[10px] text-slate-400 leading-relaxed">
-                    Seluruh TP aktif pada mata pelajaran yang dipilih akan otomatis digandakan ke jenjang ini dengan urutan yang sama.
-                  </p>
-                </div>
-              </label>
 
               {/* Subject checklist */}
               <div>
@@ -1138,8 +1067,8 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         </div>
       )}
 
-      {/* Modals for Add/Edit Subject & TP with Modern Glassmorphism Styling */}
-      {(subjectModal || objectiveModal) && (
+      {/* Modal Add/Edit Subject with Modern Glassmorphism Styling */}
+      {subjectModal && (
         <div className="fixed inset-0 z-[70] bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
           <div className="w-full max-w-lg rounded-2xl sm:rounded-3xl bg-slate-950/95 border border-white/[0.12] shadow-2xl overflow-hidden relative">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
@@ -1147,25 +1076,18 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
             <div className="px-5 py-4 border-b border-white/[0.08] flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-black text-white">
-                  {subjectModal
-                    ? subjectModal.mode === 'add'
-                      ? 'Tambah Mata Pelajaran'
-                      : 'Edit Mata Pelajaran'
-                    : objectiveModal?.mode === 'add'
-                    ? 'Tambah Tujuan Pembelajaran'
-                    : 'Edit Tujuan Pembelajaran'}
+                  {subjectModal.mode === 'add'
+                    ? 'Tambah Mata Pelajaran'
+                    : 'Edit Mata Pelajaran'}
                 </h3>
                 <p className="text-[10px] text-slate-400 mt-0.5">
-                  {subjectModal
-                    ? `Jenjang Kelas ${selectedLevel?.grade || ''}`
-                    : selectedSubject?.name || ''}
+                  Jenjang Kelas {selectedLevel?.grade || ''}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   setSubjectModal(null);
-                  setObjectiveModal(null);
                   setError(null);
                 }}
                 className="w-8 h-8 rounded-xl bg-white/[0.04] text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
@@ -1175,138 +1097,84 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
             </div>
 
             <div className="p-5 space-y-4">
-              {subjectModal ? (
-                <>
-                  <label className="block">
-                    <span className="text-[11px] font-bold text-slate-300">
-                      Nama Mata Pelajaran *
-                    </span>
-                    <input
-                      autoFocus
-                      value={subjectForm.name}
-                      onChange={(e) => {
-                        const newName = e.target.value;
-                        setSubjectForm((prev) => ({
-                          ...prev,
-                          name: newName,
-                          category:
-                            subjectModal?.mode === 'add' && !userExplicitlyChangedCategory
-                              ? detectCategoryFromName(newName)
-                              : prev.category,
-                        }));
-                      }}
-                      placeholder="Contoh: Pendidikan Agama Islam dan Budi Pekerti"
-                      className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-cyan-400/60 transition-all"
-                    />
-                  </label>
+              <label className="block">
+                <span className="text-[11px] font-bold text-slate-300">
+                  Nama Mata Pelajaran *
+                </span>
+                <input
+                  autoFocus
+                  value={subjectForm.name}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setSubjectForm((prev) => ({
+                      ...prev,
+                      name: newName,
+                      category:
+                        subjectModal?.mode === 'add' && !userExplicitlyChangedCategory
+                          ? detectCategoryFromName(newName)
+                          : prev.category,
+                    }));
+                  }}
+                  placeholder="Contoh: Pendidikan Agama Islam dan Budi Pekerti"
+                  className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-cyan-400/60 transition-all"
+                />
+              </label>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <label className="block">
-                      <span className="text-[11px] font-bold text-slate-300">
-                        Kelompok / Jenis Mapel *
-                      </span>
-                      <select
-                        value={subjectForm.category}
-                        onChange={(e) => {
-                          setUserExplicitlyChangedCategory(true);
-                          setSubjectForm((prev) => ({
-                            ...prev,
-                            category: e.target.value as SubjectCategory,
-                          }));
-                        }}
-                        className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-bold text-white outline-none focus:border-cyan-400/60 transition-all cursor-pointer"
-                      >
-                        <option value="agama">🟢 Pendidikan Agama (Kelompok A)</option>
-                        <option value="umum">🔵 Mapel Umum (Kelompok B)</option>
-                        <option value="mulok">🟠 Muatan Lokal (Kelompok C)</option>
-                      </select>
-                    </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-[11px] font-bold text-slate-300">
+                    Kelompok / Jenis Mapel *
+                  </span>
+                  <select
+                    value={subjectForm.category}
+                    onChange={(e) => {
+                      setUserExplicitlyChangedCategory(true);
+                      setSubjectForm((prev) => ({
+                        ...prev,
+                        category: e.target.value as SubjectCategory,
+                      }));
+                    }}
+                    className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-bold text-white outline-none focus:border-cyan-400/60 transition-all cursor-pointer"
+                  >
+                    <option value="agama">🟢 Pendidikan Agama (Kelompok A)</option>
+                    <option value="umum">🔵 Mapel Umum (Kelompok B)</option>
+                    <option value="mulok">🟠 Muatan Lokal (Kelompok C)</option>
+                  </select>
+                </label>
 
-                    <label className="block">
-                      <span className="text-[11px] font-bold text-slate-300">
-                        Kode Mapel <span className="text-slate-500">(opsional)</span>
-                      </span>
-                      <input
-                        value={subjectForm.code}
-                        onChange={(e) =>
-                          setSubjectForm((prev) => ({ ...prev, code: e.target.value }))
-                        }
-                        placeholder="PAIBP / MTK"
-                        className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-cyan-400/60 transition-all"
-                      />
-                    </label>
-                  </div>
+                <label className="block">
+                  <span className="text-[11px] font-bold text-slate-300">
+                    Kode Mapel <span className="text-slate-500">(opsional)</span>
+                  </span>
+                  <input
+                    value={subjectForm.code}
+                    onChange={(e) =>
+                      setSubjectForm((prev) => ({ ...prev, code: e.target.value }))
+                    }
+                    placeholder="PAIBP / MTK"
+                    className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-cyan-400/60 transition-all"
+                  />
+                </label>
+              </div>
 
-                  <label className="block max-w-[160px]">
-                    <span className="text-[11px] font-bold text-slate-300">Urutan Tampil</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={subjectForm.displayOrder}
-                      onChange={(e) =>
-                        setSubjectForm((prev) => ({ ...prev, displayOrder: e.target.value }))
-                      }
-                      className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-cyan-400/60 transition-all"
-                    />
-                  </label>
-                </>
-              ) : (
-                <>
-                  <label className="block">
-                    <span className="text-[11px] font-bold text-slate-300">
-                      Kode TP <span className="text-slate-500">(opsional)</span>
-                    </span>
-                    <input
-                      autoFocus
-                      value={objectiveForm.code}
-                      onChange={(e) =>
-                        setObjectiveForm((prev) => ({ ...prev, code: e.target.value }))
-                      }
-                      placeholder="TP 1"
-                      className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-violet-400/60 transition-all"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-[11px] font-bold text-slate-300">
-                      Tujuan Pembelajaran *
-                    </span>
-                    <textarea
-                      value={objectiveForm.description}
-                      onChange={(e) =>
-                        setObjectiveForm((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      placeholder="Tuliskan deskripsi Tujuan Pembelajaran..."
-                      rows={4}
-                      className="mt-1.5 w-full rounded-xl bg-slate-900 border border-white/[0.1] px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 transition-all resize-y leading-relaxed"
-                    />
-                  </label>
-                  <label className="block max-w-[160px]">
-                    <span className="text-[11px] font-bold text-slate-300">Urutan Tampil</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={objectiveForm.displayOrder}
-                      onChange={(e) =>
-                        setObjectiveForm((prev) => ({
-                          ...prev,
-                          displayOrder: e.target.value,
-                        }))
-                      }
-                      className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-violet-400/60 transition-all"
-                    />
-                  </label>
-                </>
-              )}
+              <label className="block max-w-[160px]">
+                <span className="text-[11px] font-bold text-slate-300">Urutan Tampil</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={subjectForm.displayOrder}
+                  onChange={(e) =>
+                    setSubjectForm((prev) => ({ ...prev, displayOrder: e.target.value }))
+                  }
+                  className="mt-1.5 w-full h-10 rounded-xl bg-slate-900 border border-white/[0.1] px-3 text-xs font-semibold text-white outline-none focus:border-cyan-400/60 transition-all"
+                />
+              </label>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-white/[0.07]">
                 <button
                   type="button"
                   onClick={() => {
                     setSubjectModal(null);
-                    setObjectiveModal(null);
                     setError(null);
                   }}
                   className="px-4 py-2 rounded-xl border border-white/[0.08] bg-white/[0.04] text-slate-400 hover:text-white text-xs font-bold cursor-pointer transition-all"
@@ -1315,13 +1183,9 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={subjectModal ? handleSaveSubject : handleSaveObjective}
+                  onClick={handleSaveSubject}
                   disabled={saving}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black disabled:opacity-50 cursor-pointer shadow-md transition-all ${
-                    subjectModal
-                      ? 'bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-cyan-500/20'
-                      : 'bg-violet-500 text-white hover:bg-violet-400 shadow-violet-500/20'
-                  }`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 hover:bg-cyan-400 text-xs font-black disabled:opacity-50 cursor-pointer shadow-md shadow-cyan-500/20 transition-all"
                 >
                   {saving ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />

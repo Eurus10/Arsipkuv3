@@ -89,6 +89,8 @@ export interface RaporStsClassData {
   subjects: RaporSubject[];
   subjectRecords: Record<string, StudentSubjectRecord>; // subjectId -> StudentSubjectRecord
   additionalInfo: Record<string, StudentAdditionalInfo>; // studentId -> StudentAdditionalInfo
+  characterRecords?: Record<string, StudentCharacterRecord>; // studentId -> StudentCharacterRecord
+  customCharacterDescriptors?: CharacterDescriptor[];
   lastModified: string;
 }
 
@@ -244,3 +246,331 @@ export const DEFAULT_RAPOR_CONFIG: RaporStsConfig = {
   passingGrade: 75,
   classTeachers: DEFAULT_CLASS_TEACHERS,
 };
+
+// ============================================================
+// CHARACTER ASSESSMENT & MASTERY TYPES
+// ============================================================
+
+export type CharacterPredicate = 'A' | 'B' | 'C' | 'D';
+export type MasteryStatus = 'Sangat Baik' | 'Baik' | 'Cukup' | 'Perlu Bimbingan';
+
+export interface CharacterDescriptor {
+  id: string; // e.g. "char_1"
+  code: string; // "1" .. "18"
+  name: string; // e.g. "Religius"
+  order: number;
+  indicators: {
+    A: string;
+    B: string;
+    C: string;
+    D: string;
+  };
+}
+
+export interface StudentCharacterScore {
+  predicate: CharacterPredicate | null;
+  description: string;
+  customized?: boolean;
+}
+
+export interface StudentCharacterRecord {
+  studentId: string;
+  characterScores: Record<string, StudentCharacterScore>; // charId -> StudentCharacterScore
+  teacherNote?: string;
+}
+
+/**
+ * Determine letter predicate (A/B/C/D) from numeric score
+ */
+export function getScorePredicate(
+  score: number | null | undefined,
+  passingGrade: number = 75,
+  customThresholds?: { minA?: number; minB?: number; minC?: number }
+): CharacterPredicate | '-' {
+  if (typeof score !== 'number' || isNaN(score) || score === null) return '-';
+
+  let minA = customThresholds?.minA;
+  let minB = customThresholds?.minB;
+  let minC = customThresholds?.minC ?? passingGrade;
+
+  if (minA === undefined || minB === undefined) {
+    try {
+      const raw = localStorage.getItem('sdit_rapor_sts_grade_range_config_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          minA = minA ?? parsed.minA;
+          minB = minB ?? parsed.minB;
+          minC = minC ?? parsed.minC ?? parsed.passingGrade;
+        }
+      }
+    } catch {
+      // fallback to standard
+    }
+  }
+
+  minA = minA ?? 91;
+  minB = minB ?? 81;
+  minC = minC ?? passingGrade;
+
+  if (score >= minA) return 'A';
+  if (score >= minB) return 'B';
+  if (score >= minC) return 'C';
+  return 'D';
+}
+
+/**
+ * Determine academic mastery status from predicate
+ */
+export function getMasteryStatusFromPredicate(
+  predicate: CharacterPredicate | '-' | string
+): MasteryStatus | '-' {
+  try {
+    const raw = localStorage.getItem('sdit_rapor_sts_grade_range_config_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.labels && typeof parsed.labels === 'object') {
+        const custom = parsed.labels[predicate];
+        if (custom) return custom as MasteryStatus;
+      }
+    }
+  } catch {
+    // fallback to standard
+  }
+
+  switch (predicate) {
+    case 'A':
+      return 'Sangat Baik';
+    case 'B':
+      return 'Baik';
+    case 'C':
+      return 'Cukup';
+    case 'D':
+      return 'Perlu Bimbingan';
+    default:
+      return '-';
+  }
+}
+
+/**
+ * 18 Default Standard Character Descriptors (PPK & Nilai SDIT)
+ */
+export const DEFAULT_CHARACTER_DESCRIPTORS: CharacterDescriptor[] = [
+  {
+    id: 'char_religius',
+    code: '1',
+    name: 'Religius',
+    order: 1,
+    indicators: {
+      A: 'Selalu istiqomah dalam ibadah, berdoa dengan khusyuk, dan menjadi teladan adab bagi teman.',
+      B: 'Taat beribadah dan terbiasa berdoa dengan tertib sebelum serta sesudah belajar.',
+      C: 'Menjalankan ibadah dan doa bersama, terkadang masih perlu diingatkan ketertibannya.',
+      D: 'Memerlukan pendampingan dalam pembiasaan ibadah rutin dan adab berdoa.',
+    },
+  },
+  {
+    id: 'char_jujur',
+    code: '2',
+    name: 'Jujur',
+    order: 2,
+    indicators: {
+      A: 'Selalu berkata benar, menjunjung tinggi kejujuran saat asesmen, dan berani mengakui kekeliruan.',
+      B: 'Berperilaku jujur dalam perkataan maupun perbuatan saat belajar di kelas.',
+      C: 'Mulai menunjukkan sikap jujur, sesekali masih perlu ditegaskan untuk berkata apa adanya.',
+      D: 'Perlu bimbingan intensif untuk menumbuhkan sikap berani berkata dan berbuat jujur.',
+    },
+  },
+  {
+    id: 'char_toleransi',
+    code: '3',
+    name: 'Toleransi',
+    order: 3,
+    indicators: {
+      A: 'Sangat menghargai perbedaan latar belakang teman dan proaktif merangkul semua teman tanpa membeda-bedakan.',
+      B: 'Bersikap ramah, tidak membeda-bedakan teman, dan menghargai keragaman di kelas.',
+      C: 'Mampu menerima perbedaan, sesekali masih perlu diingatkan untuk tidak membatasi pertemanan.',
+      D: 'Perlu arahan untuk lebih terbuka menerima perbedaan dan menghormati hak teman lain.',
+    },
+  },
+  {
+    id: 'char_disiplin',
+    code: '4',
+    name: 'Disiplin',
+    order: 4,
+    indicators: {
+      A: 'Selalu mematuhi aturan, hadir tepat waktu, dan menyelesaikan tugas sesuai ketentuan.',
+      B: 'Umumnya mematuhi aturan dan menyelesaikan tugas dengan baik, dengan sedikit pengingat.',
+      C: 'Mulai menunjukkan kedisiplinan, tetapi masih memerlukan beberapa kali pengingat.',
+      D: 'Sering membutuhkan bimbingan dalam mematuhi aturan sekolah dan ketepatan tugas.',
+    },
+  },
+  {
+    id: 'char_kerja_keras',
+    code: '5',
+    name: 'Kerja Kas / Gigih',
+    order: 5,
+    indicators: {
+      A: 'Memiliki daya juang tinggi, pantang menyerah saat menghadapi tantangan materi yang rumit.',
+      B: 'Bersungguh-sungguh dan fokus dalam menuntaskan kegiatan pembelajaran hingga tuntas.',
+      C: 'Menunjukkan usaha dalam belajar, terkadang cepat jenuh bila menghadapi tugas sulit.',
+      D: 'Memerlukan motivasi berkelanjutan agar tidak mudah putus asa saat belajar.',
+    },
+  },
+  {
+    id: 'char_kreatif',
+    code: '6',
+    name: 'Kreatif',
+    order: 6,
+    indicators: {
+      A: 'Sangat kaya ide baru, terampil menuangkan gagasan unik, dan inovatif dalam memecahkan masalah.',
+      B: 'Mampu menghasilkan ide karya yang menarik dan variatif sesuai arahan guru.',
+      C: 'Mampu mengerjakan karya sesuai instruksi contoh, inisiatif ide baru mulai tumbuh.',
+      D: 'Memerlukan stimulasi dan bimbingan untuk berani mengeksplorasi ide-ide kreatif.',
+    },
+  },
+  {
+    id: 'char_mandiri',
+    code: '7',
+    name: 'Mandiri',
+    order: 7,
+    indicators: {
+      A: 'Mampu mengatur kebutuhan dan perlengkapan belajarnya secara mandiri tanpa bergantung pada orang lain.',
+      B: 'Terbiasa menyiapkan buku dan menuntaskan tugas belajar secara mandiri.',
+      C: 'Mampu belajar mandiri, namun sesekali masih mencari bantuan orang lain untuk hal sepele.',
+      D: 'Masih sering bergantung pada arahan guru atau bantuan teman dalam mengurus keperluannya.',
+    },
+  },
+  {
+    id: 'char_demokratis',
+    code: '8',
+    name: 'Demokratis',
+    order: 8,
+    indicators: {
+      A: 'Sangat bijak mendengarkan pandangan teman dan aktif membangun kesepakatan bersama secara adil.',
+      B: 'Terbuka menerima masukan teman dan menghormati keputusan musyawarah kelas.',
+      C: 'Mau mendengarkan pendapat teman, sesekali masih bersikukuh pada keinginannya sendiri.',
+      D: 'Perlu belajar menghargai pendapat kelompok dan menerima keputusan bersama dengan lapang dada.',
+    },
+  },
+  {
+    id: 'char_rasa_ingin_tahu',
+    code: '9',
+    name: 'Rasa Ingin Tahu',
+    order: 9,
+    indicators: {
+      A: 'Sangat antusias bertanya hal-hal mendalam dan gemar mengeksplorasi pengetahuan baru.',
+      B: 'Kerap mengajukan pertanyaan bermanfaat seputar materi pelajaran yang dibahas.',
+      C: 'Menunjukkan minat belajar, namun belum terbiasa aktif mengajukan pertanyaan.',
+      D: 'Masih pasif saat pembelajaran dan perlu didorong rasa penasarannya terhadap ilmu.',
+    },
+  },
+  {
+    id: 'char_semangat_kebangsaan',
+    code: '10',
+    name: 'Semangat Kebangsaan',
+    order: 10,
+    indicators: {
+      A: 'Sangat khidmat saat kegiatan upacara dan bangga terhadap keragaman budaya Indonesia.',
+      B: 'Tertib mengikuti upacara bendera dan menghormati simbol-simbol kehormatan negara.',
+      C: 'Mengikuti kegiatan kebangsaan dengan cukup tertib meski sesekali kurang fokus.',
+      D: 'Perlu penanaman sikap khidmat dan rasa hormat saat menyanyikan lagu kebangsaan/upacara.',
+    },
+  },
+  {
+    id: 'char_cinta_tanah_air',
+    code: '11',
+    name: 'Cinta Tanah Air',
+    order: 11,
+    indicators: {
+      A: 'Menunjukkan kebanggaan tinggi terhadap produk, budaya, dan bahasa Indonesia dalam keseharian.',
+      B: 'Menggunakan bahasa Indonesia dengan baik dan mencintai kekayaan alam nusantara.',
+      C: 'Cukup mengenal identitas tanah air, wawasan cinta lingkungan nusantara mulai bertumbuh.',
+      D: 'Perlu pengenalan lebih mendalam mengenai cinta dan kepedulian terhadap tanah air.',
+    },
+  },
+  {
+    id: 'char_menghargai_prestasi',
+    code: '12',
+    name: 'Menghargai Prestasi',
+    order: 12,
+    indicators: {
+      A: 'Selalu tulus mengapresiasi keberhasilan orang lain dan termotivasi untuk terus berprestasi.',
+      B: 'Menghargai capaian teman dan bersikap sportif dalam setiap perlombaan atau asesmen.',
+      C: 'Mampu memberi ucapan selamat kepada teman, sikap sportif perlu terus dipupuk.',
+      D: 'Perlu bimbingan agar tidak merasa rendah diri atau berkecil hati saat teman meraih prestasi.',
+    },
+  },
+  {
+    id: 'char_bersahabat',
+    code: '13',
+    name: 'Bersahabat / Komunikatif',
+    order: 13,
+    indicators: {
+      A: 'Sangat luwes berkomunikasi, ramah, tutur kata santun, dan disenangi banyak teman.',
+      B: 'Mampu berkomunikasi dengan baik, bersikap hangat, dan mudah bekerja sama.',
+      C: 'Mampu bergaul dengan teman sebangku/kelompok, pembiasaan interaksi kelas terus berkembang.',
+      D: 'Cenderung menarik diri atau pasif, perlu dorongan agar lebih percaya diri berbicara.',
+    },
+  },
+  {
+    id: 'char_cinta_damai',
+    code: '14',
+    name: 'Cinta Damai',
+    order: 14,
+    indicators: {
+      A: 'Proaktif mencegah perselisihan kelas, pembawa ketenangan, dan cepat memaafkan teman.',
+      B: 'Suka menciptakan suasana rukun, tidak suka mencari keributan, dan menjauhi konflik.',
+      C: 'Mampu menjaga kerukunan, namun terkadang masih mudah terpancing emosi kecil dengan teman.',
+      D: 'Perlu pendampingan mengelola emosi agar tidak mudah berselisih atau berselisih paham.',
+    },
+  },
+  {
+    id: 'char_gemar_membaca',
+    code: '15',
+    name: 'Gemar Membaca (Rajin)',
+    order: 15,
+    indicators: {
+      A: 'Memiliki budaya literasi tinggi, selalu antusias membaca buku di perpustakaan atau pojok baca.',
+      B: 'Rajin membaca buku pelajaran maupun cerita edukatif di waktu luang kelas.',
+      C: 'Membaca buku saat diperintahkan guru, kebiasaan literasi mandiri mulai dirintis.',
+      D: 'Minat baca masih rendah, perlu bimbingan memilih bahan bacaan yang menarik minatnya.',
+    },
+  },
+  {
+    id: 'char_peduli_lingkungan',
+    code: '16',
+    name: 'Peduli Lingkungan',
+    order: 16,
+    indicators: {
+      A: 'Sangat tanggap memungut sampah, merawat tanaman sekolah, dan menjaga meja belajar selalu higienis.',
+      B: 'Terbiasa membuang sampah pada tempatnya dan menjaga kebersihan laci serta meja kelas.',
+      C: 'Menjaga kebersihan saat diperingatkan guru, kepedulian pada sampah mulai berkembang.',
+      D: 'Masih sering meninggalkan sampah atau merapikan meja belajarnya sendiri tanpa diingatkan.',
+    },
+  },
+  {
+    id: 'char_peduli_sosial',
+    code: '17',
+    name: 'Peduli Sosial',
+    order: 17,
+    indicators: {
+      A: 'Memiliki empati tinggi, proaktif membantu teman kesulitan, dan gemar berinfak serta berbagi.',
+      B: 'Ringan tangan membantu teman dan tanggap menyisihkan rezeki untuk kegiatan sosial.',
+      C: 'Mau berbagi dan menolong teman jika diminta bantuan oleh guru atau teman terkait.',
+      D: 'Perlu dipupuk rasa kepekaan sosial dan kerelaan berbagi kepada teman yang membutuhkan.',
+    },
+  },
+  {
+    id: 'char_tanggung_jawab',
+    code: '18',
+    name: 'Tanggung Jawab',
+    order: 18,
+    indicators: {
+      A: 'Selalu menuntaskan amanah piket dan tugas sekolah dengan kesadaran penuh tanpa perlu diawasi.',
+      B: 'Menjalankan jadwal piket dan tugas belajar dengan baik dan penuh kesadaran.',
+      C: 'Melaksanakan kewajiban bila diingatkan, rasa memiliki terhadap tugas mulai terbentuk.',
+      D: 'Masih sering mengabaikan tugas piket atau tugas kelompok, perlu bimbingan bertanggung jawab.',
+    },
+  },
+];
+
