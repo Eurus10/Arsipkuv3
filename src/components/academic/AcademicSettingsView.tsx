@@ -21,6 +21,7 @@ import {
   HeartHandshake,
   Search,
   Filter,
+  Database,
 } from 'lucide-react';
 import TeacherAssignmentPanel from './TeacherAssignmentPanel';
 import AcademicPeriodPanel from './AcademicPeriodPanel';
@@ -28,6 +29,7 @@ import SchoolIdentityPanel from './SchoolIdentityPanel';
 import TeacherPinSecurityPanel from './TeacherPinSecurityPanel';
 import { GradeRangePanel } from './GradeRangePanel';
 import { CharacterMasterPanel } from './CharacterMasterPanel';
+import { BackupRestorePanel } from './BackupRestorePanel';
 import {
   AcademicLevel,
   AcademicSubject,
@@ -47,7 +49,8 @@ export type AcademicSectionType =
   | 'assignments'
   | 'periods'
   | 'school_identity'
-  | 'security_pins';
+  | 'security_pins'
+  | 'backup_restore';
 
 interface AcademicSettingsViewProps {
   showNotification?: (message: string, type?: 'success' | 'info') => void;

@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import {
   Sparkles,
-  Check,
   Search,
   User,
   Users,
@@ -11,8 +10,6 @@ import {
   ChevronRight,
   HeartHandshake,
   CheckCircle2,
-  AlertCircle,
-  ShieldCheck,
   Zap,
 } from 'lucide-react';
 import {
@@ -34,6 +31,13 @@ interface RaporCharacterGridProps {
   onSaveCharacterRecords?: () => Promise<void>;
   isSaving?: boolean;
 }
+
+const PREDICATE_LABELS: Record<CharacterPredicate, string> = {
+  A: 'Sangat Baik',
+  B: 'Baik',
+  C: 'Cukup',
+  D: 'Perlu Bimbingan',
+};
 
 export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
   classData,
@@ -57,7 +61,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [notification, setNotification] = useState<string | null>(null);
-  const [showBulkConfirmModal, setShowBulkConfirmModal] = useState(false);
+  const [bulkModalPredicate, setBulkModalPredicate] = useState<CharacterPredicate | null>(null);
 
   // Sync selectedStudentId if empty
   React.useEffect(() => {
@@ -208,8 +212,8 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
     onUpdateCharacterRecords(updatedRecords);
   };
 
-  // Quick Action 1: Set All 18 Characters for Current Student to 'B' (Baik)
-  const handleSetCurrentStudentDefaultB = () => {
+  // Quick Action 1: Set All 18 Characters for Current Student to selected Predicate (A/B/C/D)
+  const handleSetCurrentStudentPredicate = (predicate: CharacterPredicate) => {
     if (!currentStudent) return;
 
     const updatedCharacterScores: Record<string, StudentCharacterScore> = {
@@ -218,8 +222,8 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
 
     activeDescriptors.forEach((desc) => {
       updatedCharacterScores[desc.id] = {
-        predicate: 'B',
-        description: desc.indicators['B'] || '',
+        predicate,
+        description: desc.indicators[predicate] || '',
         customized: false,
       };
     });
@@ -235,13 +239,13 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
 
     onUpdateCharacterRecords(updatedRecords);
     setNotification(
-      `Semua 18 karakter untuk ${currentStudent.name} berhasil diatur ke Predikat B (Baik).`
+      `Semua 18 karakter untuk ${currentStudent.name} diatur ke Predikat ${predicate} (${PREDICATE_LABELS[predicate]}).`
     );
     setTimeout(() => setNotification(null), 3000);
   };
 
-  // Quick Action 2: Apply 'B' to Entire Class
-  const handleConfirmApplyClassDefaultB = () => {
+  // Quick Action 2: Apply selected Predicate (A/B/C/D) to Entire Class
+  const handleConfirmApplyClassPredicate = (predicate: CharacterPredicate) => {
     const updatedRecords: Record<string, StudentCharacterRecord> = {
       ...characterRecords,
     };
@@ -258,14 +262,11 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
       };
 
       activeDescriptors.forEach((desc) => {
-        // If not already filled, or set default
-        if (!newScores[desc.id] || !newScores[desc.id].predicate) {
-          newScores[desc.id] = {
-            predicate: 'B',
-            description: desc.indicators['B'] || '',
-            customized: false,
-          };
-        }
+        newScores[desc.id] = {
+          predicate,
+          description: desc.indicators[predicate] || '',
+          customized: false,
+        };
       });
 
       updatedRecords[st.id] = {
@@ -276,9 +277,9 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
     });
 
     onUpdateCharacterRecords(updatedRecords);
-    setShowBulkConfirmModal(false);
+    setBulkModalPredicate(null);
     setNotification(
-      `Berhasil menerapkan Predikat B (Baik) default untuk seluruh siswa se-kelas!`
+      `Berhasil mengatur Predikat ${predicate} (${PREDICATE_LABELS[predicate]}) untuk seluruh siswa se-kelas!`
     );
     setTimeout(() => setNotification(null), 3500);
   };
@@ -306,7 +307,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
         </div>
       )}
 
-      {/* Top Action Bar */}
+      {/* Top Action Bar with A/B/C/D Quick Dropdowns */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#07111E] border border-white/[0.08] shadow-xl">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-purple-300 shrink-0">
@@ -320,34 +321,81 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
               </span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Pilih predikat A, B, C, atau D. Deskripsi capaian terisi otomatis dan dapat disesuaikan manual.
+              Pilih predikat A, B, C, atau D pada setiap aspek. Narasi deskripsi terisi otomatis dan dapat diedit langsung.
             </p>
           </div>
         </div>
 
-        {/* Quick Toolbar Buttons */}
+        {/* Quick Toolbar: Dropdowns for Student & Class + Save Button */}
         <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handleSetCurrentStudentDefaultB}
-            disabled={!currentStudent}
-            className="px-3 py-2 rounded-xl border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-            title="Set semua 18 karakter siswa ini ke B (Baik)"
-          >
-            <Zap className="w-3.5 h-3.5" />
-            <span>Set Siswa Ini: B (Baik)</span>
-          </button>
+          {/* Dropdown 1: Set Siswa Ini */}
+          <div className="relative">
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                const val = e.target.value as CharacterPredicate;
+                if (val) {
+                  handleSetCurrentStudentPredicate(val);
+                  e.target.value = '';
+                }
+              }}
+              disabled={!currentStudent}
+              className="px-3 py-2 rounded-xl border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold focus:outline-none cursor-pointer disabled:opacity-50 appearance-none pr-7 transition-all"
+              title="Set semua 18 karakter siswa ini ke predikat pilihan"
+            >
+              <option value="" disabled className="bg-slate-900 text-slate-400">
+                ⚡ Set Siswa Ini (A/B/C/D)...
+              </option>
+              <option value="A" className="bg-slate-900 text-white">
+                Set Siswa Ini: A (Sangat Baik)
+              </option>
+              <option value="B" className="bg-slate-900 text-white">
+                Set Siswa Ini: B (Baik)
+              </option>
+              <option value="C" className="bg-slate-900 text-white">
+                Set Siswa Ini: C (Cukup)
+              </option>
+              <option value="D" className="bg-slate-900 text-white">
+                Set Siswa Ini: D (Perlu Bimbingan)
+              </option>
+            </select>
+            <Zap className="w-3.5 h-3.5 text-sky-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
 
-          <button
-            type="button"
-            onClick={() => setShowBulkConfirmModal(true)}
-            className="px-3 py-2 rounded-xl border border-purple-400/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
-            title="Terapkan default B ke seluruh siswa yang belum diisi"
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Set Default Se-Kelas (B)</span>
-          </button>
+          {/* Dropdown 2: Set Seluruh Kelas */}
+          <div className="relative">
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                const val = e.target.value as CharacterPredicate;
+                if (val) {
+                  setBulkModalPredicate(val);
+                  e.target.value = '';
+                }
+              }}
+              className="px-3 py-2 rounded-xl border border-purple-400/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-semibold focus:outline-none cursor-pointer appearance-none pr-7 transition-all"
+              title="Set seluruh siswa se-kelas ke predikat pilihan"
+            >
+              <option value="" disabled className="bg-slate-900 text-slate-400">
+                👥 Set Se-Kelas (A/B/C/D)...
+              </option>
+              <option value="A" className="bg-slate-900 text-white">
+                Set Se-Kelas: A (Sangat Baik)
+              </option>
+              <option value="B" className="bg-slate-900 text-white">
+                Set Se-Kelas: B (Baik)
+              </option>
+              <option value="C" className="bg-slate-900 text-white">
+                Set Se-Kelas: C (Cukup)
+              </option>
+              <option value="D" className="bg-slate-900 text-white">
+                Set Se-Kelas: D (Perlu Bimbingan)
+              </option>
+            </select>
+            <Users className="w-3.5 h-3.5 text-purple-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
 
+          {/* Save Button */}
           {onSaveCharacterRecords && (
             <button
               type="button"
@@ -362,7 +410,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
         </div>
       </div>
 
-      {/* Main Workspace: Left Sidebar (Student List) + Right Content (18 Character Cards) */}
+      {/* Main Workspace: Left Sidebar (Student List) + Right Content (18 Character Rows) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* LEFT COLUMN: Student Selector */}
         <div className="lg:col-span-4 xl:col-span-3 rounded-2xl bg-[#07111E] border border-white/[0.08] p-4 space-y-3 shadow-xl">
@@ -458,7 +506,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
           </div>
         </div>
 
-        {/* RIGHT COLUMN: 18 Character Cards for Current Student */}
+        {/* RIGHT COLUMN: 18 Character Rows in Compact Format */}
         <div className="lg:col-span-8 xl:col-span-9 space-y-4">
           {/* Student Header & Quick Switcher */}
           {currentStudent && (
@@ -473,7 +521,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  Status Kelengkapan: <strong className="text-emerald-400 font-semibold">{completedCount} dari {activeDescriptors.length}</strong> karakter dinilai
+                  Status Penilaian: <strong className="text-emerald-400 font-semibold">{completedCount} dari {activeDescriptors.length}</strong> karakter terisi
                 </p>
               </div>
 
@@ -504,8 +552,8 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
             </div>
           )}
 
-          {/* 18 Character Cards Grid */}
-          <div className="space-y-3">
+          {/* Compact 18 Character Rows (1. Religius | A B C D | deskripsi manual) */}
+          <div className="space-y-2">
             {activeDescriptors.map((desc, idx) => {
               const scoreItem = currentRecord.characterScores[desc.id];
               const selectedPred = scoreItem?.predicate || null;
@@ -515,101 +563,82 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
               return (
                 <div
                   key={desc.id}
-                  className="p-4 rounded-2xl bg-[#07111E] border border-white/[0.08] hover:border-white/[0.15] transition-all space-y-3 shadow-lg"
+                  className="flex flex-col md:flex-row md:items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-[#07111E] border border-white/[0.08] hover:border-white/[0.18] transition-all shadow-md"
                 >
-                  {/* Top: Number, Character Name, Predicate Selection Buttons */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-lg bg-white/[0.06] border border-white/[0.1] text-xs font-bold text-slate-300 flex items-center justify-center shrink-0">
-                        {idx + 1}
-                      </span>
-                      <h4 className="text-sm font-bold text-white tracking-wide">
-                        {desc.name}
-                      </h4>
-                    </div>
-
-                    {/* Predicate Selector Chips: A, B, C, D */}
-                    <div className="flex items-center gap-1.5 self-start sm:self-auto">
-                      {(['A', 'B', 'C', 'D'] as CharacterPredicate[]).map((p) => {
-                        const isChosen = selectedPred === p;
-                        const labelMap = {
-                          A: 'Sangat Baik',
-                          B: 'Baik',
-                          C: 'Cukup',
-                          D: 'Perlu Bimbingan',
-                        };
-
-                        const colorClasses = {
-                          A: isChosen
-                            ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-md shadow-emerald-500/20'
-                            : 'bg-emerald-500/10 text-emerald-300 border-emerald-400/25 hover:bg-emerald-500/20',
-                          B: isChosen
-                            ? 'bg-sky-500 text-slate-950 font-bold border-sky-400 shadow-md shadow-sky-500/20'
-                            : 'bg-sky-500/10 text-sky-300 border-sky-400/25 hover:bg-sky-500/20',
-                          C: isChosen
-                            ? 'bg-amber-500 text-slate-950 font-bold border-amber-400 shadow-md shadow-amber-500/20'
-                            : 'bg-amber-500/10 text-amber-300 border-amber-400/25 hover:bg-amber-500/20',
-                          D: isChosen
-                            ? 'bg-rose-500 text-white font-bold border-rose-400 shadow-md shadow-rose-500/20'
-                            : 'bg-rose-500/10 text-rose-300 border-rose-400/25 hover:bg-rose-500/20',
-                        };
-
-                        return (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => handleSelectPredicate(desc, p)}
-                            className={`px-3 py-1 rounded-lg text-xs border transition-all flex items-center gap-1 cursor-pointer ${colorClasses[p]}`}
-                            title={`${p} — ${labelMap[p]}`}
-                          >
-                            <span className="font-extrabold">{p}</span>
-                            <span className="text-[11px] hidden sm:inline">
-                              {labelMap[p]}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                  {/* Part 1: Number & Character Name (e.g. 1. Religius) */}
+                  <div className="flex items-center gap-2 md:w-52 lg:w-56 shrink-0">
+                    <span className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/[0.1] text-[11px] font-bold text-slate-300 flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span className="text-xs font-bold text-white truncate" title={desc.name}>
+                      {desc.name}
+                    </span>
                   </div>
 
-                  {/* Bottom: Description Textarea (Editable & Auto-generated) */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
-                      <span className="flex items-center gap-1">
-                        <span>Deskripsi Capaian Perkembangan</span>
-                        {isCustomized && (
-                          <span className="text-amber-400 font-medium">
-                            (Disesuaikan Manual)
-                          </span>
-                        )}
-                      </span>
+                  {/* Part 2: Predicate Chips [A] [B] [C] [D] */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {(['A', 'B', 'C', 'D'] as CharacterPredicate[]).map((p) => {
+                      const isChosen = selectedPred === p;
+                      const colorClasses = {
+                        A: isChosen
+                          ? 'bg-emerald-500 text-slate-950 font-black border-emerald-400 shadow-md shadow-emerald-500/25'
+                          : 'bg-emerald-500/10 text-emerald-300 border-emerald-400/25 hover:bg-emerald-500/20',
+                        B: isChosen
+                          ? 'bg-sky-500 text-slate-950 font-black border-sky-400 shadow-md shadow-sky-500/25'
+                          : 'bg-sky-500/10 text-sky-300 border-sky-400/25 hover:bg-sky-500/20',
+                        C: isChosen
+                          ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow-md shadow-amber-500/25'
+                          : 'bg-amber-500/10 text-amber-300 border-amber-400/25 hover:bg-amber-500/20',
+                        D: isChosen
+                          ? 'bg-rose-500 text-white font-black border-rose-400 shadow-md shadow-rose-500/25'
+                          : 'bg-rose-500/10 text-rose-300 border-rose-400/25 hover:bg-rose-500/20',
+                      };
 
-                      {isCustomized && (
+                      return (
                         <button
+                          key={p}
                           type="button"
-                          onClick={() => handleResetDescription(desc)}
-                          className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
-                          title="Kembalikan ke narasi indikator bawaan"
+                          onClick={() => handleSelectPredicate(desc, p)}
+                          className={`w-7 h-7 sm:w-8 sm:h-7 rounded-lg text-xs border transition-all flex items-center justify-center cursor-pointer ${colorClasses[p]}`}
+                          title={`${p} — ${PREDICATE_LABELS[p]}`}
                         >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Reset Narasi Baku</span>
+                          {p}
                         </button>
-                      )}
-                    </div>
+                      );
+                    })}
+                  </div>
 
-                    <textarea
-                      rows={2}
+                  {/* Part 3: Manual / Auto Description Input */}
+                  <div className="flex-1 min-w-0 relative flex items-center gap-1.5">
+                    <input
+                      type="text"
                       value={descText}
                       onChange={(e) =>
                         handleDescriptionChange(desc.id, e.target.value)
                       }
                       placeholder={
                         selectedPred
-                          ? desc.indicators[selectedPred] || 'Tulis deskripsi capaian...'
-                          : 'Pilih predikat A/B/C/D di atas untuk mengisi deskripsi otomatis...'
+                          ? desc.indicators[selectedPred] || 'Tulis deskripsi...'
+                          : 'Pilih A/B/C/D atau ketik deskripsi manual...'
                       }
-                      className="w-full px-3 py-2 rounded-xl border border-white/[0.08] bg-slate-950/70 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-400/40 focus:ring-1 focus:ring-purple-400/20 leading-relaxed custom-scrollbar resize-none"
+                      className={`w-full h-8 px-3 rounded-lg border text-xs text-slate-200 placeholder-slate-500 focus:outline-none transition-all ${
+                        isCustomized
+                          ? 'border-amber-400/40 bg-amber-500/[0.04] focus:border-amber-400'
+                          : 'border-white/[0.08] bg-slate-950/70 focus:border-purple-400/50'
+                      }`}
+                      title={descText}
                     />
+
+                    {isCustomized && (
+                      <button
+                        type="button"
+                        onClick={() => handleResetDescription(desc)}
+                        className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/[0.05] transition-colors cursor-pointer"
+                        title="Kembalikan narasi ke indikator baku"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -633,8 +662,8 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
         </div>
       </div>
 
-      {/* Confirmation Modal for Applying Default B to entire class */}
-      {showBulkConfirmModal && (
+      {/* Confirmation Modal for Applying Selected Predicate to entire class */}
+      {bulkModalPredicate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
           <div className="w-full max-w-md rounded-2xl bg-[#0B1525] border border-white/[0.1] p-6 space-y-4 shadow-2xl">
             <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-400/30 text-purple-300 flex items-center justify-center mx-auto">
@@ -643,27 +672,27 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
 
             <div className="text-center space-y-1.5">
               <h3 className="text-base font-bold text-white">
-                Terapkan Default B (Baik) Se-Kelas?
+                Terapkan Predikat {bulkModalPredicate} ({PREDICATE_LABELS[bulkModalPredicate]}) Se-Kelas?
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Tindakan ini akan mengisi seluruh 18 karakter untuk <strong>{students.length} siswa</strong> dengan Predikat <strong>B (Baik)</strong> dan narasi otomatis. Karakter yang sudah Anda beri nilai lain sebelumnya tidak akan terhapus.
+                Tindakan ini akan mengatur seluruh 18 aspek karakter untuk <strong>{students.length} siswa</strong> dengan Predikat <strong>{bulkModalPredicate} ({PREDICATE_LABELS[bulkModalPredicate]})</strong> beserta narasi capaian indikator baku otomatis.
               </p>
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setShowBulkConfirmModal(false)}
+                onClick={() => setBulkModalPredicate(null)}
                 className="px-4 py-2 rounded-xl border border-white/[0.1] text-xs font-semibold text-slate-300 hover:bg-white/[0.05] cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
-                onClick={handleConfirmApplyClassDefaultB}
+                onClick={() => handleConfirmApplyClassPredicate(bulkModalPredicate)}
                 className="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold shadow-lg shadow-purple-500/25 cursor-pointer"
               >
-                Ya, Terapkan ke Semua
+                Ya, Terapkan ke Seluruh Kelas
               </button>
             </div>
           </div>

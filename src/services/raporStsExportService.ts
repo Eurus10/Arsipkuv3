@@ -176,14 +176,14 @@ function buildAcademicWorksheet(
   r++;
 
   setCell(r, 0, semesterTitle, {
-    font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
+    font: { name: EXCEL_FONT_NAME, sz: 12, bold: true },
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 0, r, 4);
   r++;
 
   setCell(r, 0, `TAHUN PELAJARAN ${schoolYearTitle}`, {
-    font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
+    font: { name: EXCEL_FONT_NAME, sz: 12, bold: true },
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 0, r, 4);
@@ -289,7 +289,7 @@ function buildAcademicWorksheet(
 
       // Predikat (A/B/C/D)
       setCell(r, 3, pred, {
-        font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+        font: { name: EXCEL_FONT_NAME, sz: 9, bold: false },
         alignment: { horizontal: 'center', vertical: 'top' },
         border: BORDER_BLACK_THIN,
       });
@@ -345,7 +345,7 @@ function buildAcademicWorksheet(
   });
   r++;
 
-  setCell(r, 0, `"${displayNote}"`, {
+  setCell(r, 0, displayNote, {
     font: { name: EXCEL_FONT_NAME, sz: 8.5, italic: true },
     alignment: { vertical: 'center', wrapText: true },
     border: BORDER_BLACK_THIN,
@@ -392,13 +392,6 @@ function buildAcademicWorksheet(
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 3, r, 4);
-  r++;
-
-  setCell(r, 3, `NIP. ${config.teacherNip || '-'}`, {
-    font: { name: EXCEL_FONT_NAME, sz: 8 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 3, r, 4);
   r += 2;
 
   // Kepala SDIT AL FIKRI (Tengah)
@@ -419,13 +412,6 @@ function buildAcademicWorksheet(
   const headmasterFormatted = formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah');
   setCell(r, 0, headmasterFormatted, {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true, underline: true },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 0, r, 4);
-  r++;
-
-  setCell(r, 0, `NIP. ${config.headmasterNip || '-'}`, {
-    font: { name: EXCEL_FONT_NAME, sz: 8 },
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 0, r, 4);
@@ -536,14 +522,14 @@ function buildCharacterWorksheet(
   r++;
 
   setCell(r, 0, semesterTitle, {
-    font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
+    font: { name: EXCEL_FONT_NAME, sz: 12, bold: true },
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 0, r, 3);
   r++;
 
   setCell(r, 0, `TAHUN PELAJARAN ${schoolYearTitle}`, {
-    font: { name: EXCEL_FONT_NAME, sz: 11, bold: true },
+    font: { name: EXCEL_FONT_NAME, sz: 12, bold: true },
     alignment: { horizontal: 'center' },
   });
   addMerge(r, 0, r, 3);
@@ -617,7 +603,7 @@ function buildCharacterWorksheet(
     });
 
     setCell(r, 2, p, {
-      font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+      font: { name: EXCEL_FONT_NAME, sz: 9, bold: false },
       alignment: { horizontal: 'center', vertical: 'top' },
       border: BORDER_BLACK_THIN,
     });
@@ -651,7 +637,7 @@ function buildCharacterWorksheet(
 
   // Catatan Karakter Wali Kelas jika ada
   if (studentCharRecord?.teacherNote) {
-    setCell(r, 0, `Catatan Perkembangan Karakter: "${studentCharRecord.teacherNote}"`, {
+    setCell(r, 0, `Catatan Perkembangan Karakter: ${studentCharRecord.teacherNote}`, {
       font: { name: EXCEL_FONT_NAME, sz: 8.5, italic: true },
       border: BORDER_BLACK_THIN,
     });
@@ -667,19 +653,6 @@ function buildCharacterWorksheet(
   });
   addMerge(r, 2, r, 3);
   r += 2;
-
-  setCell(r, 0, 'Mengetahui,', {
-    font: { name: EXCEL_FONT_NAME, sz: 9 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 0, r, 1);
-
-  setCell(r, 2, 'Mengetahui,', {
-    font: { name: EXCEL_FONT_NAME, sz: 9 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 2, r, 3);
-  r++;
 
   setCell(r, 0, 'Orang Tua / Wali Siswa', {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
@@ -708,13 +681,6 @@ function buildCharacterWorksheet(
   addMerge(r, 2, r, 3);
   r++;
 
-  setCell(r, 2, `NIP. ${config.teacherNip || '-'}`, {
-    font: { name: EXCEL_FONT_NAME, sz: 8 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 2, r, 3);
-  r += 2;
-
   // Kepala SDIT AL FIKRI (Tengah)
   setCell(r, 0, 'Mengetahui,', {
     font: { name: EXCEL_FONT_NAME, sz: 9 },
@@ -737,13 +703,6 @@ function buildCharacterWorksheet(
   });
   addMerge(r, 0, r, 3);
   r++;
-
-  setCell(r, 0, `NIP. ${config.headmasterNip || '-'}`, {
-    font: { name: EXCEL_FONT_NAME, sz: 8 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 0, r, 3);
-  r += 2;
 
   // Running footer Lembar 2 (Italic, Hal 2/2)
   setCell(r, 0, `${student.name} • NISN: ${formatStudentNimNisn(student.nim, student.nisn)} • Kelas ${activeClass} • ${config.schoolName || 'SDIT AL FIKRI'}`, {
@@ -1125,7 +1084,7 @@ function createDocxStudentSection(
           text: semesterTitle,
           bold: true,
           font: DOCX_FONT_FAMILY,
-          size: 21,
+          size: 24, // 12pt
         }),
       ],
     }),
@@ -1137,7 +1096,7 @@ function createDocxStudentSection(
           text: `TAHUN PELAJARAN ${schoolYearTitle}`,
           bold: true,
           font: DOCX_FONT_FAMILY,
-          size: 21,
+          size: 24, // 12pt
         }),
       ],
     })
@@ -1326,7 +1285,7 @@ function createDocxStudentSection(
                   children: [
                     new TextRun({
                       text: pred,
-                      bold: true,
+                      bold: false,
                       font: DOCX_FONT_FAMILY,
                       size: 17,
                     }),
@@ -1418,7 +1377,7 @@ function createDocxStudentSection(
                   spacing: { before: 40, after: 40 },
                   children: [
                     new TextRun({
-                      text: `"${displayNote}"`,
+                      text: displayNote,
                       italics: true,
                       font: DOCX_FONT_FAMILY,
                       size: 17,
@@ -1516,16 +1475,6 @@ function createDocxStudentSection(
                   }),
                 ],
               }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: `NIP. ${config.teacherNip || '-'}`,
-                    font: DOCX_FONT_FAMILY,
-                    size: 16,
-                  }),
-                ],
-              }),
             ],
           }),
         ],
@@ -1575,16 +1524,6 @@ function createDocxStudentSection(
                     underline: {},
                     font: DOCX_FONT_FAMILY,
                     size: 18,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: `NIP. ${config.headmasterNip || '-'}`,
-                    font: DOCX_FONT_FAMILY,
-                    size: 16,
                   }),
                 ],
               }),
@@ -1647,7 +1586,7 @@ function createDocxStudentSection(
           text: semesterTitle,
           bold: true,
           font: DOCX_FONT_FAMILY,
-          size: 21,
+          size: 24, // 12pt
         }),
       ],
     }),
@@ -1659,7 +1598,7 @@ function createDocxStudentSection(
           text: `TAHUN PELAJARAN ${schoolYearTitle}`,
           bold: true,
           font: DOCX_FONT_FAMILY,
-          size: 21,
+          size: 24, // 12pt
         }),
       ],
     })
@@ -1778,7 +1717,7 @@ function createDocxStudentSection(
               new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [
-                  new TextRun({ text: p, bold: true, font: DOCX_FONT_FAMILY, size: 17 }),
+                  new TextRun({ text: p, bold: false, font: DOCX_FONT_FAMILY, size: 17 }),
                 ],
               }),
             ],
@@ -1830,7 +1769,7 @@ function createDocxStudentSection(
         spacing: { before: 60, after: 60 },
         children: [
           new TextRun({
-            text: `Catatan Perkembangan Karakter: "${studentCharRecord.teacherNote}"`,
+            text: `Catatan Perkembangan Karakter: ${studentCharRecord.teacherNote}`,
             italics: true,
             font: DOCX_FONT_FAMILY,
             size: 17,

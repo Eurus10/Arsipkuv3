@@ -970,7 +970,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-slate-400 font-normal leading-relaxed">
-                  Input nilai dan catatan perkembangan peserta didik.
+                  Input nilai STS, capaian tujuan pembelajaran (TP), dan nilai akhir peserta didik.
                 </p>
               </div>
             </div>
@@ -1156,32 +1156,6 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         </div>
                       </th>
 
-                      {/* Catatan Guru with AI Sparkle Button */}
-                      <th className="py-3 px-3.5 min-w-[220px] font-semibold border-l border-white/[0.06]">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-slate-200 text-xs font-semibold">Catatan Guru</span>
-                          <button
-                            type="button"
-                            onClick={handleAutoGenerateAllNotes}
-                            disabled={isAiGenerating || students.length === 0}
-                            className="px-2 py-1 rounded-md bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-300 text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
-                            title="Buat catatan guru otomatis untuk semua siswa"
-                          >
-                            {isAiGenerating ? (
-                              <>
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                                <span>Membuat...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Sparkles className="w-3 h-3" />
-                                <span>Auto</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </th>
-
                       {/* Capaian Kompetensi (Hanya tampil jika rincian TP dibuka) */}
                       {showTpColumns && (
                         <th className="py-3 px-3.5 min-w-[220px] font-semibold border-l border-white/[0.06] text-slate-200 text-xs">
@@ -1195,7 +1169,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                     {displayedStudents.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={showTpColumns ? 6 + activeTps.length : 6}
+                          colSpan={showTpColumns ? 7 + activeTps.length : 6}
                           className="text-center py-12 text-slate-400 text-xs font-normal"
                         >
                           Tidak ada siswa yang cocok dengan pencarian.
@@ -1358,38 +1332,6 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                                   <span>{mastery}</span>
                                 </span>
                               )}
-                            </td>
-
-                            {/* Catatan Guru Input with individual AI button */}
-                            <td className="py-2 px-3 border-l border-white/[0.05]">
-                              <div className="flex items-center gap-1.5">
-                                <input
-                                  type="text"
-                                  placeholder="Tulis catatan guru..."
-                                  value={scoreData.teacherNote || ''}
-                                  onChange={(e) =>
-                                    handleTeacherNoteChange(st.id, e.target.value)
-                                  }
-                                  className="w-full h-8 px-2.5 rounded-lg text-xs font-normal bg-[#0A1626] border border-white/[0.08] text-slate-200 placeholder-slate-400 focus:outline-none focus:border-emerald-400 transition-colors leading-[1.4]"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleAutoGenerateStudentNote(st.id, st.name)
-                                  }
-                                  disabled={
-                                    generatingStudentId === st.id || isAiGenerating
-                                  }
-                                  className="w-7 h-7 shrink-0 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/25 text-amber-300 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
-                                  title="Buat catatan AI untuk siswa ini"
-                                >
-                                  {generatingStudentId === st.id ? (
-                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                  ) : (
-                                    <Sparkles className="w-3 h-3" />
-                                  )}
-                                </button>
-                              </div>
                             </td>
 
                             {/* Capaian Kompetensi (Hanya tampil jika mode TP dibuka) */}

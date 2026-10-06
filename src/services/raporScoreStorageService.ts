@@ -889,9 +889,8 @@ export async function saveRaporWorkspaceToSupabase(
 }
 
 /**
- * Mengambil ringkasan ID mapel yang sudah memiliki nilai riil pada periode aktif
- * untuk rombel-rombel tertentu langsung dari database Supabase (student_subject_scores).
- * Digunakan untuk sinkronisasi akurat indikator progres pengisian pada landing kartu guru.
+ * Mengambil ringkasan ID mapel yang sudah selesai dinilai 100% pada periode aktif
+ * untuk rombel-rombel tertentu menggunakan Canonical Progress Source.
  */
 export async function fetchClassScoredSubjectSummary(params: {
   academicPeriodId: string;
@@ -907,27 +906,24 @@ export async function fetchClassScoredSubjectSummary(params: {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('student_subject_scores')
-      .select('class_id, subject_id, final_score, sts_score')
-      .eq('academic_period_id', academicPeriodId)
-      .in('class_id', classIds);
+    const { fetchCanonicalEraporProgress } = await import('./eraporProgressService');
+    const canonicalProgress = await fetchCanonicalEraporProgress(academicPeriodId);
 
-    if (error) {
-      console.warn('Could not fetch subject scores summary from Supabase:', error);
-      return result;
-    }
-
-    for (const row of data || []) {
-      if (row.final_score !== null || row.sts_score !== null) {
-        if (!result[row.class_id]) {
-          result[row.class_id] = new Set<string>();
+    for (const classProgress of canonicalProgress.classes) {
+      const completedSubjectIds = new Set<string>();
+      for (const subj of classProgress.subjects) {
+        if (subj.status === 'completed') {
+          completedSubjectIds.add(subj.subjectId);
+          if (subj.subjectCode) completedSubjectIds.add(subj.subjectCode);
         }
-        result[row.class_id].add(row.subject_id);
       }
+
+      // Map to classId and className keys
+      result[classProgress.classId] = completedSubjectIds;
+      result[classProgress.className] = completedSubjectIds;
     }
   } catch (err) {
-    console.warn('Error fetching class scored subject summary:', err);
+    console.warn('Error fetching canonical class scored subject summary:', err);
   }
 
   return result;

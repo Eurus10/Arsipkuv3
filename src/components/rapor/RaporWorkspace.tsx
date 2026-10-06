@@ -54,6 +54,12 @@ import {
   saveRaporWorkspaceToSupabase,
   fetchClassScoredSubjectSummary,
 } from '../../services/raporScoreStorageService';
+import {
+  fetchCanonicalEraporProgress,
+  EraporOverallMonitoringProgress,
+  SubjectProgressStatus,
+  isValidScore,
+} from '../../services/eraporProgressService';
 import { getStoredStudentsLocal, subscribeToStudents, Student } from '../../services/studentStorage';
 import { RaporScoreGrid } from './RaporScoreGrid';
 import { RaporCharacterGrid } from './RaporCharacterGrid';
@@ -141,7 +147,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   const [cloudStatus, setCloudStatus] = useState<'saved' | 'unsaved' | 'saving' | 'error' | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
-  const [persistedScoredSubjects, setPersistedScoredSubjects] = useState<Record<string, Set<string>>>({});
+  const [canonicalProgress, setCanonicalProgress] = useState<EraporOverallMonitoringProgress | null>(null);
 
   // Landing UI State
   const [landingSearchQuery, setLandingSearchQuery] = useState<string>('');
@@ -154,6 +160,22 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   // Modals & Navigation guard
   const [showExitConfirmModal, setShowExitConfirmModal] = useState<boolean>(false);
   const [pendingExitAction, setPendingExitAction] = useState<'back' | 'change_class' | null>(null);
+
+  // Load canonical progress for the active academic period
+  const loadCanonicalProgress = useCallback(async () => {
+    const periodId = academicAccess?.academicPeriod?.id;
+    if (!periodId) return;
+    try {
+      const data = await fetchCanonicalEraporProgress(periodId);
+      setCanonicalProgress(data);
+    } catch (err) {
+      console.warn('Could not load canonical e-Rapor progress:', err);
+    }
+  }, [academicAccess?.academicPeriod?.id]);
+
+  useEffect(() => {
+    loadCanonicalProgress();
+  }, [loadCanonicalProgress]);
 
   // Resolve academic access from the logged-in teacher assignment.
   useEffect(() => {
@@ -218,36 +240,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
       cancelled = true;
     };
   }, [activeTeacherId]);
-
-  // Muat ringkasan riil mapel yang sudah dinilai dari Supabase untuk seluruh rombel guru aktif
-  useEffect(() => {
-    let cancelled = false;
-    const loadProgressSummary = async () => {
-      const periodId = academicAccess?.academicPeriod?.id;
-      if (!periodId || !academicAccess?.classes?.length) return;
-
-      const classIds = Array.from(
-        new Set(academicAccess.classes.flatMap((c) => [c.id, c.name].filter(Boolean)))
-      );
-
-      try {
-        const summary = await fetchClassScoredSubjectSummary({
-          academicPeriodId: periodId,
-          classIds,
-        });
-        if (!cancelled) {
-          setPersistedScoredSubjects(summary);
-        }
-      } catch (err) {
-        console.warn('Could not load class scored subjects summary:', err);
-      }
-    };
-
-    void loadProgressSummary();
-    return () => {
-      cancelled = true;
-    };
-  }, [academicAccess]);
 
   // Filter student list to the selected assigned class.
   const classStudents = useMemo(() => {
@@ -328,24 +320,8 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
       );
 
-      // Sinkronkan cache status mapel yang sudah dinilai
-      if (data?.subjectRecords && targetClassId) {
-        const scoredIds = new Set<string>();
-        for (const [subjId, subjRec] of Object.entries(data.subjectRecords)) {
-          const hasScores = Object.values(subjRec.scores || {}).some(
-            (s) =>
-              (s.finalScore !== null && s.finalScore !== undefined) ||
-              (s.stsScore !== null && s.stsScore !== undefined) ||
-              Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
-          );
-          if (hasScores) scoredIds.add(subjId);
-        }
-        setPersistedScoredSubjects((prev) => ({
-          ...prev,
-          [targetClassId]: scoredIds,
-          ...(selectedClass ? { [selectedClass]: scoredIds } : {}),
-        }));
-      }
+      // Refresh canonical progress for entire academic period
+      void loadCanonicalProgress();
     } catch (err) {
       console.error('Error loading class data from Supabase:', err);
       setCloudStatus('error');
@@ -460,24 +436,8 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
           new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
         );
 
-        // Update ringkasan progres mapel bernilai secara langsung
-        if (targetData?.subjectRecords && selectedContext?.classId) {
-          const scoredIds = new Set<string>();
-          for (const [subjId, subjRec] of Object.entries(targetData.subjectRecords)) {
-            const hasScores = Object.values(subjRec.scores || {}).some(
-              (s) =>
-                (s.finalScore !== null && s.finalScore !== undefined) ||
-                (s.stsScore !== null && s.stsScore !== undefined) ||
-                Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
-            );
-            if (hasScores) scoredIds.add(subjId);
-          }
-          setPersistedScoredSubjects((prev) => ({
-            ...prev,
-            [selectedContext.classId]: scoredIds,
-            ...(selectedClass ? { [selectedClass]: scoredIds } : {}),
-          }));
-        }
+        // Refresh canonical progress for entire academic period
+        void loadCanonicalProgress();
       } else {
         setCloudStatus('error');
       }
@@ -843,73 +803,108 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
     (classTarget: AcademicClass | string, contexts: TeacherAcademicContext[]) => {
       const total = contexts.length;
       if (total === 0) {
-        return { scoredCount: 0, total: 0, percentage: 0 };
+        return { scoredCount: 0, total: 0, percentage: 0, subjectDetails: [] };
       }
 
-      const targetStr =
+      const targetId =
         typeof classTarget === 'string'
-          ? classTarget
-          : classTarget?.name || classTarget?.id || '';
+          ? classTarget.trim()
+          : (classTarget?.id || classTarget?.name || '').trim();
+      const targetName =
+        typeof classTarget === 'string'
+          ? classTarget.trim()
+          : (classTarget?.name || classTarget?.id || '').trim();
 
-      const matchedClass = academicAccess?.classes.find(
+      // Find class in canonicalProgress
+      const classProgress = canonicalProgress?.classes.find(
         (c) =>
-          c.name.toLowerCase() === targetStr.toLowerCase() ||
-          c.id.toLowerCase() === targetStr.toLowerCase()
+          c.classId.toUpperCase() === targetId.toUpperCase() ||
+          c.className.toUpperCase() === targetName.toUpperCase()
       );
 
-      const targetMatches = Array.from(
-        new Set(
-          [
-            targetStr,
-            matchedClass?.id,
-            matchedClass?.name,
-            typeof classTarget !== 'string' ? (classTarget as AcademicClass)?.id : undefined,
-            typeof classTarget !== 'string' ? (classTarget as AcademicClass)?.name : undefined,
-          ]
-            .filter((x): x is string => Boolean(x))
-            .map((s) => s.trim().toLowerCase())
-        )
-      );
+      let completedCount = 0;
+      let totalPercentageSum = 0;
 
-      let count = 0;
+      const subjectDetails: Array<{
+        subjectId: string;
+        subjectName: string;
+        isScored: boolean;
+        progressPercentage: number;
+        scoredStudents: number;
+        totalStudents: number;
+        status: SubjectProgressStatus;
+      }> = [];
+
       for (const ctx of contexts) {
-        // 1. Cek dari classData aktif (jika sedang membuka kelas yang sama)
-        let hasScoreInActiveData = false;
-        if (classData && classData.subjectRecords) {
-          const activeLevelNorm = (classData.config.classLevel || '').trim().toLowerCase();
-          if (targetMatches.includes(activeLevelNorm)) {
-            const record = classData.subjectRecords[ctx.subjectId];
-            if (record && record.scores) {
-              hasScoreInActiveData = Object.values(record.scores).some(
-                (s) =>
-                  (s.finalScore !== null && s.finalScore !== undefined) ||
-                  (s.stsScore !== null && s.stsScore !== undefined) ||
-                  Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
-              );
+        const canonicalSubj = classProgress?.subjects.find(
+          (s) =>
+            s.subjectId === ctx.subjectId ||
+            (ctx.subjectCode && s.subjectCode?.toUpperCase() === ctx.subjectCode.toUpperCase()) ||
+            s.subjectName.toLowerCase() === ctx.subjectName.toLowerCase()
+        );
+
+        let scoredStudents = canonicalSubj?.scoredStudents || 0;
+        let totalStudents = canonicalSubj?.totalStudents || (classStudents.length > 0 ? classStudents.length : 0);
+        let progressPercentage = canonicalSubj?.progressPercentage || 0;
+        let status: SubjectProgressStatus = canonicalSubj?.status || 'not_started';
+
+        // Check if active in-memory classData has real-time edits for the currently selected class
+        if (
+          classData &&
+          selectedClass &&
+          (selectedClass.toUpperCase() === targetId.toUpperCase() || selectedClass.toUpperCase() === targetName.toUpperCase())
+        ) {
+          const activeRec = classData.subjectRecords?.[ctx.subjectId];
+          if (activeRec?.scores) {
+            const activeKeys = Object.keys(activeRec.scores);
+            if (activeKeys.length > 0) {
+              totalStudents = classStudents.length > 0 ? classStudents.length : activeKeys.length;
+              let activeScored = 0;
+              for (const s of Object.values(activeRec.scores)) {
+                if (isValidScore(s.stsScore) || isValidScore(s.finalScore)) {
+                  activeScored++;
+                }
+              }
+              scoredStudents = activeScored;
+              progressPercentage =
+                totalStudents > 0 ? Math.min(100, Math.round((scoredStudents / totalStudents) * 100)) : 0;
+              status =
+                progressPercentage === 100 && totalStudents > 0
+                  ? 'completed'
+                  : progressPercentage > 0
+                  ? 'in_progress'
+                  : 'not_started';
             }
           }
         }
 
-        // 2. Cek dari ringkasan database Supabase yang tersinkron
-        let hasScoreInPersisted = false;
-        for (const [key, scoredSet] of Object.entries(persistedScoredSubjects)) {
-          if (targetMatches.includes(key.trim().toLowerCase())) {
-            if (scoredSet.has(ctx.subjectId)) {
-              hasScoreInPersisted = true;
-              break;
-            }
-          }
+        const isCompleted = status === 'completed';
+        if (isCompleted) {
+          completedCount++;
         }
+        totalPercentageSum += progressPercentage;
 
-        if (hasScoreInActiveData || hasScoreInPersisted) {
-          count++;
-        }
+        subjectDetails.push({
+          subjectId: ctx.subjectId,
+          subjectName: ctx.subjectName,
+          isScored: isCompleted,
+          progressPercentage,
+          scoredStudents,
+          totalStudents,
+          status,
+        });
       }
 
-      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-      return { scoredCount: count, total, percentage };
+      const avgPercentage = total > 0 ? Math.round(totalPercentageSum / total) : 0;
+
+      return {
+        scoredCount: completedCount,
+        total,
+        percentage: avgPercentage,
+        subjectDetails,
+      };
     },
-    [classData, persistedScoredSubjects, academicAccess]
+    [canonicalProgress, classData, selectedClass, classStudents]
   );
 
   // Period text for Profile popover
@@ -1468,6 +1463,52 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                               </div>
                             </div>
                           </div>
+
+                          {/* DAFTAR MATA PELAJARAN & INDIKATOR STATUS VISUAL */}
+                          {contexts && contexts.length > 0 && (
+                            <div className="pt-2 pb-0.5 border-t border-white/[0.05]">
+                              <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1.5">
+                                <span>Status Mapel:</span>
+                                <span className={isAllScored ? 'text-emerald-400 font-bold' : scoredPercentage > 0 ? 'text-amber-400 font-bold' : 'text-slate-500'}>
+                                  {scoredCount} dari {totalContextMapel} Selesai
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto custom-scrollbar pr-0.5">
+                                {contexts.map((ctx) => {
+                                  const sKeys = [
+                                    ctx.subjectId,
+                                    ctx.subjectId?.toLowerCase(),
+                                    ctx.subjectId?.toUpperCase(),
+                                    ctx.subjectCode,
+                                    ctx.subjectCode?.toLowerCase(),
+                                    ctx.subjectName,
+                                    ctx.subjectName?.toLowerCase(),
+                                  ].filter(Boolean);
+
+                                  const isScored = getScoredSubjectStats(academicClass, [ctx]).scoredCount > 0;
+
+                                  return (
+                                    <span
+                                      key={ctx.subjectId}
+                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors ${
+                                        isScored
+                                          ? 'bg-emerald-500/15 border-emerald-400/35 text-emerald-300 font-semibold'
+                                          : 'bg-white/[0.03] border-white/[0.07] text-slate-400'
+                                      }`}
+                                      title={`${ctx.subjectName}: ${isScored ? 'Nilai sudah terisi (Selesai)' : 'Nilai belum diisi'}`}
+                                    >
+                                      <span
+                                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                          isScored ? 'bg-emerald-400 ring-2 ring-emerald-400/20' : 'bg-slate-500'
+                                        }`}
+                                      />
+                                      <span className="truncate max-w-[130px]">{ctx.subjectName}</span>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
 
                           {/* SISI BAWAH / AKSI: MINI PROGRESS CONTAINER + TOMBOL BUKA KELAS */}
                           <div className="flex items-center justify-between gap-2.5 pt-3 border-t border-white/[0.05]">
