@@ -111,10 +111,10 @@ function sanitizeModernColorsInClonedDoc(clonedDoc: globalThis.Document): void {
  * with robust html2canvas fallback sanitized against modern colors (oklch, color-mix).
  */
 async function renderElementToCanvas(element: HTMLElement): Promise<HTMLCanvasElement> {
-  // Method 1: html-to-image
+  // Method 1: html-to-image with pixelRatio 3 for crisp high-resolution rendering
   try {
     const canvas = await htmlToImage.toCanvas(element, {
-      pixelRatio: 2,
+      pixelRatio: 3,
       backgroundColor: '#ffffff',
       cacheBust: true,
       skipFonts: true,
@@ -135,7 +135,7 @@ async function renderElementToCanvas(element: HTMLElement): Promise<HTMLCanvasEl
 
   // Method 2: html2canvas with sanitized styles that strip oklch
   return await html2canvas(element, {
-    scale: 2,
+    scale: 3,
     useCORS: true,
     allowTaint: true,
     logging: false,
@@ -151,6 +151,7 @@ async function renderElementToCanvas(element: HTMLElement): Promise<HTMLCanvasEl
  * Renders an element to multi-page or single-page PDF with exact 1cm (10mm) margins.
  * Refined PDF Architecture:
  * - Renders inside an isolated offscreen container (0 padding, 0 shadow, 0 screen borders)
+ * - Strips all card outline borders, box-shadows, and border-radius from .rapor-page
  * - Fills 100% of usable width (190mm A4 / 195mm F4) from margin to margin without center shrinking
  * - Slices only at valid table row boundaries or section boundaries
  * - Repeats table header (thead) on page 2 if table spans across pages
@@ -186,12 +187,26 @@ async function addElementToPdf(
   cleanClone.style.margin = '0';
   cleanClone.style.padding = '0';
   cleanClone.style.border = 'none';
+  cleanClone.style.outline = 'none';
   cleanClone.style.boxShadow = 'none';
   cleanClone.style.borderRadius = '0';
   cleanClone.style.maxWidth = 'none';
   cleanClone.style.width = '100%';
   cleanClone.style.backgroundColor = '#ffffff';
   cleanClone.style.color = '#000000';
+
+  // Explicitly remove all borders, shadows, and rounded corners from all child pages
+  const childPages = cleanClone.querySelectorAll<HTMLElement>('.rapor-page');
+  childPages.forEach((p) => {
+    p.style.border = 'none';
+    p.style.outline = 'none';
+    p.style.boxShadow = 'none';
+    p.style.borderRadius = '0';
+    p.style.margin = '0';
+    p.style.padding = '0';
+    p.style.backgroundColor = '#ffffff';
+    p.style.color = '#000000';
+  });
 
   offscreenContainer.appendChild(cleanClone);
   document.body.appendChild(offscreenContainer);
@@ -670,8 +685,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
     // Vibrant bright yellow for header cells and section separators (as requested in item 5)
     const YELLOW_BRIGHT_BG = '#FDE047';
 
-    // Bookman Old Style font family (as requested in item 1)
-    const BOOKMAN_FONT_FAMILY = "'Bookman Old Style', 'URW Bookman', 'Bookman', 'Palatino Linotype', serif";
+    // Bookman Old Style font family
+    const BOOKMAN_FONT_FAMILY = "'Bookman Old Style', 'URW Bookman', 'Bookman', 'Palatino Linotype', 'Times New Roman', serif";
 
     const studentCharRecord =
       characterRecords?.[student.id] || classData.characterRecords?.[student.id];
@@ -683,6 +698,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
         className={`rapor-student-bundle mx-auto ${
           paperSize === 'f4' ? 'max-w-[880px]' : 'max-w-[850px]'
         } ${isPrintBatch ? 'page-break-after mb-12 print:mb-0' : ''}`}
+        style={{ fontFamily: BOOKMAN_FONT_FAMILY }}
       >
         {/* ============================================================
             LEMBAR 1: LAPORAN PENILAIAN AKADEMIK
@@ -701,62 +717,59 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
         >
           {/* KOP SEKOLAH RESMI (OPSIONAL / TOGGLEABLE) */}
           {includeKopSekolah && (
-            <div className="border-b-2 border-black pb-2.5 mb-3 text-center">
-              <h1 className="text-base font-bold uppercase tracking-wider text-black m-0 leading-tight">
-                {config.schoolName || 'SDIT AL FIKRI'}
-              </h1>
-              <p className="text-[11px] font-semibold text-black m-0 mt-0.5">
-                NPSN: {config.npsn || '69978648'} • Terakreditasi
-              </p>
-              <p className="text-[10px] text-gray-800 m-0 leading-tight">
-                {config.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok'}
-              </p>
+            <div className="pb-1 mb-2.5 w-full">
+              <img
+                src="/assets/Templateadmin/KOP.png"
+                alt={config.schoolName || 'SDIT AL FIKRI'}
+                className="w-full h-auto block mx-auto"
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
             </div>
           )}
 
           {/* JUDUL RESMI LEMBAR 1 */}
-          <div className="text-center mb-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0">
+          <div className="text-center mb-5" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
               LAPORAN PENILAIAN AKADEMIK
             </h2>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
               {semesterTitle}
             </h3>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
               TAHUN PELAJARAN {schoolYearTitle}
             </h4>
           </div>
 
           {/* IDENTITAS SISWA */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-3 text-black font-normal">
-            {/* Kolom Kiri */}
-            <div className="space-y-0.5">
+          <div className="flex gap-x-6 text-xs mb-3 text-black font-normal" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+            {/* Kolom Kiri: NAMA & TEMPAT, TANGGAL LAHIR (Lebar dinamis ~62% agar nama tidak terpotong) */}
+            <div className="flex-1 space-y-0.5 min-w-0 pr-2">
               <div className="flex items-start">
-                <span className="w-44 font-normal">NAMA</span>
-                <span className="w-3 font-normal">:</span>
-                <span className="font-bold uppercase flex-1">{student.name}</span>
+                <span className="w-44 font-normal shrink-0">NAMA</span>
+                <span className="w-3 font-normal shrink-0">:</span>
+                <span className="font-bold uppercase flex-1 truncate">{student.name}</span>
               </div>
               <div className="flex items-start">
-                <span className="w-44 font-normal">TEMPAT, TANGGAL LAHIR</span>
-                <span className="w-3 font-normal">:</span>
+                <span className="w-44 font-normal shrink-0">TEMPAT, TANGGAL LAHIR</span>
+                <span className="w-3 font-normal shrink-0">:</span>
                 <span className="font-normal flex-1">
                   {formatTTL(student.tempatLahir, student.tanggalLahir)}
                 </span>
               </div>
             </div>
 
-            {/* Kolom Kanan */}
-            <div className="space-y-0.5">
+            {/* Kolom Kanan: NIM/NISN & KELAS (Lebar 290px, presisi sejajar dengan garis kiri kolom NILAI AKHIR) */}
+            <div className="w-[290px] shrink-0 space-y-0.5">
               <div className="flex items-start">
-                <span className="w-24 font-normal">NIM/NISN</span>
-                <span className="w-3 font-normal">:</span>
+                <span className="w-20 font-normal shrink-0">NIM/NISN</span>
+                <span className="w-3 font-normal shrink-0">:</span>
                 <span className="font-normal flex-1">
                   {formatNimNisn(student.nim, student.nisn)}
                 </span>
               </div>
               <div className="flex items-start">
-                <span className="w-24 font-normal">KELAS</span>
-                <span className="w-3 font-normal">:</span>
+                <span className="w-20 font-normal shrink-0">KELAS</span>
+                <span className="w-3 font-normal shrink-0">:</span>
                 <span className="font-normal flex-1">{activeClass}</span>
               </div>
             </div>
@@ -921,7 +934,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                         style={{
                           border: '1px solid #000000',
                           padding: '5px 8px',
-                          textAlign: 'center',
+                          textAlign: 'left',
                           fontWeight: 'normal',
                           color: '#000000',
                         }}
@@ -1014,7 +1027,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                         style={{
                           border: '1px solid #000000',
                           padding: '5px 8px',
-                          textAlign: 'center',
+                          textAlign: 'left',
                           fontWeight: 'normal',
                           color: '#000000',
                         }}
@@ -1108,7 +1121,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                             style={{
                               border: '1px solid #000000',
                               padding: '5px 8px',
-                              textAlign: 'center',
+                              textAlign: 'left',
                               fontWeight: 'normal',
                               color: '#000000',
                             }}
@@ -1146,20 +1159,22 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
           {/* TANDA TANGAN RESMI */}
           <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-            <div className="text-right mb-3">
-              {config.reportDatePlace || 'Depok, 20 Maret 2025'}
-            </div>
-
             <div className="grid grid-cols-2 gap-8 text-center mb-6">
               <div>
-                <p className="m-0">Mengetahui,</p>
-                <p className="font-bold m-0 mb-12">Orang Tua / Wali Siswa</p>
+                {/* Spacer transparan agar teks Mengetahui sejajar vertikal dengan kolom kanan */}
+                <p className="m-0 invisible select-none" aria-hidden="true">
+                  {config.reportDatePlace || 'Depok, 20 Maret 2025'}
+                </p>
+                <p className="font-bold m-0 mb-16">Orang Tua / Wali Siswa</p>
                 <p className="font-bold m-0">..................................................</p>
               </div>
 
               <div>
-                <p className="m-0">Mengetahui,</p>
-                <p className="font-bold m-0 mb-12">Guru Kelas,</p>
+                {/* Posisi kota dan tanggal tepat berada di tengah atas teks Mengetahui */}
+                <p className="m-0">
+                  {config.reportDatePlace || 'Depok, 20 Maret 2025'}
+                </p>
+                <p className="font-bold m-0 mb-16">Guru Kelas,</p>
                 <p className="font-bold underline m-0">
                   {formatPersonNameWithDegree(config.teacherName || 'Guru Kelas')}
                 </p>
@@ -1171,8 +1186,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
             <div className="text-center">
               <p className="m-0">Mengetahui,</p>
-              <p className="font-bold m-0 mb-12">
-                Kepala Sekolah {config.schoolName || 'SDIT AL FIKRI'}
+              <p className="font-bold m-0 mb-16">
+                Kepala {config.schoolName || 'SDIT AL FIKRI'}
               </p>
               <p className="font-bold underline m-0">
                 {formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah')}
@@ -1184,7 +1199,10 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           </div>
 
           {/* RUNNING FOOTER LEMBAR 1 (NAMA SISWA ITALIC & HALAMAN 1/2) */}
-          <div className="flex justify-between items-center text-[10px] text-gray-700 italic pt-2 border-t border-gray-400 mt-4 font-serif">
+          <div
+            className="flex justify-between items-center text-[10px] text-gray-700 italic pt-2 border-t border-gray-400 mt-4"
+            style={{ fontFamily: BOOKMAN_FONT_FAMILY }}
+          >
             <span>{student.name} • NISN: {formatNimNisn(student.nim, student.nisn)} • Kelas {activeClass} • {config.schoolName || 'SDIT AL FIKRI'}</span>
             <span className="font-semibold not-italic">Halaman 1/2</span>
           </div>
@@ -1199,6 +1217,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
         {/* ============================================================
             LEMBAR 2: LAPORAN PENILAIAN KARAKTER (18 KARAKTER SISWA)
+            (OPSI A: TANPA KOP AGAR 100% AMAN PAS 1 LEMBAR A4)
         ============================================================ */}
         <div
           className="rapor-page rapor-page-karakter bg-white text-black p-6 sm:p-8 mx-auto rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none"
@@ -1210,64 +1229,49 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
           }}
         >
-          {/* KOP SEKOLAH RESMI (OPSIONAL / TOGGLEABLE) */}
-          {includeKopSekolah && (
-            <div className="border-b-2 border-black pb-2.5 mb-3 text-center">
-              <h1 className="text-base font-bold uppercase tracking-wider text-black m-0 leading-tight">
-                {config.schoolName || 'SDIT AL FIKRI'}
-              </h1>
-              <p className="text-[11px] font-semibold text-black m-0 mt-0.5">
-                NPSN: {config.npsn || '69978648'} • Terakreditasi
-              </p>
-              <p className="text-[10px] text-gray-800 m-0 leading-tight">
-                {config.schoolAddress || 'Jl. Raden Saleh No. 42, Sukmajaya, Depok'}
-              </p>
-            </div>
-          )}
-
           {/* JUDUL RESMI LEMBAR 2 */}
-          <div className="text-center mb-3">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0">
+          <div className="text-center mb-5" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-black m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
               LAPORAN PENILAIAN KARAKTER
             </h2>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
               {semesterTitle}
             </h3>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-black mt-0.5 mb-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
               TAHUN PELAJARAN {schoolYearTitle}
             </h4>
           </div>
 
-          {/* IDENTITAS SISWA */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs mb-3 text-black font-normal">
-            {/* Kolom Kiri */}
-            <div className="space-y-0.5">
+          {/* IDENTITAS SISWA (SEJAJAR VERTIKAL PRESISI DENGAN LEMBAR 1) */}
+          <div className="flex gap-x-6 text-xs mb-3 text-black font-normal" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+            {/* Kolom Kiri: NAMA & TEMPAT, TANGGAL LAHIR */}
+            <div className="flex-1 space-y-0.5 min-w-0 pr-2">
               <div className="flex items-start">
-                <span className="w-44 font-normal">NAMA</span>
-                <span className="w-3 font-normal">:</span>
-                <span className="font-bold uppercase flex-1">{student.name}</span>
+                <span className="w-44 font-normal shrink-0">NAMA</span>
+                <span className="w-3 font-normal shrink-0">:</span>
+                <span className="font-bold uppercase flex-1 truncate">{student.name}</span>
               </div>
               <div className="flex items-start">
-                <span className="w-44 font-normal">TEMPAT, TANGGAL LAHIR</span>
-                <span className="w-3 font-normal">:</span>
+                <span className="w-44 font-normal shrink-0">TEMPAT, TANGGAL LAHIR</span>
+                <span className="w-3 font-normal shrink-0">:</span>
                 <span className="font-normal flex-1">
                   {formatTTL(student.tempatLahir, student.tanggalLahir)}
                 </span>
               </div>
             </div>
 
-            {/* Kolom Kanan */}
-            <div className="space-y-0.5">
+            {/* Kolom Kanan: NIM/NISN & KELAS (Lebar 290px konsisten) */}
+            <div className="w-[290px] shrink-0 space-y-0.5">
               <div className="flex items-start">
-                <span className="w-24 font-normal">NIM/NISN</span>
-                <span className="w-3 font-normal">:</span>
+                <span className="w-20 font-normal shrink-0">NIM/NISN</span>
+                <span className="w-3 font-normal shrink-0">:</span>
                 <span className="font-normal flex-1">
                   {formatNimNisn(student.nim, student.nisn)}
                 </span>
               </div>
               <div className="flex items-start">
-                <span className="w-24 font-normal">KELAS</span>
-                <span className="w-3 font-normal">:</span>
+                <span className="w-20 font-normal shrink-0">KELAS</span>
+                <span className="w-3 font-normal shrink-0">:</span>
                 <span className="font-normal flex-1">{activeClass}</span>
               </div>
             </div>
@@ -1290,11 +1294,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   <th
                     style={{
                       border: '1px solid #000000',
-                      padding: '5px 4px',
+                      padding: '5.5px 4px',
                       width: '32px',
                       textAlign: 'center',
                       fontWeight: 'bold',
                       color: '#000000',
+                      fontFamily: BOOKMAN_FONT_FAMILY,
                     }}
                   >
                     NO
@@ -1302,11 +1307,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   <th
                     style={{
                       border: '1px solid #000000',
-                      padding: '5px 8px',
+                      padding: '5.5px 8px',
                       width: '175px',
                       textAlign: 'center',
                       fontWeight: 'bold',
                       color: '#000000',
+                      fontFamily: BOOKMAN_FONT_FAMILY,
                     }}
                   >
                     ASPEK KARAKTER
@@ -1314,11 +1320,12 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   <th
                     style={{
                       border: '1px solid #000000',
-                      padding: '5px 4px',
+                      padding: '5.5px 4px',
                       width: '60px',
                       textAlign: 'center',
                       fontWeight: 'bold',
                       color: '#000000',
+                      fontFamily: BOOKMAN_FONT_FAMILY,
                     }}
                   >
                     PREDIKAT
@@ -1326,10 +1333,11 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                   <th
                     style={{
                       border: '1px solid #000000',
-                      padding: '5px 8px',
+                      padding: '5.5px 8px',
                       textAlign: 'center',
                       fontWeight: 'bold',
                       color: '#000000',
+                      fontFamily: BOOKMAN_FONT_FAMILY,
                     }}
                   >
                     DESKRIPSI CAPAIAN PERKEMBANGAN
@@ -1350,9 +1358,10 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                       <td
                         style={{
                           border: '1px solid #000000',
-                          padding: '3px 4px',
+                          padding: '5px 4px',
                           textAlign: 'center',
                           fontWeight: 'normal',
+                          fontFamily: BOOKMAN_FONT_FAMILY,
                         }}
                       >
                         {idx + 1}.
@@ -1360,9 +1369,10 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                       <td
                         style={{
                           border: '1px solid #000000',
-                          padding: '3px 8px',
-                          fontWeight: 'bold',
+                          padding: '5px 8px',
+                          fontWeight: 'normal',
                           color: '#000000',
+                          fontFamily: BOOKMAN_FONT_FAMILY,
                         }}
                       >
                         {desc.name}
@@ -1370,10 +1380,11 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                       <td
                         style={{
                           border: '1px solid #000000',
-                          padding: '3px 4px',
+                          padding: '5px 4px',
                           textAlign: 'center',
                           fontWeight: 'bold',
                           color: '#000000',
+                          fontFamily: BOOKMAN_FONT_FAMILY,
                         }}
                       >
                         {p}
@@ -1381,11 +1392,13 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                       <td
                         style={{
                           border: '1px solid #000000',
-                          padding: '3px 8px',
+                          padding: '5px 8px',
                           fontSize: '10px',
-                          lineHeight: '1.3',
+                          lineHeight: '1.45',
                           textAlign: 'justify',
                           color: '#000000',
+                          fontWeight: 'normal',
+                          fontFamily: BOOKMAN_FONT_FAMILY,
                         }}
                       >
                         {d}
@@ -1406,6 +1419,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               marginBottom: '6px',
               fontSize: '10px',
               color: '#000000',
+              fontFamily: BOOKMAN_FONT_FAMILY,
             }}
           >
             <strong>Keterangan Predikat: </strong>
@@ -1421,6 +1435,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 marginBottom: '8px',
                 fontSize: '10.5px',
                 color: '#000000',
+                fontFamily: BOOKMAN_FONT_FAMILY,
               }}
             >
               <strong>Catatan Perkembangan Karakter: </strong>
@@ -1429,46 +1444,53 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           )}
 
           {/* TANDA TANGAN RESMI LEMBAR 2 */}
-          <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-            <div className="text-right mb-3">
-              {config.reportDatePlace || 'Depok, 20 Maret 2025'}
-            </div>
-
+          <div className="ttd-section pt-1 text-xs text-black" style={{ breakInside: 'avoid', pageBreakInside: 'avoid', fontFamily: BOOKMAN_FONT_FAMILY }}>
             <div className="grid grid-cols-2 gap-8 text-center mb-6">
               <div>
-                <p className="m-0">Mengetahui,</p>
-                <p className="font-bold m-0 mb-12">Orang Tua / Wali Siswa</p>
-                <p className="font-bold m-0">..................................................</p>
+                {/* Spacer transparan agar teks Mengetahui sejajar vertikal dengan kolom kanan */}
+                <p className="m-0 invisible select-none" aria-hidden="true" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+                  {config.reportDatePlace || 'Depok, 20 Maret 2025'}
+                </p>
+                <p className="m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>Mengetahui,</p>
+                <p className="font-bold m-0 mb-16" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>Orang Tua / Wali Siswa</p>
+                <p className="font-bold m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>..................................................</p>
               </div>
 
               <div>
-                <p className="m-0">Mengetahui,</p>
-                <p className="font-bold m-0 mb-12">Guru Kelas,</p>
-                <p className="font-bold underline m-0">
+                {/* Posisi kota dan tanggal tepat berada di tengah atas teks Mengetahui */}
+                <p className="m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+                  {config.reportDatePlace || 'Depok, 20 Maret 2025'}
+                </p>
+                <p className="m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>Mengetahui,</p>
+                <p className="font-bold m-0 mb-16" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>Guru Kelas,</p>
+                <p className="font-bold underline m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
                   {formatPersonNameWithDegree(config.teacherName || 'Guru Kelas')}
                 </p>
-                <p className="text-[10px] m-0">
+                <p className="text-[10px] m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
                   NIP. {config.teacherNip || '-'}
                 </p>
               </div>
             </div>
 
             <div className="text-center">
-              <p className="m-0">Mengetahui,</p>
-              <p className="font-bold m-0 mb-12">
-                Kepala Sekolah {config.schoolName || 'SDIT AL FIKRI'}
+              <p className="m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>Mengetahui,</p>
+              <p className="font-bold m-0 mb-16" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+                Kepala {config.schoolName || 'SDIT AL FIKRI'}
               </p>
-              <p className="font-bold underline m-0">
+              <p className="font-bold underline m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
                 {formatPersonNameWithDegree(config.headmasterName || 'Kepala Sekolah')}
               </p>
-              <p className="text-[10px] m-0">
+              <p className="text-[10px] m-0" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
                 NIP. {config.headmasterNip || '-'}
               </p>
             </div>
           </div>
 
           {/* RUNNING FOOTER LEMBAR 2 (NAMA SISWA ITALIC & HALAMAN 2/2) */}
-          <div className="flex justify-between items-center text-[10px] text-gray-700 italic pt-2 border-t border-gray-400 mt-4 font-serif">
+          <div
+            className="flex justify-between items-center text-[10px] text-gray-700 italic pt-2 border-t border-gray-400 mt-4"
+            style={{ fontFamily: BOOKMAN_FONT_FAMILY }}
+          >
             <span>{student.name} • NISN: {formatNimNisn(student.nim, student.nisn)} • Kelas {activeClass} • {config.schoolName || 'SDIT AL FIKRI'}</span>
             <span className="font-semibold not-italic">Halaman 2/2</span>
           </div>
@@ -1758,9 +1780,15 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
+          .rapor-page,
+          .rapor-page-akademik,
+          .rapor-page-karakter,
+          .rapor-student-bundle,
           .rapor-sheet {
             border: none !important;
+            outline: none !important;
             box-shadow: none !important;
+            border-radius: 0 !important;
             margin: 0 auto !important;
             padding: 0 !important;
             max-width: none !important;

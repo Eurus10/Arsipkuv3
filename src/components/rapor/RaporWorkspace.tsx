@@ -52,6 +52,7 @@ import {
   getGradeLevel,
   loadRaporWorkspaceFromSupabase,
   saveRaporWorkspaceToSupabase,
+  fetchClassScoredSubjectSummary,
 } from '../../services/raporScoreStorageService';
 import { getStoredStudentsLocal, subscribeToStudents, Student } from '../../services/studentStorage';
 import { RaporScoreGrid } from './RaporScoreGrid';
@@ -80,6 +81,7 @@ import {
   getTeacherAcademicAccess,
   TeacherAcademicAccess,
   TeacherAcademicContext,
+  AcademicClass,
   getSubjectsForClass,
   isHomeroomTeacherForClass,
 } from '../../services/teacherAcademicAccessService';
@@ -139,6 +141,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   const [cloudStatus, setCloudStatus] = useState<'saved' | 'unsaved' | 'saving' | 'error' | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  const [persistedScoredSubjects, setPersistedScoredSubjects] = useState<Record<string, Set<string>>>({});
 
   // Landing UI State
   const [landingSearchQuery, setLandingSearchQuery] = useState<string>('');
@@ -215,6 +218,36 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
       cancelled = true;
     };
   }, [activeTeacherId]);
+
+  // Muat ringkasan riil mapel yang sudah dinilai dari Supabase untuk seluruh rombel guru aktif
+  useEffect(() => {
+    let cancelled = false;
+    const loadProgressSummary = async () => {
+      const periodId = academicAccess?.academicPeriod?.id;
+      if (!periodId || !academicAccess?.classes?.length) return;
+
+      const classIds = Array.from(
+        new Set(academicAccess.classes.flatMap((c) => [c.id, c.name].filter(Boolean)))
+      );
+
+      try {
+        const summary = await fetchClassScoredSubjectSummary({
+          academicPeriodId: periodId,
+          classIds,
+        });
+        if (!cancelled) {
+          setPersistedScoredSubjects(summary);
+        }
+      } catch (err) {
+        console.warn('Could not load class scored subjects summary:', err);
+      }
+    };
+
+    void loadProgressSummary();
+    return () => {
+      cancelled = true;
+    };
+  }, [academicAccess]);
 
   // Filter student list to the selected assigned class.
   const classStudents = useMemo(() => {
@@ -294,6 +327,25 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
       setLastSavedTime(
         new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
       );
+
+      // Sinkronkan cache status mapel yang sudah dinilai
+      if (data?.subjectRecords && targetClassId) {
+        const scoredIds = new Set<string>();
+        for (const [subjId, subjRec] of Object.entries(data.subjectRecords)) {
+          const hasScores = Object.values(subjRec.scores || {}).some(
+            (s) =>
+              (s.finalScore !== null && s.finalScore !== undefined) ||
+              (s.stsScore !== null && s.stsScore !== undefined) ||
+              Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
+          );
+          if (hasScores) scoredIds.add(subjId);
+        }
+        setPersistedScoredSubjects((prev) => ({
+          ...prev,
+          [targetClassId]: scoredIds,
+          ...(selectedClass ? { [selectedClass]: scoredIds } : {}),
+        }));
+      }
     } catch (err) {
       console.error('Error loading class data from Supabase:', err);
       setCloudStatus('error');
@@ -390,9 +442,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   const handleSaveToCloud = async (dataToSave?: RaporStsClassData) => {
     const targetData = dataToSave || classData;
     if (!targetData || !selectedContext || !academicAccess?.academicPeriod) return;
-    if (previewTeacher) {
-      return;
-    }
 
     setIsSavingCloud(true);
     setCloudStatus('saving');
@@ -410,6 +459,25 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         setLastSavedTime(
           new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
         );
+
+        // Update ringkasan progres mapel bernilai secara langsung
+        if (targetData?.subjectRecords && selectedContext?.classId) {
+          const scoredIds = new Set<string>();
+          for (const [subjId, subjRec] of Object.entries(targetData.subjectRecords)) {
+            const hasScores = Object.values(subjRec.scores || {}).some(
+              (s) =>
+                (s.finalScore !== null && s.finalScore !== undefined) ||
+                (s.stsScore !== null && s.stsScore !== undefined) ||
+                Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
+            );
+            if (hasScores) scoredIds.add(subjId);
+          }
+          setPersistedScoredSubjects((prev) => ({
+            ...prev,
+            [selectedContext.classId]: scoredIds,
+            ...(selectedClass ? { [selectedClass]: scoredIds } : {}),
+          }));
+        }
       } else {
         setCloudStatus('error');
       }
@@ -772,32 +840,76 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   };
 
   const getScoredSubjectStats = useCallback(
-    (className: string, contexts: TeacherAcademicContext[]) => {
+    (classTarget: AcademicClass | string, contexts: TeacherAcademicContext[]) => {
       const total = contexts.length;
-      if (!classData || classData.config.classLevel !== className || !classData.subjectRecords || total === 0) {
-        return { scoredCount: 0, total, percentage: 0 };
+      if (total === 0) {
+        return { scoredCount: 0, total: 0, percentage: 0 };
       }
+
+      const targetStr =
+        typeof classTarget === 'string'
+          ? classTarget
+          : classTarget?.name || classTarget?.id || '';
+
+      const matchedClass = academicAccess?.classes.find(
+        (c) =>
+          c.name.toLowerCase() === targetStr.toLowerCase() ||
+          c.id.toLowerCase() === targetStr.toLowerCase()
+      );
+
+      const targetMatches = Array.from(
+        new Set(
+          [
+            targetStr,
+            matchedClass?.id,
+            matchedClass?.name,
+            typeof classTarget !== 'string' ? (classTarget as AcademicClass)?.id : undefined,
+            typeof classTarget !== 'string' ? (classTarget as AcademicClass)?.name : undefined,
+          ]
+            .filter((x): x is string => Boolean(x))
+            .map((s) => s.trim().toLowerCase())
+        )
+      );
 
       let count = 0;
       for (const ctx of contexts) {
-        const record = classData.subjectRecords[ctx.subjectId];
-        if (record && record.scores) {
-          const hasAnyScore = Object.values(record.scores).some(
-            (s) =>
-              (s.finalScore !== null && s.finalScore !== undefined) ||
-              (s.stsScore !== null && s.stsScore !== undefined) ||
-              Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
-          );
-          if (hasAnyScore) {
-            count++;
+        // 1. Cek dari classData aktif (jika sedang membuka kelas yang sama)
+        let hasScoreInActiveData = false;
+        if (classData && classData.subjectRecords) {
+          const activeLevelNorm = (classData.config.classLevel || '').trim().toLowerCase();
+          if (targetMatches.includes(activeLevelNorm)) {
+            const record = classData.subjectRecords[ctx.subjectId];
+            if (record && record.scores) {
+              hasScoreInActiveData = Object.values(record.scores).some(
+                (s) =>
+                  (s.finalScore !== null && s.finalScore !== undefined) ||
+                  (s.stsScore !== null && s.stsScore !== undefined) ||
+                  Object.values(s.tpScores || {}).some((v) => v !== null && v !== undefined)
+              );
+            }
           }
+        }
+
+        // 2. Cek dari ringkasan database Supabase yang tersinkron
+        let hasScoreInPersisted = false;
+        for (const [key, scoredSet] of Object.entries(persistedScoredSubjects)) {
+          if (targetMatches.includes(key.trim().toLowerCase())) {
+            if (scoredSet.has(ctx.subjectId)) {
+              hasScoreInPersisted = true;
+              break;
+            }
+          }
+        }
+
+        if (hasScoreInActiveData || hasScoreInPersisted) {
+          count++;
         }
       }
 
       const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
       return { scoredCount: count, total, percentage };
     },
-    [classData]
+    [classData, persistedScoredSubjects, academicAccess]
   );
 
   // Period text for Profile popover
@@ -1285,7 +1397,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       ).length;
 
                       const { scoredCount, total: totalContextMapel, percentage: scoredPercentage } = getScoredSubjectStats(
-                        academicClass.name,
+                        academicClass,
                         contexts
                       );
 
@@ -1468,7 +1580,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                             ).length;
 
                             const { scoredCount, total: totalContextMapel, percentage: scoredPercentage } = getScoredSubjectStats(
-                              academicClass.name,
+                              academicClass,
                               contexts
                             );
 

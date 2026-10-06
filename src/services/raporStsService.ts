@@ -22,6 +22,9 @@ import {
   getMasteryStatusFromPredicate,
 } from '../types/raporSts';
 import { Student } from './studentStorage';
+import { getStoredMasterClasses } from './storage';
+import { detectCategoryFromName } from './academicSubjectStorage';
+import { matchRaporSubject } from './analysisToRaporSyncService';
 
 export const LOCAL_STORAGE_PREFIX = 'sdit_rapor_sts_class_';
 export const GLOBAL_CONFIG_LOCAL_KEY = 'sdit_rapor_sts_global_config';
@@ -596,6 +599,66 @@ export const generateTeacherNote = (
 };
 
 /**
+ * Integrates subjects defined in Master Classes (Pengaturan Akademik / Rombel)
+ * into e-Rapor class data so all official subjects (Akidah Akhlak, Fiqih, etc.) are available.
+ */
+export const syncSubjectsWithMasterClasses = (
+  classLevel: string,
+  currentSubjects: RaporSubject[]
+): { subjects: RaporSubject[]; hasNewSubjects: boolean } => {
+  const updatedSubjects = [...currentSubjects];
+  let hasNewSubjects = false;
+
+  try {
+    const masterClasses = getStoredMasterClasses();
+    const cleanLevel = classLevel.toUpperCase().replace(/^KELAS\s*/i, '').replace(/\s+/g, '').trim();
+    const targetMaster = masterClasses.find(
+      (c) =>
+        c.name.toUpperCase().replace(/^KELAS\s*/i, '').replace(/\s+/g, '').trim() === cleanLevel ||
+        c.id.toUpperCase().replace(/^KELAS\s*/i, '').replace(/\s+/g, '').trim() === cleanLevel
+    );
+
+    if (targetMaster && Array.isArray(targetMaster.subjects)) {
+      targetMaster.subjects.forEach((mSubj) => {
+        const existing = matchRaporSubject(mSubj.name, updatedSubjects);
+        if (!existing) {
+          const subId = mSubj.id || `subj_${mSubj.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+          const subName = mSubj.name.toUpperCase();
+          const newSubj: RaporSubject = {
+            id: subId,
+            name: subName,
+            code: mSubj.name.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase() || 'MAPEL',
+            category: detectCategoryFromName(subName),
+            order: mSubj.order || updatedSubjects.length + 1,
+            isCustom: true,
+            tpList: [
+              {
+                id: `tp_${subId}_1`,
+                code: 'TP 1',
+                desc: `Memahami materi pokok dan capaian pembelajaran ${subName}`,
+                isActive: true,
+              },
+              {
+                id: `tp_${subId}_2`,
+                code: 'TP 2',
+                desc: `Menerapkan pemahaman materi ${subName} dalam kehidupan sehari-hari`,
+                isActive: true,
+              },
+            ],
+          };
+          updatedSubjects.push(newSubj);
+          hasNewSubjects = true;
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('Could not sync subjects with master classes:', err);
+  }
+
+  return { subjects: updatedSubjects, hasNewSubjects };
+};
+
+/**
  * Initialize new class data template merged with existing students
  */
 export const createInitialClassData = (
@@ -605,7 +668,8 @@ export const createInitialClassData = (
   existingStudents: Student[] = []
 ): RaporStsClassData => {
   const classKey = getClassKey(classLevel, semester, schoolYear);
-  const subjects = JSON.parse(JSON.stringify(DEFAULT_RAPOR_SUBJECTS));
+  const baseSubjects = JSON.parse(JSON.stringify(DEFAULT_RAPOR_SUBJECTS));
+  const { subjects } = syncSubjectsWithMasterClasses(classLevel, baseSubjects);
 
   // Determine Fase based on classLevel
   let fase: 'Fase A' | 'Fase B' | 'Fase C' = 'Fase B';
@@ -802,6 +866,13 @@ export const fetchClassData = async (
       recordQuotaUsage('reads', 1);
       const cloudData = snap.data() as RaporStsClassData;
       const configuredCloud = applyGlobalConfig(cloudData);
+      const { subjects: syncedSubjects, hasNewSubjects } = syncSubjectsWithMasterClasses(
+        classLevel,
+        configuredCloud.subjects || []
+      );
+      if (hasNewSubjects) {
+        configuredCloud.subjects = syncedSubjects;
+      }
       saveLocalClassData(configuredCloud);
       return mergeStudents(configuredCloud);
     }
@@ -811,6 +882,15 @@ export const fetchClassData = async (
 
   if (local) {
     const configuredLocal = applyGlobalConfig(local);
+    const { subjects: syncedSubjects, hasNewSubjects } = syncSubjectsWithMasterClasses(
+      classLevel,
+      configuredLocal.subjects || []
+    );
+    if (hasNewSubjects) {
+      configuredLocal.subjects = syncedSubjects;
+      configuredLocal.lastModified = new Date().toISOString();
+      saveLocalClassData(configuredLocal);
+    }
     return mergeStudents(configuredLocal);
   }
 

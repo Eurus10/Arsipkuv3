@@ -297,7 +297,7 @@ function buildAcademicWorksheet(
       // Penguasaan (Sangat Baik / Baik / Cukup / Perlu Bimbingan)
       setCell(r, 4, mastery, {
         font: { name: EXCEL_FONT_NAME, sz: 9, bold: false },
-        alignment: { horizontal: 'center', vertical: 'top' },
+        alignment: { horizontal: 'left', vertical: 'top' },
         border: BORDER_BLACK_THIN,
       });
 
@@ -366,18 +366,6 @@ function buildAcademicWorksheet(
   r += 2;
 
   // Baris Mengetahui Orang Tua & Guru Kelas
-  setCell(r, 0, 'Mengetahui,', {
-    font: { name: EXCEL_FONT_NAME, sz: 9 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 0, r, 1);
-
-  setCell(r, 3, 'Mengetahui,', {
-    font: { name: EXCEL_FONT_NAME, sz: 9 },
-    alignment: { horizontal: 'center' },
-  });
-  addMerge(r, 3, r, 4);
-  r++;
 
   setCell(r, 0, 'Orang Tua / Wali Siswa', {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
@@ -413,7 +401,7 @@ function buildAcademicWorksheet(
   addMerge(r, 3, r, 4);
   r += 2;
 
-  // Kepala Sekolah (Tengah)
+  // Kepala SDIT AL FIKRI (Tengah)
   setCell(r, 0, 'Mengetahui,', {
     font: { name: EXCEL_FONT_NAME, sz: 9 },
     alignment: { horizontal: 'center' },
@@ -421,7 +409,7 @@ function buildAcademicWorksheet(
   addMerge(r, 0, r, 4);
   r++;
 
-  setCell(r, 0, `Kepala Sekolah ${config.schoolName || 'SDIT AL FIKRI'}`, {
+  setCell(r, 0, `Kepala ${config.schoolName || 'SDIT AL FIKRI'}`, {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
     alignment: { horizontal: 'center' },
   });
@@ -727,7 +715,7 @@ function buildCharacterWorksheet(
   addMerge(r, 2, r, 3);
   r += 2;
 
-  // Kepala Sekolah (Tengah)
+  // Kepala SDIT AL FIKRI (Tengah)
   setCell(r, 0, 'Mengetahui,', {
     font: { name: EXCEL_FONT_NAME, sz: 9 },
     alignment: { horizontal: 'center' },
@@ -735,7 +723,7 @@ function buildCharacterWorksheet(
   addMerge(r, 0, r, 3);
   r++;
 
-  setCell(r, 0, `Kepala Sekolah ${config.schoolName || 'SDIT AL FIKRI'}`, {
+  setCell(r, 0, `Kepala ${config.schoolName || 'SDIT AL FIKRI'}`, {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
     alignment: { horizontal: 'center' },
   });
@@ -1351,7 +1339,7 @@ function createDocxStudentSection(
               borders: cellBorders,
               children: [
                 new Paragraph({
-                  alignment: AlignmentType.CENTER,
+                  alignment: AlignmentType.LEFT,
                   children: [
                     new TextRun({
                       text: mastery,
@@ -1571,7 +1559,7 @@ function createDocxStudentSection(
                 spacing: { after: 600 },
                 children: [
                   new TextRun({
-                    text: `Kepala Sekolah ${config.schoolName || 'SDIT AL FIKRI'}`,
+                    text: `Kepala ${config.schoolName || 'SDIT AL FIKRI'}`,
                     bold: true,
                     font: DOCX_FONT_FAMILY,
                     size: 18,

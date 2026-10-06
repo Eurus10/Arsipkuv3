@@ -887,3 +887,48 @@ export async function saveRaporWorkspaceToSupabase(
     savedLoCount: loScoreInputs.length,
   };
 }
+
+/**
+ * Mengambil ringkasan ID mapel yang sudah memiliki nilai riil pada periode aktif
+ * untuk rombel-rombel tertentu langsung dari database Supabase (student_subject_scores).
+ * Digunakan untuk sinkronisasi akurat indikator progres pengisian pada landing kartu guru.
+ */
+export async function fetchClassScoredSubjectSummary(params: {
+  academicPeriodId: string;
+  classIds: string[];
+}): Promise<Record<string, Set<string>>> {
+  if (!isSupabaseConfigured()) return {};
+  const { academicPeriodId, classIds } = params;
+  if (!academicPeriodId || !classIds.length) return {};
+
+  const result: Record<string, Set<string>> = {};
+  for (const cid of classIds) {
+    result[cid] = new Set<string>();
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('student_subject_scores')
+      .select('class_id, subject_id, final_score, sts_score')
+      .eq('academic_period_id', academicPeriodId)
+      .in('class_id', classIds);
+
+    if (error) {
+      console.warn('Could not fetch subject scores summary from Supabase:', error);
+      return result;
+    }
+
+    for (const row of data || []) {
+      if (row.final_score !== null || row.sts_score !== null) {
+        if (!result[row.class_id]) {
+          result[row.class_id] = new Set<string>();
+        }
+        result[row.class_id].add(row.subject_id);
+      }
+    }
+  } catch (err) {
+    console.warn('Error fetching class scored subject summary:', err);
+  }
+
+  return result;
+}

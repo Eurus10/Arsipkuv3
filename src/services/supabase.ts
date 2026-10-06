@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL || '').trim();
-const supabaseAnonKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+const supabaseUrl = String((typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || process.env?.VITE_SUPABASE_URL || '').trim();
+const supabaseAnonKey = String((typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || process.env?.VITE_SUPABASE_ANON_KEY || '').trim();
 
 const isPlaceholderUrl = (url: string): boolean => {
   if (!url || !url.startsWith('https://')) return true;

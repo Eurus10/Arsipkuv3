@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   setDoc,
   deleteDoc,
@@ -2133,6 +2134,7 @@ const MASTER_CLASSES_DOC_ID = 'master_classes';
 
 export function getStoredMasterClasses(): MasterClass[] {
   try {
+    if (typeof localStorage === 'undefined') return MASTER_CLASSES;
     const raw = localStorage.getItem(LOCAL_MASTER_CLASSES_KEY);
     if (!raw) return MASTER_CLASSES;
     const parsed = JSON.parse(raw);
@@ -2147,7 +2149,9 @@ const masterClassListeners = new Set<(classes: MasterClass[]) => void>();
 
 export function saveStoredMasterClasses(classes: MasterClass[]): void {
   try {
-    localStorage.setItem(LOCAL_MASTER_CLASSES_KEY, JSON.stringify(classes));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(LOCAL_MASTER_CLASSES_KEY, JSON.stringify(classes));
+    }
   } catch (err) {
     console.error('Error saving local master classes:', err);
   }
@@ -2172,6 +2176,29 @@ export async function updateStoredMasterClasses(classes: MasterClass[]): Promise
   return classes;
 }
 
+export async function fetchMasterClassesFromFirestore(): Promise<MasterClass[]> {
+  try {
+    const docRef = doc(db, FIRESTORE_SETTINGS_COLLECTION, MASTER_CLASSES_DOC_ID);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      const rawClasses = data?.classes;
+      const classesList = Array.isArray(rawClasses)
+        ? rawClasses
+        : rawClasses && typeof rawClasses === 'object'
+        ? Object.values(rawClasses)
+        : [];
+      if (classesList.length > 0) {
+        saveStoredMasterClasses(classesList as MasterClass[]);
+        return classesList as MasterClass[];
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch master classes from Firestore:', err);
+  }
+  return getStoredMasterClasses();
+}
+
 export function subscribeToMasterClasses(
   onUpdate: (classes: MasterClass[]) => void
 ): () => void {
@@ -2185,8 +2212,14 @@ export function subscribeToMasterClasses(
     (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        if (data && Array.isArray(data.classes) && data.classes.length > 0) {
-          saveStoredMasterClasses(data.classes);
+        const rawClasses = data?.classes;
+        const classesList = Array.isArray(rawClasses)
+          ? rawClasses
+          : rawClasses && typeof rawClasses === 'object'
+          ? Object.values(rawClasses)
+          : [];
+        if (classesList.length > 0) {
+          saveStoredMasterClasses(classesList as MasterClass[]);
           return;
         }
       }

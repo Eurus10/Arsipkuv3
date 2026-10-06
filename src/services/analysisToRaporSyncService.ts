@@ -15,6 +15,8 @@ import {
   generateTeacherNote,
 } from './raporStsService';
 import { getLocalAnalysisSubmissions } from './analysisSubmissionService';
+import { detectCategoryFromName } from './academicSubjectStorage';
+import { getStoredMasterClasses } from './storage';
 
 /**
  * Result structure of the Analysis to e-Rapor synchronization
@@ -45,62 +47,88 @@ export function matchRaporSubject(
   if (!inputSubjectName || !raporSubjects || raporSubjects.length === 0) return null;
 
   const normalize = (str: string) =>
-    str
+    (str || '')
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '')
+      .replace(/q/g, 'k') // Arabic transliteration: Q and K are equivalent (Aqidah == Akidah, Fiqih == Fikih)
       .trim();
 
   const cleanInput = normalize(inputSubjectName);
 
-  // 1. Direct match by name or code
+  // 1. Direct match by normalized name or code
   for (const subj of raporSubjects) {
-    if (normalize(subj.name) === cleanInput || normalize(subj.code) === cleanInput) {
+    if (normalize(subj.name) === cleanInput || (subj.code && normalize(subj.code) === cleanInput)) {
       return subj;
     }
   }
 
-  // 2. Alias dictionary
+  // 2. Strict Alias Dictionary
   const aliases: Record<string, string[]> = {
     pai: ['pendidikanagamaislam', 'paibp', 'pai', 'agamaislam', 'agama', 'pendidikanagama'],
-    pancasila: ['pendidikanpancasila', 'pancasila', 'ppkn', 'pkn', 'pp'],
+    pancasila: ['pendidikanpancasila', 'pancasila', 'ppkn', 'pkn', 'pendpancasila'],
     bahasa_indonesia: ['bahasaindonesia', 'bindonesia', 'bindo', 'bind', 'indonesia'],
     matematika: ['matematika', 'mtk', 'math', 'matematik'],
     ipas: ['ilmupengetahuanalamdansosial', 'ipas', 'ipa', 'ips', 'sains'],
     seni_budaya: ['senibudaya', 'senirupa', 'sbdp', 'senimusik', 'senitari', 'kesenian', 'seni'],
     pjok: ['pendidikanjasmaniolahragadaankesehatan', 'pjok', 'penjas', 'olahraga', 'penjaskes'],
-    bahasa_inggris: ['bahasainggris', 'binggris', 'english', 'eng', 'inggris'],
-    bahasa_arab: ['bahasaarab', 'arab', 'barab', 'mulokarab'],
-    bahasa_sunda: ['bahasasunda', 'sunda', 'bsunda', 'muloksunda'],
-    akidah_akhlak: ['akidahakhlak', 'akidah', 'aqidah', 'aqidahakhlaq'],
+    bahasa_inggris: ['bahasainggris', 'binggris', 'english', 'inggris'],
+    bahasa_arab: ['bahasaarab', 'barab', 'arab', 'mulokarab'],
+    bahasa_sunda: ['bahasasunda', 'bsunda', 'sunda', 'muloksunda'],
+    akidah_akhlak: ['akidahakhlak', 'akidah', 'aqidahakhlaq', 'aqidahakhlak', 'akidahakhlak', 'aqidah'],
     fiqih: ['fiqih', 'fikih', 'feqih'],
     quran_hadits: ['alquranhadits', 'quranhadits', 'qurdis', 'alquran'],
     ski: ['sejarahkebudayaanislam', 'ski', 'sejarahislam'],
     tahfidz: ['tahfidz', 'tahfiz', 'tahfidzulquran'],
+    informatika: ['informatika', 'tik', 'informatik'],
   };
 
-  for (const subj of raporSubjects) {
-    const subjNorm = normalize(subj.name);
-    const subjId = subj.id.toLowerCase();
-    const subjCode = normalize(subj.code);
+  // Find which alias group inputSubjectName belongs to:
+  let inputGroup: string | null = null;
+  for (const [groupKey, list] of Object.entries(aliases)) {
+    const normList = list.map(normalize);
+    if (cleanInput === normalize(groupKey) || normList.includes(cleanInput)) {
+      inputGroup = groupKey;
+      break;
+    }
+  }
 
-    // Check alias mapping
-    for (const [key, aliasList] of Object.entries(aliases)) {
-      const matchesKey =
-        subjId.includes(key) || subjNorm.includes(key) || subjCode.includes(key);
-      if (matchesKey) {
-        if (aliasList.some((al) => cleanInput.includes(al) || al.includes(cleanInput))) {
-          return subj;
-        }
+  if (inputGroup) {
+    const targetAliases = aliases[inputGroup].map(normalize);
+    const cleanGroupKey = normalize(inputGroup);
+    for (const subj of raporSubjects) {
+      const sNorm = normalize(subj.name);
+      const sCode = normalize(subj.code || '');
+      const sId = normalize(subj.id);
+
+      if (
+        sNorm === cleanGroupKey ||
+        targetAliases.includes(sNorm) ||
+        targetAliases.includes(sCode) ||
+        sId.includes(cleanGroupKey) ||
+        targetAliases.some((a) => sId === a || sNorm === a)
+      ) {
+        return subj;
       }
     }
+  }
 
-    // Substring partial match
-    if (
-      subjNorm.includes(cleanInput) ||
-      cleanInput.includes(subjNorm) ||
-      subjCode.includes(cleanInput) ||
-      cleanInput.includes(subjCode)
-    ) {
+  // 3. Fallback: Word boundary matching
+  const inputWords = (inputSubjectName || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length >= 3);
+
+  for (const subj of raporSubjects) {
+    const subjWords = (subj.name || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter((w) => w.length >= 3);
+    const common = inputWords.filter((w) => subjWords.includes(w));
+    if (common.length >= 2 || (inputWords.length === 1 && common.length === 1)) {
       return subj;
     }
   }
@@ -363,7 +391,54 @@ export function applySubjectScoresToClassData(
       .trim();
 
   parsedSubjects.forEach((parsedSubj) => {
-    const matchedRaporSubj = matchRaporSubject(parsedSubj.subjectName, updatedData.subjects);
+    let matchedRaporSubj = matchRaporSubject(parsedSubj.subjectName, updatedData.subjects);
+
+    // Jika belum ada di e-Rapor kelas ini, lakukan Auto-Register cerdas
+    // dari master_classes atau buat entri mapel baru tanpa duplikasi
+    if (!matchedRaporSubj) {
+      const masterClasses = getStoredMasterClasses();
+      const targetMasterClass = masterClasses.find(
+        (c) => normalizeClassCode(c.name) === targetNorm || normalizeClassCode(c.id) === targetNorm
+      );
+      const matchedMasterSubj = targetMasterClass?.subjects?.find(
+        (ms) =>
+          matchRaporSubject(parsedSubj.subjectName, [
+            { id: ms.id, name: ms.name, code: '', category: 'umum', order: ms.order || 0, tpList: [] },
+          ])
+      );
+
+      const subId = matchedMasterSubj?.id || `subj_${normalizeName(parsedSubj.subjectName)}`;
+      const subName = matchedMasterSubj?.name || parsedSubj.subjectName.toUpperCase();
+      const subCategory = detectCategoryFromName(subName);
+      const subCode = subName.replace(/[^a-zA-Z]/g, '').slice(0, 4).toUpperCase() || 'MAPEL';
+      const subOrder = matchedMasterSubj?.order || updatedData.subjects.length + 1;
+
+      const newSubject: RaporSubject = {
+        id: subId,
+        name: subName,
+        code: subCode,
+        category: subCategory,
+        order: subOrder,
+        isCustom: true,
+        tpList: [
+          {
+            id: `tp_${subId}_1`,
+            code: 'TP 1',
+            desc: `Memahami materi pokok dan capaian pembelajaran ${subName}`,
+            isActive: true,
+          },
+          {
+            id: `tp_${subId}_2`,
+            code: 'TP 2',
+            desc: `Menerapkan pemahaman materi ${subName} dalam kehidupan sehari-hari`,
+            isActive: true,
+          },
+        ],
+      };
+
+      updatedData.subjects.push(newSubject);
+      matchedRaporSubj = newSubject;
+    }
 
     if (!matchedRaporSubj) {
       skippedSubjects.push(parsedSubj.subjectName);
