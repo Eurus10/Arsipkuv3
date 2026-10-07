@@ -14,6 +14,7 @@ import {
   User,
   Camera,
   Image as ImageIcon,
+  LogOut,
 } from 'lucide-react';
 import {
   DocumentItem,
@@ -352,6 +353,20 @@ export const DashboardView: React.FC<
               onNavigate={onNavigate}
               onOpenRaporSts={onOpenRaporSts}
             />
+
+            {/* Tombol Logout Sesi Aktif Guru & Admin (Tampilan Desktop & Tablet) */}
+            {(activeTeacher || isAdmin) && (
+              <button
+                type="button"
+                id="btn-dashboard-logout"
+                onClick={isAdmin ? onLogout : onLogoutTeacher}
+                className="flex items-center gap-1.5 px-3 py-2 sm:py-2 rounded-full bg-rose-500/15 hover:bg-rose-500/25 active:scale-95 border border-rose-500/35 text-rose-300 hover:text-white transition-all duration-200 cursor-pointer shadow-md text-xs font-bold shrink-0"
+                title={isAdmin ? "Keluar Mode Admin" : `Keluar Sesi Guru: ${activeTeacher?.name}`}
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
+            )}
           </div>
         </div>
       </header>

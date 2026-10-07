@@ -15,6 +15,7 @@ import {
   Clock3,
   Users,
   RefreshCw,
+  RotateCcw,
   Target,
   UserCheck,
   Calendar,
@@ -282,14 +283,14 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
                 <span className="truncate">Import</span>
               </button>
 
-              {/* Ganti Sesi */}
+              {/* Ganti Sesi / Pilih Sesi Lain */}
               <button
                 type="button"
                 onClick={onResetSession}
-                className="h-9 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 active:scale-[0.98] text-rose-300 border border-rose-500/25 font-bold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
-                title="Ganti atau hapus sesi analisis untuk memulai sesi baru"
+                className="h-9 px-2.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 active:scale-[0.98] text-sky-200 border border-sky-500/30 font-bold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                title="Pilih atau beralih ke sesi kelas lain yang pernah dibuat tanpa menghapus data"
               >
-                <RefreshCw className="w-3.5 h-3.5 text-rose-400 shrink-0 stroke-[2.5]" />
+                <RotateCcw className="w-3.5 h-3.5 text-sky-300 shrink-0 stroke-[2.5]" />
                 <span className="truncate">Ganti Sesi</span>
               </button>
             </div>

@@ -7,6 +7,7 @@ import {
   StudentSubjectResult,
   FileValidationResult,
   ExamType,
+  AnalysisImportContext,
 } from '../../types/analysisTypes';
 import { Student } from '../../services/studentStorage';
 import {
@@ -14,7 +15,7 @@ import {
   calculateStudentTotalScore,
   evaluateStudentResult,
 } from '../../services/analysis/analysisCalculationService';
-import { saveActiveSession } from '../../services/analysis/analysisSessionService';
+import { saveActiveSession, saveSessionForClass } from '../../services/analysis/analysisSessionService';
 import { EXCEL_COLUMN_MAP } from '../../services/analysis/analysisExcelService';
 
 /**
@@ -353,8 +354,9 @@ export function parseSubjectSheetCells(
  */
 export function validateAnalysisWorkbookSession(
   importedSession: AnalysisSession,
-  activeSession: AnalysisSession | null,
-  currentStudents: Student[]
+  activeSession: AnalysisSession | null = null,
+  currentStudents: Student[] = [],
+  context?: AnalysisImportContext | null
 ): FileValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -383,8 +385,33 @@ export function validateAnalysisWorkbookSession(
 
   const filePurpose = importedSession.filePurpose || 'SESSION';
 
-  // 2. Validasi Kelas, Ujian, dan Tahun Pelajaran jika ada Sesi Aktif
-  if (activeSession) {
+  // 2. Validasi Kelas, Ujian, dan Tahun Pelajaran
+  if (context?.callerMode === 'GURU_BIDANG' && context.targetClassId) {
+    // Mode Guru Bidang: Validasi terhadap kelas tab yang sedang dibuka guru saat ini
+    const targetCId = context.targetClassId.toLowerCase().trim();
+    const importedCId = (importedSession.classId || '').toLowerCase().trim();
+    if (importedCId && targetCId && importedCId !== targetCId) {
+      errors.push(
+        `Kelas tidak cocok! File ini ditujukan untuk Kelas "${importedSession.className || importedSession.classId}", sedangkan Anda sedang membuka tab Kelas "${context.targetClassName || context.targetClassId}".`
+      );
+    }
+
+    // Pengecekan kecocokan Mapel (Anti-Salah Masuk Mapel)
+    if (context.targetSubjectName) {
+      const targetSubjNorm = normalizeStudentName(context.targetSubjectName);
+      const hasMatchingSubject = importedSession.subjects.some((s) => {
+        const sNorm = normalizeStudentName(s.subjectName);
+        return sNorm.includes(targetSubjNorm) || targetSubjNorm.includes(sNorm);
+      });
+
+      if (!hasMatchingSubject && importedSession.subjects.length > 0) {
+        warnings.push(
+          `Perhatian Mapel: Berkas ini berisi mata pelajaran "${importedSession.subjects.map((s) => s.subjectName).join(', ')}", berbeda dengan workspace "${context.targetSubjectName}" yang sedang Anda buka. Pastikan Anda tidak salah memilih berkas.`
+        );
+      }
+    }
+  } else if (activeSession) {
+    // Mode Wali Kelas: Validasi terhadap sesi aktif Wali Kelas
     if (
       importedSession.classId &&
       activeSession.classId &&
@@ -630,7 +657,8 @@ export function applyImportedSessionToWorkspace(
   activeSession: AnalysisSession,
   importedSession: AnalysisSession,
   currentStudents: Student[],
-  conflictResolution: 'OVERWRITE' | 'KEEP_EXISTING' = 'OVERWRITE'
+  conflictResolution: 'OVERWRITE' | 'KEEP_EXISTING' = 'OVERWRITE',
+  updateGlobalActiveSessionKey: boolean = true
 ): AnalysisSession {
   const mergedSubjects: AnalysisSubject[] = [...activeSession.subjects];
 
@@ -698,6 +726,10 @@ export function applyImportedSessionToWorkspace(
     updatedAt: new Date().toISOString(),
   };
 
-  saveActiveSession(updatedSession);
+  if (updateGlobalActiveSessionKey) {
+    saveActiveSession(updatedSession);
+  } else {
+    saveSessionForClass(updatedSession);
+  }
   return updatedSession;
 }

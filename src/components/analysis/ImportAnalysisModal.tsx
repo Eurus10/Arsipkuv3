@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   X,
   UploadCloud,
@@ -13,6 +13,7 @@ import {
 import {
   AnalysisSession,
   FileValidationResult,
+  AnalysisImportContext,
 } from '../../types/analysisTypes';
 import { Student } from '../../services/studentStorage';
 import {
@@ -20,7 +21,11 @@ import {
   validateAnalysisWorkbookSession,
   applyImportedSessionToWorkspace,
 } from './analysisExcelImportService';
-import { saveActiveSession } from '../../services/analysis/analysisSessionService';
+import {
+  saveActiveSession,
+  saveSessionForClass,
+  getSessionForClass,
+} from '../../services/analysis/analysisSessionService';
 import { useModalNavigation } from '../../utils/modalNavigation';
 
 interface ImportAnalysisModalProps {
@@ -29,6 +34,7 @@ interface ImportAnalysisModalProps {
   activeSession: AnalysisSession | null;
   students: Student[];
   onImportComplete: (updatedSession: AnalysisSession) => void;
+  importContext?: AnalysisImportContext | null;
 }
 
 export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
@@ -37,6 +43,7 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
   activeSession,
   students,
   onImportComplete,
+  importContext,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -46,6 +53,29 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sesi acuan yang relevan: untuk Guru Bidang pakai sesi kelas target, untuk Wali Kelas pakai activeSession
+  const targetSession = useMemo(() => {
+    if (importContext?.callerMode === 'GURU_BIDANG') {
+      return (
+        importContext.targetClassSession ||
+        (importContext.targetClassId ? getSessionForClass(importContext.targetClassId) : null)
+      );
+    }
+    return activeSession;
+  }, [importContext, activeSession]);
+
+  // Daftar siswa yang relevan untuk pencocokan skor
+  const relevantStudents = useMemo(() => {
+    const targetClassId = importContext?.targetClassId || targetSession?.classId;
+    if (targetClassId) {
+      const filtered = students.filter(
+        (s) => s.classId.toLowerCase() === targetClassId.toLowerCase()
+      );
+      if (filtered.length > 0) return filtered;
+    }
+    return students;
+  }, [students, importContext, targetSession]);
 
   // Intercept phone back button so modal closes gracefully without leaving web
   useModalNavigation('import-analysis', isOpen, onClose);
@@ -60,7 +90,7 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
 
     try {
       const buffer = await selectedFile.arrayBuffer();
-      const importResult = importAnalysisSessionFromExcel(buffer, activeSession, students);
+      const importResult = importAnalysisSessionFromExcel(buffer, targetSession, relevantStudents);
 
       if (!importResult.isValid || !importResult.session) {
         setErrorMsg(
@@ -72,8 +102,13 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
         return;
       }
 
-      // Validate against current session
-      const validationRes = validateAnalysisWorkbookSession(importResult.session, activeSession, students);
+      // Validate against relevant target session and context
+      const validationRes = validateAnalysisWorkbookSession(
+        importResult.session,
+        targetSession,
+        relevantStudents,
+        importContext
+      );
       if (importResult.warnings.length > 0) {
         validationRes.warnings.push(...importResult.warnings);
       }
@@ -97,19 +132,39 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
   const handleApplyImport = () => {
     if (!validation || !validation.session) return;
 
-    if (activeSession) {
-      // Merge into active session
-      const merged = applyImportedSessionToWorkspace(
-        activeSession,
-        validation.session,
-        students,
-        conflictMode
-      );
-      onImportComplete(merged);
+    if (importContext?.callerMode === 'GURU_BIDANG') {
+      if (targetSession) {
+        // Gabungkan mata pelajaran ke sesi kelas target tanpa menimpa active session global Wali Kelas
+        const merged = applyImportedSessionToWorkspace(
+          targetSession,
+          validation.session,
+          relevantStudents,
+          conflictMode,
+          false // JANGAN timpa ACTIVE_SESSION_STORAGE_KEY
+        );
+        saveSessionForClass(merged);
+        onImportComplete(merged);
+      } else {
+        // Simpan sesi baru khusus kelas target ini
+        saveSessionForClass(validation.session);
+        onImportComplete(validation.session);
+      }
     } else {
-      // Restore as the new active session
-      saveActiveSession(validation.session);
-      onImportComplete(validation.session);
+      if (activeSession) {
+        // Merge into active session
+        const merged = applyImportedSessionToWorkspace(
+          activeSession,
+          validation.session,
+          relevantStudents,
+          conflictMode,
+          true
+        );
+        onImportComplete(merged);
+      } else {
+        // Restore as the new active session
+        saveActiveSession(validation.session);
+        onImportComplete(validation.session);
+      }
     }
 
     onClose();
@@ -131,10 +186,16 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm sm:text-lg font-black text-white tracking-tight">
-                {activeSession ? 'Impor Berkas Analisis Mapel' : 'Buka / Pulihkan Proyek Analisis'}
+                {importContext?.callerMode === 'GURU_BIDANG'
+                  ? `Impor Nilai Excel — ${importContext.targetClassName || importContext.targetClassId || 'Kelas'}`
+                  : activeSession
+                  ? 'Impor Berkas Analisis Mapel'
+                  : 'Buka / Pulihkan Proyek Analisis'}
               </h3>
               <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-                Unggah file Excel (.xlsx) resmi SDIT AL FIKRI
+                {importContext?.callerMode === 'GURU_BIDANG'
+                  ? `Unggah file nilai ${importContext.targetSubjectName || 'Mapel'} untuk rombel ${importContext.targetClassName || importContext.targetClassId || ''}`
+                  : 'Unggah file Excel (.xlsx) resmi SDIT AL FIKRI'}
               </p>
             </div>
           </div>
@@ -336,7 +397,11 @@ export const ImportAnalysisModal: React.FC<ImportAnalysisModalProps> = ({
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>
-                  {activeSession ? 'Terapkan Impor ke Sesi' : 'Buka Proyek Analisis Ini'}
+                  {importContext?.callerMode === 'GURU_BIDANG'
+                    ? `Terapkan Nilai ke Kelas ${importContext.targetClassName || importContext.targetClassId || ''}`
+                    : activeSession
+                    ? 'Terapkan Impor ke Sesi'
+                    : 'Buka Proyek Analisis Ini'}
                 </span>
               </button>
             </div>

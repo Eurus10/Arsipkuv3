@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Sparkles,
   BookOpen,
@@ -16,9 +16,10 @@ import {
 } from 'lucide-react';
 import { MasterClass } from '../../data/masterExamData';
 import { Student, getStoredSchools, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
-import { ExamType } from '../../types/analysisTypes';
+import { ExamType, AnalysisSession } from '../../types/analysisTypes';
 import { PillStepper } from './PillStepper';
 import { getEraporHomeroomForClass } from '../../services/analysis/eraporHomeroomBridge';
+import { getAllClassSessions } from '../../services/analysis/analysisSessionService';
 
 interface SessionSetupCardProps {
   masterClasses: MasterClass[];
@@ -36,6 +37,7 @@ interface SessionSetupCardProps {
     kktp: number;
   }) => void;
   onOpenImport: () => void;
+  onSelectExistingSession?: (session: AnalysisSession) => void;
 }
 
 const COMMON_EXAMS: Array<{ id: string; label: string; desc: string }> = [
@@ -53,6 +55,7 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
   setPersonaMode,
   onStartSession,
   onOpenImport,
+  onSelectExistingSession,
 }) => {
   const [schoolsList, setSchoolsList] = useState<string[]>(() => getStoredSchools());
   const [selectedSchool, setSelectedSchool] = useState<string>(DEFAULT_SCHOOL_NAME);
@@ -69,6 +72,16 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
     });
   });
   const [kktp, setKktp] = useState<number>(70);
+
+  // Daftar sesi kelas yang sudah tersimpan
+  const savedSessionsList = useMemo(() => {
+    const all = getAllClassSessions(true);
+    return Object.values(all).sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
+  }, []);
 
   // Initialize selected class & schools list on load
   useEffect(() => {
@@ -206,6 +219,50 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
           </span>
         </button>
       </div>
+
+      {/* BANNER SESI AKTIF TERSIMPAN (MEMULIHKAN SESI DENGAN 1 KLIK) */}
+      {savedSessionsList.length > 0 && onSelectExistingSession && (
+        <div className="p-4 sm:p-4.5 rounded-2xl bg-gradient-to-r from-sky-500/15 via-indigo-500/10 to-slate-950 border border-sky-400/30 space-y-3 shadow-lg">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400">
+                <FolderOpen className="w-4 h-4" />
+              </div>
+              <span className="text-xs sm:text-sm font-black text-white">
+                Lanjutkan Sesi yang Pernah Dibuat ({savedSessionsList.length})
+              </span>
+            </div>
+            <span className="text-[11px] text-sky-300/80 font-semibold">
+              Tersimpan aman di perangkat
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+            {savedSessionsList.map((s) => (
+              <button
+                key={s.sessionId || s.classId}
+                type="button"
+                onClick={() => onSelectExistingSession(s)}
+                className="px-3.5 py-2.5 rounded-xl bg-slate-950/80 hover:bg-sky-500/20 border border-slate-800 hover:border-sky-400/40 text-left transition-all shrink-0 cursor-pointer group flex items-center gap-3 shadow-sm"
+              >
+                <div>
+                  <div className="text-xs font-black text-white group-hover:text-sky-300 flex items-center gap-1.5">
+                    <span>Kelas {s.className || s.classId}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">
+                      {s.examType}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    {s.subjects.length} Mapel • {s.teacherName || 'Wali Kelas'}
+                  </div>
+                </div>
+                <div className="w-6 h-6 rounded-lg bg-sky-500/10 group-hover:bg-sky-500/20 border border-sky-400/20 flex items-center justify-center text-sky-300 shrink-0">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ====================================================
           BANNER WORKSPACE ANALISIS TERPADU

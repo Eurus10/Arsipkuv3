@@ -14,6 +14,7 @@ import {
   Target,
   FileText,
   Plus,
+  ArrowRight,
   Edit3,
   Search,
   Check,
@@ -40,6 +41,7 @@ import {
   ExamType,
   AnalysisQuestionConfig,
   StudentAnswers,
+  AnalysisImportContext,
 } from '../../types/analysisTypes';
 import { MasterClass } from '../../data/masterExamData';
 import { Student, getStoredSchools, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
@@ -89,7 +91,7 @@ interface SubjectTeacherWorkspaceProps {
   students: Student[];
   onOpenStudentInput: (session: AnalysisSession, subject: AnalysisSubject) => void;
   onOpenSubjectStats: (session: AnalysisSession, subject: AnalysisSubject) => void;
-  onOpenImport: () => void;
+  onOpenImport: (context?: AnalysisImportContext) => void;
 
   refreshKey?: number;
 }
@@ -138,6 +140,21 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   // Mode status: apakah sudah selesai konfigurasi awal
   const [isConfigured, setIsConfigured] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isAddSubjectModalOpen, setIsAddSubjectModalOpen] = useState<boolean>(false);
+  const [newSubjName, setNewSubjName] = useState<string>('Pendidikan Agama Islam & BP');
+  const [newSubjIsCustom, setNewSubjIsCustom] = useState<boolean>(false);
+  const [newSubjCustomText, setNewSubjCustomText] = useState<string>('');
+  const [newSubjTeacherName, setNewSubjTeacherName] = useState<string>('');
+  const [newSubjTargetClasses, setNewSubjTargetClasses] = useState<string[]>([]);
+  const [newSubjPgCount, setNewSubjPgCount] = useState<number>(20);
+  const [newSubjPgWeight, setNewSubjPgWeight] = useState<number>(1);
+  const [newSubjIsianCount, setNewSubjIsianCount] = useState<number>(10);
+  const [newSubjIsianWeight, setNewSubjIsianWeight] = useState<number>(2);
+  const [newSubjCType, setNewSubjCType] = useState<'Uraian' | 'Essay' | 'Menjodohkan'>('Uraian');
+  const [newSubjCCount, setNewSubjCCount] = useState<number>(5);
+  const [newSubjCWeight, setNewSubjCWeight] = useState<number>(4);
+  const [newSubjKktp, setNewSubjKktp] = useState<number>(70);
+  const [newSubjExamType, setNewSubjExamType] = useState<ExamType>('STS1');
   const [showClassPickerModal, setShowClassPickerModal] = useState<boolean>(false);
   const [showSwitchSessionModal, setShowSwitchSessionModal] = useState<boolean>(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState<boolean>(false);
@@ -353,10 +370,93 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
     return classesWithStudents;
   }, [masterClasses, studentCountPerClass, showAllClasses]);
 
+  // Handler: Buka Modal Tambah Mapel Baru (Tanpa Ganti Sesi & Tanpa Hilang Data)
+  const handleOpenAddSubjectModal = () => {
+    setNewSubjName('Pendidikan Agama Islam & BP');
+    setNewSubjIsCustom(false);
+    setNewSubjCustomText('');
+    setNewSubjTeacherName(teacherName || getActiveTeacherSession()?.name || '');
+    setNewSubjTargetClasses(
+      selectedClassIds.length > 0
+        ? [...selectedClassIds]
+        : availableClassesForSchool.slice(0, 4).map((c) => c.id)
+    );
+    setNewSubjPgCount(pgCount || 20);
+    setNewSubjPgWeight(pgWeight || 1);
+    setNewSubjIsianCount(isianCount || 10);
+    setNewSubjIsianWeight(isianWeight || 2);
+    setNewSubjCType(cType || 'Uraian');
+    setNewSubjCCount(cCount || 5);
+    setNewSubjCWeight(cWeight || 4);
+    setNewSubjKktp(kktp || 70);
+    setNewSubjExamType(examType || 'STS1');
+    setIsAddSubjectModalOpen(true);
+  };
+
+  // Handler: Simpan & Buka Mapel Baru
+  const handleSaveNewSubject = () => {
+    const finalName =
+      newSubjIsCustom && newSubjCustomText.trim()
+        ? newSubjCustomText.trim()
+        : newSubjName.trim();
+    if (!finalName) {
+      alert('Silakan tentukan nama mata pelajaran.');
+      return;
+    }
+    if (newSubjTargetClasses.length === 0) {
+      alert('Pilih minimal 1 kelas yang Anda ampu untuk mata pelajaran ini.');
+      return;
+    }
+
+    const subjectId = `subj-${finalName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const newConfig: AnalysisQuestionConfig = {
+      pgCount: newSubjPgCount,
+      pgWeight: newSubjPgWeight,
+      isianCount: newSubjIsianCount,
+      isianWeight: newSubjIsianWeight,
+      cType: newSubjCType,
+      cCount: newSubjCCount,
+      cWeight: newSubjCWeight,
+    };
+
+    const updatedMap = saveSubjectConfigToMultipleClasses({
+      schoolName: selectedSchool.trim() || DEFAULT_SCHOOL_NAME,
+      subjectId,
+      subjectName: finalName,
+      teacherName: newSubjTeacherName.trim(),
+      config: newConfig,
+      targetClassIds: newSubjTargetClasses,
+      masterClasses,
+      students,
+      examType: newSubjExamType,
+      schoolYear,
+      kktp: newSubjKktp,
+    });
+
+    setClassSessionsMap(updatedMap);
+    setSubjectName(finalName);
+    setIsCustomSubject(newSubjIsCustom);
+    setCustomSubjectText(newSubjCustomText);
+    setTeacherName(newSubjTeacherName.trim());
+    setExamType(newSubjExamType);
+    setKktp(newSubjKktp);
+    setPgCount(newSubjPgCount);
+    setPgWeight(newSubjPgWeight);
+    setIsianCount(newSubjIsianCount);
+    setIsianWeight(newSubjIsianWeight);
+    setCType(newSubjCType);
+    setCCount(newSubjCCount);
+    setCWeight(newSubjCWeight);
+    setSelectedClassIds(newSubjTargetClasses);
+    setActiveClassId(newSubjTargetClasses[0] || '1A');
+    setIsConfigured(true);
+    setIsAddSubjectModalOpen(false);
+    setShowSwitchSessionModal(false);
+  };
+
   // Handler: Mulai setup mata pelajaran / sesi baru dari awal
   const handleStartNewSubjectSetup = () => {
-    setIsConfigured(false);
-    setShowSwitchSessionModal(false);
+    handleOpenAddSubjectModal();
   };
 
   const activeSubjectName = isCustomSubject && customSubjectText.trim()
@@ -1068,6 +1168,17 @@ const handleExportAllClasses = () => {
                 <span>{activeSubjectName}</span>
               </div>
 
+              {/* Tombol Cepat Tambah Mapel Lain */}
+              <button
+                type="button"
+                onClick={handleOpenAddSubjectModal}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-emerald-200 transition-all cursor-pointer shadow-sm active:scale-95"
+                title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
+              >
+                <Plus className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>+ Tambah Mapel Lain</span>
+              </button>
+
               {teacherName && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-400/25 text-amber-200">
                   <UserCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -1162,22 +1273,42 @@ const handleExportAllClasses = () => {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="h-10 px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 active:scale-[0.98] text-purple-200 border border-purple-500/30 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
-                title="Edit struktur & bobot butir soal atau daftar kelas"
+                onClick={handleOpenAddSubjectModal}
+                className="h-10 px-2 sm:px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-[0.98] text-emerald-200 border border-emerald-500/35 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
               >
-                <Settings2 className="w-3.5 h-3.5 text-purple-300" />
-                <span>Atur Bobot/Kelas</span>
+                <Plus className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <span className="truncate">+ Tambah Mapel</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSwitchSessionModal(true)}
+                className="h-10 px-2 sm:px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 active:scale-[0.98] text-sky-200 border border-sky-500/35 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                title="Pilih atau beralih ke mapel / sesi yang pernah dibuat"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+                <span className="truncate">Ganti Mapel</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(true)}
+                className="h-10 px-2 sm:px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 active:scale-[0.98] text-purple-200 border border-purple-500/30 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                title="Edit struktur & bobot butir soal atau tambah rombel kelas"
+              >
+                <Settings2 className="w-3.5 h-3.5 text-purple-300 shrink-0" />
+                <span className="truncate">Atur Kelas &amp; Bobot</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowDeleteSessionModal(true)}
-                className="h-10 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:scale-[0.98] text-rose-300 border border-rose-500/25 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                className="h-10 px-2 sm:px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:scale-[0.98] text-rose-300 border border-rose-500/25 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
                 title="Hapus sesi analisis mata pelajaran ini"
               >
-                <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
-                <span>Hapus Sesi</span>
+                <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span className="truncate">Hapus Sesi</span>
               </button>
             </div>
           </div>
@@ -1448,6 +1579,17 @@ const handleExportAllClasses = () => {
                 </button>
               );
             })}
+
+            {/* Quick "+ Tambah Kelas" Pill */}
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="h-9 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Tambah atau kelola rombel kelas yang diampu untuk mapel ini"
+            >
+              <Plus className="w-3.5 h-3.5 text-purple-400" />
+              <span>+ Tambah Kelas</span>
+            </button>
           </div>
 
           {/* Right Edge Fade Mask */}
@@ -1623,7 +1765,18 @@ const handleExportAllClasses = () => {
 
             <button
               type="button"
-              onClick={onOpenImport}
+              onClick={() => {
+                const currentCls = masterClasses.find(
+                  (c) => c.id.toLowerCase() === activeClassId.toLowerCase()
+                );
+                onOpenImport({
+                  callerMode: 'GURU_BIDANG',
+                  targetClassId: activeClassId,
+                  targetClassName: currentCls?.name || activeClassId,
+                  targetSubjectName: activeSubjectName || subjectName,
+                  targetClassSession: activeClassSession,
+                });
+              }}
               className="h-10 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:scale-[0.98] text-purple-200 font-bold text-xs flex items-center justify-center gap-2 border border-purple-500/30 cursor-pointer transition-all shadow-[0_0_12px_rgba(168,85,247,0.15)]"
               title="Import file Excel nilai guru mapel untuk kelas ini"
             >
@@ -2168,23 +2321,23 @@ const handleExportAllClasses = () => {
       {/* Modal 2: Ganti Sesi / Pilih Mata Pelajaran Lain */}
       {showSwitchSessionModal && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-none sm:backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setShowSwitchSessionModal(false);
           }}
         >
-          <div className="w-full max-w-xl bg-slate-900 sm:bg-slate-900/90 backdrop-blur-none sm:backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5 text-slate-100 max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-slate-100 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 shadow-[0_0_12px_rgba(14,165,233,0.15)]">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-[0_0_12px_rgba(14,165,233,0.15)]">
                   <RotateCcw className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-base font-black text-white">
-                    Ganti Sesi Mata Pelajaran
+                    Pilih & Kelola Sesi Analisis
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Beralih ke mata pelajaran lain yang sudah tersimpan atau buat sesi baru
+                    Beralih ke mata pelajaran lain atau buat sesi analisis baru
                   </p>
                 </div>
               </div>
@@ -2192,19 +2345,30 @@ const handleExportAllClasses = () => {
                 type="button"
                 onClick={() => setShowSwitchSessionModal(false)}
                 className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                title="Tutup"
               >
                 ✕
               </button>
             </div>
 
+            {/* Banner Keamanan Data */}
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <p className="text-[11.5px] text-emerald-200/90 leading-relaxed font-medium">
+                Data nilai dan progres seluruh sesi <strong>tersimpan aman secara otomatis</strong> di browser. Anda dapat berpindah sesi kapan saja tanpa khawatir kehilangan nilai yang sudah diisi.
+              </p>
+            </div>
+
             {/* List Mata Pelajaran yang Tersimpan */}
-            <div className="space-y-3">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Mata Pelajaran yang Tersedia di Sistem
-              </label>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Mata Pelajaran yang Tersedia ({availableSubjectsList.length})
+                </label>
+              </div>
 
               {availableSubjectsList.length > 0 ? (
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
                   {availableSubjectsList.map((item) => {
                     const isCurrent =
                       item.subjectName.toLowerCase() === activeSubjectName.toLowerCase();
@@ -2213,32 +2377,32 @@ const handleExportAllClasses = () => {
                         key={item.subjectName}
                         className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-all ${
                           isCurrent
-                            ? 'bg-indigo-500/15 border-indigo-500/30'
+                            ? 'bg-indigo-500/15 border-indigo-500/35 ring-1 ring-indigo-500/30'
                             : 'bg-white/5 border-white/10 hover:border-white/20'
                         }`}
                       >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-black text-sm text-white">
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-sm text-white truncate">
                               {item.subjectName}
                             </span>
                             {isCurrent && (
-                              <span className="text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] font-bold bg-indigo-500/25 text-indigo-300 border border-indigo-400/40 px-2 py-0.5 rounded-full">
                                 Sedang Aktif
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
                             {item.teacherName && (
-                              <span className="text-amber-300 font-semibold">
+                              <span className="text-amber-300 font-semibold truncate max-w-[140px]">
                                 {item.teacherName}
                               </span>
                             )}
                             <span>•</span>
-                            <span>{item.classIds.length} Kelas ({item.classIds.join(', ')})</span>
+                            <span>{item.classIds.length} Rombel ({item.classIds.join(', ')})</span>
                             <span>•</span>
-                            <span className="text-sky-300">
-                              {item.completedStudents}/{item.totalStudents} Nilai Terisi
+                            <span className="text-sky-300 font-semibold">
+                              {item.completedStudents}/{item.totalStudents} Terisi
                             </span>
                           </div>
                         </div>
@@ -2247,12 +2411,13 @@ const handleExportAllClasses = () => {
                           <button
                             type="button"
                             onClick={() => handleSelectExistingSubject(item)}
-                            className="px-3.5 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-sm"
+                            className="px-3.5 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/35 text-indigo-200 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-sm flex items-center gap-1"
                           >
-                            Pilih Sesi Ini
+                            <span>Buka Sesi Ini</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         ) : (
-                          <span className="text-xs text-indigo-400 font-bold shrink-0">
+                          <span className="text-xs text-indigo-400 font-bold shrink-0 px-2 py-1 rounded-lg bg-indigo-500/10">
                             Aktif
                           </span>
                         )}
@@ -2268,26 +2433,26 @@ const handleExportAllClasses = () => {
             </div>
 
             {/* Opsi Buat / Setup Baru */}
-            <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/20 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/25 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div>
-                <h4 className="text-xs font-black text-sky-300">
+                <h4 className="text-xs font-black text-sky-200">
                   Ingin Mengatur Mata Pelajaran Baru?
                 </h4>
-                <p className="text-[11px] text-slate-400">
-                  Kembali ke form setup awal untuk memilih mapel dan mengatur konfigurasi baru.
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Mata pelajaran aktif saat ini tetap tersimpan aman dan dapat dibuka kembali kapan saja.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleStartNewSubjectSetup}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 text-sky-200 font-bold text-xs cursor-pointer transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(14,165,233,0.15)]"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/35 text-sky-200 font-bold text-xs cursor-pointer transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <Plus className="w-3.5 h-3.5 text-sky-300" />
                 <span>+ Setup Mapel Baru</span>
               </button>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex items-center justify-end">
+            <div className="pt-3 border-t border-white/10 flex items-center justify-end">
               <button
                 type="button"
                 onClick={() => setShowSwitchSessionModal(false)}
@@ -2365,6 +2530,262 @@ const handleExportAllClasses = () => {
           currentUserRole="guru"
           currentUserName={getActiveTeacherSession()?.name || teacherName || 'Guru Mata Pelajaran'}
         />
+      )}
+
+      {/* Modal: Tambah Mata Pelajaran Baru (Tanpa Ganti Sesi & Tanpa Hilang Data) */}
+      {isAddSubjectModalOpen && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setIsAddSubjectModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-3xl bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shadow-sm">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">
+                    Tambah Mata Pelajaran Baru
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Mata pelajaran aktif ({activeSubjectName}) tetap tersimpan aman dan dapat dibuka kembali kapan saja
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddSubjectModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <div className="space-y-4">
+              {/* Pilihan Mapel */}
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                  Pilih atau Ketik Nama Mata Pelajaran
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <select
+                      value={newSubjIsCustom ? 'CUSTOM' : newSubjName}
+                      onChange={(e) => {
+                        if (e.target.value === 'CUSTOM') {
+                          setNewSubjIsCustom(true);
+                        } else {
+                          setNewSubjIsCustom(false);
+                          setNewSubjName(e.target.value);
+                        }
+                      }}
+                      className="w-full bg-slate-950/60 border border-white/10 focus:border-emerald-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none cursor-pointer"
+                    >
+                      {PRESET_SUBJECTS.map((subj) => (
+                        <option key={subj} value={subj}>
+                          {subj}
+                        </option>
+                      ))}
+                      <option value="CUSTOM">+ Mata Pelajaran Lainnya (Ketik Manual)</option>
+                    </select>
+                  </div>
+                  {newSubjIsCustom && (
+                    <div>
+                      <input
+                        type="text"
+                        value={newSubjCustomText}
+                        onChange={(e) => setNewSubjCustomText(e.target.value)}
+                        placeholder="Ketik nama mata pelajaran baru..."
+                        className="w-full bg-slate-950/60 border border-emerald-400/40 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Guru & KKTP */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Nama Guru Pengampu
+                  </label>
+                  <input
+                    type="text"
+                    value={newSubjTeacherName}
+                    onChange={(e) => setNewSubjTeacherName(e.target.value)}
+                    placeholder="Contoh: Ust. Ahmad Fauzi, S.Pd.I"
+                    className="w-full bg-slate-950/50 border border-white/10 focus:border-emerald-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Standar KKTP / KKM (≥ Nilai Lulus)
+                  </label>
+                  <PillStepper
+                    value={newSubjKktp}
+                    onChange={setNewSubjKktp}
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Bobot Soal */}
+              <div className="bg-slate-950/40 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <h4 className="text-xs font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-emerald-400" />
+                    Pengaturan Bobot &amp; Butir Soal
+                  </h4>
+                  <span className="text-[11px] font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-lg">
+                    Total Skor: {newSubjPgCount * newSubjPgWeight + newSubjIsianCount * newSubjIsianWeight + newSubjCCount * newSubjCWeight}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  {/* PG */}
+                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5">
+                    <span className="text-xs font-bold text-slate-200">1. Pilihan Ganda (PG)</span>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Jumlah Soal</label>
+                      <PillStepper value={newSubjPgCount} onChange={setNewSubjPgCount} min={0} max={100} className="w-full" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bobot / Soal</label>
+                      <PillStepper value={newSubjPgWeight} onChange={setNewSubjPgWeight} min={1} max={20} className="w-full" />
+                    </div>
+                  </div>
+
+                  {/* Isian */}
+                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5">
+                    <span className="text-xs font-bold text-slate-200">2. Isian Singkat</span>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Jumlah Soal</label>
+                      <PillStepper value={newSubjIsianCount} onChange={setNewSubjIsianCount} min={0} max={100} className="w-full" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bobot / Soal</label>
+                      <PillStepper value={newSubjIsianWeight} onChange={setNewSubjIsianWeight} min={1} max={20} className="w-full" />
+                    </div>
+                  </div>
+
+                  {/* Bagian C */}
+                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200">3. Bagian C</span>
+                      <select
+                        value={newSubjCType}
+                        onChange={(e) => setNewSubjCType(e.target.value as any)}
+                        className="bg-slate-950 border border-white/10 rounded px-1.5 py-0.5 text-[10px] text-purple-300 font-bold"
+                      >
+                        <option value="Uraian">Uraian</option>
+                        <option value="Essay">Essay</option>
+                        <option value="Menjodohkan">Menjodohkan</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Jumlah Soal</label>
+                      <PillStepper value={newSubjCCount} onChange={setNewSubjCCount} min={0} max={100} className="w-full" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bobot / Soal</label>
+                      <PillStepper value={newSubjCWeight} onChange={setNewSubjCWeight} min={1} max={50} className="w-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rombel Kelas yang Diampu */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    Pilih Rombel Kelas yang Diampu ({newSubjTargetClasses.length} Terpilih)
+                  </label>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => setNewSubjTargetClasses(availableClassesForSchool.map(c => c.id))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                    >
+                      Semua
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewSubjTargetClasses(availableClassesForSchool.filter(c => c.level === 1 || c.level === 2).map(c => c.id))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                    >
+                      Kelas 1-2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewSubjTargetClasses(availableClassesForSchool.filter(c => c.level === 3 || c.level === 4).map(c => c.id))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                    >
+                      Kelas 3-4
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewSubjTargetClasses(availableClassesForSchool.filter(c => c.level === 5 || c.level === 6).map(c => c.id))}
+                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                    >
+                      Kelas 5-6
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {masterClasses.map((cls) => {
+                    const isSelected = newSubjTargetClasses.includes(cls.id);
+                    return (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        onClick={() => {
+                          setNewSubjTargetClasses(prev =>
+                            prev.includes(cls.id) ? prev.filter(id => id !== cls.id) : [...prev, cls.id].sort()
+                          );
+                        }}
+                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-emerald-500/25 border-emerald-400/40 text-white font-black shadow-sm shadow-emerald-500/20'
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-xs">Kelas {cls.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsAddSubjectModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveNewSubject}
+                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold text-xs cursor-pointer shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>Simpan &amp; Buka Mapel Ini</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

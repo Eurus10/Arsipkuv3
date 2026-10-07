@@ -501,39 +501,11 @@ export function saveSubjectConfigToMultipleClasses(params: {
 }): Record<string, AnalysisSession> {
   const allSessions = getAllClassSessions();
   const updatedMap: Record<string, AnalysisSession> = { ...allSessions };
-// Kelas yang sebelumnya memiliki mapel ini tetapi sekarang
-// tidak dipilih harus dikeluarkan dari konfigurasi Guru Bidang.
-const targetClassKeySet = new Set(
-  params.targetClassIds.map((id) => id.toLowerCase().trim())
-);
-
-Object.keys(updatedMap).forEach((classKey) => {
-  if (targetClassKeySet.has(classKey)) return;
-
-  const session = updatedMap[classKey];
-  if (!session?.subjects) return;
-
-  const hasSubject = session.subjects.some(
-    (subject) =>
-      subject.subjectId === params.subjectId ||
-      subject.subjectName.toLowerCase().trim() ===
-        params.subjectName.toLowerCase().trim()
-  );
-
-  if (hasSubject) {
-    session.subjects = session.subjects.filter(
-      (subject) =>
-        subject.subjectId !== params.subjectId &&
-        subject.subjectName.toLowerCase().trim() !==
-          params.subjectName.toLowerCase().trim()
-    );
-
-    session.updatedAt = new Date().toISOString();
-
-    updatedMap[classKey] = session;
-    saveSessionForClass(session);
-  }
-});
+  // Keamanan Data Progres Guru (Non-Destruktif):
+  // Jangan pernah menghapus secara otomatis mata pelajaran dan progres nilai dari kelas lain
+  // yang tidak ada di targetClassIds saat ini. Guru dapat mengampu mapel di berbagai rombel kelas
+  // tanpa khawatir nilai di kelas sebelumnya terhapus tidak sengaja. Penghapusan hanya dilakukan
+  // jika guru secara eksplisit mengonfirmasi penghapusan sesi.
 
   params.targetClassIds.forEach((cId) => {
     const foundClass = params.masterClasses.find(

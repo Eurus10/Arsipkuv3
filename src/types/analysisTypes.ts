@@ -109,3 +109,11 @@ export interface FileValidationResult {
   conflictingSubjects: string[];
   newSubjects: string[];
 }
+
+export interface AnalysisImportContext {
+  callerMode: 'WALI_KELAS' | 'GURU_BIDANG';
+  targetClassId?: string;
+  targetClassName?: string;
+  targetSubjectName?: string;
+  targetClassSession?: AnalysisSession | null;
+}

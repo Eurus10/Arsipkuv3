@@ -24,6 +24,7 @@ import {
   AnalysisSubject,
   ExamType,
   AnalysisQuestionConfig,
+  AnalysisImportContext,
 } from '../types/analysisTypes';
 import {
   getActiveSession,
@@ -33,6 +34,7 @@ import {
   addSubjectToSession,
   removeSubjectFromSession,
   saveStudentSubjectResult,
+  saveSessionForClass,
 } from '../services/analysis/analysisSessionService';
 import { SessionSetupCard } from './analysis/SessionSetupCard';
 import { SessionDashboard } from './analysis/SessionDashboard';
@@ -43,6 +45,7 @@ import { SessionRekapModal } from './analysis/SessionRekapModal';
 import { SubjectStatsModal } from './analysis/SubjectStatsModal';
 import { ImportAnalysisModal } from './analysis/ImportAnalysisModal';
 import { PillStepper } from './analysis/PillStepper';
+import { AnalysisSessionManagerModal } from './analysis/AnalysisSessionManagerModal';
 import {
   getSessionForClass,
   getOrCreateSessionForClass,
@@ -95,7 +98,8 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
   const [activeStatsSubject, setActiveStatsSubject] = useState<AnalysisSubject | null>(null);
 
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const [isConfirmResetOpen, setIsConfirmResetOpen] = useState(false);
+  const [importContext, setImportContext] = useState<AnalysisImportContext | null>(null);
+  const [isSessionPickerOpen, setIsSessionPickerOpen] = useState(false);
 
   // Legacy Blank Template Form State (Default resmi: 25 PG, 10 Isian, 5 Uraian)
   const [blankClassId, setBlankClassId] = useState<string>('');
@@ -280,15 +284,9 @@ const handleSaveStudentResult = (
     setActiveSession(updated);
   };
 
-  // Handler: Reset Session
+  // Handler: Buka Modal Kelola & Pilih Sesi Analisis (Non-Destruktif)
   const handleResetSession = () => {
-    setIsConfirmResetOpen(true);
-  };
-
-  const handleConfirmReset = () => {
-    clearActiveSession();
-    setActiveSession(null);
-    setIsConfirmResetOpen(false);
+    setIsSessionPickerOpen(true);
   };
 
   // Handler: Legacy Blank Excel Generator
@@ -574,7 +572,15 @@ const handleSaveStudentResult = (
                   setIsStatsOpen(true);
                 }}
                 onOpenRekap={() => setIsRekapOpen(true)}
-                onOpenImport={() => setIsImportOpen(true)}
+                onOpenImport={() => {
+                  setImportContext({
+                    callerMode: 'WALI_KELAS',
+                    targetClassId: activeSession?.classId,
+                    targetClassName: activeSession?.className,
+                    targetClassSession: activeSession,
+                  });
+                  setIsImportOpen(true);
+                }}
                 onResetSession={handleResetSession}
                 onDeleteSubject={handleDeleteSubject}
                 onSwitchClass={handleSwitchClass}
@@ -586,7 +592,16 @@ const handleSaveStudentResult = (
                 personaMode={personaMode}
                 setPersonaMode={setPersonaMode}
                 onStartSession={handleStartSession}
-                onOpenImport={() => setIsImportOpen(true)}
+                onOpenImport={() => {
+                  setImportContext({
+                    callerMode: 'WALI_KELAS',
+                  });
+                  setIsImportOpen(true);
+                }}
+                onSelectExistingSession={(session) => {
+                  saveSessionForClass(session);
+                  setActiveSession(session);
+                }}
               />
             )
           ) : personaMode === 'GURU_BIDANG' ? (
@@ -596,7 +611,14 @@ const handleSaveStudentResult = (
               students={students}
               onOpenStudentInput={handleOpenStudentInputFromTeacher}
               onOpenSubjectStats={handleOpenSubjectStatsFromTeacher}
-              onOpenImport={() => setIsImportOpen(true)}
+              onOpenImport={(ctx) => {
+                setImportContext(
+                  ctx || {
+                    callerMode: 'GURU_BIDANG',
+                  }
+                );
+                setIsImportOpen(true);
+              }}
               refreshKey={teacherWorkspaceRefreshKey}
             />
           ) : (
@@ -779,70 +801,51 @@ const handleSaveStudentResult = (
         {/* 5. Import Analysis Modal */}
         <ImportAnalysisModal
           isOpen={isImportOpen}
-          onClose={() => setIsImportOpen(false)}
-          activeSession={activeSession}
-          students={
-            activeSession
-              ? students.filter(
-                  (s) => s.classId.toLowerCase() === activeSession.classId.toLowerCase()
-                )
-              : students
-          }
-          onImportComplete={(updatedSession) => {
-            setActiveSession(updatedSession);
+          onClose={() => {
             setIsImportOpen(false);
+            setImportContext(null);
+          }}
+          activeSession={activeSession}
+          students={students}
+          importContext={importContext}
+          onImportComplete={(updatedSession) => {
+            if (importContext?.callerMode === 'GURU_BIDANG') {
+              // Mode Guru Bidang: Simpan sesi per kelas tanpa mengunci / memicu mode wali kelas
+              saveSessionForClass(updatedSession);
+              setTeacherWorkspaceRefreshKey((prev) => prev + 1);
+              // Sinkronkan activeSession hanya jika kelasnya sama persis
+              if (
+                activeSession &&
+                activeSession.classId.toLowerCase() === updatedSession.classId.toLowerCase()
+              ) {
+                setActiveSession(updatedSession);
+              }
+            } else {
+              // Mode Wali Kelas:
+              saveSessionForClass(updatedSession);
+              setActiveSession(updatedSession);
+            }
+            setIsImportOpen(false);
+            setImportContext(null);
           }}
         />
 
-        {/* 6. Modal Konfirmasi Ganti / Mulai Sesi Baru */}
-        {isConfirmResetOpen && (
-          <div
-            className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setIsConfirmResetOpen(false);
-            }}
-          >
-            <div className="w-full max-w-md bg-[#131722] border border-[#2B354C] rounded-2xl shadow-2xl text-slate-100 p-5 sm:p-6 space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-[#222A3C]">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                  <RefreshCw className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Ganti / Mulai Sesi Baru?</h3>
-                  <p className="text-xs text-slate-400">Tutup sesi analisis yang sedang aktif</p>
-                </div>
-              </div>
-
-              <div className="text-xs text-slate-300 space-y-2 leading-relaxed bg-[#0E121B] p-3.5 rounded-xl border border-[#222A3C]">
-                <p>
-                  Sesi aktif untuk <strong className="text-cyan-300">Kelas {activeSession?.className} ({activeSession?.examType})</strong> akan ditutup dan Anda akan kembali ke menu pengaturan sesi awal untuk memilih kelas atau ujian lain.
-                </p>
-                <p className="text-amber-400 font-semibold flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  <span>Pastikan Anda telah mengunduh Excel proyek jika ingin menyimpan salinan sesi ini.</span>
-                </p>
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#222A3C]">
-                <button
-                  type="button"
-                  onClick={() => setIsConfirmResetOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition-all"
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmReset}
-                  className="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-500/20 cursor-pointer transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Ya, Ganti Sesi Baru</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* 6. Modal Kelola & Pilih Sesi Analisis (Non-Destruktif & Aman) */}
+        <AnalysisSessionManagerModal
+          isOpen={isSessionPickerOpen}
+          onClose={() => setIsSessionPickerOpen(false)}
+          activeSession={activeSession}
+          onSelectSession={(session) => {
+            saveSessionForClass(session);
+            setActiveSession(session);
+            setIsSessionPickerOpen(false);
+          }}
+          onCreateNewSession={() => {
+            setActiveSession(null);
+            setIsSessionPickerOpen(false);
+          }}
+          masterClasses={masterClasses}
+        />
       </div>
     </div>
   );
