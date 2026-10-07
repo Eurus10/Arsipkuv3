@@ -3,8 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARSIP DIGITAL SDIT AL FIKRI</title>
-    <meta name="description" content="Portal internal pencarian dan arsip dokumen sekolah SDIT AL FIKRI terintegrasi Google Drive." />
+    <script>
+      // Suppress Vite HMR WebSocket connection attempts in the AI Studio cloud proxy
+      (function() {
+        const OriginalWebSocket = window.WebSocket;
+        if (OriginalWebSocket) {
+          window.WebSocket = function(url, protocols) {
+            if (typeof url === 'string' && (url.includes('/@vite/') || url.includes('vite') || url.includes('ws://') || url.includes('wss://'))) {
+              // Return a silent mock WebSocket that starts in CLOSED state
+              const mockWS = {
+                url: url,
+                readyState: 3, // CLOSED state
+                close: function() {},
+                send: function() {},
+                addEventListener: function() {},
+                removeEventListener: function() {},
+                dispatchEvent: function() {},
+                onopen: null,
+                onclose: null,
+                onerror: null,
+                onmessage: null
+              };
+              return mockWS;
+            }
+            return new OriginalWebSocket(url, protocols);
+          };
+          window.WebSocket.prototype = OriginalWebSocket.prototype;
+          for (let prop in OriginalWebSocket) {
+            if (OriginalWebSocket.hasOwnProperty(prop)) {
+              window.WebSocket[prop] = OriginalWebSocket[prop];
+            }
+          }
+        }
+      })();
+    </script>
+    <title>Arsip Digital SDIT Al Fikri</title>
+    <meta name="description" content="Portal pencarian dan arsip digital SDIT Al Fikri terhubung dengan Google Drive: Administrasi Guru, Bank Soal, Unduh Template Dokumen & Folder Soal, Tracking Pengumpulan & Cetak Soal, Sertifikat, dan E-Rapor STS Kurikulum Merdeka." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Arsip Digital SDIT Al Fikri" />
+    <meta property="og:description" content="Portal pencarian dan arsip digital SDIT Al Fikri terhubung dengan Google Drive: Administrasi Guru, Bank Soal, Unduh Template Dokumen & Folder Soal, Tracking Pengumpulan & Cetak Soal, Sertifikat, dan E-Rapor STS Kurikulum Merdeka." />
+    <meta property="og:site_name" content="Arsip Digital SDIT Al Fikri" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Arsip Digital SDIT Al Fikri" />
+    <meta name="twitter:description" content="Portal pencarian dan arsip digital SDIT Al Fikri terhubung dengan Google Drive: Administrasi Guru, Bank Soal, Unduh Template Dokumen & Folder Soal, Tracking Pengumpulan & Cetak Soal, Sertifikat, dan E-Rapor STS Kurikulum Merdeka." />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Arsip Digital SDIT Al Fikri",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "All",
+      "description": "Portal pencarian dan arsip digital SDIT Al Fikri terhubung dengan Google Drive: Administrasi Guru, Bank Soal, Unduh Template Dokumen & Folder Soal, Tracking Pengumpulan & Cetak Soal, Sertifikat, dan E-Rapor STS Kurikulum Merdeka."
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" crossorigin="anonymous">

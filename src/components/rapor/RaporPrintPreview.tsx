@@ -1145,7 +1145,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           {displayNote && (
             <div className="catatan-guru-section mb-4" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
               <div className="text-xs font-bold text-black uppercase mb-1">
-                CATATAN GURU / WALI KELAS:
+                CATATAN WALI KELAS:
               </div>
               <div
                 style={{

@@ -340,7 +340,7 @@ function buildAcademicWorksheet(
       ? addInfo.teacherNotes
       : 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.';
 
-  setCell(r, 0, 'CATATAN GURU / WALI KELAS:', {
+  setCell(r, 0, 'CATATAN WALI KELAS:', {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
   });
   r++;

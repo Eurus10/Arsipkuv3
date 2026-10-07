@@ -139,18 +139,18 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {notification && (
-        <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-md">
+        <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2 shadow-md">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{notification}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Student Selector Sidebar */}
-        <div className="lg:col-span-4 space-y-2">
-          <div className="flex items-center justify-between mb-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Kiri: Student Selector Sidebar */}
+        <div className="lg:col-span-3 space-y-2">
+          <div className="flex items-center justify-between mb-1.5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Daftar Siswa ({students.length})
             </h3>
@@ -163,11 +163,11 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
               placeholder="Cari siswa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+              className="w-full h-9 pl-9 pr-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
             />
           </div>
 
-          <div className="space-y-1.5 max-h-[550px] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
             {filteredStudents.map((st) => {
               const isSelected = st.id === currentStudent?.id;
               const info = additionalInfo[st.id];
@@ -178,15 +178,15 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   key={st.id}
                   type="button"
                   onClick={() => setSelectedStudentId(st.id)}
-                  className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
+                  className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
                     isSelected
                       ? 'bg-amber-500/15 border-amber-400/50 text-white shadow-lg shadow-amber-500/10'
                       : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/60 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
                     <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
                         isSelected
                           ? 'bg-amber-500 text-slate-950'
                           : 'bg-slate-800 text-slate-400'
@@ -194,14 +194,14 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                     >
                       <User className="w-3.5 h-3.5" />
                     </div>
-                    <div className="truncate">
+                    <div className="truncate min-w-0 pr-1">
                       <p className="text-xs font-bold truncate">{st.name}</p>
-                      <p className="text-[10px] text-slate-500">NIS: {st.nim || '-'}</p>
+                      <p className="text-[10px] text-slate-500 truncate">NIS: {st.nim || '-'}</p>
                     </div>
                   </div>
 
                   {totalAbsen > 0 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 flex-shrink-0">
                       Absen: {totalAbsen}
                     </span>
                   )}
@@ -211,217 +211,225 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
           </div>
         </div>
 
-        {/* Right Editor for Selected Student */}
+        {/* Tengah & Kanan Editor for Selected Student */}
         {currentStudent ? (
-          <div className="lg:col-span-8 space-y-6">
-            {/* Header info */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400">
-                  Data Pelengkap Rapor Siswa
-                </span>
-                <h2 className="text-base sm:text-lg font-black text-white">
-                  {currentStudent.name}
-                </h2>
-                <p className="text-xs text-slate-400">
-                  NIS: {currentStudent.nim || '-'} | NISN: {currentStudent.nisn || '-'}
-                </p>
-              </div>
-
-              <div className="text-right hidden sm:block">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
-                  Data Tersinkron
-                </span>
-              </div>
-            </div>
-
-            {/* Attendance Section */}
-            <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-4">
-              <div className="flex items-center gap-2 text-white font-bold text-sm border-b border-slate-800 pb-3">
-                <Calendar className="w-4 h-4 text-amber-400" />
-                <span>Ketidakhadiran (Absensi Siswa)</span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Sakit (Hari)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={currentInfo.attendance?.sakit ?? 0}
-                    onChange={(e) => handleAttendanceChange('sakit', e.target.value)}
-                    className="w-full text-center py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-amber-300 focus:outline-none focus:border-amber-400 no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Izin (Hari)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={currentInfo.attendance?.izin ?? 0}
-                    onChange={(e) => handleAttendanceChange('izin', e.target.value)}
-                    className="w-full text-center py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-sky-300 focus:outline-none focus:border-sky-400 no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">
-                    Tanpa Keterangan (Hari)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={currentInfo.attendance?.alpha ?? 0}
-                    onChange={(e) => handleAttendanceChange('alpha', e.target.value)}
-                    className="w-full text-center py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-rose-300 focus:outline-none focus:border-rose-400 no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Extracurricular Section */}
-            <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 text-white font-bold text-sm">
-                  <Award className="w-4 h-4 text-purple-400" />
-                  <span>Kegiatan Ekstrakurikuler</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddEkstra}
-                  className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Tambah Ekstra</span>
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {(currentInfo.extracurriculars || []).length === 0 ? (
-                  <p className="text-xs text-slate-500 italic text-center py-3">
-                    Belum ada ekstrakurikuler yang ditambahkan.
+          <>
+            {/* Tengah: Form untuk guru menulis catatan */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* Header info */}
+              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <span className="text-[9px] font-extrabold uppercase tracking-wider text-amber-400">
+                    Data Pelengkap Rapor Siswa
+                  </span>
+                  <h2 className="text-sm sm:text-base font-black text-white truncate max-w-[250px]">
+                    {currentStudent.name}
+                  </h2>
+                  <p className="text-[11px] text-slate-400">
+                    NIS: {currentStudent.nim || '-'} | NISN: {currentStudent.nisn || '-'}
                   </p>
-                ) : (
-                  (currentInfo.extracurriculars || []).map((ek) => (
-                    <div
-                      key={ek.id}
-                      className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2.5"
+                </div>
+              </div>
+
+              {/* Teacher Notes / Motivasi Section */}
+              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2.5 gap-2">
+                  <div className="flex items-center gap-2 text-white font-bold text-xs">
+                    <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Catatan Wali Kelas / Motivasi Guru</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleAutoGenerateNoteForCurrent}
+                      className="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Buat catatan otomatis khusus untuk siswa ini"
                     >
-                      <div className="flex items-center justify-between gap-3">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
+                      <span>Auto Catatan</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleAutoGenerateNotesForAll}
+                      className="px-2 py-0.5 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 text-[10px] font-black flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Isi otomatis catatan untuk seluruh siswa di kelas ini"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Auto Semua</span>
+                    </button>
+                  </div>
+                </div>
+
+                <textarea
+                  rows={4}
+                  value={currentInfo.teacherNotes || ''}
+                  onChange={(e) => handleUpdateCurrent({ teacherNotes: e.target.value })}
+                  placeholder="Tuliskan catatan apresiasi, motivasi, dan evaluasi guru untuk siswa..."
+                  className="w-full text-xs text-slate-100 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl p-3 focus:outline-none leading-relaxed resize-none"
+                />
+
+                {/* Preset Notes Picker */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>Rekomendasi Catatan Otomatis:</span>
+                  </span>
+                  <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                    {PRESET_MOTIVATION_NOTES.map((note, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleUpdateCurrent({ teacherNotes: note })}
+                        className="text-left w-full text-[10px] p-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
+                      >
+                        "{note}"
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Kanan: Informasi absensi dan ekskul */}
+            <div className="lg:col-span-4 space-y-4">
+              {/* Attendance Section */}
+              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                <div className="flex items-center gap-2 text-white font-bold text-xs border-b border-slate-800 pb-2">
+                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Ketidakhadiran (Absensi Akhir Semester)</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className="space-y-1 text-center">
+                    <label className="text-[10px] font-semibold text-slate-300">
+                      Sakit (Hari)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={currentInfo.attendance?.sakit ?? 0}
+                      onChange={(e) => handleAttendanceChange('sakit', e.target.value)}
+                      className="w-full text-center py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 no-spin-button [appearance:textfield]"
+                    />
+                  </div>
+
+                  <div className="space-y-1 text-center">
+                    <label className="text-[10px] font-semibold text-slate-300">
+                      Izin (Hari)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={currentInfo.attendance?.izin ?? 0}
+                      onChange={(e) => handleAttendanceChange('izin', e.target.value)}
+                      className="w-full text-center py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-sky-300 focus:outline-none focus:border-sky-400 no-spin-button [appearance:textfield]"
+                    />
+                  </div>
+
+                  <div className="space-y-1 text-center">
+                    <label className="text-[10px] font-semibold text-slate-300">
+                      Alpha (Hari)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={currentInfo.attendance?.alpha ?? 0}
+                      onChange={(e) => handleAttendanceChange('alpha', e.target.value)}
+                      className="w-full text-center py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-rose-300 focus:outline-none focus:border-rose-400 no-spin-button [appearance:textfield]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Extracurricular Section */}
+              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div className="flex items-center gap-2 text-white font-bold text-xs">
+                    <Award className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Ekstrakurikuler</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddEkstra}
+                    className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 text-[10px] font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
+                  >
+                    <Plus className="w-2.5 h-2.5" />
+                    <span>Tambah</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                  {(currentInfo.extracurriculars || []).length === 0 ? (
+                    <p className="text-[10px] text-slate-500 italic text-center py-2">
+                      Belum ada ekskul.
+                    </p>
+                  ) : (
+                    (currentInfo.extracurriculars || []).map((ek) => (
+                      <div
+                        key={ek.id}
+                        className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-1.5">
+                          <input
+                            type="text"
+                            value={ek.name}
+                            onChange={(e) => handleUpdateEkstra(ek.id, { name: e.target.value })}
+                            placeholder="Nama Ekskul (Pramuka, dll)"
+                            className="text-[11px] font-bold text-white bg-slate-900 border border-slate-700 px-2 py-0.5 rounded flex-1 focus:outline-none focus:border-purple-400 min-w-0"
+                          />
+
+                          <select
+                            value={ek.predicate}
+                            onChange={(e) =>
+                              handleUpdateEkstra(ek.id, {
+                                predicate: e.target.value as any,
+                              })
+                            }
+                            className="text-[10px] font-bold bg-slate-900 border border-slate-700 text-purple-300 px-1.5 py-0.5 rounded focus:outline-none cursor-pointer"
+                          >
+                            <option value="Sangat Baik">Sangat Baik</option>
+                            <option value="Baik">Baik</option>
+                            <option value="Cukup">Cukup</option>
+                            <option value="Kurang">Kurang</option>
+                          </select>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEkstra(ek.id)}
+                            className="p-0.5 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+
                         <input
                           type="text"
-                          value={ek.name}
-                          onChange={(e) => handleUpdateEkstra(ek.id, { name: e.target.value })}
-                          placeholder="Nama Ekstrakurikuler (misal: Pramuka, Tahfidz)"
-                          className="text-xs font-bold text-white bg-slate-900 border border-slate-700 px-2.5 py-1 rounded-lg flex-1 focus:outline-none focus:border-purple-400"
-                        />
-
-                        <select
-                          value={ek.predicate}
+                          value={ek.description}
                           onChange={(e) =>
-                            handleUpdateEkstra(ek.id, {
-                              predicate: e.target.value as any,
-                            })
+                            handleUpdateEkstra(ek.id, { description: e.target.value })
                           }
-                          className="text-xs font-bold bg-slate-900 border border-slate-700 text-purple-300 px-2.5 py-1 rounded-lg focus:outline-none focus:border-purple-400 cursor-pointer"
-                        >
-                          <option value="Sangat Baik">Sangat Baik</option>
-                          <option value="Baik">Baik</option>
-                          <option value="Cukup">Cukup</option>
-                          <option value="Kurang">Kurang</option>
-                        </select>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteEkstra(ek.id)}
-                          className="p-1 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          placeholder="Keterangan pencapaian"
+                          className="w-full text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-2 py-1 rounded focus:outline-none focus:border-purple-400"
+                        />
                       </div>
+                    ))
+                  )}
+                </div>
+              </div>
 
-                      <input
-                        type="text"
-                        value={ek.description}
-                        onChange={(e) =>
-                          handleUpdateEkstra(ek.id, { description: e.target.value })
-                        }
-                        placeholder="Keterangan / capaian siswa dalam ekstrakurikuler ini"
-                        className="w-full text-xs text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-purple-400"
-                      />
-                    </div>
-                  ))
-                )}
+              {/* Informative Notice Box */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/[0.03] border border-amber-500/20 flex items-start gap-2.5">
+                <span className="text-amber-400 text-xs shrink-0 mt-0.5">ℹ️</span>
+                <p className="text-[10px] text-slate-400 leading-relaxed font-normal">
+                  <strong>Catatan Akhir Semester:</strong> Absensi & Ekskul di atas diinput khusus untuk keperluan Akhir Semester Genap/Ganjil dan disembunyikan secara otomatis pada cetakan <strong>Rapor STS (Tengah Semester)</strong>.
+                </p>
               </div>
             </div>
-
-            {/* Teacher Notes / Motivasi Section */}
-            <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-4">
-              <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-2">
-                <div className="flex items-center gap-2 text-white font-bold text-sm">
-                  <MessageSquare className="w-4 h-4 text-amber-400" />
-                  <span>Catatan Wali Kelas / Motivasi Guru</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleAutoGenerateNoteForCurrent}
-                    className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-                    title="Buat catatan otomatis khusus untuk siswa ini"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Auto Catatan Siswa Ini</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleAutoGenerateNotesForAll}
-                    className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 text-xs font-black flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-                    title="Isi otomatis catatan untuk seluruh siswa di kelas ini"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Auto Catatan Semua Siswa</span>
-                  </button>
-                </div>
-              </div>
-
-              <textarea
-                rows={3}
-                value={currentInfo.teacherNotes || ''}
-                onChange={(e) => handleUpdateCurrent({ teacherNotes: e.target.value })}
-                placeholder="Tuliskan catatan apresiasi, motivasi, dan evaluasi guru untuk siswa..."
-                className="w-full text-xs text-slate-100 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl p-3 focus:outline-none leading-relaxed resize-none"
-              />
-
-              {/* Preset Notes Picker */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-amber-400" />
-                  <span>Pilih Rekomendasi Catatan Otomatis:</span>
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {PRESET_MOTIVATION_NOTES.map((note, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleUpdateCurrent({ teacherNotes: note })}
-                      className="text-left text-[10.5px] p-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
-                    >
-                      "{note}"
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          </>
         ) : (
-          <div className="lg:col-span-8 p-12 text-center text-slate-400 text-xs">
+          <div className="lg:col-span-9 p-12 text-center text-slate-400 text-xs">
             Pilih siswa untuk mengedit data ketidakhadiran, ekstrakurikuler, dan catatan guru.
           </div>
         )}

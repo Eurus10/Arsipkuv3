@@ -38,6 +38,7 @@ import {
   Zap,
   X,
   HeartHandshake,
+  MessageSquare,
 } from 'lucide-react';
 import {
   RaporStsClassData,
@@ -62,6 +63,7 @@ import {
 } from '../../services/eraporProgressService';
 import { getStoredStudentsLocal, subscribeToStudents, Student } from '../../services/studentStorage';
 import { RaporScoreGrid } from './RaporScoreGrid';
+import { RaporAdditionalInput } from './RaporAdditionalInput';
 import { RaporCharacterGrid } from './RaporCharacterGrid';
 import { RaporPrintPreview } from './RaporPrintPreview';
 import { RaporLegerTable } from './RaporLegerTable';
@@ -105,7 +107,7 @@ interface RaporWorkspaceProps {
   onLogoutTeacher?: () => void;
 }
 
-type WorkspaceTab = 'scores' | 'character' | 'print' | 'leger';
+type WorkspaceTab = 'scores' | 'notes' | 'character' | 'print' | 'leger';
 
 export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   onBack,
@@ -1740,7 +1742,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                     [
                       ['scores', BookOpen, 'Input Nilai Akademik'],
                       ...(selectedIsHomeroom || isAdmin
-                        ? [['character', HeartHandshake, 'Penilaian Karakter'] as const]
+                        ? [
+                            ['notes', MessageSquare, 'Input Catatan'] as const,
+                            ['character', HeartHandshake, 'Penilaian Karakter'] as const,
+                          ]
                         : []),
                       ['leger', FileSpreadsheet, 'Leger Rapor STS'],
                       ['print', Printer, 'Cetak Rapor (2 Lembar)'],
@@ -1821,6 +1826,14 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   onUpdateAdditionalInfo={handleUpdateAdditionalInfo}
                   onUpdateSubjectRecord={handleUpdateSubjectRecord}
                   onOpenAnalysisSync={() => setIsAnalysisSyncModalOpen(true)}
+                />
+              )}
+
+              {activeTab === 'notes' && classData && (
+                <RaporAdditionalInput
+                  students={classStudents}
+                  additionalInfo={classData.additionalInfo || {}}
+                  onUpdateAdditionalInfo={handleUpdateAdditionalInfo}
                 />
               )}
 

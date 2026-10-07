@@ -305,11 +305,11 @@ export function generateSubjectWorksheet(
   const normExam = (session.examType || '').toUpperCase().replace(/[\s_-]+/g, '');
   const examTitle =
     normExam === 'STS1'
-      ? 'ANALISIS HASIL SUMATIF TENGAH SEMESTER 1'
+      ? 'ANALISIS HASIL SUMATIF TENGAH SEMESTER GANJIL (STS1)'
       : normExam === 'SAS1' || normExam === 'SAS'
-      ? 'ANALISIS HASIL SUMATIF AKHIR SEMESTER 1'
+      ? 'ANALISIS HASIL SUMATIF AKHIR SEMESTER GANJIL (SAS)'
       : normExam === 'STS2'
-      ? 'ANALISIS HASIL SUMATIF TENGAH SEMESTER 2'
+      ? 'ANALISIS HASIL SUMATIF TENGAH SEMESTER GENAP (STS2)'
       : normExam === 'SAS2'
       ? 'ANALISIS HASIL SUMATIF AKHIR SEMESTER 2'
       : normExam === 'SAT'

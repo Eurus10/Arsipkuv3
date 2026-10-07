@@ -5,10 +5,11 @@ import app from './src/server/app';
 
 async function startServer() {
   const PORT = 3000;
+  let vite: any;
 
   // Vite middleware for development & static files for production
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
+    vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
@@ -21,9 +22,16 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Evaluasi Pembelajaran Server running on http://localhost:${PORT}`);
   });
+
+  // Handle WebSocket upgrades for Vite's HMR in development
+  if (process.env.NODE_ENV !== 'production' && vite) {
+    server.on('upgrade', (req, socket, head) => {
+      vite.ws.handleUpgrade(req, socket, head);
+    });
+  }
 }
 
 startServer();

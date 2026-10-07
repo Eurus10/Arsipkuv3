@@ -541,6 +541,18 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
             <KeyRound className="w-3.5 h-3.5" />
             <span>Keamanan PIN Guru</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveSection('backup_restore')}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              activeSection === 'backup_restore'
+                ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+            }`}
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Backup & Restore</span>
+          </button>
         </div>
       )}
 
@@ -557,6 +569,8 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         <SchoolIdentityPanel showNotification={showNotification} />
       ) : activeSection === 'security_pins' ? (
         <TeacherPinSecurityPanel showNotification={showNotification} />
+      ) : activeSection === 'backup_restore' ? (
+        <BackupRestorePanel showNotification={showNotification} />
       ) : (
         /* Section Master Mapel (Restrukturisasi Bersih & Praktis) */
         <div className="space-y-4 sm:space-y-5">
