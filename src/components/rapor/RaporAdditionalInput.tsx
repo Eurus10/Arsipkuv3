@@ -9,35 +9,31 @@ import {
   Check,
   Search,
   User,
+  Loader2,
 } from 'lucide-react';
-import { StudentAdditionalInfo, StudentExtracurricular } from '../../types/raporSts';
+import { StudentAdditionalInfo, StudentExtracurricular, RaporStsClassData } from '../../types/raporSts';
 import { Student } from '../../services/studentStorage';
-import { generateTeacherNote } from '../../services/raporStsService';
+import { generateTeacherNote, generateAiTeacherNotes } from '../../services/raporStsService';
 
 interface RaporAdditionalInputProps {
   students: Student[];
   additionalInfo: Record<string, StudentAdditionalInfo>;
   onUpdateAdditionalInfo: (updated: Record<string, StudentAdditionalInfo>) => void;
+  classData?: RaporStsClassData | null;
 }
-
-const PRESET_MOTIVATION_NOTES = [
-  'Ananda menunjukkan kedisiplinan dan sopan santun yang sangat baik. Tingkatkan terus minat membaca dan keaktifan bertanya di kelas.',
-  'Alhamdulillah Ananda mampu mengikuti pembelajaran dengan antusias. Pertahankan hafalan Al-Qur\'an dan semangat belajarnya.',
-  'Ananda memiliki kepedulian yang tinggi terhadap teman dan lingkungan. Tingkatkan fokus dan ketelitian saat menyelesaikan tugas mandiri.',
-  'Ananda sangat aktif dan kreatif dalam pembelajaran. Tetap rendah hati, tekun beribadah, dan istiqomah dalam menuntut ilmu.',
-  'Prestasi Ananda pada tengah semester ini sangat membanggakan. Terus asah bakat dan jangan lelah untuk belajar hal-hal baru.',
-];
 
 export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
   students,
   additionalInfo,
   onUpdateAdditionalInfo,
+  classData,
 }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
     students[0]?.id || ''
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [notification, setNotification] = useState<string | null>(null);
+  const [isGeneratingAi, setIsGeneratingAi] = useState<boolean>(false);
 
   const currentStudent = students.find((s) => s.id === selectedStudentId) || students[0];
 
@@ -48,6 +44,53 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
       { id: 'ekstra_1', name: 'Pramuka', predicate: 'Baik', description: 'Aktif dan disiplin dalam kegiatan kepramukaan.' },
     ],
     teacherNotes: 'Tingkatkan terus semangat belajar dan pertahankan akhlak terpuji.',
+  };
+
+  // Helper to calculate student's average score, remedial count, and total subjects
+  const getStudentMetrics = (studentId: string) => {
+    if (!classData || !classData.subjects || !classData.subjectRecords) {
+      return { averageScore: 0, remedialCount: 0, totalSubjects: 0 };
+    }
+    let totalScore = 0;
+    let scoreCount = 0;
+    let remedialCount = 0;
+    const passingGrade = classData.config?.passingGrade || 75;
+
+    classData.subjects.forEach((subj) => {
+      const rec = classData.subjectRecords[subj.id]?.scores[studentId];
+      const score = rec?.finalScore ?? rec?.stsScore ?? null;
+      if (typeof score === 'number' && !isNaN(score)) {
+        totalScore += score;
+        scoreCount++;
+        if (score < passingGrade) {
+          remedialCount++;
+        }
+      }
+    });
+
+    const averageScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : 0;
+    return { averageScore, remedialCount, totalSubjects: scoreCount };
+  };
+
+  // Helper to extract student's passed vs remedial subject lists
+  const getStudentSubjectsStatus = (studentId: string) => {
+    const achievedTps: string[] = [];
+    const unachievedTps: string[] = [];
+    if (classData && classData.subjects && classData.subjectRecords) {
+      const passingGrade = classData.config?.passingGrade || 75;
+      classData.subjects.forEach((subj) => {
+        const rec = classData.subjectRecords[subj.id]?.scores[studentId];
+        const score = rec?.finalScore ?? rec?.stsScore ?? null;
+        if (typeof score === 'number' && !isNaN(score)) {
+          if (score >= passingGrade) {
+            achievedTps.push(subj.name);
+          } else {
+            unachievedTps.push(subj.name);
+          }
+        }
+      });
+    }
+    return { achievedTps, unachievedTps };
   };
 
   const handleUpdateCurrent = (updates: Partial<StudentAdditionalInfo>) => {
@@ -97,41 +140,174 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
     handleUpdateCurrent({ extracurriculars: filtered });
   };
 
-  // Auto-generate note for the selected student
-  const handleAutoGenerateNoteForCurrent = () => {
-    if (!currentStudent) return;
-    const note = generateTeacherNote(currentStudent.name, 85, 4, 4);
-    handleUpdateCurrent({ teacherNotes: note });
-    setNotification(`Catatan motivasi untuk ${currentStudent.name} berhasil dibuat!`);
-    setTimeout(() => setNotification(null), 2500);
+  const metrics = currentStudent ? getStudentMetrics(currentStudent.id) : { averageScore: 0, remedialCount: 0, totalSubjects: 0 };
+  const currentAvgScore = metrics.averageScore;
+  const currentRemedialCount = metrics.remedialCount;
+
+  // Generate personalized dynamic recommendations based on student's name, average score, and remedial count
+  const getDynamicRecommendations = (name: string, avgScore: number, remedialCount: number): string[] => {
+    const firstName = name.split(' ')[0] || name;
+    
+    if (remedialCount > 0) {
+      return [
+        `Ananda ${firstName} memiliki potensi belajar yang baik, namun masih perlu meningkatkan ketelitian dan mengulang materi pada ${remedialCount} mata pelajaran yang belum tuntas. Tetap semangat!`,
+        `Alhamdulillah, secara umum perkembangan belajar ananda ${firstName} cukup baik. Mari tingkatkan fokus, latihan mandiri, dan semangat beribadah agar seluruh mata pelajaran dapat tuntas optimal.`,
+        `Ananda ${firstName} memiliki kemampuan yang bagus, namun perlu pendampingan dan keseriusan belajar untuk menuntaskan materi remedial di kelas. Terus berikhtiar dan jangan mudah menyerah.`,
+      ];
+    } else if (avgScore >= 88) {
+      return [
+        `Alhamdulillah, ananda ${firstName} berhasil meraih prestasi yang sangat luar biasa di tengah semester ini dengan nilai rata-rata ${avgScore}. Pertahankan ketekunan, ibadah, dan akhlak muliamu!`,
+        `Masya Allah, ananda ${firstName} menunjukkan penguasaan materi yang sangat istimewa dengan nilai rata-rata ${avgScore}. Tetaplah rendah hati dan terus menjadi inspirasi kebaikan bagi teman-teman.`,
+        `Alhamdulillah, pencapaian belajar ananda ${firstName} sangat membanggakan (rata-rata ${avgScore}). Semoga Allah Swt senantiasa memberkahi semangat belajarmu yang tinggi.`,
+      ];
+    } else if (avgScore >= 75) {
+      return [
+        `Alhamdulillah, ananda ${firstName} telah mencapai kompetensi pembelajaran dengan baik, meraih rata-rata nilai ${avgScore}. Terus tingkatkan keaktifan dan konsistensi belajarmu.`,
+        `Ananda ${firstName} menunjukkan perkembangan belajar yang positif dengan rata-rata nilai ${avgScore}. Senantiasa istiqomah dalam ibadah dan terus berikhtiar melakukan yang terbaik.`,
+        `Capaian belajar ananda ${firstName} sudah tuntas dengan baik (rata-rata ${avgScore}). Tingkatkan latihan mandiri agar pemahaman materi pembelajaran semakin mendalam.`,
+      ];
+    } else if (avgScore > 0) {
+      return [
+        `Ananda ${firstName} memiliki potensi yang baik dengan rata-rata nilai ${avgScore}. Perbanyak mengulang materi di rumah dan jangan ragu untuk aktif bertanya di kelas. Tetap semangat!`,
+        `Terus semangat belajar untuk ananda ${firstName}, rata-rata nilai ${avgScore} menunjukkan masih ada ruang untuk berkembang. Dengan bimbingan intensif dan ketekunan, insya Allah ananda pasti bisa lebih baik.`,
+        `Ananda ${firstName} perlu meningkatkan kedisiplinan belajar dan kefokusan saat menyelesaikan tugas mandiri. Guru dan orang tua senantiasa mendampingi untuk hasil yang optimal.`,
+      ];
+    } else {
+      return [
+        `Tingkatkan kedisiplinan dan semangat belajar ananda ${firstName} dalam setiap kegiatan pembelajaran agar mencapai hasil yang optimal.`,
+        `Mari tingkatkan konsentrasi belajar dan keaktifan ananda ${firstName} di kelas. Semoga di paruh semester berikutnya hasil belajar semakin meningkat.`,
+        `Ananda ${firstName} memiliki potensi besar. Dengan niat yang ikhlas dan kedisiplinan yang konsisten, insya Allah ananda akan meraih pencapaian yang lebih baik.`,
+      ];
+    }
   };
 
-  // Auto-generate note for ALL students
-  const handleAutoGenerateNotesForAll = () => {
-    const updated: Record<string, StudentAdditionalInfo> = { ...additionalInfo };
-    students.forEach((st) => {
-      const existing = updated[st.id] || {
-        studentId: st.id,
-        attendance: { sakit: 0, izin: 0, alpha: 0 },
-        extracurriculars: [
+  const dynamicRecommendations = currentStudent
+    ? getDynamicRecommendations(currentStudent.name, currentAvgScore, currentRemedialCount)
+    : [];
+
+  // Auto-generate note using real Gemini AI or smart fallback
+  const handleAutoGenerateNoteForCurrent = async () => {
+    if (!currentStudent) return;
+    setIsGeneratingAi(true);
+    try {
+      const { averageScore, remedialCount, totalSubjects } = getStudentMetrics(currentStudent.id);
+      const { achievedTps, unachievedTps } = getStudentSubjectsStatus(currentStudent.id);
+      
+      const notes = await generateAiTeacherNotes({
+        students: [
           {
-            id: `ek_${st.id}_1`,
-            name: 'Pramuka',
-            predicate: 'Baik',
-            description: 'Aktif dan berakhlak baik dalam kegiatan kepramukaan.',
-          },
+            studentId: currentStudent.id,
+            studentName: currentStudent.name,
+            stsScore: averageScore,
+            passingGrade: classData?.config?.passingGrade || 75,
+            totalTps: totalSubjects,
+            achievedTps: achievedTps,
+            unachievedTps: unachievedTps,
+          }
         ],
-        teacherNotes: '',
-      };
-      const note = generateTeacherNote(st.name, 85, 4, 4);
-      updated[st.id] = {
-        ...existing,
-        teacherNotes: note,
-      };
-    });
-    onUpdateAdditionalInfo(updated);
-    setNotification(`Berhasil membuat catatan guru otomatis untuk seluruh ${students.length} siswa!`);
-    setTimeout(() => setNotification(null), 3000);
+        className: classData?.config?.classLevel,
+        semester: classData?.config?.semester,
+        schoolYear: classData?.config?.schoolYear,
+      });
+
+      const note = notes[currentStudent.id] || generateTeacherNote(currentStudent.name, averageScore, achievedTps.length, totalSubjects);
+      handleUpdateCurrent({ teacherNotes: note });
+      setNotification(`Catatan motivasi AI untuk ${currentStudent.name} berhasil dibuat!`);
+    } catch (err) {
+      console.warn('Gemini AI note generation failed, using local generator:', err);
+      const { averageScore, totalSubjects } = getStudentMetrics(currentStudent.id);
+      const { achievedTps } = getStudentSubjectsStatus(currentStudent.id);
+      const note = generateTeacherNote(currentStudent.name, averageScore, achievedTps.length, totalSubjects);
+      handleUpdateCurrent({ teacherNotes: note });
+      setNotification(`Catatan motivasi untuk ${currentStudent.name} berhasil dibuat!`);
+    } finally {
+      setIsGeneratingAi(false);
+      setTimeout(() => setNotification(null), 2500);
+    }
+  };
+
+  // Auto-generate note for ALL students using real Gemini AI or smart fallback
+  const handleAutoGenerateNotesForAll = async () => {
+    setIsGeneratingAi(true);
+    try {
+      const studentInputs = students.map((st) => {
+        const { averageScore, remedialCount, totalSubjects } = getStudentMetrics(st.id);
+        const { achievedTps, unachievedTps } = getStudentSubjectsStatus(st.id);
+        return {
+          studentId: st.id,
+          studentName: st.name,
+          stsScore: averageScore,
+          passingGrade: classData?.config?.passingGrade || 75,
+          totalTps: totalSubjects,
+          achievedTps: achievedTps,
+          unachievedTps: unachievedTps,
+        };
+      });
+
+      const notes = await generateAiTeacherNotes({
+        students: studentInputs,
+        className: classData?.config?.classLevel,
+        semester: classData?.config?.semester,
+        schoolYear: classData?.config?.schoolYear,
+      });
+
+      const updated: Record<string, StudentAdditionalInfo> = { ...additionalInfo };
+      students.forEach((st) => {
+        const existing = updated[st.id] || {
+          studentId: st.id,
+          attendance: { sakit: 0, izin: 0, alpha: 0 },
+          extracurriculars: [
+            {
+              id: `ek_${st.id}_1`,
+              name: 'Pramuka',
+              predicate: 'Baik',
+              description: 'Aktif dan berakhlak baik dalam kegiatan kepramukaan.',
+            },
+          ],
+          teacherNotes: '',
+        };
+        const { averageScore, totalSubjects } = getStudentMetrics(st.id);
+        const { achievedTps } = getStudentSubjectsStatus(st.id);
+        const note = notes[st.id] || generateTeacherNote(st.name, averageScore, achievedTps.length, totalSubjects);
+        updated[st.id] = {
+          ...existing,
+          teacherNotes: note,
+        };
+      });
+
+      onUpdateAdditionalInfo(updated);
+      setNotification(`Berhasil membuat catatan guru AI untuk seluruh ${students.length} siswa!`);
+    } catch (err) {
+      console.warn('Batch Gemini AI notes failed, using local generator fallback:', err);
+      const updated: Record<string, StudentAdditionalInfo> = { ...additionalInfo };
+      students.forEach((st) => {
+        const existing = updated[st.id] || {
+          studentId: st.id,
+          attendance: { sakit: 0, izin: 0, alpha: 0 },
+          extracurriculars: [
+            {
+              id: `ek_${st.id}_1`,
+              name: 'Pramuka',
+              predicate: 'Baik',
+              description: 'Aktif dan berakhlak baik dalam kegiatan kepramukaan.',
+            },
+          ],
+          teacherNotes: '',
+        };
+        const { averageScore, totalSubjects } = getStudentMetrics(st.id);
+        const { achievedTps } = getStudentSubjectsStatus(st.id);
+        const note = generateTeacherNote(st.name, averageScore, achievedTps.length, totalSubjects);
+        updated[st.id] = {
+          ...existing,
+          teacherNotes: note,
+        };
+      });
+      onUpdateAdditionalInfo(updated);
+      setNotification(`Berhasil membuat catatan guru otomatis untuk seluruh ${students.length} siswa!`);
+    } finally {
+      setIsGeneratingAi(false);
+      setTimeout(() => setNotification(null), 3000);
+    }
   };
 
   const filteredStudents = students.filter((st) =>
@@ -172,6 +348,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
               const isSelected = st.id === currentStudent?.id;
               const info = additionalInfo[st.id];
               const totalAbsen = (info?.attendance?.sakit || 0) + (info?.attendance?.izin || 0) + (info?.attendance?.alpha || 0);
+              const { averageScore, remedialCount } = getStudentMetrics(st.id);
 
               return (
                 <button
@@ -196,7 +373,27 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                     </div>
                     <div className="truncate min-w-0 pr-1">
                       <p className="text-xs font-bold truncate">{st.name}</p>
-                      <p className="text-[10px] text-slate-500 truncate">NIS: {st.nim || '-'}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <span className="text-[10px] text-slate-500 truncate">NIS: {st.nim || '-'}</span>
+                        <span className="text-slate-600 text-[9px]">•</span>
+                        {remedialCount > 0 ? (
+                          <span className="text-[10px] font-bold text-rose-400">
+                            Remedial: {remedialCount}
+                          </span>
+                        ) : (
+                          <span className={`text-[10px] font-bold ${
+                            averageScore >= 88 
+                              ? 'text-emerald-400' 
+                              : averageScore >= 75 
+                                ? 'text-amber-400' 
+                                : averageScore > 0 
+                                  ? 'text-rose-400' 
+                                  : 'text-slate-500'
+                          }`}>
+                            Rata-rata: {averageScore > 0 ? averageScore : '-'}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -242,22 +439,32 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
+                      disabled={isGeneratingAi}
                       onClick={handleAutoGenerateNoteForCurrent}
-                      className="px-2 py-0.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                      title="Buat catatan otomatis khusus untuk siswa ini"
+                      className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Buat catatan otomatis menggunakan Gemini AI untuk siswa ini"
                     >
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>Auto Catatan</span>
+                      {isGeneratingAi ? (
+                        <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                      )}
+                      <span>AI Catatan</span>
                     </button>
 
                     <button
                       type="button"
+                      disabled={isGeneratingAi}
                       onClick={handleAutoGenerateNotesForAll}
-                      className="px-2 py-0.5 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 text-[10px] font-black flex items-center gap-1 transition-colors cursor-pointer"
-                      title="Isi otomatis catatan untuk seluruh siswa di kelas ini"
+                      className="px-2 py-1 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 text-[10px] font-black flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Isi otomatis catatan seluruh siswa dengan Gemini AI"
                     >
-                      <Sparkles className="w-3 h-3" />
-                      <span>Auto Semua</span>
+                      {isGeneratingAi ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3 h-3" />
+                      )}
+                      <span>AI Semua</span>
                     </button>
                   </div>
                 </div>
@@ -274,15 +481,19 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                     <Sparkles className="w-3 h-3 text-amber-400" />
-                    <span>Rekomendasi Catatan Otomatis:</span>
+                    {currentRemedialCount > 0 ? (
+                      <span>Rekomendasi Catatan Remedial ({currentRemedialCount} Mapel Belum Tuntas):</span>
+                    ) : (
+                      <span>Rekomendasi Catatan Otomatis (Rata-rata: {currentAvgScore}):</span>
+                    )}
                   </span>
                   <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-                    {PRESET_MOTIVATION_NOTES.map((note, idx) => (
+                    {dynamicRecommendations.map((note, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => handleUpdateCurrent({ teacherNotes: note })}
-                        className="text-left w-full text-[10px] p-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer"
+                        className="text-left w-full text-[10px] p-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer leading-relaxed"
                       >
                         "{note}"
                       </button>

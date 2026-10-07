@@ -5435,8 +5435,19 @@ app.post('/api/rapor-sts/generate-ai-notes', async (req, res) => {
       const firstName = (st.studentName || 'Siswa').split(' ')[0] || st.studentName || 'Siswa';
       const score = typeof st.stsScore === 'number' ? st.stsScore : 0;
       const passingGrade = st.passingGrade || 75;
-      const isHighAchievement = score >= 88 || (st.totalTps > 0 && (st.achievedTps?.length || 0) === st.totalTps && score >= 80);
+      
+      const hasRemedial = Array.isArray(st.unachievedTps) && st.unachievedTps.length > 0;
+      const isHighAchievement = !hasRemedial && (score >= 88 || (st.totalTps > 0 && (st.achievedTps?.length || 0) === st.totalTps && score >= 80));
       const isGoodAchievement = score >= passingGrade;
+
+      if (hasRemedial) {
+        const templates = [
+          `Ananda ${firstName} memiliki potensi yang baik, namun masih perlu meningkatkan ketelitian dan semangat mengulang materi terutama pada mata pelajaran ${st.unachievedTps.slice(0, 2).join(' dan ')} yang belum tuntas. Tetap semangat!`,
+          `Alhamdulillah, secara umum perkembangan belajar ananda ${firstName} cukup baik. Tingkatkan fokus dan perbanyak latihan mandiri untuk menuntaskan beberapa tujuan pembelajaran yang perlu bimbingan.`,
+          `Ananda ${firstName} menunjukkan perkembangan yang positif. Mari tingkatkan kedisiplinan belajar agar seluruh materi remedial dapat dituntaskan dengan optimal.`,
+        ];
+        return templates[Math.abs(st.studentName.length) % templates.length];
+      }
 
       if (isHighAchievement) {
         const templates = [

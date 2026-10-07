@@ -1203,32 +1203,36 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             style={{ fontFamily: BOOKMAN_FONT_FAMILY }}
           >
             <span>{student.name} • NISN: {formatNimNisn(student.nim, student.nisn)} • Kelas {activeClass} • {config.schoolName || 'SDIT AL FIKRI'}</span>
-            <span className="font-semibold not-italic">Halaman 1/2</span>
+            <span className="font-semibold not-italic">
+              {config.printOnlyPage1 ? 'Halaman 1/1' : 'Halaman 1/2'}
+            </span>
           </div>
         </div>
 
-        {/* PEMBATAS VISUAL HALAMAN / PAGE BREAK PRINT */}
-        <div className="page-break-after my-6 print:hidden border-b border-dashed border-gray-400 text-center relative">
-          <span className="bg-slate-900 text-slate-400 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider relative -top-3">
-            Batas Halaman Cetak (Lembar 1 Selesai • Lanjut Lembar 2)
-          </span>
-        </div>
+        {!config.printOnlyPage1 && (
+          <>
+            {/* PEMBATAS VISUAL HALAMAN / PAGE BREAK PRINT */}
+            <div className="page-break-after my-6 print:hidden border-b border-dashed border-gray-400 text-center relative">
+              <span className="bg-slate-900 text-slate-400 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider relative -top-3">
+                Batas Halaman Cetak (Lembar 1 Selesai • Lanjut Lembar 2)
+              </span>
+            </div>
 
-        {/* ============================================================
-            LEMBAR 2: LAPORAN PENILAIAN KARAKTER (18 KARAKTER SISWA)
-            (OPSI A: TANPA KOP AGAR 100% AMAN PAS 1 LEMBAR A4)
-        ============================================================ */}
-        <div
-          className="rapor-page rapor-page-karakter bg-white text-black p-6 sm:p-8 mx-auto rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none flex flex-col justify-between"
-          style={{
-            fontFamily: BOOKMAN_FONT_FAMILY,
-            backgroundColor: '#ffffff',
-            color: '#000000',
-            border: '1px solid #d1d5db',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            minHeight: paperSize === 'f4' ? '1120px' : '1050px',
-          }}
-        >
+            {/* ============================================================
+                LEMBAR 2: LAPORAN PENILAIAN KARAKTER (18 KARAKTER SISWA)
+                (OPSI A: TANPA KOP AGAR 100% AMAN PAS 1 LEMBAR A4)
+            ============================================================ */}
+            <div
+              className="rapor-page rapor-page-karakter bg-white text-black p-6 sm:p-8 mx-auto rounded-xl leading-normal print:p-0 print:m-0 print:border-none print:shadow-none flex flex-col justify-between"
+              style={{
+                fontFamily: BOOKMAN_FONT_FAMILY,
+                backgroundColor: '#ffffff',
+                color: '#000000',
+                border: '1px solid #d1d5db',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                minHeight: paperSize === 'f4' ? '1120px' : '1050px',
+              }}
+            >
           {/* Top Main Content Container */}
           <div className="flex-1 flex flex-col justify-start">
             {/* JUDUL RESMI LEMBAR 2 */}
@@ -1490,8 +1494,10 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             <span className="font-semibold not-italic">Halaman 2/2</span>
           </div>
         </div>
-      </div>
-    );
+      </>
+    )}
+  </div>
+);
   };
 
   return (

@@ -111,6 +111,7 @@ export const SchoolIdentityPanel: React.FC<SchoolIdentityPanelProps> = ({
         passingGrade: Number(config.passingGrade) || 75,
         tpWeight: Number(config.tpWeight) || 50,
         stsWeight: Number(config.stsWeight) || 50,
+        printOnlyPage1: Boolean(config.printOnlyPage1),
         classTeachers,
       };
 
@@ -384,6 +385,25 @@ export const SchoolIdentityPanel: React.FC<SchoolIdentityPanelProps> = ({
                   <p className="text-[10px] text-slate-400 leading-relaxed">
                     Formula Rapor STS = (TP × {config.tpWeight ?? 50}%) + (STS × {config.stsWeight ?? 50}%).
                   </p>
+                </div>
+
+                <div className="pt-3 border-t border-white/[0.06] space-y-2.5">
+                  <p className="font-bold text-slate-300 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Format Lembar Rapor</span>
+                  </p>
+                  <label className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/60 border border-white/[0.05] hover:bg-slate-900 cursor-pointer transition-colors text-[11px] text-slate-300 select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!config.printOnlyPage1}
+                      onChange={(e) => setConfig({ ...config, printOnlyPage1: e.target.checked })}
+                      className="w-4 h-4 rounded text-cyan-500 focus:ring-cyan-400/40 bg-slate-950 border-white/[0.15] cursor-pointer"
+                    />
+                    <div className="leading-tight">
+                      <p className="font-bold text-white">Cetak Hanya Lembar 1</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Sembunyikan lembar ke-2 (Karakter) & fitur input terkait</p>
+                    </div>
+                  </label>
                 </div>
               </div>
             </div>

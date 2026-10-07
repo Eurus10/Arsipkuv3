@@ -81,6 +81,7 @@ export interface RaporStsConfig {
   stsWeight: number; // e.g. 40
   passingGrade: number; // KKM / KKTP default 75
   classTeachers?: Record<string, TeacherProfile>; // Walas per-rombel
+  printOnlyPage1?: boolean; // Toggle to only print page 1 (hide page 2 and character features)
 }
 
 export interface RaporStsClassData {

@@ -1744,11 +1744,19 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       ...(selectedIsHomeroom || isAdmin
                         ? [
                             ['notes', MessageSquare, 'Input Catatan'] as const,
-                            ['character', HeartHandshake, 'Penilaian Karakter'] as const,
+                            ...(!classData?.config?.printOnlyPage1
+                              ? [['character', HeartHandshake, 'Penilaian Karakter'] as const]
+                              : []),
                           ]
                         : []),
                       ['leger', FileSpreadsheet, 'Leger Rapor STS'],
-                      ['print', Printer, 'Cetak Rapor (2 Lembar)'],
+                      [
+                        'print',
+                        Printer,
+                        classData?.config?.printOnlyPage1
+                          ? 'Cetak Rapor (1 Lembar)'
+                          : 'Cetak Rapor (2 Lembar)',
+                      ],
                     ] as const
                   ).map(([tab, Icon, label]) => {
                     const isActive = activeTab === tab;
@@ -1834,6 +1842,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   students={classStudents}
                   additionalInfo={classData.additionalInfo || {}}
                   onUpdateAdditionalInfo={handleUpdateAdditionalInfo}
+                  classData={classData}
                 />
               )}
 

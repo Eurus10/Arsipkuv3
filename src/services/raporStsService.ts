@@ -569,8 +569,19 @@ export const generateTeacherNote = (
 ): string => {
   const firstName = studentName.split(' ')[0] || studentName;
   const score = typeof stsScore === 'number' ? stsScore : 0;
-  const isHighAchievement = score >= 88 || (totalTps > 0 && tpAchievedCount === totalTps && score >= 80);
+  
+  // If the student has any unachieved/remedial subjects/TPs, they shouldn't get "isHighAchievement"
+  const isHighAchievement = (score >= 88 || (totalTps > 0 && tpAchievedCount === totalTps && score >= 80)) && (totalTps === 0 || tpAchievedCount === totalTps);
   const isGoodAchievement = score >= passingGrade;
+
+  if (totalTps > 0 && tpAchievedCount < totalTps) {
+    const templates = [
+      `Ananda ${firstName} memiliki potensi yang baik, namun masih perlu meningkatkan ketelitian dan semangat mengulang materi pada mata pelajaran yang belum tuntas. Tetap semangat!`,
+      `Alhamdulillah, secara umum perkembangan belajar ananda ${firstName} cukup baik. Tingkatkan fokus dan perbanyak latihan mandiri untuk menuntaskan beberapa tujuan pembelajaran yang perlu bimbingan.`,
+      `Ananda ${firstName} menunjukkan perkembangan yang positif. Mari tingkatkan kedisiplinan belajar agar seluruh materi remedial dapat dituntaskan dengan optimal.`,
+    ];
+    return templates[Math.abs(studentName.length) % templates.length];
+  }
 
   if (isHighAchievement) {
     const templates = [
