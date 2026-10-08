@@ -6,6 +6,10 @@ import {
 } from '../../types/analysisTypes';
 import { Student } from '../studentStorage';
 import { calculateMaxScore } from './analysisCalculationService';
+import {
+  findBestSubjectInSession,
+  getStudentResultSafely,
+} from './analysisSubjectAliasing';
 import { MASTER_ANALYSIS_TEMPLATE_BASE64 } from './masterTemplateData';
 
 /**
@@ -249,9 +253,7 @@ export function exportMultiClassSubjectToExcel(params: {
     const session = classSessionsMap[classId.toLowerCase()];
     if (!session) return;
 
-    const subject = session.subjects.find(
-      (s) => s.subjectName.toLowerCase() === subjectName.toLowerCase()
-    );
+    const subject = findBestSubjectInSession(session, subjectName);
     if (!subject) return;
 
     const classStudents = allStudents
@@ -447,7 +449,7 @@ export function generateSubjectWorksheet(
       s: STYLE_CELL_NAME,
     };
 
-    const result = subject.studentResults[student.id];
+    const result = getStudentResultSafely(subject.studentResults, student);
     const answers: StudentAnswers = result
       ? result.answers
       : {
@@ -933,7 +935,7 @@ function generateRekapWorksheet(
 
     // Nilai per mapel
     session.subjects.forEach((subj, sIdx) => {
-      const res = subj.studentResults[student.id];
+      const res = getStudentResultSafely(subj.studentResults, student);
       const cellRef = XLSX.utils.encode_cell({ r: rowIdx, c: 2 + sIdx });
       if (res && res.finalGrade !== undefined) {
         ws[cellRef] = {
@@ -1129,9 +1131,7 @@ function generateMultiClassRekapWorksheet(params: {
     const waliKelas = foundCls?.waliKelas || '-';
 
     const session = classSessionsMap[classId.toLowerCase()];
-    const subj = session?.subjects?.find(
-      (s) => s.subjectName.toLowerCase() === subjectName.toLowerCase()
-    );
+    const subj = session ? findBestSubjectInSession(session, subjectName) : null;
 
     const classStudents = allStudents.filter(
       (s) => s.classId.toLowerCase() === classId.toLowerCase()
@@ -1147,7 +1147,7 @@ function generateMultiClassRekapWorksheet(params: {
 
     if (subj && subj.studentResults) {
       classStudents.forEach((st) => {
-        const res = subj.studentResults[st.id];
+        const res = getStudentResultSafely(subj.studentResults, st);
         if (res && res.finalGrade !== undefined) {
           gradedCount++;
           const g = Math.round(res.finalGrade);

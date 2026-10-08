@@ -7,6 +7,10 @@ import {
 import { Student } from '../studentStorage';
 import { calculateMaxScore, evaluateStudentResult } from './analysisCalculationService';
 import { getEraporHomeroomForClass } from './eraporHomeroomBridge';
+import {
+  isSameCanonicalSubject,
+  preserveAndMergeSubjectScores,
+} from './analysisSubjectAliasing';
 
 const ACTIVE_SESSION_STORAGE_KEY = 'sdit_analysis_active_session';
 const SAVED_SESSIONS_STORAGE_KEY = 'sdit_analysis_saved_sessions_list';
@@ -320,8 +324,30 @@ export function addSubjectToSession(
 
   const maxScore = calculateMaxScore(params.config);
 
-  // Cek apakah subjectId sudah ada
-  const existingIndex = session.subjects.findIndex((s) => s.subjectId === params.subjectId);
+  // Cek apakah subjectId / subjectName / canonical alias sudah ada sebelumnya:
+  // 1. Cek kecocokan subjectId persis
+  let existingIndex = session.subjects.findIndex((s) => s.subjectId === params.subjectId);
+
+  // 2. Cek kecocokan nama persis (case-insensitive & trimmed)
+  if (existingIndex < 0) {
+    existingIndex = session.subjects.findIndex(
+      (s) => s.subjectName.toLowerCase().trim() === params.subjectName.toLowerCase().trim()
+    );
+  }
+
+  // 3. Cek Smart Aliasing (Kanonikal Mapel yang sama, misal "PAI" vs "Pendidikan Agama Islam & BP")
+  if (existingIndex < 0) {
+    existingIndex = session.subjects.findIndex((s) =>
+      isSameCanonicalSubject(s.subjectName, params.subjectName)
+    );
+  }
+
+  // Cek apakah ada subject alias lain di sesi ini yang SUDAH memiliki penilaian siswa
+  const aliasSubjectWithScores = session.subjects.find(
+    (s) =>
+      isSameCanonicalSubject(s.subjectName, params.subjectName) &&
+      Object.keys(s.studentResults || {}).length > 0
+  );
 
   const newSubject: AnalysisSubject = {
     subjectId: params.subjectId,
@@ -337,15 +363,25 @@ export function addSubjectToSession(
   };
 
   const updatedSubjects = [...session.subjects];
-  if (existingIndex >= 0) {
-    // Preserve existing student results if reconfiguring
-    newSubject.studentResults = updatedSubjects[existingIndex].studentResults;
-    // Re-evaluate existing results with new maxScore and config
+
+  // Sumber hasil nilai yang akan diadopsi / dipertahankan
+  let sourceStudentResults = existingIndex >= 0 ? updatedSubjects[existingIndex].studentResults : {};
+  if (
+    (!sourceStudentResults || Object.keys(sourceStudentResults).length === 0) &&
+    aliasSubjectWithScores &&
+    aliasSubjectWithScores.studentResults
+  ) {
+    sourceStudentResults = aliasSubjectWithScores.studentResults;
+  }
+
+  if (sourceStudentResults && Object.keys(sourceStudentResults).length > 0) {
+    // Pertahankan nilai siswa yang sudah ada dan evaluasi ulang dengan konfigurasi baru
+    newSubject.studentResults = { ...sourceStudentResults };
     Object.keys(newSubject.studentResults).forEach((sId) => {
       const currentRes = newSubject.studentResults[sId];
-      if (currentRes) {
+      if (currentRes && currentRes.answers) {
         newSubject.studentResults[sId] = evaluateStudentResult(
-          currentRes.studentId,
+          currentRes.studentId || sId,
           currentRes.studentName,
           currentRes.answers,
           params.config,
@@ -354,6 +390,9 @@ export function addSubjectToSession(
       }
     });
     newSubject.completedStudentsCount = Object.keys(newSubject.studentResults).length;
+  }
+
+  if (existingIndex >= 0) {
     updatedSubjects[existingIndex] = newSubject;
   } else {
     updatedSubjects.push(newSubject);
@@ -366,6 +405,7 @@ export function addSubjectToSession(
   };
 
   saveActiveSession(updatedSession);
+  saveSessionForClass(updatedSession);
   return updatedSession;
 }
 
@@ -383,6 +423,7 @@ export function removeSubjectFromSession(
     updatedAt: new Date().toISOString(),
   };
   saveActiveSession(updatedSession);
+  saveSessionForClass(updatedSession);
   return updatedSession;
 }
 
@@ -398,7 +439,14 @@ export function saveStudentSubjectResult(
     answers: import('../../types/analysisTypes').StudentAnswers;
   }
 ): AnalysisSession {
-  const subjectIndex = session.subjects.findIndex((s) => s.subjectId === subjectId);
+  let subjectIndex = session.subjects.findIndex((s) => s.subjectId === subjectId);
+  if (subjectIndex < 0) {
+    // Fallback: cari berdasarkan kecocokan nama persis atau alias kanonikal
+    subjectIndex = session.subjects.findIndex((s) =>
+      s.subjectName.toLowerCase().trim() === subjectId.toLowerCase().trim() ||
+      isSameCanonicalSubject(s.subjectName, subjectId)
+    );
+  }
   if (subjectIndex < 0) return session;
 
   const targetSubject = session.subjects[subjectIndex];
@@ -438,6 +486,7 @@ export function saveStudentSubjectResult(
   };
 
   saveActiveSession(updatedSession);
+  saveSessionForClass(updatedSession);
   return updatedSession;
 }
 

@@ -118,6 +118,27 @@ export function evaluateStudentResult(
 }
 
 /**
+ * Helper internal untuk menemukan hasil penilaian siswa secara aman (ID atau fallback Nama)
+ */
+function findStudentResultSafely(
+  studentResults: Record<string, StudentSubjectResult> | undefined,
+  student: Student
+): StudentSubjectResult | undefined {
+  if (!studentResults) return undefined;
+  if (studentResults[student.id]) return studentResults[student.id];
+  const targetNorm = (student.name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  for (const res of Object.values(studentResults)) {
+    if (!res) continue;
+    if (res.studentId === student.id) return res;
+    if (res.studentName) {
+      const resNorm = res.studentName.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      if (resNorm === targetNorm) return res;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Hitung analisis per butir soal untuk satu mata pelajaran
  */
 export function calculateItemAnalysis(
@@ -125,7 +146,7 @@ export function calculateItemAnalysis(
   students: Student[]
 ): SubjectItemAnalysis[] {
   const items: SubjectItemAnalysis[] = [];
-  const results = Object.values(subject.studentResults);
+  const results = Object.values(subject.studentResults || {});
   const totalStudents = students.length || results.length || 1;
   const config = subject.config;
 
@@ -135,7 +156,7 @@ export function calculateItemAnalysis(
   for (let i = 0; i < config.pgCount; i++) {
     let correctCount = 0;
     results.forEach((res) => {
-      if (res.answers.pg[i] === 1) {
+      if (res && res.answers && res.answers.pg && res.answers.pg[i] === 1) {
         correctCount++;
       }
     });
@@ -156,7 +177,7 @@ export function calculateItemAnalysis(
   for (let i = 0; i < config.isianCount; i++) {
     let correctCount = 0;
     results.forEach((res) => {
-      if ((res.answers.isian[i] || 0) >= 1) {
+      if (res && res.answers && res.answers.isian && (res.answers.isian[i] || 0) >= 1) {
         correctCount++;
       }
     });
@@ -177,7 +198,9 @@ export function calculateItemAnalysis(
   for (let i = 0; i < config.cCount; i++) {
     let totalCScore = 0;
     results.forEach((res) => {
-      totalCScore += res.answers.c[i] || 0;
+      if (res && res.answers && res.answers.c) {
+        totalCScore += res.answers.c[i] || 0;
+      }
     });
 
     const maxPossible = totalStudents * config.cWeight;
@@ -204,7 +227,28 @@ export function calculateSubjectSummaryStats(
   students: Student[],
   kktp: number
 ): SubjectSummaryStats {
-  const results = Object.values(subject.studentResults);
+  const allResults = Object.values(subject.studentResults || {});
+
+  const results: StudentSubjectResult[] = [];
+  if (students && students.length > 0) {
+    const matchedIds = new Set<string>();
+    students.forEach((st) => {
+      const res = findStudentResultSafely(subject.studentResults, st);
+      if (res && res.finalGrade !== undefined) {
+        results.push(res);
+        if (res.studentId) matchedIds.add(res.studentId);
+      }
+    });
+    allResults.forEach((r) => {
+      if (r && r.finalGrade !== undefined && (!r.studentId || !matchedIds.has(r.studentId))) {
+        results.push(r);
+        if (r.studentId) matchedIds.add(r.studentId);
+      }
+    });
+  } else {
+    results.push(...allResults.filter((r) => r && r.finalGrade !== undefined));
+  }
+
   const completedStudents = results.length;
   const totalStudents = students.length || completedStudents;
 
@@ -283,7 +327,18 @@ export function calculateSessionRekap(
     let failedCount = 0;
 
     session.subjects.forEach((subj) => {
-      const res = subj.studentResults[student.id];
+      let res = subj.studentResults ? subj.studentResults[student.id] : undefined;
+      if (!res && subj.studentResults) {
+        // Fallback: cocokan berdasarkan nama siswa ternormalisasi jika ID berbeda
+        const normName = (student.name || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+        if (normName) {
+          res = Object.values(subj.studentResults).find((r) => {
+            if (!r || !r.studentName) return false;
+            return r.studentName.toLowerCase().trim().replace(/[^a-z0-9]/g, '') === normName;
+          });
+        }
+      }
+
       if (res && res.finalGrade !== undefined) {
         grades[subj.subjectId] = res.finalGrade;
         studentSum += res.finalGrade;

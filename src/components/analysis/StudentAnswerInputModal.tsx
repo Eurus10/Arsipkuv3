@@ -24,6 +24,7 @@ import {
   calculateStudentTotalScore,
   createDefaultStudentAnswers,
 } from '../../services/analysis/analysisCalculationService';
+import { getStudentResultSafely } from '../../services/analysis/analysisSubjectAliasing';
 import { useModalNavigation } from '../../utils/modalNavigation';
 
 interface StudentAnswerInputModalProps {
@@ -110,7 +111,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
   // Load existing student answers whenever currentIdx or subject changes
   useEffect(() => {
     if (!currentStudent) return;
-    const existingResult = subject.studentResults[currentStudent.id];
+    const existingResult = getStudentResultSafely(subject.studentResults, currentStudent);
     if (existingResult && existingResult.answers) {
       const loaded = {
         pg: [...existingResult.answers.pg],
@@ -215,7 +216,11 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
   };
 
   // Count how many students are completed in this subject
-  const completedCount = Object.keys(subject.studentResults).length;
+  const completedCount = useMemo(() => {
+    return sortedStudents.filter(
+      (s) => (s.id === currentStudent?.id && isDirtyRef.current) || !!getStudentResultSafely(subject.studentResults, s)
+    ).length;
+  }, [sortedStudents, currentStudent, subject.studentResults]);
 
   return (
     <div
@@ -276,7 +281,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                 className="w-full bg-slate-900 text-xs sm:text-sm font-bold text-white hover:text-sky-300 outline-none cursor-pointer border-b border-dashed border-slate-600 focus:border-sky-400 py-0.5 truncate"
               >
                 {sortedStudents.map((s, idx) => {
-                  const isGraded = (s.id === currentStudent?.id && isDirtyRef.current) || !!subject.studentResults[s.id];
+                  const isGraded = (s.id === currentStudent?.id && isDirtyRef.current) || !!getStudentResultSafely(subject.studentResults, s);
                   return (
                     <option key={s.id} value={idx} className="bg-slate-900 text-white">
                       {idx + 1}. {s.name} {isGraded ? '✓' : ''}

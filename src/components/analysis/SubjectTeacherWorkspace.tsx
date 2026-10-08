@@ -54,6 +54,12 @@ import {
 } from '../../services/analysis/analysisSessionService';
 import { exportSingleSubjectToExcel, exportMultiClassSubjectToExcel, } from '../../services/analysis/analysisExcelService';
 import { calculateMaxScore, calculateSubjectSummaryStats } from '../../services/analysis/analysisCalculationService';
+import {
+  findBestSubjectInSession,
+  getCanonicalSubjectKey,
+  getStudentResultSafely,
+  isSameCanonicalSubject,
+} from '../../services/analysis/analysisSubjectAliasing';
 import { PillStepper } from './PillStepper';
 import { SendToPakZakiModal } from './SendToPakZakiModal';
 import { AnalysisSubmissionChatModal } from './AnalysisSubmissionChatModal';
@@ -285,9 +291,11 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
     (Object.values(classSessionsMap) as AnalysisSession[]).forEach((sess) => {
       if (!sess || !sess.subjects) return;
       sess.subjects.forEach((subj) => {
-        const key = subj.subjectName.toLowerCase().trim();
-        if (!map[key]) {
-          map[key] = {
+        const canonicalKey = getCanonicalSubjectKey(subj.subjectName);
+        const subjScoreCount = Object.keys(subj.studentResults || {}).length;
+
+        if (!map[canonicalKey]) {
+          map[canonicalKey] = {
             subjectName: subj.subjectName,
             teacherName: subj.teacherName || sess.teacherName,
             examType: sess.examType,
@@ -299,15 +307,21 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
             config: subj.config,
           };
         } else {
-          if (!map[key].classIds.includes(sess.classId)) {
-            map[key].classIds.push(sess.classId);
+          // Jika entry lama belum ada nilai tapi subject ini memiliki nilai, perbarui nama/config
+          if (subjScoreCount > 0 && map[canonicalKey].completedStudents === 0) {
+            map[canonicalKey].subjectName = subj.subjectName;
+            map[canonicalKey].config = subj.config;
+            if (subj.teacherName) map[canonicalKey].teacherName = subj.teacherName;
+          }
+          if (!map[canonicalKey].classIds.includes(sess.classId)) {
+            map[canonicalKey].classIds.push(sess.classId);
           }
         }
         const clsStudents = students.filter(
           (s) => s.classId.toLowerCase() === sess.classId.toLowerCase()
         );
-        map[key].totalStudents += clsStudents.length;
-        map[key].completedStudents += Object.keys(subj.studentResults || {}).length;
+        map[canonicalKey].totalStudents += clsStudents.length;
+        map[canonicalKey].completedStudents += subjScoreCount;
       });
     });
 
@@ -561,10 +575,11 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   const activeClassSession = classSessionsMap[activeClassId.toLowerCase()] || null;
   const activeSubjectInSession: AnalysisSubject | null = useMemo(() => {
     if (!activeClassSession) return null;
-    const match = activeClassSession.subjects.find(
-      (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
+    return (
+      findBestSubjectInSession(activeClassSession, activeSubjectName) ||
+      activeClassSession.subjects[0] ||
+      null
     );
-    return match || activeClassSession.subjects[0] || null;
   }, [activeClassSession, activeSubjectName]);
 
   const handleDeleteCurrentSession = () => {
@@ -638,7 +653,7 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
 
     for (let sIdx = 0; sIdx < activeClassStudents.length; sIdx++) {
       const s = activeClassStudents[sIdx];
-      const res = activeSubjectInSession.studentResults?.[s.id];
+      const res = getStudentResultSafely(activeSubjectInSession.studentResults, s);
       if (!res) {
         map.set(s.id, {
           isFilled: false,
@@ -1544,10 +1559,8 @@ const handleExportAllClasses = () => {
               const clsStudents = students.filter(
                 (s) => s.classId.toLowerCase() === cId.toLowerCase()
               );
-              const subj = session?.subjects.find(
-                (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
-              );
-              const completedCount = subj ? Object.keys(subj.studentResults).length : 0;
+              const subj = session ? findBestSubjectInSession(session, activeSubjectName) : null;
+              const completedCount = subj ? Object.keys(subj.studentResults || {}).length : 0;
               const totalCount = clsStudents.length;
               const isCompleted = totalCount > 0 && completedCount >= totalCount;
               const isActive = activeClassId === cId;
@@ -1637,10 +1650,8 @@ const handleExportAllClasses = () => {
                 const clsStudents = students.filter(
                   (s) => s.classId.toLowerCase() === cId.toLowerCase()
                 );
-                const subj = session?.subjects.find(
-                  (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
-                );
-                const completedCount = subj ? Object.keys(subj.studentResults).length : 0;
+                const subj = session ? findBestSubjectInSession(session, activeSubjectName) : null;
+                const completedCount = subj ? Object.keys(subj.studentResults || {}).length : 0;
                 const totalCount = clsStudents.length;
                 const isCompleted = totalCount > 0 && completedCount >= totalCount;
                 const isActive = activeClassId === cId;
@@ -2489,9 +2500,7 @@ const handleExportAllClasses = () => {
         completedStudents={
           sendTargetMode === 'all'
             ? Object.values(classSessionsMap).reduce((acc, sess) => {
-                const subj = sess?.subjects.find(
-                  (s) => s.subjectName.toLowerCase() === activeSubjectName.toLowerCase()
-                );
+                const subj = sess ? findBestSubjectInSession(sess, activeSubjectName) : null;
                 return acc + (subj ? Object.keys(subj.studentResults || {}).length : 0);
               }, 0)
             : (activeStats?.completedStudents || 0)

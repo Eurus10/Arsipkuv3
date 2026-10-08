@@ -50,6 +50,10 @@ import {
   getSessionForClass,
   getOrCreateSessionForClass,
 } from '../services/analysis/analysisSessionService';
+import {
+  findBestSubjectInSession,
+  isSameCanonicalSubject,
+} from '../services/analysis/analysisSubjectAliasing';
 import { verifyActiveTokenRealtime } from '../services/tokenAuthService';
 import { isAdminLoggedIn } from '../services/auth';
 import { useModalNavigation } from '../utils/modalNavigation';
@@ -268,9 +272,12 @@ const handleSaveStudentResult = (
   // Update subject yang sedang dibuka di modal agar
   // data studentResults langsung terlihat tanpa harus
   // menutup modal terlebih dahulu.
-  const updatedSubject = updated.subjects.find(
+  let updatedSubject = updated.subjects.find(
     (s) => s.subjectId === subjectId
   );
+  if (!updatedSubject && activeInputSubject) {
+    updatedSubject = findBestSubjectInSession(updated, activeInputSubject.subjectName, subjectId) || undefined;
+  }
 
   if (updatedSubject) {
     setActiveInputSubject(updatedSubject);
