@@ -10,6 +10,8 @@ import {
   Search,
   User,
   Loader2,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { StudentAdditionalInfo, StudentExtracurricular, RaporStsClassData } from '../../types/raporSts';
 import { Student } from '../../services/studentStorage';
@@ -324,8 +326,71 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Kiri: Student Selector Sidebar */}
-        <div className="lg:col-span-3 space-y-2">
+        {/* Mobile Student Dropdown Selector (< LG) */}
+        <div className="block lg:hidden col-span-1 border border-white/[0.08] bg-[#07111E] p-3 sm:p-3.5 rounded-2xl shadow-lg space-y-2">
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="text-xs font-bold text-white">Pilih Siswa:</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 font-semibold">
+              {filteredStudents.length} Siswa
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Prev Student Button */}
+            <button
+              type="button"
+              disabled={!currentStudent || filteredStudents.findIndex((s) => s.id === currentStudent.id) <= 0}
+              onClick={() => {
+                const currIdx = filteredStudents.findIndex((s) => s.id === currentStudent?.id);
+                if (currIdx > 0) {
+                  setSelectedStudentId(filteredStudents[currIdx - 1].id);
+                }
+              }}
+              className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+              title="Siswa Sebelumnya"
+            >
+              <ChevronRight className="w-4 h-4 rotate-180" />
+            </button>
+
+            {/* Student Dropdown */}
+            <div className="relative flex-1 min-w-0">
+              <select
+                value={currentStudent?.id || ''}
+                onChange={(e) => setSelectedStudentId(e.target.value)}
+                className="w-full h-9 pl-3 pr-8 rounded-xl border border-amber-500/40 bg-[#0A1626] text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 appearance-none cursor-pointer truncate"
+              >
+                {filteredStudents.map((st, index) => (
+                  <option key={st.id} value={st.id} className="bg-slate-900 text-white font-medium">
+                    [{index + 1}] {st.name} {st.nisn ? `(${st.nisn})` : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-amber-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* Next Student Button */}
+            <button
+              type="button"
+              disabled={!currentStudent || filteredStudents.findIndex((s) => s.id === currentStudent.id) >= filteredStudents.length - 1}
+              onClick={() => {
+                const currIdx = filteredStudents.findIndex((s) => s.id === currentStudent?.id);
+                if (currIdx >= 0 && currIdx < filteredStudents.length - 1) {
+                  setSelectedStudentId(filteredStudents[currIdx + 1].id);
+                }
+              }}
+              className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+              title="Siswa Selanjutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Kiri: Student Selector Sidebar (Desktop ONLY >= LG) */}
+        <div className="hidden lg:block lg:col-span-3 space-y-2">
           <div className="flex items-center justify-between mb-1.5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Daftar Siswa ({students.length})

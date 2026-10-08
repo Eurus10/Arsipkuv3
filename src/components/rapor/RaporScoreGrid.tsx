@@ -185,6 +185,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [generatingStudentId, setGeneratingStudentId] = useState<string | null>(null);
   const [showTpColumns, setShowTpColumns] = useState<boolean>(false);
+  const [mobileViewMode, setMobileViewMode] = useState<'table' | 'cards'>('table');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -844,16 +845,83 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
       )}
 
       {/* ============================================================
+         MOBILE SUBJECT DROPDOWN SELECTOR (HP / SCREEN < LG)
+      ============================================================ */}
+      <div className="block lg:hidden rounded-2xl border border-white/[0.08] bg-[#07111E] p-3 sm:p-3.5 shadow-xl mb-3 space-y-2">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-1.5">
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="text-xs font-bold text-white">Mata Pelajaran:</span>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 text-emerald-300 font-semibold">
+            {filteredSubjects.length} Mapel
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Quick Prev Mapel Button */}
+          <button
+            type="button"
+            disabled={!currentSubject || filteredSubjects.findIndex((s) => s.id === currentSubject.id) <= 0}
+            onClick={() => {
+              const currIdx = filteredSubjects.findIndex((s) => s.id === currentSubject?.id);
+              if (currIdx > 0) {
+                handleSelectSubject(filteredSubjects[currIdx - 1].id);
+              }
+            }}
+            className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+            title="Mata Pelajaran Sebelumnya"
+          >
+            <ChevronRight className="w-4 h-4 rotate-180" />
+          </button>
+
+          {/* Styled Select Dropdown */}
+          <div className="relative flex-1 min-w-0">
+            <select
+              value={currentSubject?.id || ''}
+              onChange={(e) => handleSelectSubject(e.target.value)}
+              className="w-full h-9 pl-3 pr-8 rounded-xl border border-emerald-500/40 bg-[#0A1626] text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/40 appearance-none cursor-pointer truncate"
+            >
+              {filteredSubjects.map((subj, index) => {
+                const codeStr = subj.code ? `[${subj.code}] ` : `[${index + 1}] `;
+                return (
+                  <option key={subj.id} value={subj.id} className="bg-slate-900 text-white font-medium">
+                    {codeStr}{subj.name}
+                  </option>
+                );
+              })}
+            </select>
+            <ChevronDown className="w-4 h-4 text-emerald-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          {/* Quick Next Mapel Button */}
+          <button
+            type="button"
+            disabled={!currentSubject || filteredSubjects.findIndex((s) => s.id === currentSubject.id) >= filteredSubjects.length - 1}
+            onClick={() => {
+              const currIdx = filteredSubjects.findIndex((s) => s.id === currentSubject?.id);
+              if (currIdx >= 0 && currIdx < filteredSubjects.length - 1) {
+                handleSelectSubject(filteredSubjects[currIdx + 1].id);
+              }
+            }}
+            className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+            title="Mata Pelajaran Selanjutnya"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* ============================================================
          2-COLUMN EXECUTIVE SPLIT VIEW FOR SCORING GRID
       ============================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[360px_1fr] gap-4 items-start">
         {/* ============================================================
-           LEFT COLUMN: DAFTAR MATA PELAJARAN (SIDEBAR)
-           Determines the height naturally with all subjects visible
+           LEFT COLUMN: DAFTAR MATA PELAJARAN (SIDEBAR - DESKTOP ONLY)
         ============================================================ */}
         <aside
           ref={sidebarRef}
-          className="rounded-2xl border border-white/[0.08] bg-[#07111E] p-4 shadow-xl shadow-black/20 flex flex-col gap-3.5 min-h-[580px]"
+          className="hidden lg:flex rounded-2xl border border-white/[0.08] bg-[#07111E] p-4 shadow-xl shadow-black/20 flex-col gap-3.5 min-h-[580px]"
         >
           <div>
             <h3 className="text-sm font-black text-white tracking-tight">
@@ -1061,9 +1129,35 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               </button>
             </div>
 
-            {/* Right: Info count + Sort + Fullscreen Toggle */}
+            {/* Right: Info count + Sort + Mobile Mode Toggle + Fullscreen Toggle */}
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs font-normal text-slate-400 px-1">
+              {/* Mobile View Toggle */}
+              <div className="flex items-center gap-0.5 bg-[#07111E] border border-white/[0.08] p-0.5 rounded-xl text-xs lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setMobileViewMode('table')}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                    mobileViewMode === 'table'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Tabel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileViewMode('cards')}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                    mobileViewMode === 'cards'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Kartu Siswa
+                </button>
+              </div>
+
+              <span className="text-xs font-normal text-slate-400 px-1 hidden sm:inline">
                 Menampilkan {displayedStudents.length} siswa
               </span>
 
@@ -1078,7 +1172,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 title="Urutkan siswa"
               >
                 <ArrowUpDown className="w-3.5 h-3.5" />
-                <span>Urutkan</span>
+                <span className="hidden sm:inline">Urutkan</span>
               </button>
 
               <button
@@ -1096,24 +1190,148 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
             </div>
           </div>
 
-          {/* 3. MAIN SPREADSHEET TABLE GRID */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 overflow-hidden flex-1 flex flex-col min-h-0">
-            <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-[#0A1626] text-slate-300 border-b border-white/[0.08] sticky top-0 z-20">
-                      {/* No */}
-                      <th className="py-3 px-3 w-12 text-center font-semibold text-xs text-slate-300">
-                        No
-                      </th>
+          {/* 3. MAIN SPREADSHEET TABLE GRID / MOBILE CARD VIEW */}
+          {mobileViewMode === 'cards' ? (
+            <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] p-3 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              {displayedStudents.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-xs font-normal">
+                  Tidak ada siswa yang cocok dengan pencarian.
+                </div>
+              ) : (
+                displayedStudents.map((st, idx) => {
+                  const scoreData = currentRecord.scores[st.id] || {
+                    studentId: st.id,
+                    studentName: st.name,
+                    tpScores: {},
+                    tpAchieved: {},
+                    stsScore: null,
+                    finalScore: null,
+                    autoDescription: '',
+                  };
+                  const numericScore =
+                    typeof scoreData.stsScore === 'number'
+                      ? scoreData.stsScore
+                      : typeof scoreData.finalScore === 'number'
+                      ? scoreData.finalScore
+                      : null;
+                  const predicate = getScorePredicate(numericScore, config.passingGrade || 75);
+                  const mastery = getMasteryStatusFromPredicate(predicate);
 
-                      {/* Nama Siswa */}
-                      <th className="py-3 px-4 min-w-[200px] font-semibold text-xs text-slate-200">
-                        <div>Nama Siswa</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
-                          NIS / NISN
+                  return (
+                    <div
+                      key={st.id}
+                      className="rounded-2xl border border-white/[0.08] bg-[#0A1626] p-3.5 shadow-lg space-y-3"
+                    >
+                      {/* Header: Student Name & Number */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/30 font-bold text-xs text-emerald-300">
+                            {idx + 1}
+                          </span>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-white text-sm truncate">{st.name}</h4>
+                            <p className="text-[11px] text-slate-400 font-normal truncate">
+                              NIS: {st.nim || '-'} | NISN: {st.nisn || '-'}
+                            </p>
+                          </div>
                         </div>
-                      </th>
+
+                        {/* Predicate Badge */}
+                        <span
+                          className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-bold border shrink-0 ${
+                            predicate === 'A'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                              : predicate === 'B'
+                              ? 'bg-sky-500/20 text-sky-300 border-sky-400/40'
+                              : predicate === 'C'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                              : predicate === 'D'
+                              ? 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}
+                        >
+                          {predicate !== '-' ? `Predikat ${predicate}` : 'Belum Ada Nilai'}
+                        </span>
+                      </div>
+
+                      {/* STS Score Input with Stepper */}
+                      <div className="flex items-center justify-between gap-3 bg-[#07111E] p-3 rounded-xl border border-white/[0.06]">
+                        <div className="text-left">
+                          <label className="text-xs font-bold text-slate-200 block">Nilai Sumatif (STS)</label>
+                          <span className="text-[10px] text-slate-400 font-normal">Skala 0 - 100</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cur = typeof scoreData.stsScore === 'number' ? scoreData.stsScore : 0;
+                              const next = Math.max(0, cur - 1);
+                              handleStsScoreChange(st.id, st.name, String(next));
+                            }}
+                            className="w-9 h-9 rounded-xl border border-white/[0.12] bg-slate-900 active:scale-95 text-white font-bold text-lg flex items-center justify-center cursor-pointer"
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            min="0"
+                            max="100"
+                            placeholder="0"
+                            value={
+                              typeof scoreData.stsScore === 'number' ? String(scoreData.stsScore) : ''
+                            }
+                            onChange={(e) => handleStsScoreChange(st.id, st.name, e.target.value)}
+                            className="w-16 h-9 text-center font-black text-base rounded-xl border border-emerald-400/40 bg-[#0A1626] text-emerald-300 focus:outline-none focus:border-emerald-400"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const cur = typeof scoreData.stsScore === 'number' ? scoreData.stsScore : 0;
+                              const next = Math.min(100, cur + 1);
+                              handleStsScoreChange(st.id, st.name, String(next));
+                            }}
+                            className="w-9 h-9 rounded-xl border border-white/[0.12] bg-slate-900 active:scale-95 text-white font-bold text-lg flex items-center justify-center cursor-pointer"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Status Capaian */}
+                      <div className="bg-[#07111E] p-3 rounded-xl border border-white/[0.06] text-xs space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-semibold text-slate-400">Status Capaian:</span>
+                          <span className="font-bold text-emerald-300">{mastery}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-300 leading-relaxed italic">
+                          "{scoreData.customDescription || scoreData.autoDescription || 'Belum ada deskripsi'}"
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 overflow-hidden flex-1 flex flex-col min-h-0">
+              <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#0A1626] text-slate-300 border-b border-white/[0.08] sticky top-0 z-20">
+                        {/* No */}
+                        <th className="py-3 px-3 w-12 text-center font-semibold text-xs text-slate-300 sticky left-0 z-30 bg-[#0A1626]">
+                          No
+                        </th>
+
+                        {/* Nama Siswa */}
+                        <th className="py-3 px-4 min-w-[200px] font-semibold text-xs text-slate-200 sticky left-12 z-30 bg-[#0A1626] border-r border-white/[0.08] shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                          <div>Nama Siswa</div>
+                          <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                            NIS / NISN
+                          </div>
+                        </th>
 
                       {/* TP Headers - CLEAN WITHOUT ICONS (Conditionally displayed via showTpColumns) */}
                       {showTpColumns &&
@@ -1205,12 +1423,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                             className="hover:bg-[#0A1626]/70 transition-colors group"
                           >
                             {/* No */}
-                            <td className="py-3 px-3 text-center text-slate-400 font-normal text-xs">
+                            <td className="py-3 px-3 text-center text-slate-400 font-normal text-xs sticky left-0 z-10 bg-[#07111E] group-hover:bg-[#0A1626]">
                               {idx + 1}
                             </td>
 
                             {/* Nama Siswa */}
-                            <td className="py-3 px-4">
+                            <td className="py-3 px-4 sticky left-12 z-10 bg-[#07111E] group-hover:bg-[#0A1626] border-r border-white/[0.08] shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
                               <div className="font-semibold text-white text-[13px] leading-[1.35]">
                                 {st.name}
                               </div>
@@ -1371,6 +1589,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 </table>
               </div>
             </div>
+          )}
         </section>
       </div>
 

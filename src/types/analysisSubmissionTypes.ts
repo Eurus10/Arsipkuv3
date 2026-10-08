@@ -42,6 +42,9 @@ export interface AnalysisSubmissionItem {
   subjectStatuses?: Record<string, SubjectPrintStatus>; // Individual status tracking per subject
   submittedAt: string;
   updatedAt?: string;
+  firstSubmittedAt?: string;
+  isRevisionResubmitted?: boolean;
+  lastRevisionResubmittedAt?: string;
   messages?: SubmissionChatMessage[];
   payload: any; // Full session or subject data for Excel regeneration & preview
 }

@@ -1357,7 +1357,7 @@ export const importNilaiFromExcel = async (
 
 /**
  * Export Leger Nilai STS to Excel (.xlsx)
- * Focuses purely on academic scores (without attendance columns for STS)
+ * Strictly conforms to TEMPLATELEGER.xlsx template layout, merged headers, and formatting.
  */
 export const exportLegerToExcel = (
   classData: RaporStsClassData,
@@ -1365,15 +1365,52 @@ export const exportLegerToExcel = (
 ): void => {
   const { config, subjects, subjectRecords } = classData;
 
-  const titleRow = [`LEGER NILAI SUMATIF TENGAH SEMESTER (STS)`];
-  const schoolRow = [`Sekolah: ${config.schoolName}`, '', `Kelas: ${config.classLevel}`, '', `Semester: ${config.semester === '1' ? 'Ganjil' : 'Genap'}`];
-  const yearRow = [`Tahun Ajaran: ${config.schoolYear}`, '', `Wali Kelas: ${config.teacherName}`];
-  const emptyRow = [''];
+  const semText = config.semester === '1' ? 'GANJIL' : 'GENAP';
+  const schoolYearStr = config.schoolYear || '2026/2027';
 
-  // Table Headers
-  const headerRow: string[] = ['No', 'NISN', 'NIS', 'Nama Siswa', 'L/P'];
+  // Number of subject columns
+  const numSubjects = subjects.length;
+  // Total columns: NO (1), NISN (1), NIS (1), NAMA (1) + Subjects (numSubjects) + Jumlah (1), Rata-rata (1), Peringkat (1)
+  const totalCols = 4 + numSubjects + 3;
+  const lastColIdx = totalCols - 1;
+
+  // Metadata right column indices:
+  // In template (17 cols): col O (idx 14) is "Kelas" / "Wali Kelas", col P (idx 15) is "2B" / "MURHASANAH, S.Pd"
+  const metaRightLabelColIdx = Math.max(4, totalCols - 3);
+  const metaRightValColIdx = metaRightLabelColIdx + 1;
+
+  // Row 1: Merged Title "LEGER NILAI SUMATIF TENGAH SEMESTER  GANJIL (STS)"
+  const row1: string[] = Array(totalCols).fill('');
+  row1[0] = `LEGER NILAI SUMATIF TENGAH SEMESTER  ${semText} (STS)`;
+
+  // Row 2: Blank
+  const row2: string[] = Array(totalCols).fill('');
+
+  // Row 3: Metadata - A3: "Sekolah", C3: schoolName, metaRightLabelColIdx: "Kelas", metaRightValColIdx: classLevel
+  const row3: string[] = Array(totalCols).fill('');
+  row3[0] = 'Sekolah';
+  row3[2] = config.schoolName || 'SDIT AL FIKRI';
+  if (totalCols >= 6) {
+    row3[metaRightLabelColIdx] = 'Kelas';
+    row3[metaRightValColIdx] = config.classLevel || '';
+  }
+
+  // Row 4: Metadata - A4: "Tahun Ajaran", C4: schoolYearStr, metaRightLabelColIdx: "Wali Kelas", metaRightValColIdx: teacherName
+  const row4: string[] = Array(totalCols).fill('');
+  row4[0] = 'Tahun Ajaran';
+  row4[2] = schoolYearStr;
+  if (totalCols >= 6) {
+    row4[metaRightLabelColIdx] = 'Wali Kelas';
+    row4[metaRightValColIdx] = config.teacherName || '';
+  }
+
+  // Row 5: Blank separator
+  const row5: string[] = Array(totalCols).fill('');
+
+  // Row 6: Table Headers (No, NISN, NIS, Nama Siswa, [Mapels...], Jumlah Nilai, Rata-rata, Peringkat)
+  const headerRow: string[] = ['No', 'NISN', 'NIS', 'Nama Siswa'];
   subjects.forEach((subj) => {
-    headerRow.push(subj.code || subj.name);
+    headerRow.push((subj.code || subj.name || '').toUpperCase());
   });
   headerRow.push('Jumlah Nilai', 'Rata-rata', 'Peringkat');
 
@@ -1384,16 +1421,15 @@ export const exportLegerToExcel = (
 
     const row: any[] = [
       index + 1,
-      st.nisn || '-',
-      st.nim || '-',
-      st.name,
-      st.gender || '-',
+      st.nisn ? String(st.nisn) : '-',
+      ((st as any).nis || st.nim) ? String((st as any).nis || st.nim) : '-',
+      st.name || '',
     ];
 
     subjects.forEach((subj) => {
       const rec = subjectRecords[subj.id]?.scores[st.id];
-      const score = rec?.finalScore ?? null;
-      if (typeof score === 'number') {
+      const score = rec?.finalScore ?? rec?.stsScore ?? null;
+      if (typeof score === 'number' && !isNaN(score)) {
         row.push(score);
         totalScore += score;
         scoreCount++;
@@ -1402,24 +1438,24 @@ export const exportLegerToExcel = (
       }
     });
 
-    const average = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : '-';
+    const average = scoreCount > 0 ? parseFloat((totalScore / scoreCount).toFixed(1)) : 0;
 
     return {
       stId: st.id,
       row,
       totalScore,
-      average: typeof average === 'string' && average !== '-' ? parseFloat(average) : 0,
+      average,
     };
   });
 
-  // Calculate Ranking based on totalScore
+  // Calculate Ranking based on totalScore descending
   const sortedStudents = [...studentRows].sort((a, b) => b.totalScore - a.totalScore);
   const rankMap: Record<string, number> = {};
   sortedStudents.forEach((item, idx) => {
     rankMap[item.stId] = idx + 1;
   });
 
-  // Construct final table rows
+  // Construct final data rows
   const dataRows = studentRows.map((item) => {
     const r = [...item.row];
     r.push(
@@ -1430,20 +1466,224 @@ export const exportLegerToExcel = (
     return r;
   });
 
+  // Construct sheet data array
   const wsData = [
-    titleRow,
-    schoolRow,
-    yearRow,
-    emptyRow,
+    row1,
+    row2,
+    row3,
+    row4,
+    row5,
     headerRow,
     ...dataRows,
   ];
 
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, `Leger STS ${config.classLevel}`);
+  // Footers: Date & Signatures matching TEMPLATELEGER.xlsx
+  const formattedToday = new Date().toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
 
-  const fileName = `Leger_STS_${config.classLevel}_Sem${config.semester}_${config.schoolYear.replace('/', '-')}.xlsx`;
+  const cityDateStr = config.reportDatePlace || `Tangerang, ${formattedToday}`;
+
+  // 1 blank row before footer (Row 35 in template)
+  wsData.push([]);
+
+  // Footer Col positions (Col D = leftColIdx 3, Col P = rightColIdx Math.max(leftColIdx + 2, totalCols - 2))
+  const leftColIdx = 3; // Col D (Nama Siswa)
+  const rightColIdx = Math.max(leftColIdx + 2, totalCols - 2); // Col P / Right side
+
+  // Footer Row 1: Mengetahui on left, Date on right
+  const footerDateRow: string[] = Array(totalCols).fill('');
+  footerDateRow[leftColIdx] = 'Mengetahui,';
+  footerDateRow[rightColIdx] = cityDateStr;
+  wsData.push(footerDateRow);
+
+  // Footer Row 2: Roles (Kepala Sekolah/Sekolah on left, Guru Kelas on right)
+  const footerRoleRow: string[] = Array(totalCols).fill('');
+  footerRoleRow[leftColIdx] = `Kepala ${config.schoolName || 'SDIT AL FIKRI'}`;
+  footerRoleRow[rightColIdx] = 'Guru Kelas';
+  wsData.push(footerRoleRow);
+
+  // 3 Blank rows for signature space (Rows 38, 39, 40)
+  wsData.push([], [], []);
+
+  // Footer Row 3: Names (Row 41) - Strictly NO NIP row below
+  const footerNameRow: string[] = Array(totalCols).fill('');
+  footerNameRow[leftColIdx] = config.headmasterName || 'H. M. HALIM MUSTOMI, S.Pd.';
+  footerNameRow[rightColIdx] = config.teacherName || 'Guru Kelas';
+  wsData.push(footerNameRow);
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+  // Define merged ranges matching TEMPLATELEGER.xlsx:
+  // A1:lastCol (Main Title), A3:B3 (Sekolah), A4:B4 (Tahun Ajaran)
+  const merges = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: lastColIdx } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } },
+    { s: { r: 3, c: 0 }, e: { r: 3, c: 1 } },
+  ];
+  ws['!merges'] = merges;
+
+  // Set column widths conforming exactly to TEMPLATELEGER.xlsx
+  const colWidths = [
+    { wch: 4.5 }, // Col A: No
+    { wch: 14 },  // Col B: NISN
+    { wch: 14 },  // Col C: NIS
+    { wch: 33 },  // Col D: Nama Siswa
+  ];
+  subjects.forEach(() => {
+    colWidths.push({ wch: 9.5 }); // Subject columns
+  });
+  colWidths.push({ wch: 13 }); // Jumlah Nilai
+  colWidths.push({ wch: 13 }); // Rata-rata
+  colWidths.push({ wch: 13 }); // Peringkat
+
+  ws['!cols'] = colWidths;
+
+  // Border and styles matching template
+  const thinBorder = {
+    top: { style: 'thin', color: { rgb: '000000' } },
+    bottom: { style: 'thin', color: { rgb: '000000' } },
+    left: { style: 'thin', color: { rgb: '000000' } },
+    right: { style: 'thin', color: { rgb: '000000' } },
+  };
+
+  const titleStyle = {
+    font: { name: 'Cambria', sz: 12, bold: true, color: { rgb: '000000' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+  };
+
+  const metaLabelStyle = {
+    font: { name: 'Cambria', sz: 11, bold: false, color: { rgb: '000000' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+  };
+
+  const metaValStyle = {
+    font: { name: 'Cambria', sz: 11, bold: true, color: { rgb: '000000' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+  };
+
+  // Header style: Yellow fill #FFFF00, Cambria 11pt Bold, Center, Thin border
+  const headerStyle = {
+    font: { name: 'Cambria', sz: 11, bold: true, color: { rgb: '000000' } },
+    fill: { fgColor: { rgb: 'FFFF00' } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border: thinBorder,
+  };
+
+  const cellCenterStyle = {
+    font: { name: 'Cambria', sz: 11, color: { rgb: '000000' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: thinBorder,
+  };
+
+  const cellLeftStyle = {
+    font: { name: 'Cambria', sz: 11, color: { rgb: '000000' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+    border: thinBorder,
+  };
+
+  const cellBoldStyle = {
+    font: { name: 'Cambria', sz: 11, bold: true, color: { rgb: '000000' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: thinBorder,
+  };
+
+  // Footer styles: Cambria 11pt, center aligned
+  const footerTextStyle = {
+    font: { name: 'Cambria', sz: 11, color: { rgb: '000000' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+  };
+
+  const footerNameStyle = {
+    font: { name: 'Cambria', sz: 11, bold: true, underline: true, color: { rgb: '000000' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+  };
+
+  // Apply title style
+  const titleCell = ws['A1'];
+  if (titleCell) titleCell.s = titleStyle;
+
+  // Apply meta styles (Row 3 & 4)
+  const a3 = ws['A3'];
+  const c3 = ws['C3'];
+  const a4 = ws['A4'];
+  const c4 = ws['C4'];
+  if (a3) a3.s = metaLabelStyle;
+  if (c3) c3.s = metaValStyle;
+  if (a4) a4.s = metaLabelStyle;
+  if (c4) c4.s = metaValStyle;
+
+  // Apply meta styles for right side (Kelas & Wali Kelas)
+  const rightLabelColName = XLSX.utils.encode_col(metaRightLabelColIdx);
+  const rightValColName = XLSX.utils.encode_col(metaRightValColIdx);
+  const metaRightLabel3 = ws[`${rightLabelColName}3`];
+  const metaRightVal3 = ws[`${rightValColName}3`];
+  const metaRightLabel4 = ws[`${rightLabelColName}4`];
+  const metaRightVal4 = ws[`${rightValColName}4`];
+  if (metaRightLabel3) metaRightLabel3.s = metaLabelStyle;
+  if (metaRightVal3) metaRightVal3.s = metaValStyle;
+  if (metaRightLabel4) metaRightLabel4.s = metaLabelStyle;
+  if (metaRightVal4) metaRightVal4.s = metaValStyle;
+
+  // Apply cell styling across header & data rows
+  const totalDataRows = dataRows.length;
+  for (let c = 0; c < totalCols; c++) {
+    const colRef = XLSX.utils.encode_col(c);
+    // Header (Row 6)
+    const headerCell = ws[`${colRef}6`];
+    if (headerCell) {
+      headerCell.s = headerStyle;
+    }
+
+    // Data Rows (Row 7 to 6+totalDataRows)
+    for (let r = 0; r < totalDataRows; r++) {
+      const rowIdx = 7 + r;
+      const cellRef = `${colRef}${rowIdx}`;
+      const cell = ws[cellRef];
+      if (cell) {
+        if (c === 3) {
+          // Student Name Column
+          cell.s = cellLeftStyle;
+        } else if (c >= totalCols - 3) {
+          // Summary columns (Jumlah Nilai, Rata-rata, Peringkat)
+          cell.s = cellBoldStyle;
+        } else {
+          // No, NISN, NIS, Subject scores
+          cell.s = cellCenterStyle;
+        }
+      }
+    }
+  }
+
+  // Footer cell styling
+  const leftColName = XLSX.utils.encode_col(leftColIdx);
+  const rightColName = XLSX.utils.encode_col(rightColIdx);
+  const footerRow1 = 8 + totalDataRows;
+  const footerRow2 = 9 + totalDataRows;
+  const footerRowNames = 13 + totalDataRows;
+
+  const fD1 = ws[`${leftColName}${footerRow1}`];
+  const fD2 = ws[`${leftColName}${footerRow2}`];
+  const fDName = ws[`${leftColName}${footerRowNames}`];
+
+  const fP1 = ws[`${rightColName}${footerRow1}`];
+  const fP2 = ws[`${rightColName}${footerRow2}`];
+  const fPName = ws[`${rightColName}${footerRowNames}`];
+
+  if (fD1) fD1.s = footerTextStyle;
+  if (fD2) fD2.s = footerTextStyle;
+  if (fDName) fDName.s = footerNameStyle;
+
+  if (fP1) fP1.s = footerTextStyle;
+  if (fP2) fP2.s = footerTextStyle;
+  if (fPName) fPName.s = footerNameStyle;
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `Leger STS ${config.classLevel || ''}`);
+
+  const fileName = `Leger_STS_${config.classLevel || 'Kelas'}_Sem${config.semester}_${schoolYearStr.replace('/', '-')}.xlsx`;
   XLSX.writeFile(wb, fileName);
 };
 

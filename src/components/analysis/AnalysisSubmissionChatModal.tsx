@@ -161,6 +161,47 @@ export const AnalysisSubmissionChatModal: React.FC<AnalysisSubmissionChatModalPr
     });
   };
 
+  const activeTeacher = getActiveTeacherSession();
+  const isAuthorized =
+    currentUserRole === 'admin' ||
+    !activeTeacher ||
+    !submission.teacherId ||
+    activeTeacher.id === submission.teacherId ||
+    (submission.teacherName &&
+      (activeTeacher.name.toLowerCase().includes(submission.teacherName.toLowerCase()) ||
+        submission.teacherName.toLowerCase().includes(activeTeacher.name.toLowerCase())));
+
+  if (!isAuthorized) {
+    return (
+      <div
+        className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <div className="w-full max-w-md bg-slate-900 border border-white/15 rounded-3xl p-6 text-center space-y-4 shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center justify-center mx-auto">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-sm font-bold text-white">Ruang Diskusi Privat</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Ruang obrolan ini bersifat privat antara <strong className="text-white">Pak Zaki (Admin)</strong> dan{' '}
+              <strong className="text-emerald-300">{submission.teacherName}</strong>. Guru lain tidak memiliki akses ke percakapan ini.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-colors cursor-pointer"
+          >
+            Tutup
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
@@ -192,9 +233,14 @@ export const AnalysisSubmissionChatModal: React.FC<AnalysisSubmissionChatModalPr
                   {statusConfig.label}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                Guru: <span className="text-slate-200 font-semibold">{submission.teacherName}</span> • TP {submission.schoolYear}
-              </p>
+              <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-400 truncate flex-wrap">
+                <span>Guru: <strong className="text-slate-200">{submission.teacherName}</strong></span>
+                <span>•</span>
+                <span>TP {submission.schoolYear}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold flex items-center gap-1">
+                  🔒 Obrolan Privat
+                </span>
+              </div>
             </div>
           </div>
 

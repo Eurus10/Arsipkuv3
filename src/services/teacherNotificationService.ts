@@ -95,14 +95,20 @@ export function filterNotificationsForTeacher(
   const cleanName = (teacherName || '').trim().toLowerCase();
 
   return allNotifications.filter((n) => {
-    // Broadcast for everyone
-    if (n.teacherId === 'all' || !n.teacherId) return true;
+    // Broadcast for everyone: ONLY if explicitly 'all', or when both teacherId and teacherName are absent
+    const isBroadcast = n.teacherId === 'all' || (!n.teacherId && !n.teacherName);
+    if (isBroadcast) return true;
 
     // Direct match by teacherId
     if (cleanId && n.teacherId && n.teacherId.trim().toLowerCase() === cleanId) return true;
 
     // Direct match by teacherName
-    if (cleanName && n.teacherName && n.teacherName.trim().toLowerCase() === cleanName) return true;
+    if (cleanName && n.teacherName) {
+      const notifName = n.teacherName.trim().toLowerCase();
+      if (notifName === cleanName || notifName.includes(cleanName) || cleanName.includes(notifName)) {
+        return true;
+      }
+    }
 
     return false;
   });

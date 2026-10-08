@@ -44,7 +44,10 @@ export function getLocalAnalysisSubmissions(): AnalysisSubmissionItem[] {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.sort(
+      (a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime()
+    );
   } catch (err) {
     console.error('Failed to get local analysis submissions:', err);
     return [];
@@ -90,6 +93,11 @@ export async function sendAnalysisSubmission(
     ? existingSubmission.id
     : 'asub-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
 
+  // Check if existing submission was previously under revision
+  const wasUnderRevision =
+    existingSubmission?.status === 'revisi' ||
+    Object.values(existingSubmission?.subjectStatuses || {}).some((s) => s.status === 'revisi');
+
   // Prepare per-subject statuses: preserve existing print / approval statuses
   const mergedSubjectStatuses: Record<string, SubjectPrintStatus> = {
     ...(existingSubmission?.subjectStatuses || {}),
@@ -123,8 +131,12 @@ export async function sendAnalysisSubmission(
           totalStudents: totalClassStudents || data.totalStudents,
         };
       } else {
+        const prevStatus = mergedSubjectStatuses[name].status;
+        // If subject was marked as revisi, reset to menunggu because teacher has submitted their revised data
+        const nextStatus = prevStatus === 'revisi' ? 'menunggu' : prevStatus;
         mergedSubjectStatuses[name] = {
           ...mergedSubjectStatuses[name],
+          status: nextStatus,
           lastSubmittedAt: now,
           completedStudents: completed,
           totalStudents: totalClassStudents || data.totalStudents,
@@ -141,8 +153,12 @@ export async function sendAnalysisSubmission(
         totalStudents: data.totalStudents,
       };
     } else {
+      const prevStatus = mergedSubjectStatuses[subName].status;
+      // If subject was marked as revisi, reset to menunggu because teacher has submitted their revised data
+      const nextStatus = prevStatus === 'revisi' ? 'menunggu' : prevStatus;
       mergedSubjectStatuses[subName] = {
         ...mergedSubjectStatuses[subName],
+        status: nextStatus,
         lastSubmittedAt: now,
         completedStudents: data.completedStudents,
         totalStudents: data.totalStudents,
@@ -171,14 +187,25 @@ export async function sendAnalysisSubmission(
   const updatedMessages: SubmissionChatMessage[] = [...existingMessages];
 
   if (existingSubmission) {
-    updatedMessages.push({
-      id: 'msg-sys-' + Date.now().toString(36),
-      senderName: 'Sistem SDIT',
-      senderRole: 'system',
-      text: `🔄 Berkas analisis ${data.subjectName} (${data.className}) telah diperbarui dengan data setoran terbaru.`,
-      timestamp: Date.now(),
-      isSystem: true,
-    });
+    if (wasUnderRevision) {
+      updatedMessages.push({
+        id: 'msg-sys-' + Date.now().toString(36),
+        senderName: 'Sistem SDIT',
+        senderRole: 'system',
+        text: `🔄 Guru (${data.teacherName || 'Guru Pengampu'}) telah mengirimkan perbaikan/revisi berkas analisis ${data.subjectName} (${data.className}) untuk verifikasi ulang Pak Zaki.`,
+        timestamp: Date.now(),
+        isSystem: true,
+      });
+    } else {
+      updatedMessages.push({
+        id: 'msg-sys-' + Date.now().toString(36),
+        senderName: 'Sistem SDIT',
+        senderRole: 'system',
+        text: `🔄 Berkas analisis ${data.subjectName} (${data.className}) telah diperbarui dengan data setoran terbaru.`,
+        timestamp: Date.now(),
+        isSystem: true,
+      });
+    }
   } else {
     updatedMessages.push({
       id: 'msg-sys-' + Date.now().toString(36),
@@ -205,16 +232,19 @@ export async function sendAnalysisSubmission(
     id: submissionId,
     status: overallStatus,
     subjectStatuses: mergedSubjectStatuses,
-    submittedAt: existingSubmission?.submittedAt || now,
+    firstSubmittedAt: existingSubmission?.firstSubmittedAt || existingSubmission?.submittedAt || now,
+    submittedAt: now, // Always set to current submission / resubmission time so it is prioritized at top
     updatedAt: now,
+    isRevisionResubmitted: wasUnderRevision ? true : existingSubmission?.isRevisionResubmitted,
+    lastRevisionResubmittedAt: wasUnderRevision ? now : existingSubmission?.lastRevisionResubmittedAt,
     messages: updatedMessages,
   };
 
-  // 1. Save to local cache
+  // 1. Save to local cache (sorted newest first)
   const updatedLocal = [
     targetSubmission,
     ...currentLocal.filter((s) => s.id !== submissionId),
-  ];
+  ].sort((a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime());
   saveLocalAnalysisSubmissions(updatedLocal);
 
   // 2. Persist to Firestore
@@ -234,8 +264,11 @@ export async function sendAnalysisSubmission(
 export function subscribeToAnalysisSubmissions(
   onUpdate: (submissions: AnalysisSubmissionItem[]) => void
 ): () => void {
-  // Emit local cache immediately
-  onUpdate(getLocalAnalysisSubmissions());
+  // Emit local cache immediately (sorted newest activity first)
+  const initialLocal = getLocalAnalysisSubmissions().sort(
+    (a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime()
+  );
+  onUpdate(initialLocal);
 
   try {
     const q = query(collection(db, FIRESTORE_COLLECTION), orderBy('submittedAt', 'desc'));
@@ -246,6 +279,10 @@ export function subscribeToAnalysisSubmissions(
         snapshot.forEach((docSnap) => {
           items.push(docSnap.data() as AnalysisSubmissionItem);
         });
+        // Always enforce sorting by newest activity (updatedAt or submittedAt)
+        items.sort(
+          (a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime()
+        );
         saveLocalAnalysisSubmissions(items);
         onUpdate(items);
       },

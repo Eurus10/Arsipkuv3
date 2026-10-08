@@ -1708,36 +1708,51 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
              Executive Header with Integrated Navigation & Quick Stats
           ============================================================ */
           <main className="space-y-3.5">
-            <section className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 p-3 sm:p-4 print:hidden">
+            <section className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 p-3.5 sm:p-4 print:hidden">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
-                {/* Left: Class Identity & Role Badge */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border border-amber-400/25 bg-amber-400/[0.09] flex items-center justify-center text-amber-300 shrink-0 shadow-inner">
-                    <GraduationCap className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+                {/* Top Row on Mobile / Left Column on Desktop: Class Identity & Quick Metrics */}
+                <div className="flex items-center justify-between lg:justify-start gap-3 min-w-0 w-full lg:w-auto">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border border-amber-400/25 bg-amber-400/[0.09] flex items-center justify-center text-amber-300 shrink-0 shadow-inner">
+                      <GraduationCap className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                          Kelas {selectedClass}
+                        </h2>
+                        <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider ${
+                          selectedIsHomeroom
+                            ? 'border-emerald-400/30 bg-emerald-500/[0.12] text-emerald-300'
+                            : 'border-cyan-400/30 bg-cyan-500/[0.12] text-cyan-300'
+                        }`}>
+                          {selectedIsHomeroom ? 'Wali Kelas' : 'Guru Mapel'}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] sm:text-xs text-slate-400 font-normal truncate">
+                        {selectedSchoolYear} <span className="text-slate-600 mx-1">•</span>
+                        Semester {academicAccess?.academicPeriod?.semester || selectedSemester}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                        Kelas {selectedClass}
-                      </h2>
-                      <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider ${
-                        selectedIsHomeroom
-                          ? 'border-emerald-400/30 bg-emerald-500/[0.12] text-emerald-300'
-                          : 'border-cyan-400/30 bg-cyan-500/[0.12] text-cyan-300'
-                      }`}>
-                        {selectedIsHomeroom ? 'Wali Kelas' : 'Guru Mapel'}
-                      </span>
+                  {/* 3 Quick Metric Chips (Top Right on Mobile) */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-2 py-1 sm:px-2.5 sm:py-1.5 text-center min-w-[54px] sm:min-w-[68px]">
+                      <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-medium">Siswa</p>
+                      <p className="text-xs sm:text-base font-bold text-white leading-tight mt-0.5">{classStudents.length}</p>
                     </div>
-                    <p className="mt-0.5 text-xs text-slate-400 font-normal">
-                      {selectedSchoolYear} <span className="text-slate-600 mx-1">•</span>
-                      Semester {academicAccess?.academicPeriod?.semester || selectedSemester}
-                    </p>
+
+                    <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-2 py-1 sm:px-2.5 sm:py-1.5 text-center min-w-[54px] sm:min-w-[68px]">
+                      <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-medium">Mapel</p>
+                      <p className="text-xs sm:text-base font-bold text-white leading-tight mt-0.5">{selectedClassContexts.length}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Center: Segmented Navigation Pills */}
-                <nav className="flex items-center justify-start lg:justify-center gap-1.5 p-1 rounded-xl bg-slate-950/60 border border-white/[0.06] overflow-x-auto custom-scrollbar">
+                {/* Bottom Row on Mobile / Center Column on Desktop: Segmented Navigation Pills */}
+                <nav className="flex items-center justify-start lg:justify-center gap-1.5 p-1 rounded-xl bg-slate-950/60 border border-white/[0.06] overflow-x-auto custom-scrollbar w-full lg:w-auto">
                   {(
                     [
                       ['scores', BookOpen, 'Input Nilai Akademik'],
@@ -1765,7 +1780,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                         key={tab}
                         type="button"
                         onClick={() => setActiveTab(tab)}
-                        className={`h-9 px-3.5 rounded-lg font-semibold text-xs flex items-center gap-2 transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
+                        className={`h-9 px-3 sm:px-3.5 rounded-lg font-semibold text-xs flex items-center gap-1.5 sm:gap-2 transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
                           isActive
                             ? 'border border-emerald-400/50 bg-emerald-500/[0.15] text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                             : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
@@ -1777,26 +1792,6 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                     );
                   })}
                 </nav>
-
-                {/* Right: 3 Quick Metric Cards */}
-                <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
-                  <div className="min-w-[68px] sm:min-w-[74px] rounded-xl border border-white/[0.08] bg-slate-950/70 px-2.5 py-1.5 text-center">
-                    <p className="text-[9px] uppercase tracking-wider text-slate-400 font-medium">Siswa</p>
-                    <p className="text-sm sm:text-base font-bold text-white leading-tight mt-0.5">{classStudents.length}</p>
-                  </div>
-
-                  <div className="min-w-[68px] sm:min-w-[74px] rounded-xl border border-white/[0.08] bg-slate-950/70 px-2.5 py-1.5 text-center">
-                    <p className="text-[9px] uppercase tracking-wider text-slate-400 font-medium">Mapel</p>
-                    <p className="text-sm sm:text-base font-bold text-white leading-tight mt-0.5">{selectedClassContexts.length}</p>
-                  </div>
-
-                  <div className="min-w-[80px] sm:min-w-[88px] rounded-xl border border-white/[0.08] bg-slate-950/70 px-2.5 py-1.5 text-center">
-                    <p className="text-[9px] uppercase tracking-wider text-slate-400 font-medium">Periode</p>
-                    <p className="text-sm sm:text-base font-bold text-amber-300 leading-tight mt-0.5">
-                      {academicAccess?.academicPeriod?.semester || selectedSemester}
-                    </p>
-                  </div>
-                </div>
               </div>
             </section>
 

@@ -78,7 +78,6 @@ import { AdminLogoManagerModal } from './admin/AdminLogoManagerModal';
 import { AdminAnalysisSubmissionsModal } from './admin/AdminAnalysisSubmissionsModal';
 import { subscribeToAnalysisSubmissions } from '../services/analysisSubmissionService';
 import { subscribeToAttendanceSubmissions } from '../services/attendanceSubmissionService';
-import { FirestoreQuotaWidget } from './admin/FirestoreQuotaWidget';
 import { AppBranding, DEFAULT_BRANDING } from '../services/brandingStorage';
 
 interface AdminViewProps {
@@ -163,6 +162,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [newYearInput, setNewYearInput] = useState('');
   const [yearSuccessMsg, setYearSuccessMsg] = useState<string | null>(null);
   const [yearErrorMsg, setYearErrorMsg] = useState<string | null>(null);
+
+  // Tab state for clean admin settings layout
+  const [adminActiveTab, setAdminActiveTab] = useState<'arsip' | 'templates' | 'tahun' | 'backup'>('arsip');
+  const [isFormExpanded, setIsFormExpanded] = useState<boolean>(!!editingDocId);
 
   // Form State
   const [isEditing, setIsEditing] = useState<boolean>(!!editingDocId);
@@ -284,6 +287,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
   }, [editingDocId, documents]);
 
   const populateForm = (doc: DocumentItem) => {
+    setAdminActiveTab('arsip');
+    setIsFormExpanded(true);
     setIsEditing(true);
     setCurrentId(doc.id);
     setType(doc.type);
@@ -313,6 +318,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
   const resetForm = () => {
     setIsEditing(false);
+    setIsFormExpanded(false);
     setCurrentId(null);
     setTitle('');
     setType('administrasi');
@@ -647,8 +653,12 @@ export const AdminView: React.FC<AdminViewProps> = ({
             </button>
 
             <button
-              onClick={() => setShowAddYearModal(true)}
-              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-sky-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-sky-500/25 hover:border-sky-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
+              onClick={() => setAdminActiveTab('tahun')}
+              className={`flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer group shadow-sm ${
+                adminActiveTab === 'tahun'
+                  ? 'text-sky-200 bg-sky-500/25 border border-sky-500/50'
+                  : 'text-sky-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-sky-500/25 hover:border-sky-500/50'
+              }`}
             >
               <div className="w-6 h-6 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform flex-shrink-0">
                 <Calendar className="w-3.5 h-3.5" />
@@ -671,103 +681,206 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </div>
       </div>
 
-      {/* Firestore Daily Quota Status Widget */}
-      <div className="mb-6">
-        <FirestoreQuotaWidget />
-      </div>
-
-      {/* Pusat Setoran & Antrean Cetak Berkas Guru Banner (Khusus Pak Zaki) */}
-      <div className="bg-gradient-to-r from-teal-950/40 via-[#181B26] to-[#181B26] border border-teal-500/30 rounded-3xl p-5 mb-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 text-teal-400 flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/10">
-            <Inbox className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm sm:text-base font-bold text-white">
-                Pusat Setoran &amp; Antrean Cetak Berkas Guru (Pak Zaki)
-              </h3>
-              {(pendingAnalysisCount + pendingAttendanceCount) > 0 ? (
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-500/40 animate-pulse">
+      {/* Pusat Setoran & Antrean Cetak Berkas Guru Notification Banner (Tampil saat ada berkas pending) */}
+      {(pendingAnalysisCount + pendingAttendanceCount) > 0 && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-teal-950/30 to-[#181B26] border border-amber-500/40 rounded-3xl p-4 sm:p-5 mb-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/10">
+              <Inbox className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-bold text-white">
+                  Pusat Setoran &amp; Antrean Cetak Berkas Guru (Pak Zaki)
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 text-amber-300 text-xs font-black border border-amber-500/40 animate-pulse">
                   {pendingAnalysisCount + pendingAttendanceCount} Menunggu Verifikasi / Cetak
                 </span>
-              ) : (
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-bold border border-emerald-500/30">
-                  Semua Berkas Tuntas
-                </span>
-              )}
+              </div>
+              <p className="text-xs text-slate-300 mt-1">
+                Pusat antrean berkas digital untuk Analisis Butir Soal &amp; Rekap Kehadiran Siswa yang siap dicetak resmi atau diekspor ke Excel.
+              </p>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Pusat antrean berkas digital untuk Analisis Butir Soal &amp; Rekap Kehadiran Siswa yang siap dicetak resmi atau diekspor ke Excel.
-            </p>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowAnalysisSubmissionsModal(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-400 to-emerald-500 hover:from-teal-300 hover:to-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer shrink-0"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-slate-950" />
+            <span>Buka Pusat Setoran &amp; Cetak Berkas</span>
+          </button>
         </div>
+      )}
+
+      {/* Sub-navigation Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 border-b border-[#252A3C] scrollbar-thin">
+        <button
+          type="button"
+          onClick={() => setAdminActiveTab('arsip')}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+            adminActiveTab === 'arsip'
+              ? 'bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+          }`}
+        >
+          <Folder className="w-4 h-4 text-sky-400" />
+          <span>Kelola Arsip Dokumen</span>
+          <span className="px-2 py-0.5 text-[10px] rounded-full bg-[#12141D] text-slate-300 border border-slate-700/50 font-bold">
+            {documents.length}
+          </span>
+        </button>
 
         <button
           type="button"
-          onClick={() => setShowAnalysisSubmissionsModal(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-teal-500/20 transition-all cursor-pointer shrink-0"
+          onClick={() => setAdminActiveTab('templates')}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+            adminActiveTab === 'templates'
+              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+          }`}
         >
-          <FileSpreadsheet className="w-4 h-4 text-slate-950" />
-          <span>Buka Pusat Setoran &amp; Cetak Berkas</span>
+          <LayoutTemplate className="w-4 h-4 text-cyan-400" />
+          <span>Akses Cepat &amp; Template Drive</span>
         </button>
-      </div>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-sky-400"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
-              Pengaturan & Kelola Data
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white font-heading">
-            Pengelolaan Data Arsip
-          </h1>
-          <p className="text-slate-400 font-medium text-xs sm:text-sm mt-0.5">
-            Tambah arsip baru, kelola tahun pelajaran, dan atur tautan folder induk Google Drive
-          </p>
-        </div>
         <button
-          onClick={() => {
-            if (window.confirm('Kembalikan data arsip ke data awal bawaan sekolah?')) {
-              onResetDefaults();
-              refreshSchoolYears();
-            }
-          }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-[#181B26] border border-[#272D3E] rounded-2xl hover:bg-[#202534] transition-colors self-start sm:self-auto shadow-sm cursor-pointer"
-          title="Reset ke data contoh bawaan"
+          type="button"
+          onClick={() => setAdminActiveTab('tahun')}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+            adminActiveTab === 'tahun'
+              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+          }`}
         >
-          <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-          <span>Reset Data Default</span>
+          <Calendar className="w-4 h-4 text-emerald-400" />
+          <span>Master Tahun Pelajaran</span>
+          <span className="px-2 py-0.5 text-[10px] rounded-full bg-[#12141D] text-slate-300 border border-slate-700/50 font-bold">
+            {availableYears.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setAdminActiveTab('backup')}
+          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+            adminActiveTab === 'backup'
+              ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-md'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+          }`}
+        >
+          <Cloud className="w-4 h-4 text-indigo-400" />
+          <span>Cadangan Cloud &amp; Sinkronisasi</span>
         </button>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-8 shadow-xl mb-8">
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#242A3C]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center">
-              {isEditing ? <Edit2 className="w-5 h-5" /> : <FolderPlus className="w-5 h-5" />}
-            </div>
+      {/* Tab 1: Kelola Arsip Dokumen */}
+      {adminActiveTab === 'arsip' && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white font-heading">
-                {isEditing ? 'Edit Metadata Dokumen' : 'Tambah Dokumen Baru'}
-              </h2>
-              <p className="text-xs text-slate-400">Tautan Google Drive dapat langsung diakses oleh guru & staf</p>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+                <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                  Pengaturan &amp; Kelola Arsip
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-heading">
+                Pengelolaan Data Arsip
+              </h1>
+              <p className="text-slate-400 font-medium text-xs sm:text-sm mt-0.5">
+                Tambah arsip baru, edit tautan Google Drive, dan kelola dokumen sekolah
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 self-start sm:self-auto">
+              {!isFormExpanded && !isEditing ? (
+                <button
+                  type="button"
+                  onClick={() => setIsFormExpanded(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Arsip Baru</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-[#181B26] border border-[#272D3E] rounded-xl hover:bg-[#202534] transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{isEditing ? 'Batal Edit' : 'Tutup Form'}</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  if (window.confirm('Kembalikan data arsip ke data awal bawaan sekolah?')) {
+                    onResetDefaults();
+                    refreshSchoolYears();
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-[#181B26] border border-[#272D3E] rounded-xl hover:bg-[#202534] transition-colors shadow-sm cursor-pointer"
+                title="Reset ke data contoh bawaan"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <span>Reset Data Default</span>
+              </button>
             </div>
           </div>
-          {isEditing && (
-            <button
-              onClick={resetForm}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#12141D] border border-[#262C3E] font-medium transition-colors cursor-pointer"
-            >
-              <X className="w-3 h-3" />
-              <span>Batal</span>
-            </button>
+
+          {/* Compact Trigger Banner when Form is Collapsed */}
+          {!isFormExpanded && !isEditing && (
+            <div className="bg-[#181B26]/80 border border-[#2A3044] rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
+                  <FolderPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Tambah Berkas / Tautan Google Drive Baru</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Tambahkan arsip administrasi, naskah bank soal, rapor, atau sertifikat sekolah
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsFormExpanded(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap self-start sm:self-auto"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Buka Formulir Tambah Arsip</span>
+              </button>
+            </div>
           )}
-        </div>
+
+          {/* Form Card (Collapsible) */}
+          {(isFormExpanded || isEditing) && (
+            <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-8 shadow-xl mb-8 animate-fade-in">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#242A3C]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center">
+                    {isEditing ? <Edit2 className="w-5 h-5" /> : <FolderPlus className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <h2 className="text-base sm:text-lg font-bold text-white font-heading">
+                      {isEditing ? 'Edit Metadata Dokumen' : 'Tambah Dokumen Baru'}
+                    </h2>
+                    <p className="text-xs text-slate-400">Tautan Google Drive dapat langsung diakses oleh guru & staf</p>
+                  </div>
+                </div>
+                {(isEditing || isFormExpanded) && (
+                  <button
+                    onClick={resetForm}
+                    className="text-xs text-slate-400 hover:text-white flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#12141D] hover:bg-[#202534] border border-[#262C3E] font-medium transition-colors cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                    <span>{isEditing ? 'Batal' : 'Tutup Form'}</span>
+                  </button>
+                )}
+              </div>
 
         {formSuccessMessage && (
           <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
@@ -1276,323 +1389,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </div>
         </form>
       </div>
-
-      {/* Cloud Sync & Backup Data (Export & Import JSON) Panel */}
-      <div className="bg-[#181B26] border border-sky-500/30 rounded-3xl p-6 sm:p-7 shadow-xl mb-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#24293A]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
-              <Cloud className="w-5 h-5 text-sky-400" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-bold text-white font-heading">
-                  Sinkronisasi Cloud & Cadangan Data
-                </h3>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                  <CloudCheck className="w-3 h-3" />
-                  <span>Cloud Aktif</span>
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Data link Google Drive otomatis tersinkron ke Firebase Firestore (Vercel & Domain Custom aman)
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Export JSON Button */}
-            <button
-              type="button"
-              onClick={handleExportBackup}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-xl transition-all shadow-md cursor-pointer"
-              title="Unduh file JSON cadangan seluruh link dan data arsip"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Unduh Cadangan JSON</span>
-            </button>
-
-            {/* Import JSON Button */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".json"
-              onChange={handleImportFileChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isImporting}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl transition-all cursor-pointer disabled:opacity-50"
-              title="Pulihkan data arsip dari file JSON cadangan"
-            >
-              <Upload className="w-3.5 h-3.5 text-sky-400" />
-              <span>{isImporting ? 'Mengimpor...' : 'Impor Cadangan JSON'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Feedback message for backup actions */}
-        {backupMessage && (
-          <div
-            className={`p-3.5 rounded-2xl text-xs flex items-center gap-2.5 mb-4 ${
-              backupMessage.type === 'success'
-                ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
-            }`}
-          >
-            {backupMessage.type === 'success' ? (
-              <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-            ) : (
-              <X className="w-4 h-4 text-rose-400 flex-shrink-0" />
-            )}
-            <span>{backupMessage.text}</span>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 bg-[#12141D] p-4 rounded-2xl border border-[#24293A]">
-          <div className="flex items-start gap-2.5">
-            <FileJson className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold text-white block">File Cadangan Portabel:</span>
-              <p className="text-slate-400 text-[11px]">
-                File JSON dapat disimpan sebagai arsip cadangan lokal sekolah kapan pun dibutuhkan.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2.5">
-            <CloudCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold text-white block">Sinkronisasi Otomatis Antar Perangkat:</span>
-              <p className="text-slate-400 text-[11px]">
-                Setiap data yang Anda simpan di sini akan langsung terbaca oleh seluruh guru di domain Vercel / domain sekolah.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick School Years Management Panel */}
-      <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-7 shadow-xl mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-[#24293A]">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-              <Calendar className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-bold text-white font-heading">
-                Daftar Tahun Pelajaran Terdaftar ({availableYears.length})
-              </h3>
-              <p className="text-xs text-slate-400">Tahun pelajaran ini akan otomatis muncul pada seluruh menu filter arsip</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowAddYearModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl transition-all shadow-md self-start sm:self-auto cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Tambah Tahun Baru</span>
-          </button>
-        </div>
-
-        {/* Chips of available years */}
-        <div className="flex flex-wrap gap-2.5">
-          {availableYears.map((year) => (
-            <div
-              key={year}
-              className="flex items-center gap-2 px-3.5 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs font-semibold text-slate-200 hover:border-emerald-500/40 transition-colors"
-            >
-              <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{year}</span>
-              {availableYears.length > 1 && (
-                <button
-                  onClick={() => handleDeleteSchoolYear(year)}
-                  className="p-0.5 text-slate-400 hover:text-rose-400 rounded transition-colors ml-1"
-                  title={`Hapus tahun ${year}`}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-{/* =========================================================
-    AKSES CEPAT UJIAN & TEMPLATE
-    Hanya 3 item yang memang menggunakan link Google Drive:
-    1. Template Analisis Soal & Kop
-    2. Template Rapor
-    3. Folder Kosong Pengumpulan Soal
-
-    Tracking Pengumpulan Soal adalah menu internal aplikasi,
-    sehingga tidak mempunyai link Drive.
-   ========================================================= */}
-{templates && templates.length > 0 && (
-  <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-7 shadow-xl mb-8">
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#24293A]">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
-          <FileDown className="w-4 h-4" />
-        </div>
-
-        <div>
-          <h3 className="text-sm sm:text-base font-bold text-white font-heading">
-            Akses Cepat Ujian & Template
-          </h3>
-
-          <p className="text-xs text-slate-400">
-            Kelola tautan Google Drive yang tampil pada Kelompok A di Dashboard.
-          </p>
-        </div>
-      </div>
-    </div>
-
-    {(() => {
-      const editableCategories: SchoolTemplateItem['category'][] = [
-        'analisis_soal',
-        'rapor',
-        'folder_soal',
-      ];
-
-      const templateLabels: Record<
-        SchoolTemplateItem['category'],
-        {
-          title: string;
-          description: string;
-        }
-      > = {
-        analisis_soal: {
-          title: 'Template Analisis Soal & Kop',
-          description:
-            'Template analisis butir soal dan kop naskah ujian.',
-        },
-
-        rapor: {
-          title: 'Template Rapor',
-          description:
-            'Template pengolahan nilai dan rekap rapor.',
-        },
-
-        folder_soal: {
-          title: 'Folder Kosong Pengumpulan Soal',
-          description:
-            'Folder Google Drive untuk pengumpulan naskah soal guru.',
-        },
-
-        tracking_soal: {
-          title: 'Tracking Pengumpulan Soal',
-          description:
-            'Menu internal untuk monitoring pengumpulan soal.',
-        },
-      };
-
-      const editableTemplates = editableCategories
-        .map((category) =>
-          templates.find(
-            (template) => template.category === category
-          )
-        )
-        .filter(Boolean) as SchoolTemplateItem[];
-
-      return (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {editableTemplates.map((tpl) => {
-              const label = templateLabels[tpl.category];
-
-              return (
-                <div
-                  key={tpl.id}
-                  className="p-4 bg-[#12141D] border border-[#272D3E] rounded-2xl flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                        {tpl.fileFormat}
-                      </span>
-
-                      <span className="text-[10px] font-semibold text-emerald-400">
-                        Google Drive
-                      </span>
-                    </div>
-
-                    <h4 className="text-sm font-bold text-white mb-1">
-                      {label.title}
-                    </h4>
-
-                    <p className="text-xs text-slate-400 line-clamp-2 mb-3">
-                      {label.description}
-                    </p>
-
-                    <div className="px-3 py-2 rounded-xl bg-[#0D1018] border border-[#202535] mb-3">
-                      <p className="text-[10px] text-slate-500 mb-1">
-                        Tautan tersimpan
-                      </p>
-
-                      <p className="text-[11px] text-slate-300 truncate">
-                        {tpl.driveUrl || 'Belum ada tautan'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#202535]">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        openExternalDriveUrl(tpl.driveUrl)
-                      }
-                      disabled={!tpl.driveUrl}
-                      className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Buka</span>
-                    </button>
-
-                    {onUpdateTemplate && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedTemplateToEdit(tpl)
-                        }
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1C2130] hover:bg-[#283044] text-amber-400 text-xs font-bold transition-colors cursor-pointer"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        <span>Edit Link</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Tracking bukan template Drive */}
-          <div className="mt-4 p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 flex items-center justify-center flex-shrink-0">
-                <ClipboardList className="w-4 h-4" />
-              </div>
-
-              <div>
-                <h4 className="text-sm font-bold text-white">
-                  Tracking Pengumpulan Soal
-                </h4>
-
-                <p className="text-xs text-slate-400 mt-1">
-                  Menu ini merupakan fitur internal aplikasi,
-                  bukan tautan Google Drive. Aksesnya langsung
-                  melalui kartu Tracking pada Dashboard.
-                </p>
-              </div>
-            </div>
-          </div>
-        </>
-      );
-    })()}
-  </div>
-)}
+    )}
 
       {/* List Existing Documents in Admin */}
       <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-8 shadow-xl">
@@ -1799,6 +1596,327 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </div>
         )}
       </div>
+        </div>
+      )}
+
+      {/* Tab 2: Akses Cepat Ujian & Template */}
+      {adminActiveTab === 'templates' && (
+        <div className="space-y-6">
+          {templates && templates.length > 0 ? (
+            <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-7 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#24293A]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                    <FileDown className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-white font-heading">
+                      Akses Cepat Ujian &amp; Template
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Kelola tautan Google Drive yang tampil pada Kelompok A di Dashboard.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {(() => {
+                const editableCategories: SchoolTemplateItem['category'][] = [
+                  'analisis_soal',
+                  'rapor',
+                  'folder_soal',
+                ];
+
+                const templateLabels: Record<
+                  SchoolTemplateItem['category'],
+                  {
+                    title: string;
+                    description: string;
+                  }
+                > = {
+                  analisis_soal: {
+                    title: 'Template Analisis Soal & Kop',
+                    description:
+                      'Template analisis butir soal dan kop naskah ujian.',
+                  },
+                  rapor: {
+                    title: 'Template Rapor',
+                    description:
+                      'Template pengolahan nilai dan rekap rapor.',
+                  },
+                  folder_soal: {
+                    title: 'Folder Kosong Pengumpulan Soal',
+                    description:
+                      'Folder Google Drive untuk pengumpulan naskah soal guru.',
+                  },
+                  tracking_soal: {
+                    title: 'Tracking Pengumpulan Soal',
+                    description:
+                      'Menu internal untuk monitoring pengumpulan soal.',
+                  },
+                };
+
+                const editableTemplates = editableCategories
+                  .map((category) =>
+                    templates.find(
+                      (template) => template.category === category
+                    )
+                  )
+                  .filter(Boolean) as SchoolTemplateItem[];
+
+                return (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {editableTemplates.map((tpl) => {
+                        const label = templateLabels[tpl.category];
+
+                        return (
+                          <div
+                            key={tpl.id}
+                            className="p-4 bg-[#12141D] border border-[#272D3E] rounded-2xl flex flex-col justify-between"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between gap-2 mb-2">
+                                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                  {tpl.fileFormat}
+                                </span>
+
+                                <span className="text-[10px] font-semibold text-emerald-400">
+                                  Google Drive
+                                </span>
+                              </div>
+
+                              <h4 className="text-sm font-bold text-white mb-1">
+                                {label.title}
+                              </h4>
+
+                              <p className="text-xs text-slate-400 line-clamp-2 mb-3">
+                                {label.description}
+                              </p>
+
+                              <div className="px-3 py-2 rounded-xl bg-[#0D1018] border border-[#202535] mb-3">
+                                <p className="text-[10px] text-slate-500 mb-1">
+                                  Tautan tersimpan
+                                </p>
+
+                                <p className="text-[11px] text-slate-300 truncate">
+                                  {tpl.driveUrl || 'Belum ada tautan'}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#202535]">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openExternalDriveUrl(tpl.driveUrl)
+                                }
+                                disabled={!tpl.driveUrl}
+                                className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>Buka</span>
+                              </button>
+
+                              {onUpdateTemplate && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setSelectedTemplateToEdit(tpl)
+                                  }
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1C2130] hover:bg-[#283044] text-amber-400 text-xs font-bold transition-colors cursor-pointer"
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                  <span>Edit Link</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Tracking bukan template Drive */}
+                    <div className="mt-4 p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 flex items-center justify-center flex-shrink-0">
+                          <ClipboardList className="w-4 h-4" />
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-bold text-white">
+                            Tracking Pengumpulan Soal
+                          </h4>
+
+                          <p className="text-xs text-slate-400 mt-1">
+                            Menu ini merupakan fitur internal aplikasi,
+                            bukan tautan Google Drive. Aksesnya langsung
+                            melalui kartu Tracking pada Dashboard.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          ) : (
+            <div className="p-8 text-center bg-[#181B26] border border-[#262C3E] rounded-3xl text-xs text-slate-400">
+              Belum ada konfigurasi template tersimpan.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab 3: Master Tahun Pelajaran */}
+      {adminActiveTab === 'tahun' && (
+        <div className="space-y-6">
+          <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-7 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-[#24293A]">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white font-heading">
+                    Daftar Tahun Pelajaran Terdaftar ({availableYears.length})
+                  </h3>
+                  <p className="text-xs text-slate-400">Tahun pelajaran ini akan otomatis muncul pada seluruh menu filter arsip</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAddYearModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-xl transition-all shadow-md self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Tahun Baru</span>
+              </button>
+            </div>
+
+            {/* Chips of available years */}
+            <div className="flex flex-wrap gap-2.5">
+              {availableYears.map((year) => (
+                <div
+                  key={year}
+                  className="flex items-center gap-2 px-3.5 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs font-semibold text-slate-200 hover:border-emerald-500/40 transition-colors"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{year}</span>
+                  {availableYears.length > 1 && (
+                    <button
+                      onClick={() => handleDeleteSchoolYear(year)}
+                      className="p-0.5 text-slate-400 hover:text-rose-400 rounded transition-colors ml-1 cursor-pointer"
+                      title={`Hapus tahun ${year}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 4: Sinkronisasi Cloud & Cadangan Data */}
+      {adminActiveTab === 'backup' && (
+        <div className="space-y-6">
+          <div className="bg-[#181B26] border border-sky-500/30 rounded-3xl p-6 sm:p-7 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#24293A]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
+                  <Cloud className="w-5 h-5 text-sky-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base font-bold text-white font-heading">
+                      Sinkronisasi Cloud &amp; Cadangan Data
+                    </h3>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      <CloudCheck className="w-3 h-3" />
+                      <span>Cloud Aktif</span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Data link Google Drive otomatis tersinkron ke Firebase Firestore (Vercel &amp; Domain Custom aman)
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 flex-wrap">
+                {/* Export JSON Button */}
+                <button
+                  type="button"
+                  onClick={handleExportBackup}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-950 bg-sky-400 hover:bg-sky-300 rounded-xl transition-all shadow-md cursor-pointer"
+                  title="Unduh file JSON cadangan seluruh link dan data arsip"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh Cadangan JSON</span>
+                </button>
+
+                {/* Import JSON Button */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".json"
+                  onChange={handleImportFileChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isImporting}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                  title="Pulihkan data arsip dari file JSON cadangan"
+                >
+                  <Upload className="w-3.5 h-3.5 text-sky-400" />
+                  <span>{isImporting ? 'Mengimpor...' : 'Impor Cadangan JSON'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Feedback message for backup actions */}
+            {backupMessage && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs flex items-center gap-2.5 mb-4 ${
+                  backupMessage.type === 'success'
+                    ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                    : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+                }`}
+              >
+                {backupMessage.type === 'success' ? (
+                  <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                ) : (
+                  <X className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                )}
+                <span>{backupMessage.text}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 bg-[#12141D] p-4 rounded-2xl border border-[#24293A]">
+              <div className="flex items-start gap-2.5">
+                <FileJson className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-white block">File Cadangan Portabel:</span>
+                  <p className="text-slate-400 text-[11px]">
+                    File JSON dapat disimpan sebagai arsip cadangan lokal sekolah kapan pun dibutuhkan.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <CloudCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-white block">Sinkronisasi Otomatis Antar Perangkat:</span>
+                  <p className="text-slate-400 text-[11px]">
+                    Setiap data yang Anda simpan di sini akan langsung terbaca oleh seluruh guru di domain Vercel / domain sekolah.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Single Archive Modal */}
       {docToDelete && (

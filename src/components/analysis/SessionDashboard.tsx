@@ -88,12 +88,27 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
   }, []);
 
   const classSubmission = useMemo(() => {
-    return submissions.find(
-      (s) =>
+    const activeTeacher = getActiveTeacherSession();
+    const currentName = (activeTeacher?.name || session.teacherName || '').trim().toLowerCase();
+    const currentId = (activeTeacher?.id || '').trim().toLowerCase();
+
+    return submissions.find((s) => {
+      const matchClass =
         s.classId.toLowerCase().includes(session.classId.toLowerCase()) &&
-        (!s.examType || s.examType.toLowerCase() === session.examType.toLowerCase())
-    );
-  }, [submissions, session.classId, session.examType]);
+        (!s.examType || s.examType.toLowerCase() === session.examType.toLowerCase());
+      if (!matchClass) return false;
+
+      // Prioritize active teacher if available
+      if (currentId && s.teacherId) {
+        return s.teacherId.toLowerCase() === currentId;
+      }
+      if (currentName && s.teacherName) {
+        const subTeacher = s.teacherName.toLowerCase();
+        return subTeacher.includes(currentName) || currentName.includes(subTeacher);
+      }
+      return true;
+    });
+  }, [submissions, session.classId, session.examType, session.teacherName]);
 
   // Filter students for the active class & school
   const classStudents = students.filter(

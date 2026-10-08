@@ -234,6 +234,7 @@ interface TeacherGroup {
   revisionCount: number;
   approvedCount: number;
   latestSubmittedAt: string;
+  hasRecentRevision?: boolean;
   totalCompletedStudents: number;
   totalStudentsSlots: number;
   incompleteSubjectsCount: number;
@@ -398,6 +399,10 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
         if (!matchClass && !matchTeacher && !matchPeriod) return false;
       }
       return true;
+    }).sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.submittedAt).getTime();
+      const timeB = new Date(b.updatedAt || b.submittedAt).getTime();
+      return timeB - timeA;
     });
   }, [attendanceSubmissions, attendanceStatusFilter, attendanceSearchQuery]);
 
@@ -420,6 +425,10 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
       }
 
       return true;
+    }).sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.submittedAt).getTime();
+      const timeB = new Date(b.updatedAt || b.submittedAt).getTime();
+      return timeB - timeA;
     });
   }, [submissions, statusFilter, searchQuery]);
 
@@ -487,6 +496,9 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
         });
       }
 
+      const subActivityTime = new Date(sub.updatedAt || sub.submittedAt).getTime();
+      const isSubRevised = sub.isRevisionResubmitted === true;
+
       if (existing) {
         existing.submissions.push(sub);
         existing.totalSubjects += subjectsInSub;
@@ -498,8 +510,11 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
         existing.totalStudentsSlots += totalStudentsInSub;
         existing.incompleteSubjectsCount += incompleteInSub;
         existing.allSubjectStats.push(...subSubjectStatsList);
-        if (new Date(sub.submittedAt).getTime() > new Date(existing.latestSubmittedAt).getTime()) {
-          existing.latestSubmittedAt = sub.submittedAt;
+        if (isSubRevised) {
+          existing.hasRecentRevision = true;
+        }
+        if (subActivityTime > new Date(existing.latestSubmittedAt).getTime()) {
+          existing.latestSubmittedAt = sub.updatedAt || sub.submittedAt;
         }
       } else {
         groupsMap.set(teacherKey, {
@@ -513,7 +528,8 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
           pendingCount: pendingInSub,
           revisionCount: revisionInSub,
           approvedCount: approvedInSub,
-          latestSubmittedAt: sub.submittedAt,
+          latestSubmittedAt: sub.updatedAt || sub.submittedAt,
+          hasRecentRevision: isSubRevised,
           totalCompletedStudents: completedStudentsInSub,
           totalStudentsSlots: totalStudentsInSub,
           incompleteSubjectsCount: incompleteInSub,
@@ -522,7 +538,15 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
       }
     });
 
-    return Array.from(groupsMap.values()).sort(
+    return Array.from(groupsMap.values()).map((group) => {
+      // Sort submissions inside teacher group by latest activity
+      group.submissions.sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.submittedAt).getTime();
+        const timeB = new Date(b.updatedAt || b.submittedAt).getTime();
+        return timeB - timeA;
+      });
+      return group;
+    }).sort(
       (a, b) => new Date(b.latestSubmittedAt).getTime() - new Date(a.latestSubmittedAt).getTime()
     );
   }, [filteredSubmissions]);
@@ -1033,7 +1057,16 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                         </div>
 
                         {/* Single Primary Status Icon Indicator */}
-                        <div className="shrink-0 flex items-center gap-1.5">
+                        <div className="shrink-0 flex items-center gap-1.5 flex-wrap justify-end">
+                          {group.hasRecentRevision && (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-sky-500/15 border border-sky-400/35 text-sky-300 text-xs font-black shadow-sm"
+                              title="Guru telah menyetorkan perbaikan/revisi berkas baru untuk diverifikasi ulang"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />
+                              <span>🔄 Revisi Masuk</span>
+                            </span>
+                          )}
                           {group.revisionCount > 0 ? (
                             <span
                               className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-black shadow-sm"
@@ -1196,6 +1229,12 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {sub.isRevisionResubmitted && (
+                        <span className="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/35 text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          <span>Revisi Baru</span>
+                        </span>
+                      )}
                       <span
                         className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
                           sub.status === 'telah_diprint'
@@ -1778,6 +1817,20 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                     </option>
                   ))}
                 </select>
+
+                <div className="mt-1.5">
+                  {announcementTarget !== 'all' ? (
+                    <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-[11px] flex items-center gap-2">
+                      <span className="text-xs">🔒</span>
+                      <span><strong>Pesan Privat:</strong> Hanya dapat dilihat oleh guru yang dituju dan tidak akan terlihat oleh guru lain.</span>
+                    </div>
+                  ) : (
+                    <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[11px] flex items-center gap-2">
+                      <span className="text-xs">📢</span>
+                      <span><strong>Siaran Umum:</strong> Pesan ini akan muncul di dashboard seluruh dewan guru.</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -1958,143 +2011,70 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
 
                   return (
                     <div key={sub.id} className="space-y-3.5">
-                      {/* 1. Hero Session Overview Card */}
-                      <div className="bg-gradient-to-r from-[#0d214a]/95 via-[#0b1a3c]/95 to-[#07132e]/95 border border-sky-500/30 rounded-2xl p-4 sm:p-5 relative overflow-hidden shadow-[0_8px_28px_rgba(2,8,22,0.6)] backdrop-blur-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div className="absolute -top-24 left-1/4 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                        {/* Left: Book Icon + Titles + Badges */}
-                        <div className="flex items-center gap-3.5 min-w-0 z-10">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
+                      {/* Compact Session Header & Batch Action Bar */}
+                      <div className="bg-gradient-to-r from-[#0c1c3e] via-[#091633] to-[#061026] border border-sky-500/25 rounded-2xl p-3.5 sm:p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        {/* Left: Class Identity & Submissions Summary */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
                             isSubComplete
-                              ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                              : 'bg-rose-500/20 border-rose-400/40 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)]'
+                              ? 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300'
+                              : 'bg-rose-500/15 border-rose-400/30 text-rose-300'
                           }`}>
-                            <BookOpen className="w-6 h-6" />
+                            <BookOpen className="w-5 h-5" />
                           </div>
                           <div className="min-w-0">
-                            <h4 className="text-sm sm:text-base font-bold text-white leading-snug tracking-tight truncate max-w-2xl">
-                              {hasSubjectStatuses
-                                ? Object.keys(sub.subjectStatuses!).join(', ')
-                                : sub.subjectName}
-                            </h4>
-                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                              <span className="px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/40 text-[11px] font-bold shadow-sm">
-                                Kelas {sub.className}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-bold text-white">Kelas {sub.className}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/30 text-[10px] font-bold">
+                                {sub.examType || 'STS1'} • {sub.schoolYear || '2026/2027'}
                               </span>
-                              <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5">
-                                <Calendar className="w-3 h-3 text-slate-500" />
-                                <span>{sub.examType || 'STS1'} • TA {sub.schoolYear || '2026/2027'}</span>
+                              <span className="text-[11px] font-bold text-slate-400">
+                                ({subjectEntries.length} Mapel)
                               </span>
+                              {sub.isRevisionResubmitted && (
+                                <span className="px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-400/35 text-[10px] font-extrabold flex items-center gap-1 shadow-sm">
+                                  <Sparkles className="w-2.5 h-2.5" />
+                                  <span>Revisi Baru</span>
+                                </span>
+                              )}
                             </div>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                              Waktu Setor: {formattedDate}
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Disetor: <span className="text-slate-300 font-medium">{formattedDate}</span>
                             </p>
                           </div>
                         </div>
 
-                        {/* Right: 2 Mini Widgets (Siswa Terisi + Status Sesi) */}
-                        <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap z-10">
-                          {/* Widget 1: Siswa Terisi */}
-                          <div className={`bg-[#040b1a]/90 rounded-xl p-2.5 px-3.5 flex items-center gap-3 min-w-[190px] shadow-inner border ${
-                            isSubComplete ? 'border-emerald-500/30' : 'border-rose-500/30'
-                          }`}>
-                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border ${
-                              isSubComplete
-                                ? 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300'
-                                : 'bg-rose-500/15 border-rose-400/30 text-rose-300'
-                            }`}>
-                              <Users className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className={`text-xs sm:text-sm font-bold tabular-nums ${
-                                isSubComplete ? 'text-emerald-300' : 'text-rose-300'
-                              }`}>
-                                {subStats.completed} / {subStats.total}
-                              </div>
-                              <div className="text-[10px] font-medium text-slate-400">
-                                {isSubComplete ? 'Nilai Selesai ✓' : 'Belum Lengkap ⚠️'}
-                              </div>
-                              <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden border border-white/5 mt-1">
-                                <div
-                                  className={`h-full rounded-full transition-all duration-500 ${
-                                    isSubComplete
-                                      ? 'bg-gradient-to-r from-emerald-500 to-green-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
-                                      : 'bg-gradient-to-r from-rose-500 to-red-400 shadow-[0_0_8px_rgba(244,63,94,0.5)]'
-                                  }`}
-                                  style={{ width: `${subProgressPercent}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Widget 2: Status Sesi */}
-                          <div
-                            onClick={() => handleOpenRevision(sub)}
-                            className="bg-[#040b1a]/90 border border-amber-500/30 hover:border-amber-400/60 rounded-xl p-2.5 px-3.5 flex items-center justify-between gap-2.5 min-w-[145px] shadow-inner cursor-pointer transition-all group"
-                            title="Klik untuk melihat / mengubah status catatan revisi"
+                        {/* Right: Batch Action Buttons for the Whole Session */}
+                        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                          {/* Download All Excel */}
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadExcel(sub)}
+                            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+                            title="Unduh Excel Lengkap Rekap Semua Mapel"
                           >
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0 group-hover:scale-105 transition-transform">
-                                {sub.status === 'telah_diprint' ? (
-                                  <Printer className="w-4 h-4 text-cyan-300" />
-                                ) : sub.status === 'disetujui' ? (
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                                ) : sub.status === 'revisi' ? (
-                                  <AlertCircle className="w-4 h-4 text-rose-300" />
-                                ) : (
-                                  <Hourglass className="w-4 h-4 text-amber-300" />
-                                )}
-                              </div>
-                              <div>
-                                <span className="text-xs font-bold text-amber-300 block">
-                                  {sub.status === 'telah_diprint'
-                                    ? 'Selesai Print'
-                                    : sub.status === 'disetujui'
-                                    ? 'Disetujui'
-                                    : sub.status === 'revisi'
-                                    ? 'Perlu Revisi'
-                                    : 'Menunggu'}
-                                </span>
-                              </div>
-                            </div>
-                            <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-300 group-hover:translate-x-0.5 transition-all" />
-                          </div>
-                        </div>
-                      </div>
+                            <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>Unduh Rekap All</span>
+                          </button>
 
-                      {/* 2. Session Action Bar (Middle Bar) */}
-                      <div className="flex items-center justify-between gap-2.5 py-0.5 flex-wrap">
-                        {/* Left: Emerald Download Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadExcel(sub)}
-                          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-[0_0_18px_rgba(16,185,129,0.35)] transition-all cursor-pointer"
-                          title="Download Excel Lengkap Rekap Nilai"
-                        >
-                          <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-                          <span>Unduh Excel Rekap</span>
-                        </button>
-
-                        {/* Right: Glass Icon Buttons */}
-                        <div className="flex items-center gap-2">
-                          {/* Print Sesi Button */}
+                          {/* Print All */}
                           <button
                             type="button"
                             onClick={() => handleMarkPrinted(sub)}
-                            className="w-9 h-9 rounded-xl bg-[#091a38]/90 hover:bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:border-sky-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                            className="w-8 h-8 rounded-xl bg-[#091a38] hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:border-sky-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
                             title="Tandai Semua Mapel Selesai di-Print"
                           >
                             <Printer className="w-4 h-4" />
                           </button>
 
-                          {/* Diskusi / Chat Button */}
+                          {/* Chat Diskusi Guru */}
                           <button
                             type="button"
                             onClick={() => {
                               setChatSubmission(sub);
                               setShowChatModal(true);
                             }}
-                            className="w-9 h-9 rounded-xl bg-[#131138]/90 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:border-indigo-400 relative flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                            className="w-8 h-8 rounded-xl bg-[#131138] hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:border-indigo-400 relative flex items-center justify-center transition-all cursor-pointer shadow-sm"
                             title="Buka Chat Diskusi Guru"
                           >
                             <MessageSquare className="w-4 h-4" />
@@ -2105,70 +2085,61 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                             )}
                           </button>
 
-                          {/* Revisi Sesi Button */}
+                          {/* Catatan Revisi Session */}
                           <button
                             type="button"
                             onClick={() => handleOpenRevision(sub)}
-                            className="w-9 h-9 rounded-xl bg-[#2a1d09]/90 hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:border-amber-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                            className="w-8 h-8 rounded-xl bg-[#2a1d09] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:border-amber-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
                             title="Kirim Catatan Revisi Sesi"
                           >
                             <AlertCircle className="w-4 h-4" />
                           </button>
 
-                          {/* Hapus Sesi Button */}
+                          {/* Hapus Session */}
                           <button
                             type="button"
                             onClick={() => handleDelete(sub.id, `${sub.subjectName} (${sub.className})`)}
-                            className="w-9 h-9 rounded-xl bg-[#1f1017]/90 hover:bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:border-rose-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                            className="w-8 h-8 rounded-xl bg-[#1f1017] hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:border-rose-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
                             title="Hapus Setoran Sesi Ini"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
+
+                          {/* View Toggle */}
+                          <div className="bg-[#050b18] border border-white/10 rounded-xl p-0.5 flex items-center gap-0.5 ml-1">
+                            <button
+                              type="button"
+                              onClick={() => setDetailViewMode('grid')}
+                              className={`p-1 rounded-lg transition-all cursor-pointer ${
+                                detailViewMode === 'grid'
+                                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-300'
+                              }`}
+                              title="Tampilan Grid"
+                            >
+                              <LayoutGrid className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDetailViewMode('list')}
+                              className={`p-1 rounded-lg transition-all cursor-pointer ${
+                                detailViewMode === 'list'
+                                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
+                                  : 'text-slate-500 hover:text-slate-300'
+                              }`}
+                              title="Tampilan List Baris"
+                            >
+                              <List className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
 
-                      {/* 3. Section Title & Toggle */}
-                      <div className="flex items-center justify-between pt-2 pb-0.5">
-                        <div className="flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-teal-400" />
-                          <span className="text-xs font-bold text-slate-300 uppercase tracking-wide">
-                            PELACAKAN STATUS & AKSI PER-MAPEL ({subjectEntries.length} MAPEL)
-                          </span>
-                        </div>
-
-                        <div className="bg-[#050b18] border border-white/10 rounded-lg p-0.5 flex items-center gap-0.5">
-                          <button
-                            type="button"
-                            onClick={() => setDetailViewMode('grid')}
-                            className={`p-1 rounded-md transition-all cursor-pointer ${
-                              detailViewMode === 'grid'
-                                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-300'
-                            }`}
-                            title="Tampilan Grid"
-                          >
-                            <LayoutGrid className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDetailViewMode('list')}
-                            className={`p-1 rounded-md transition-all cursor-pointer ${
-                              detailViewMode === 'list'
-                                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-300'
-                            }`}
-                            title="Tampilan List Baris"
-                          >
-                            <List className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 4. Subject List / Grid of Neon Rows */}
+                      {/* Complete Unified Grid of Subject Cards */}
                       <div
                         className={
                           detailViewMode === 'grid'
-                            ? 'grid grid-cols-1 md:grid-cols-2 gap-3'
+                            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5'
                             : 'space-y-2.5'
                         }
                       >
@@ -2189,46 +2160,79 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                           return (
                             <div
                               key={subjName}
-                              className={`bg-[#081226]/90 hover:bg-[#0b1834] rounded-xl p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all shadow-sm group border ${
+                              className={`bg-slate-950/80 hover:bg-[#09152b] rounded-2xl p-4 flex flex-col justify-between gap-3.5 transition-all shadow-md group border ${
                                 isMapelComplete
-                                  ? 'border-emerald-500/25 hover:border-emerald-400/50'
-                                  : 'border-rose-500/25 hover:border-rose-400/50'
+                                  ? 'border-emerald-500/30 hover:border-emerald-400/60'
+                                  : 'border-rose-500/30 hover:border-rose-400/60'
                               }`}
                             >
-                              {/* Col 1: Icon Box + Subject Name + Subtitle */}
-                              <div className="flex items-center gap-3 min-w-[190px]">
-                                <div
-                                  className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
-                                    isMapelComplete
-                                      ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.25)]'
-                                      : 'bg-rose-500/15 border-rose-400/40 text-rose-300 shadow-[0_0_10px_rgba(244,63,94,0.25)]'
-                                  }`}
-                                >
-                                  <BookOpen className="w-5 h-5" />
+                              {/* Header Mapel: Icon + Subject Name + Status Badge */}
+                              <div className="flex items-start justify-between gap-2.5 pb-2 border-b border-white/5">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div
+                                    className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 ${
+                                      isMapelComplete
+                                        ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                                        : 'bg-rose-500/15 border-rose-400/40 text-rose-300 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
+                                    }`}
+                                  >
+                                    <BookOpen className="w-4 h-4" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <h5 className="text-xs sm:text-sm font-bold text-white uppercase tracking-tight group-hover:text-sky-300 transition-colors truncate">
+                                      {subjName}
+                                    </h5>
+                                    <p className="text-[10px] text-slate-400 font-medium">
+                                      Kelas {sub.className}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="min-w-0">
-                                  <h5 className="text-xs sm:text-sm font-bold text-white uppercase tracking-normal group-hover:text-sky-200 transition-colors truncate">
-                                    {subjName}
-                                  </h5>
-                                  <p className="text-[11px] text-slate-400 font-medium">
-                                    Kelas {sub.className}
-                                  </p>
+
+                                {/* Status Badge */}
+                                <div className="shrink-0">
+                                  {isPrinted ? (
+                                    <span className="px-2.5 py-0.5 rounded-lg bg-teal-500/20 border border-teal-500/40 text-teal-300 text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                                      <CheckCircle2 className="w-3 h-3 text-teal-400" />
+                                      <span>Di-Print</span>
+                                    </span>
+                                  ) : isRevisi ? (
+                                    <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                                      <AlertCircle className="w-3 h-3 text-amber-400" />
+                                      <span>Revisi</span>
+                                    </span>
+                                  ) : isApproved ? (
+                                    <span className="px-2.5 py-0.5 rounded-lg bg-teal-500/20 border border-teal-500/40 text-teal-300 text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                                      <CheckCircle2 className="w-3 h-3 text-teal-400" />
+                                      <span>Disetujui</span>
+                                    </span>
+                                  ) : isMapelComplete ? (
+                                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                      <span>Selesai ✓</span>
+                                    </span>
+                                  ) : (
+                                    <span className="px-2.5 py-0.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                                      <Hourglass className="w-3 h-3 text-rose-400" />
+                                      <span>{stStats.missingCount > 0 ? `${stStats.missingCount} Belum` : 'Belum'}</span>
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
-                              {/* Col 2: Student Progress Bar Capsule (Green if complete, Red if incomplete) */}
-                              <div className={`bg-[#050b1a]/95 border rounded-xl px-3 py-1.5 flex items-center gap-2.5 min-w-[170px] ${
-                                isMapelComplete ? 'border-emerald-500/20' : 'border-rose-500/20'
-                              }`}>
-                                <User className={`w-3.5 h-3.5 shrink-0 ${
-                                  isMapelComplete ? 'text-emerald-400' : 'text-rose-400'
-                                }`} />
-                                <span className={`text-xs font-bold tabular-nums whitespace-nowrap ${
-                                  isMapelComplete ? 'text-emerald-300' : 'text-rose-300'
-                                }`}>
-                                  {stStats.completed} / {stStats.total}
-                                </span>
-                                <div className="w-20 sm:w-24 bg-slate-800/80 rounded-full h-2 overflow-hidden border border-white/5">
+                              {/* Student Progress Bar Bar Container */}
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between text-[11px]">
+                                  <span className="text-slate-400 flex items-center gap-1">
+                                    <User className="w-3 h-3 text-slate-500" />
+                                    Progress Siswa:
+                                  </span>
+                                  <span className={`font-bold tabular-nums ${
+                                    isMapelComplete ? 'text-emerald-300' : 'text-rose-300'
+                                  }`}>
+                                    {stStats.completed} / {stStats.total} Siswa ({progressPercent}%)
+                                  </span>
+                                </div>
+                                <div className="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-white/5">
                                   <div
                                     className={`h-full rounded-full transition-all duration-500 ${
                                       isMapelComplete
@@ -2240,95 +2244,72 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                                 </div>
                               </div>
 
-                              {/* Col 3: Status Capsule Pill */}
-                              <div>
-                                {isPrinted ? (
-                                  <span className="px-3 py-1 rounded-xl bg-teal-950/70 border border-teal-500/40 text-teal-300 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
-                                    <span>Telah di-Print</span>
-                                  </span>
-                                ) : isRevisi ? (
-                                  <span className="px-3 py-1 rounded-xl bg-amber-950/70 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
-                                    <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-                                    <span>Perlu Revisi</span>
-                                  </span>
-                                ) : isApproved ? (
-                                  <span className="px-3 py-1 rounded-xl bg-teal-950/70 border border-teal-500/40 text-teal-300 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-teal-400" />
-                                    <span>Disetujui</span>
-                                  </span>
-                                ) : isMapelComplete ? (
-                                  <span className="px-3 py-1 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                                    <span>Nilai Selesai ✓</span>
-                                  </span>
-                                ) : (
-                                  <span className="px-3 py-1 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
-                                    <Hourglass className="w-3.5 h-3.5 text-rose-400" />
-                                    <span>{stStats.missingCount > 0 ? `${stStats.missingCount} Belum` : 'Belum Selesai'}</span>
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Col 4: Action Buttons Cluster */}
-                              <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
-                                {/* Download Excel Mapel */}
+                              {/* Card Action Bar (Download Excel Mapel & Print & Approve & Revision per Mapel) */}
+                              <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-1.5 flex-wrap">
+                                {/* Download Excel Mapel Button */}
                                 <button
                                   type="button"
                                   onClick={() => handleDownloadExcel(sub, subjName)}
-                                  className="w-8 h-8 rounded-lg bg-emerald-950/70 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:border-emerald-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
-                                  title={`Unduh Excel khusus mapel ${subjName}`}
+                                  className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/35 hover:border-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                                  title={`Unduh file Excel khusus mapel ${subjName}`}
                                 >
                                   <Download className="w-3.5 h-3.5" />
+                                  <span>Excel</span>
                                 </button>
 
-                                {/* Mark as Printed */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleMarkSingleSubjectPrinted(sub, subjName)}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer shadow-sm ${
-                                    isPrinted
-                                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                                      : 'bg-sky-950/70 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:border-sky-400'
-                                  }`}
-                                  title={`Tandai soal mapel ${subjName} telah dicetak di TU`}
-                                >
-                                  <Printer className="w-3.5 h-3.5" />
-                                </button>
+                                {/* Action Buttons Cluster */}
+                                <div className="flex items-center gap-1">
+                                  {/* Mark Printed */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMarkSingleSubjectPrinted(sub, subjName)}
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm ${
+                                      isPrinted
+                                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                                        : 'bg-sky-950 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 hover:border-sky-400'
+                                    }`}
+                                    title={`Tandai soal mapel ${subjName} telah dicetak di TU`}
+                                  >
+                                    <Printer className="w-3.5 h-3.5" />
+                                  </button>
 
-                                {/* Approve */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleMarkSingleSubjectApproved(sub, subjName)}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all cursor-pointer shadow-sm ${
-                                    isApproved
-                                      ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
-                                      : 'bg-teal-950/70 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:border-teal-400'
-                                  }`}
-                                  title={`Setujui analisis mapel ${subjName}`}
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
-                                </button>
+                                  {/* Approve */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMarkSingleSubjectApproved(sub, subjName)}
+                                    className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer shadow-sm ${
+                                      isApproved
+                                        ? 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                                        : 'bg-teal-950 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 hover:border-teal-400'
+                                    }`}
+                                    title={`Setujui analisis mapel ${subjName}`}
+                                  >
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                  </button>
 
-                                {/* Revision */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenRevision(sub, subjName)}
-                                  className="w-8 h-8 rounded-lg bg-amber-950/70 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:border-amber-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
-                                  title={`Buka catatan revisi mapel ${subjName}`}
-                                >
-                                  <Edit3 className="w-3.5 h-3.5" />
-                                </button>
+                                  {/* Revision */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenRevision(sub, subjName)}
+                                    className="w-8 h-8 rounded-xl bg-amber-950 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:border-amber-400 flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                                    title={`Buka catatan revisi mapel ${subjName}`}
+                                  >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                  </button>
 
-                                {/* Chevron Details */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenRevision(sub, subjName)}
-                                  className="w-7 h-7 rounded-lg bg-transparent hover:bg-white/5 text-slate-500 hover:text-slate-300 flex items-center justify-center transition-all cursor-pointer"
-                                  title="Detail Mapel"
-                                >
-                                  <ChevronRight className="w-3.5 h-3.5" />
-                                </button>
+                                  {/* Chat Diskusi */}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setChatSubmission(sub);
+                                      setShowChatModal(true);
+                                    }}
+                                    className="w-8 h-8 rounded-xl bg-indigo-950 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:border-indigo-400 relative flex items-center justify-center transition-all cursor-pointer shadow-sm"
+                                    title={`Buka chat diskusi guru`}
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           );

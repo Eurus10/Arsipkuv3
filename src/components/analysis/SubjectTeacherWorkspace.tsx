@@ -496,13 +496,28 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   );
 
   const activeSubjectSubmission = useMemo(() => {
-    return submissions.find(
-      (s) =>
+    const activeTeacher = getActiveTeacherSession();
+    const currentName = (activeTeacher?.name || teacherName || '').trim().toLowerCase();
+    const currentId = (activeTeacher?.id || '').trim().toLowerCase();
+
+    return submissions.find((s) => {
+      const matchSubject =
         s.subjectName.toLowerCase().trim() === activeSubjectName.toLowerCase().trim() &&
         (s.classId.toLowerCase().includes(activeClassId.toLowerCase()) ||
-          s.submissionType === 'multi_class')
-    );
-  }, [submissions, activeSubjectName, activeClassId]);
+          s.submissionType === 'multi_class');
+      if (!matchSubject) return false;
+
+      // If active teacher is known, ensure this submission belongs to them
+      if (currentId && s.teacherId) {
+        return s.teacherId.toLowerCase() === currentId;
+      }
+      if (currentName && s.teacherName) {
+        const subTeacher = s.teacherName.toLowerCase();
+        return subTeacher.includes(currentName) || currentName.includes(subTeacher);
+      }
+      return true;
+    });
+  }, [submissions, activeSubjectName, activeClassId, teacherName]);
 
   // Helper toggle pilih kelas
   const handleToggleClass = (classId: string) => {
