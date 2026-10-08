@@ -732,7 +732,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* ========================================================================= */}
       <nav
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B101D]/92 backdrop-blur-2xl border-t border-slate-800/90 rounded-t-[26px] shadow-[0_-10px_35px_rgba(0,0,0,0.65)] px-2.5 pt-2 pb-2.5 flex items-center justify-around select-none print:hidden"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B101D] border-t border-slate-800/90 rounded-t-[26px] shadow-[0_-10px_35px_rgba(0,0,0,0.65)] px-2.5 pt-2 pb-2.5 flex items-center justify-around select-none print:hidden"
       >
         {/* 1. BERANDA */}
         <button

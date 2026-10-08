@@ -29,7 +29,6 @@ import {
   FlaskConical,
   CheckSquare,
   BookOpen,
-  Printer,
 } from 'lucide-react';
 
 import {
@@ -80,11 +79,6 @@ const TokenAccessModal = React.lazy(() =>
 const DriveFolderTransitionModal = React.lazy(() =>
   import('./DriveFolderTransitionModal').then((m) => ({
     default: m.DriveFolderTransitionModal,
-  }))
-);
-const PrintDocumentModal = React.lazy(() =>
-  import('./PrintDocumentModal').then((m) => ({
-    default: m.PrintDocumentModal,
   }))
 );
 
@@ -406,7 +400,6 @@ export const TemplateDownloadSection: React.FC<
   ] = useState(false);
 
   const [isPbsModalOpen, setIsPbsModalOpen] = useState(false);
-  const [isPrintDocumentModalOpen, setIsPrintDocumentModalOpen] = useState(false);
 
   const [pendingFeatureType, setPendingFeatureType] = useState<'analysis' | 'evaluation' | null>(null);
 
@@ -614,14 +607,19 @@ export const TemplateDownloadSection: React.FC<
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
         {/* Layer 1: Ambient Radial Nebula covering full card */}
         <div
-          className={`absolute -inset-4 bg-radial ${cur.nebula} blur-3xl opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700`}
+          className={`absolute -inset-4 bg-radial ${cur.nebula} blur-xl sm:blur-3xl opacity-60 group-hover:opacity-90 group-hover:scale-110 transition-all duration-700`}
         />
 
-        {/* Layer 2: Wide Background Cloud Layer (Distant Soft Clouds) */}
+        {/* Mobile Light Ambient Glow (Zero SVG filter overhead on mobile phones) */}
+        <div
+          className="block sm:hidden absolute inset-0 bg-radial from-white/10 via-transparent to-transparent opacity-40 pointer-events-none"
+        />
+
+        {/* Layer 2 (Tablet/Desktop only): Wide Background Cloud Layer (Distant Soft Clouds) */}
         <svg
           viewBox="0 0 200 120"
           preserveAspectRatio="none"
-          className="absolute inset-0 w-full h-full opacity-60 group-hover:opacity-85 transition-opacity duration-700 filter blur-[6px]"
+          className="hidden sm:block absolute inset-0 w-full h-full opacity-60 group-hover:opacity-85 transition-opacity duration-700 filter blur-[6px]"
           fill="none"
         >
           {/* Broad soft cloud masses covering upper and middle card */}
@@ -631,8 +629,8 @@ export const TemplateDownloadSection: React.FC<
           <ellipse cx="100" cy="70" rx="90" ry="35" fill={cur.puffsTertiary} />
         </svg>
 
-        {/* Layer 3: Mid-ground Organic Cloud Formation directly framing the 3D Asset */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/* Layer 3 (Tablet/Desktop only): Mid-ground Organic Cloud Formation directly framing the 3D Asset */}
+        <div className="hidden sm:flex absolute inset-0 items-center justify-center">
           <svg
             viewBox="0 0 160 100"
             className="w-[115%] h-auto opacity-75 group-hover:opacity-95 group-hover:scale-105 transition-all duration-700 filter blur-[2.5px]"
@@ -654,7 +652,7 @@ export const TemplateDownloadSection: React.FC<
 
         {/* Layer 4: Volumetric Mist Floor to fuse bottom seamlessly */}
         <div
-          className={`absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t ${cur.mistBase} blur-md opacity-70 group-hover:opacity-90 transition-opacity duration-500`}
+          className={`absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t ${cur.mistBase} blur-sm sm:blur-md opacity-70 group-hover:opacity-90 transition-opacity duration-500`}
         />
       </div>
     );
@@ -1134,23 +1132,6 @@ export const TemplateDownloadSection: React.FC<
             </span>
           </button>
 
-          {/* 5. PRINT DOKUMEN */}
-          <button
-            type="button"
-            onClick={() => setIsPrintDocumentModalOpen(true)}
-            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
-            title="Cetak dokumen dari PDF, Word, Excel, atau gambar"
-          >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-b from-sky-400/30 via-sky-500/15 to-sky-950/90 border border-sky-400/70 shadow-[0_0_16px_rgba(56,189,248,0.35)] flex items-center justify-center text-sky-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-sky-300 group-hover:shadow-[0_0_22px_rgba(56,189,248,0.6)]">
-              <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
-              <Printer className="w-5 h-5 text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
-            </div>
-
-            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-200 mt-1.5 tracking-tight group-hover:text-sky-300 transition-colors whitespace-nowrap">
-              Print Dokumen
-            </span>
-          </button>
-
         </div>
 
       </div>
@@ -1160,7 +1141,7 @@ export const TemplateDownloadSection: React.FC<
           4 Shortcut Icon Besar Berwarna + Label Ringkas di Bawahnya
           ==================================================== */}
 
-      <div className="grid sm:hidden grid-cols-5 gap-1 pt-1 pb-2 mb-2 select-none">
+      <div className="grid sm:hidden grid-cols-4 gap-1 pt-1 pb-2 mb-2 select-none">
 
         {/* 1. INFO SOAL */}
         <button
@@ -1168,7 +1149,7 @@ export const TemplateDownloadSection: React.FC<
           onClick={openBreakdownModal}
           className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-cyan-400/30 via-cyan-500/15 to-cyan-950/90 border border-cyan-400/70 shadow-[0_0_20px_rgba(34,211,238,0.4)] flex items-center justify-center text-cyan-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300 group-hover:shadow-[0_0_26px_rgba(34,211,238,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-cyan-400/30 via-cyan-500/15 to-cyan-950/90 border border-cyan-400/70 shadow-[0_0_20px_rgba(34,211,238,0.4)] flex items-center justify-center text-cyan-300 transform-gpu transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300 group-hover:shadow-[0_0_26px_rgba(34,211,238,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <FileText className="w-6 h-6 text-cyan-300 drop-shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
           </div>
@@ -1185,7 +1166,7 @@ export const TemplateDownloadSection: React.FC<
           onClick={openScheduleModal}
           className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-emerald-400/30 via-emerald-500/15 to-emerald-950/90 border border-emerald-400/70 shadow-[0_0_20px_rgba(52,211,153,0.4)] flex items-center justify-center text-emerald-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300 group-hover:shadow-[0_0_26px_rgba(52,211,153,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-emerald-400/30 via-emerald-500/15 to-emerald-950/90 border border-emerald-400/70 shadow-[0_0_20px_rgba(52,211,153,0.4)] flex items-center justify-center text-emerald-300 transform-gpu transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300 group-hover:shadow-[0_0_26px_rgba(52,211,153,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <Calendar className="w-6 h-6 text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
           </div>
@@ -1202,7 +1183,7 @@ export const TemplateDownloadSection: React.FC<
           onClick={() => setShowScoreCalculator(true)}
           className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-amber-400/30 via-amber-500/15 to-amber-950/90 border border-amber-400/70 shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center text-amber-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300 group-hover:shadow-[0_0_26px_rgba(251,191,36,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-amber-400/30 via-amber-500/15 to-amber-950/90 border border-amber-400/70 shadow-[0_0_20px_rgba(251,191,36,0.4)] flex items-center justify-center text-amber-300 transform-gpu transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300 group-hover:shadow-[0_0_26px_rgba(251,191,36,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <Calculator className="w-6 h-6 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]" />
           </div>
@@ -1220,29 +1201,13 @@ export const TemplateDownloadSection: React.FC<
           className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
           title="Salin Data Nama Siswa, NISN, atau Nama Guru untuk Aplikasi PBS"
         >
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-purple-400/30 via-purple-500/15 to-purple-950/90 border border-purple-400/70 shadow-[0_0_20px_rgba(192,132,252,0.4)] flex items-center justify-center text-purple-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300 group-hover:shadow-[0_0_26px_rgba(192,132,252,0.6)]">
+          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-purple-400/30 via-purple-500/15 to-purple-950/90 border border-purple-400/70 shadow-[0_0_20px_rgba(192,132,252,0.4)] flex items-center justify-center text-purple-300 transform-gpu transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300 group-hover:shadow-[0_0_26px_rgba(192,132,252,0.6)]">
             <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
             <Copy className="w-6 h-6 text-purple-300 drop-shadow-[0_0_8px_rgba(192,132,252,0.7)]" />
           </div>
 
           <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-purple-300 transition-colors leading-tight text-center">
             Salin Data
-          </span>
-        </button>
-
-        {/* 5. PRINT DOKUMEN */}
-        <button
-          type="button"
-          onClick={() => setIsPrintDocumentModalOpen(true)}
-          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded-xl"
-          title="Cetak dokumen"
-        >
-          <div className="relative w-14 h-14 rounded-full bg-gradient-to-b from-sky-400/30 via-sky-500/15 to-sky-950/90 border border-sky-400/70 shadow-[0_0_18px_rgba(56,189,248,0.35)] flex items-center justify-center text-sky-300 transform-gpu will-change-transform transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-sky-300">
-            <div className="absolute inset-x-0 top-0 h-1/2 rounded-t-full bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
-            <Printer className="w-5 h-5 text-sky-300" />
-          </div>
-          <span className="h-8 flex items-start justify-center text-[11px] font-bold text-slate-100 mt-2 tracking-tight group-hover:text-sky-300 transition-colors text-center leading-tight">
-            Print Dokumen
           </span>
         </button>
 
@@ -1271,7 +1236,7 @@ export const TemplateDownloadSection: React.FC<
               handleOpenEvaluationFeature();
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#6366f1]/60 hover:border-[#818cf8] bg-gradient-to-b from-[#140f2b] via-[#0e0a20] to-[#070512] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(99,102,241,0.25)] hover:shadow-[0_0_36px_rgba(99,102,241,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-xl text-left"
+          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#6366f1]/60 hover:border-[#818cf8] bg-gradient-to-b from-[#140f2b] via-[#0e0a20] to-[#070512] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(99,102,241,0.25)] hover:shadow-[0_0_36px_rgba(99,102,241,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card text-left"
         >
           {/* Top specular highlight */}
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-indigo-300/60 to-transparent pointer-events-none" />
@@ -1298,7 +1263,7 @@ export const TemplateDownloadSection: React.FC<
               <img
                 src="/assets/Asetlogo/icon-evaluasi-ai.webp"
                 alt="Evaluasi Pembelajaran"
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(99,102,241,0.65)] relative z-10"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 sm:drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(99,102,241,0.65)] relative z-10"
                 loading="lazy"
               />
             </div>
@@ -1337,7 +1302,7 @@ export const TemplateDownloadSection: React.FC<
               handleOpenAnalisisGenerator();
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#06b6d4]/60 hover:border-[#22d3ee] bg-gradient-to-b from-[#071a24] via-[#05131b] to-[#020a0f] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(6,182,212,0.25)] hover:shadow-[0_0_36px_rgba(6,182,212,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-xl text-left"
+          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#06b6d4]/60 hover:border-[#22d3ee] bg-gradient-to-b from-[#071a24] via-[#05131b] to-[#020a0f] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(6,182,212,0.25)] hover:shadow-[0_0_36px_rgba(6,182,212,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card text-left"
         >
           {/* Top specular highlight */}
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent pointer-events-none" />
@@ -1381,7 +1346,7 @@ export const TemplateDownloadSection: React.FC<
               <img
                 src="/assets/Asetlogo/icon-analysis-word-excel.webp"
                 alt="Template Analisis Soal"
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(6,182,212,0.65)] relative z-10"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 sm:drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(6,182,212,0.65)] relative z-10"
                 loading="lazy"
               />
             </div>
@@ -1432,7 +1397,7 @@ export const TemplateDownloadSection: React.FC<
               }
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#f59e0b]/60 hover:border-[#fbbf24] bg-gradient-to-b from-[#241708] via-[#1a1005] to-[#0e0802] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(245,158,11,0.25)] hover:shadow-[0_0_36px_rgba(245,158,11,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-xl text-left"
+          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#f59e0b]/60 hover:border-[#fbbf24] bg-gradient-to-b from-[#241708] via-[#1a1005] to-[#0e0802] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(245,158,11,0.25)] hover:shadow-[0_0_36px_rgba(245,158,11,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card text-left"
         >
           {/* Top specular highlight */}
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-300/60 to-transparent pointer-events-none" />
@@ -1476,7 +1441,7 @@ export const TemplateDownloadSection: React.FC<
               <img
                 src="/assets/Asetlogo/icon-template-rapor.webp"
                 alt="E-Rapor STS"
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(245,158,11,0.65)] relative z-10"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 sm:drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(245,158,11,0.65)] relative z-10"
                 loading="lazy"
               />
             </div>
@@ -1519,7 +1484,7 @@ export const TemplateDownloadSection: React.FC<
               handleOpenDriveTemplate(tplFolder);
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#10b981]/60 hover:border-[#34d399] bg-gradient-to-b from-[#062419] via-[#041911] to-[#020d09] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(16,185,129,0.25)] hover:shadow-[0_0_36px_rgba(16,185,129,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-xl text-left"
+          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#10b981]/60 hover:border-[#34d399] bg-gradient-to-b from-[#062419] via-[#041911] to-[#020d09] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(16,185,129,0.25)] hover:shadow-[0_0_36px_rgba(16,185,129,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card text-left"
         >
           {/* Top specular highlight */}
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-emerald-300/60 to-transparent pointer-events-none" />
@@ -1563,7 +1528,7 @@ export const TemplateDownloadSection: React.FC<
               <img
                 src="/assets/Asetlogo/icon-folder-drive.webp"
                 alt="Folder Kosong Soal"
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(16,185,129,0.65)] relative z-10"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 sm:drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(16,185,129,0.65)] relative z-10"
                 loading="lazy"
               />
             </div>
@@ -1602,7 +1567,7 @@ export const TemplateDownloadSection: React.FC<
               onNavigateToTracking?.();
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#d946ef]/60 hover:border-[#f0abfc] bg-gradient-to-b from-[#250831] via-[#1a0523] to-[#0f0214] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(217,70,239,0.25)] hover:shadow-[0_0_36px_rgba(217,70,239,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-xl text-left"
+          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-[#d946ef]/60 hover:border-[#f0abfc] bg-gradient-to-b from-[#250831] via-[#1a0523] to-[#0f0214] transition-all duration-300 hover:-translate-y-1.5 shadow-[0_0_28px_rgba(217,70,239,0.25)] hover:shadow-[0_0_36px_rgba(217,70,239,0.45)] cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card text-left"
         >
           {/* Top specular highlight */}
           <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-fuchsia-300/60 to-transparent pointer-events-none" />
@@ -1629,7 +1594,7 @@ export const TemplateDownloadSection: React.FC<
               <img
                 src="/assets/Asetlogo/icon-tracking-soal.webp"
                 alt="Tracking Soal"
-                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(217,70,239,0.65)] relative z-10"
+                className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1.5 sm:drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_16px_30px_rgba(217,70,239,0.65)] relative z-10"
                 loading="lazy"
               />
             </div>
@@ -2615,15 +2580,6 @@ export const TemplateDownloadSection: React.FC<
           <PbsCopyModal
             isOpen={true}
             onClose={() => setIsPbsModalOpen(false)}
-          />
-        </React.Suspense>
-      )}
-
-      {isPrintDocumentModalOpen && (
-        <React.Suspense fallback={<LazyModalLoader title="Cetak Dokumen" />}>
-          <PrintDocumentModal
-            isOpen={true}
-            onClose={() => setIsPrintDocumentModalOpen(false)}
           />
         </React.Suspense>
       )}

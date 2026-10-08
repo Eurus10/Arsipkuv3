@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isImageLogo = branding?.logoType === 'image' && branding?.logoImageUrl;
 
   return (
-    <header className="md:hidden sticky top-0 z-30 bg-[#161822]/95 backdrop-blur-xl border-b border-[#25293A] px-4 py-3 flex items-center justify-between shadow-lg print:hidden">
+    <header className="md:hidden sticky top-0 z-30 bg-[#161822] border-b border-[#25293A] px-4 py-3 flex items-center justify-between shadow-lg print:hidden">
       <div
         className="flex items-center gap-2.5 cursor-pointer"
         onClick={() => onSelectTab('dashboard')}

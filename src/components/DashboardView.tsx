@@ -231,7 +231,7 @@ export const DashboardView: React.FC<
           <img
             src={branding?.headerBgImageUrl || '/assets/Templateadmin/dashboard_header_background.webp'}
             alt="Latar Belakang Portal"
-            className="w-full h-full object-cover object-center transform scale-100 filter brightness-[0.85] contrast-[1.08] saturate-[1.1] transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover object-center transform scale-100 sm:filter sm:brightness-[0.85] sm:contrast-[1.08] sm:saturate-[1.1] transition-transform duration-700 group-hover:scale-105"
           />
           {/* Gentle Gradient Scrim: Crisp photo visibility while keeping text perfectly readable */}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/45 to-slate-950/20" />
@@ -495,16 +495,16 @@ export const DashboardView: React.FC<
             <div
               id="menu-card-administrasi"
               onClick={() => onNavigate('administrasi')}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-emerald-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(16,185,129,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-emerald-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(16,185,129,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
             >
               {/* Ambient radial glow */}
-              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-emerald-500/20 via-emerald-500/5 to-transparent blur-2xl pointer-events-none group-hover:from-emerald-500/35 transition-all duration-500" />
+              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-emerald-500/20 via-emerald-500/5 to-transparent blur-xl sm:blur-2xl pointer-events-none group-hover:from-emerald-500/35 transition-all duration-500" />
 
               {/* Watermark icon */}
               <FolderArchive className="absolute -bottom-6 -right-6 w-28 h-28 text-emerald-500/[0.04] group-hover:text-emerald-500/[0.08] pointer-events-none transition-all duration-500 rotate-12" />
 
               <div className="flex flex-col items-center relative z-10 w-full">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-400/25 backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.12)] mb-3 sm:mb-4 text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:border-emerald-400/40 group-hover:shadow-[0_0_30px_rgba(16,185,129,0.25)] transition-all duration-300">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-400/25 sm:backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.12)] mb-3 sm:mb-4 text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500/20 group-hover:border-emerald-400/40 group-hover:shadow-[0_0_30px_rgba(16,185,129,0.25)] transition-all duration-300">
                   <FolderArchive className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-300" />
                 </div>
 
@@ -524,7 +524,7 @@ export const DashboardView: React.FC<
                     e.stopPropagation();
                     onNavigate('administrasi');
                   }}
-                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 hover:text-white border border-emerald-500/25 hover:border-emerald-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(16,185,129,0.25)]"
+                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-200 hover:text-white border border-emerald-500/25 hover:border-emerald-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl sm:backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(16,185,129,0.25)]"
                 >
                   <span>Buka</span>
                   <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-200 group-hover:translate-x-1 group-hover:bg-emerald-400 group-hover:text-emerald-950 transition-all duration-300">
@@ -543,16 +543,16 @@ export const DashboardView: React.FC<
             <div
               id="menu-card-soal"
               onClick={() => onNavigate('soal')}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-sky-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(14,165,233,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-sky-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(14,165,233,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
             >
               {/* Ambient radial glow */}
-              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-sky-500/20 via-sky-500/5 to-transparent blur-2xl pointer-events-none group-hover:from-sky-500/35 transition-all duration-500" />
+              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-sky-500/20 via-sky-500/5 to-transparent blur-xl sm:blur-2xl pointer-events-none group-hover:from-sky-500/35 transition-all duration-500" />
 
               {/* Watermark icon */}
               <BookOpenCheck className="absolute -bottom-6 -right-6 w-28 h-28 text-sky-500/[0.04] group-hover:text-sky-500/[0.08] pointer-events-none transition-all duration-500 rotate-12" />
 
               <div className="flex flex-col items-center relative z-10 w-full">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-sky-500/10 border border-sky-400/25 backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(14,165,233,0.12)] mb-3 sm:mb-4 text-sky-400 group-hover:scale-110 group-hover:bg-sky-500/20 group-hover:border-sky-400/40 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.25)] transition-all duration-300">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-sky-500/10 border border-sky-400/25 sm:backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(14,165,233,0.12)] mb-3 sm:mb-4 text-sky-400 group-hover:scale-110 group-hover:bg-sky-500/20 group-hover:border-sky-400/40 group-hover:shadow-[0_0_30px_rgba(14,165,233,0.25)] transition-all duration-300">
                   <BookOpenCheck className="w-6 h-6 sm:w-8 sm:h-8 text-sky-300" />
                 </div>
 
@@ -572,7 +572,7 @@ export const DashboardView: React.FC<
                     e.stopPropagation();
                     onNavigate('soal');
                   }}
-                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 hover:text-white border border-sky-500/25 hover:border-sky-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(14,165,233,0.25)]"
+                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-sky-500/10 hover:bg-sky-500/20 text-sky-200 hover:text-white border border-sky-500/25 hover:border-sky-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl sm:backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(14,165,233,0.25)]"
                 >
                   <span>Buka</span>
                   <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-sky-500/20 flex items-center justify-center text-sky-200 group-hover:translate-x-1 group-hover:bg-sky-400 group-hover:text-sky-950 transition-all duration-300">
@@ -591,16 +591,16 @@ export const DashboardView: React.FC<
             <div
               id="menu-card-sertifikat"
               onClick={() => onNavigate('sertifikat')}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-purple-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(168,85,247,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-purple-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(168,85,247,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
             >
               {/* Ambient radial glow */}
-              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent blur-2xl pointer-events-none group-hover:from-purple-500/35 transition-all duration-500" />
+              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-purple-500/20 via-purple-500/5 to-transparent blur-xl sm:blur-2xl pointer-events-none group-hover:from-purple-500/35 transition-all duration-500" />
 
               {/* Watermark icon */}
               <Award className="absolute -bottom-6 -right-6 w-28 h-28 text-purple-500/[0.04] group-hover:text-purple-500/[0.08] pointer-events-none transition-all duration-500 rotate-12" />
 
               <div className="flex flex-col items-center relative z-10 w-full">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-purple-500/10 border border-purple-400/25 backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.12)] mb-3 sm:mb-4 text-purple-400 group-hover:scale-110 group-hover:bg-purple-500/20 group-hover:border-purple-400/40 group-hover:shadow-[0_0_30px_rgba(168,85,247,0.25)] transition-all duration-300">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-purple-500/10 border border-purple-400/25 sm:backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.12)] mb-3 sm:mb-4 text-purple-400 group-hover:scale-110 group-hover:bg-purple-500/20 group-hover:border-purple-400/40 group-hover:shadow-[0_0_30px_rgba(168,85,247,0.25)] transition-all duration-300">
                   <Award className="w-6 h-6 sm:w-8 sm:h-8 text-purple-300" />
                 </div>
 
@@ -620,7 +620,7 @@ export const DashboardView: React.FC<
                     e.stopPropagation();
                     onNavigate('sertifikat');
                   }}
-                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 hover:text-white border border-purple-500/25 hover:border-purple-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(168,85,247,0.25)]"
+                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-purple-500/10 hover:bg-purple-500/20 text-purple-200 hover:text-white border border-purple-500/25 hover:border-purple-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl sm:backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(168,85,247,0.25)]"
                 >
                   <span>Buka</span>
                   <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-200 group-hover:translate-x-1 group-hover:bg-purple-400 group-hover:text-purple-950 transition-all duration-300">
@@ -639,16 +639,16 @@ export const DashboardView: React.FC<
             <div
               id="menu-card-rapor"
               onClick={() => onNavigate('rapor')}
-              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-xl p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-rose-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(244,63,94,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
+              className="group relative overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-none sm:backdrop-blur-xl mobile-smooth-card p-4 sm:p-6 flex flex-col items-center justify-between text-center border border-white/10 hover:border-rose-400/50 shadow-xl hover:shadow-[0_20px_45px_rgba(244,63,94,0.18)] transition-all duration-300 hover:-translate-y-1.5 cursor-pointer min-h-[220px] sm:min-h-[310px]"
             >
               {/* Ambient radial glow */}
-              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-rose-500/20 via-rose-500/5 to-transparent blur-2xl pointer-events-none group-hover:from-rose-500/35 transition-all duration-500" />
+              <div className="absolute -top-16 inset-x-0 h-40 bg-gradient-to-b from-rose-500/20 via-rose-500/5 to-transparent blur-xl sm:blur-2xl pointer-events-none group-hover:from-rose-500/35 transition-all duration-500" />
 
               {/* Watermark icon */}
               <GraduationCap className="absolute -bottom-6 -right-6 w-28 h-28 text-rose-500/[0.04] group-hover:text-rose-500/[0.08] pointer-events-none transition-all duration-500 rotate-12" />
 
               <div className="flex flex-col items-center relative z-10 w-full">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-rose-500/10 border border-rose-400/25 backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(244,63,94,0.12)] mb-3 sm:mb-4 text-rose-400 group-hover:scale-110 group-hover:bg-rose-500/20 group-hover:border-rose-400/40 group-hover:shadow-[0_0_30px_rgba(244,63,94,0.25)] transition-all duration-300">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-rose-500/10 border border-rose-400/25 sm:backdrop-blur-md flex items-center justify-center shadow-[0_0_20px_rgba(244,63,94,0.12)] mb-3 sm:mb-4 text-rose-400 group-hover:scale-110 group-hover:bg-rose-500/20 group-hover:border-rose-400/40 group-hover:shadow-[0_0_30px_rgba(244,63,94,0.25)] transition-all duration-300">
                   <GraduationCap className="w-6 h-6 sm:w-8 sm:h-8 text-rose-300" />
                 </div>
 
@@ -668,7 +668,7 @@ export const DashboardView: React.FC<
                     e.stopPropagation();
                     onNavigate('rapor');
                   }}
-                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-200 hover:text-white border border-rose-500/25 hover:border-rose-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(244,63,94,0.25)]"
+                  className="w-full py-2 sm:py-2.5 px-3 sm:px-4 bg-rose-500/10 hover:bg-rose-500/20 text-rose-200 hover:text-white border border-rose-500/25 hover:border-rose-400/40 font-bold text-xs sm:text-sm rounded-xl sm:rounded-2xl sm:backdrop-blur-md transition-all duration-300 shadow-sm inline-flex items-center justify-center gap-2 cursor-pointer group-hover:shadow-[0_0_20px_rgba(244,63,94,0.25)]"
                 >
                   <span>Buka</span>
                   <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-200 group-hover:translate-x-1 group-hover:bg-rose-400 group-hover:text-rose-950 transition-all duration-300">
