@@ -21,6 +21,7 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
   students,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortByRank, setSortByRank] = useState(false);
   const { config, subjects, subjectRecords, additionalInfo } = classData;
 
   // Compute calculated values and rankings for each student
@@ -51,7 +52,11 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
     });
 
     // Rank by total score descending
-    const sorted = [...list].sort((a, b) => b.total - a.total);
+    const sorted = [...list].sort((a, b) => {
+      if (b.total !== a.total) return b.total - a.total;
+      if (b.avg !== a.avg) return b.avg - a.avg;
+      return a.student.name.localeCompare(b.student.name);
+    });
     const rankMap: Record<string, number> = {};
     sorted.forEach((item, index) => {
       rankMap[item.student.id] = index + 1;
@@ -64,14 +69,28 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
   }, [students, subjects, subjectRecords]);
 
   const filteredList = useMemo(() => {
-    if (!searchQuery.trim()) return computedStudents;
-    const q = searchQuery.toLowerCase().trim();
-    return computedStudents.filter(
-      (item) =>
-        item.student.name.toLowerCase().includes(q) ||
-        (item.student.nim && item.student.nim.toLowerCase().includes(q))
-    );
-  }, [computedStudents, searchQuery]);
+    let list = computedStudents;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (item) =>
+          item.student.name.toLowerCase().includes(q) ||
+          (item.student.nim && item.student.nim.toLowerCase().includes(q))
+      );
+    }
+    if (sortByRank) {
+      return [...list].sort((a, b) => {
+        if (a.ranking > 0 && b.ranking > 0) {
+          if (a.ranking !== b.ranking) return a.ranking - b.ranking;
+          return a.student.name.localeCompare(b.student.name);
+        }
+        if (a.ranking > 0) return -1;
+        if (b.ranking > 0) return 1;
+        return a.student.name.localeCompare(b.student.name);
+      });
+    }
+    return list;
+  }, [computedStudents, searchQuery, sortByRank]);
 
   const handleExportExcel = () => {
     exportLegerToExcel(classData, students);
@@ -88,6 +107,11 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
           </h3>
           <p className="text-xs text-slate-400 mt-0.5">
             Semester {config.semester === '1' ? 'Ganjil' : 'Genap'} ({config.schoolYear}) • {students.length} Siswa Terdaftar
+            {sortByRank && (
+              <span className="ml-2 px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30">
+                Mode Urut Peringkat Aktif
+              </span>
+            )}
           </p>
         </div>
 
@@ -104,10 +128,30 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
             />
           </div>
 
+          {/* Tombol Filter Peringkat */}
+          <button
+            type="button"
+            onClick={() => setSortByRank((prev) => !prev)}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
+              sortByRank
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700/80 hover:border-slate-600'
+            }`}
+            title={sortByRank ? 'Kembalikan ke urutan daftar nama siswa' : 'Urutkan siswa berdasarkan peringkat & total nilai'}
+          >
+            <Trophy className={`w-4 h-4 ${sortByRank ? 'text-amber-400' : 'text-slate-400'}`} />
+            <span>{sortByRank ? 'Urut Peringkat (Aktif)' : 'Filter Peringkat'}</span>
+            {sortByRank && (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            )}
+          </button>
+
+          {/* Tombol Download Excel */}
           <button
             type="button"
             onClick={handleExportExcel}
             className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center gap-2 shadow-lg transition-all cursor-pointer"
+            title="Download Excel dengan 2 Sheet (Urut Nama & Urut Peringkat)"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Download Excel (.xlsx)</span>
@@ -139,7 +183,7 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
                 <th className="py-3 px-2 text-center font-black text-emerald-400 border-l border-slate-800 bg-slate-950/90 w-16">
                   Rerata
                 </th>
-                <th className="py-3 px-2 text-center font-black text-amber-300 border-l border-slate-800 bg-slate-950/90 w-12">
+                <th className="py-3 px-2 text-center font-black text-amber-300 border-l border-slate-800 bg-slate-950/90 w-14">
                   Rank
                 </th>
               </tr>
@@ -186,7 +230,25 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
                     {item.avg > 0 ? item.avg : '-'}
                   </td>
                   <td className="py-2.5 px-2 text-center font-black text-amber-300 border-l border-slate-800/60 bg-amber-950/10">
-                    {item.total > 0 ? `#${item.ranking}` : '-'}
+                    {item.total > 0 ? (
+                      item.ranking === 1 ? (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-[11px] border border-amber-500/40">
+                          🥇 #1
+                        </span>
+                      ) : item.ranking === 2 ? (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-slate-300/20 text-slate-200 font-extrabold text-[11px] border border-slate-400/40">
+                          🥈 #2
+                        </span>
+                      ) : item.ranking === 3 ? (
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-700/20 text-amber-400 font-extrabold text-[11px] border border-amber-700/40">
+                          🥉 #3
+                        </span>
+                      ) : (
+                        `#${item.ranking}`
+                      )
+                    ) : (
+                      '-'
+                    )}
                   </td>
                 </tr>
               ))}

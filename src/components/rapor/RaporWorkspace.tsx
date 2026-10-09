@@ -70,6 +70,8 @@ import { RaporLegerTable } from './RaporLegerTable';
 import { RaporAnalysisSyncModal } from './RaporAnalysisSyncModal';
 import {
   fetchGlobalRaporConfig,
+  exportRekapNilaiKelasGuruToExcel,
+  exportRekapNilaiSemuaKelasGuruToExcel,
 } from '../../services/raporStsService';
 import {
   fetchCharacterDescriptors,
@@ -77,7 +79,13 @@ import {
   loadClassCharacterRecords,
   saveClassCharacterRecords,
 } from '../../services/raporCharacterService';
-import type { AnalysisSyncResult } from '../../services/analysisToRaporSyncService';
+import {
+  AnalysisSyncResult,
+  getAvailableSubmissionsForClass,
+  extractSubjectsFromSubmission,
+  applySubjectScoresToClassData,
+  matchRaporSubject,
+} from '../../services/analysisToRaporSyncService';
 import { getActiveTeacherSession, logoutTeacher } from '../../services/teacherStorage';
 import { clearEraporSession } from '../../services/teacherEraporAuthService';
 import {
@@ -361,6 +369,17 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
   const [isAnalysisSyncModalOpen, setIsAnalysisSyncModalOpen] = useState<boolean>(false);
   const [syncSuccessToast, setSyncSuccessToast] = useState<string | null>(null);
+  const [isExportingRekapClassId, setIsExportingRekapClassId] = useState<string | null>(null);
+  const [isLoadingSyncClassId, setIsLoadingSyncClassId] = useState<string | null>(null);
+  const [syncTargetClass, setSyncTargetClass] = useState<{
+    academicClass: AcademicClass;
+    contexts: TeacherAcademicContext[];
+    classData: RaporStsClassData;
+    students: Student[];
+  } | null>(null);
+  const [isBatchSyncing, setIsBatchSyncing] = useState<boolean>(false);
+  const [batchSyncStatusText, setBatchSyncStatusText] = useState<string>('');
+  const [isExportingAllRekap, setIsExportingAllRekap] = useState<boolean>(false);
 
   // Load character descriptors and class character records
   useEffect(() => {
@@ -451,17 +470,399 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
     }
   };
 
+  // Quick export rekap nilai seluruh mapel yang diampu guru di kelas ini dari halaman Kelas Saya
+  const handleExportClassRekap = async (
+    academicClass: AcademicClass,
+    contexts: TeacherAcademicContext[]
+  ) => {
+    setIsExportingRekapClassId(academicClass.id);
+    try {
+      const activePeriodId = academicAccess?.academicPeriod?.id;
+      if (!activePeriodId) throw new Error('Periode akademik aktif tidak ditemukan.');
+
+      const studentsForClass = allStudents.filter(
+        (st) => (st.classId || '').trim().toUpperCase() === academicClass.id.trim().toUpperCase()
+      );
+
+      let targetClassData = classData;
+      if (!targetClassData || loadedClassRef.current?.classId !== academicClass.id) {
+        const academicLevelId =
+          academicClass.academicLevelId ||
+          `grade_${getGradeLevel(academicClass.name)}`;
+
+        targetClassData = await loadRaporWorkspaceFromSupabase({
+          academicPeriodId: activePeriodId,
+          classId: academicClass.id,
+          className: academicClass.name,
+          semester: selectedSemester,
+          schoolYear: selectedSchoolYear,
+          academicLevelId,
+          students: studentsForClass,
+          teacherName: activeTeacher?.name,
+        });
+
+        // Merge global config if available
+        try {
+          const globalConfig = await fetchGlobalRaporConfig();
+          if (globalConfig) {
+            const classWalas = globalConfig.classTeachers?.[academicClass.name];
+            targetClassData.config = {
+              ...targetClassData.config,
+              ...globalConfig,
+              classLevel: academicClass.name,
+              semester: selectedSemester,
+              schoolYear: selectedSchoolYear,
+              teacherName: activeTeacher?.name || classWalas?.name || globalConfig.teacherName || targetClassData.config.teacherName,
+              teacherNip: classWalas?.nip || globalConfig.teacherNip || targetClassData.config.teacherNip,
+            };
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      exportRekapNilaiKelasGuruToExcel({
+        academicClass,
+        classData: targetClassData,
+        students: studentsForClass,
+        teacherContexts: contexts,
+        teacherName: activeTeacher?.name || targetClassData.config.teacherName,
+      });
+    } catch (err) {
+      console.error('Gagal mengekspor rekap nilai:', err);
+      alert('Terjadi kendala saat menyiapkan berkas Excel rekap nilai.');
+    } finally {
+      setIsExportingRekapClassId(null);
+    }
+  };
+
+  // Quick trigger Tarik Nilai Analisis langsung dari halaman Kelas Saya tanpa membuka kelas
+  const handleOpenAnalysisSyncForClass = async (
+    academicClass: AcademicClass,
+    contexts: TeacherAcademicContext[]
+  ) => {
+    setIsLoadingSyncClassId(academicClass.id);
+    try {
+      const activePeriodId = academicAccess?.academicPeriod?.id;
+      if (!activePeriodId) throw new Error('Periode akademik aktif tidak ditemukan.');
+
+      const studentsForClass = allStudents.filter(
+        (st) => (st.classId || '').trim().toUpperCase() === academicClass.id.trim().toUpperCase()
+      );
+
+      let targetClassData = classData;
+      if (!targetClassData || loadedClassRef.current?.classId !== academicClass.id) {
+        const academicLevelId =
+          academicClass.academicLevelId ||
+          `grade_${getGradeLevel(academicClass.name)}`;
+
+        targetClassData = await loadRaporWorkspaceFromSupabase({
+          academicPeriodId: activePeriodId,
+          classId: academicClass.id,
+          className: academicClass.name,
+          semester: selectedSemester,
+          schoolYear: selectedSchoolYear,
+          academicLevelId,
+          students: studentsForClass,
+          teacherName: activeTeacher?.name,
+        });
+
+        try {
+          const globalConfig = await fetchGlobalRaporConfig();
+          if (globalConfig) {
+            const classWalas = globalConfig.classTeachers?.[academicClass.name];
+            targetClassData.config = {
+              ...targetClassData.config,
+              ...globalConfig,
+              classLevel: academicClass.name,
+              semester: selectedSemester,
+              schoolYear: selectedSchoolYear,
+              teacherName: activeTeacher?.name || classWalas?.name || globalConfig.teacherName || targetClassData.config.teacherName,
+              teacherNip: classWalas?.nip || globalConfig.teacherNip || targetClassData.config.teacherNip,
+            };
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      setSyncTargetClass({
+        academicClass,
+        contexts,
+        classData: targetClassData,
+        students: studentsForClass,
+      });
+      setIsAnalysisSyncModalOpen(true);
+    } catch (err) {
+      console.error('Gagal memuat data kelas untuk tarik analisis:', err);
+      alert('Gagal memuat data kelas untuk penarikan nilai analisis.');
+    } finally {
+      setIsLoadingSyncClassId(null);
+    }
+  };
+
   const handleAnalysisSyncComplete = async (
     updatedData: RaporStsClassData,
     result: AnalysisSyncResult
   ) => {
-    setClassData(updatedData);
-    setHasUnsavedChanges(true);
-    await handleSaveToCloud(updatedData);
+    if (syncTargetClass) {
+      try {
+        await saveRaporWorkspaceToSupabase({
+          academicPeriodId: academicAccess?.academicPeriod?.id || '',
+          classId: syncTargetClass.academicClass.id,
+          teacherId: activeTeacherId,
+          classData: updatedData,
+        });
+      } catch (err) {
+        console.error('Error saving synced data to Supabase:', err);
+      }
+
+      // If this class happens to be currently loaded in workspace, update it
+      if (classData && loadedClassRef.current?.classId === syncTargetClass.academicClass.id) {
+        setClassData(updatedData);
+      }
+    } else {
+      setClassData(updatedData);
+      setHasUnsavedChanges(true);
+      await handleSaveToCloud(updatedData);
+    }
+
+    // Refresh canonical progress for entire academic period
+    void loadCanonicalProgress();
+
     setSyncSuccessToast(
       `Alhamdulillah, berhasil menyinkronkan ${result.syncedSubjects.length} mata pelajaran (${result.totalStudentsUpdated} siswa) dari Analisis Soal!`
     );
     setTimeout(() => setSyncSuccessToast(null), 7000);
+  };
+
+  // Batch Auto-Sync: 1 klik tarik nilai analisis otomatis untuk seluruh kelas yang diampu guru
+  const handleBatchSyncAllClasses = async () => {
+    if (!classCards.length) return;
+    const activePeriodId = academicAccess?.academicPeriod?.id;
+    if (!activePeriodId) {
+      alert('Periode akademik aktif tidak ditemukan.');
+      return;
+    }
+
+    setIsBatchSyncing(true);
+    let totalClassesUpdated = 0;
+    let totalSubjectsUpdated = 0;
+    let totalStudentsUpdated = 0;
+
+    try {
+      let globalConfig: any = null;
+      try {
+        globalConfig = await fetchGlobalRaporConfig();
+      } catch {
+        // ignore
+      }
+
+      for (let i = 0; i < classCards.length; i++) {
+        const { academicClass, contexts, isHomeroom } = classCards[i];
+        setBatchSyncStatusText(`Memproses Kelas ${academicClass.name} (${i + 1}/${classCards.length})...`);
+
+        const studentsForClass = allStudents.filter(
+          (st) => (st.classId || '').trim().toUpperCase() === academicClass.id.trim().toUpperCase()
+        );
+
+        let targetClassData: RaporStsClassData;
+        if (classData && loadedClassRef.current?.classId === academicClass.id) {
+          targetClassData = JSON.parse(JSON.stringify(classData));
+        } else {
+          const academicLevelId =
+            academicClass.academicLevelId ||
+            `grade_${getGradeLevel(academicClass.name)}`;
+
+          targetClassData = await loadRaporWorkspaceFromSupabase({
+            academicPeriodId: activePeriodId,
+            classId: academicClass.id,
+            className: academicClass.name,
+            semester: selectedSemester,
+            schoolYear: selectedSchoolYear,
+            academicLevelId,
+            students: studentsForClass,
+            teacherName: activeTeacher?.name,
+          });
+
+          if (globalConfig) {
+            const classWalas = globalConfig.classTeachers?.[academicClass.name];
+            targetClassData.config = {
+              ...targetClassData.config,
+              ...globalConfig,
+              classLevel: academicClass.name,
+              semester: selectedSemester,
+              schoolYear: selectedSchoolYear,
+              teacherName: activeTeacher?.name || classWalas?.name || globalConfig.teacherName || targetClassData.config.teacherName,
+              teacherNip: classWalas?.nip || globalConfig.teacherNip || targetClassData.config.teacherNip,
+            };
+          }
+        }
+
+        // Cari setoran analisis untuk kelas ini
+        const subs = getAvailableSubmissionsForClass(
+          academicClass.name,
+          targetClassData.config.schoolYear
+        );
+
+        if (!subs || subs.length === 0) continue;
+
+        // Ekstrak data nilai
+        const allExtracted = subs.flatMap((s) =>
+          extractSubjectsFromSubmission(s, academicClass.name)
+        );
+
+        if (allExtracted.length === 0) continue;
+
+        // Filter mapel yang relevan
+        const targetExtracted = isHomeroom
+          ? allExtracted
+          : allExtracted.filter((ps) =>
+              contexts.some((ctx) =>
+                matchRaporSubject(ps.subjectName, [
+                  {
+                    id: ctx.subjectId,
+                    name: ctx.subjectName,
+                    code: ctx.subjectCode || '',
+                    category: 'umum',
+                    order: 1,
+                    tpList: [],
+                  },
+                ])
+              )
+            );
+
+        if (targetExtracted.length === 0) continue;
+
+        // Terapkan nilai
+        const syncResult = applySubjectScoresToClassData(
+          targetClassData,
+          targetExtracted,
+          studentsForClass
+        );
+
+        if (syncResult.syncedSubjects.length > 0) {
+          await saveRaporWorkspaceToSupabase({
+            academicPeriodId: activePeriodId,
+            classId: academicClass.id,
+            teacherId: activeTeacherId,
+            classData: syncResult.updatedClassData,
+          });
+
+          totalClassesUpdated++;
+          totalSubjectsUpdated += syncResult.syncedSubjects.length;
+          totalStudentsUpdated += syncResult.totalStudentsUpdated;
+
+          if (classData && loadedClassRef.current?.classId === academicClass.id) {
+            setClassData(syncResult.updatedClassData);
+          }
+        }
+      }
+
+      void loadCanonicalProgress();
+
+      if (totalClassesUpdated > 0) {
+        setSyncSuccessToast(
+          `Alhamdulillah, berhasil menarik nilai otomatis untuk ${totalClassesUpdated} Kelas (${totalSubjectsUpdated} Mapel, ${totalStudentsUpdated} Siswa) dari Analisis Soal!`
+        );
+      } else {
+        alert(
+          'Tidak ditemukan setoran nilai baru dari Analisis Soal yang cocok untuk kelas dan mata pelajaran yang Anda ampu.'
+        );
+      }
+    } catch (err) {
+      console.error('Gagal melakukan penarikan analisis massal:', err);
+      alert('Terjadi kendala saat melakukan penarikan nilai analisis secara massal.');
+    } finally {
+      setIsBatchSyncing(false);
+      setBatchSyncStatusText('');
+    }
+  };
+
+  // Batch Export: 1 klik mengunduh rekap nilai seluruh kelas dalam 1 berkas Excel multi-sheet (.xlsx)
+  const handleExportAllClassesRekap = async () => {
+    if (!classCards.length) return;
+    const activePeriodId = academicAccess?.academicPeriod?.id;
+    if (!activePeriodId) {
+      alert('Periode akademik aktif tidak ditemukan.');
+      return;
+    }
+
+    setIsExportingAllRekap(true);
+    try {
+      let globalConfig: any = null;
+      try {
+        globalConfig = await fetchGlobalRaporConfig();
+      } catch {
+        // ignore
+      }
+
+      const classesDataForExport: {
+        academicClass: AcademicClass;
+        classData: RaporStsClassData;
+        students: Student[];
+        teacherContexts: TeacherAcademicContext[];
+      }[] = [];
+
+      for (const card of classCards) {
+        const { academicClass, contexts } = card;
+        const studentsForClass = allStudents.filter(
+          (st) => (st.classId || '').trim().toUpperCase() === academicClass.id.trim().toUpperCase()
+        );
+
+        let targetClassData = classData;
+        if (!targetClassData || loadedClassRef.current?.classId !== academicClass.id) {
+          const academicLevelId =
+            academicClass.academicLevelId ||
+            `grade_${getGradeLevel(academicClass.name)}`;
+
+          targetClassData = await loadRaporWorkspaceFromSupabase({
+            academicPeriodId: activePeriodId,
+            classId: academicClass.id,
+            className: academicClass.name,
+            semester: selectedSemester,
+            schoolYear: selectedSchoolYear,
+            academicLevelId,
+            students: studentsForClass,
+            teacherName: activeTeacher?.name,
+          });
+
+          if (globalConfig) {
+            const classWalas = globalConfig.classTeachers?.[academicClass.name];
+            targetClassData.config = {
+              ...targetClassData.config,
+              ...globalConfig,
+              classLevel: academicClass.name,
+              semester: selectedSemester,
+              schoolYear: selectedSchoolYear,
+              teacherName: activeTeacher?.name || classWalas?.name || globalConfig.teacherName || targetClassData.config.teacherName,
+              teacherNip: classWalas?.nip || globalConfig.teacherNip || targetClassData.config.teacherNip,
+            };
+          }
+        }
+
+        classesDataForExport.push({
+          academicClass,
+          classData: targetClassData,
+          students: studentsForClass,
+          teacherContexts: contexts,
+        });
+      }
+
+      exportRekapNilaiSemuaKelasGuruToExcel({
+        classes: classesDataForExport,
+        teacherName: activeTeacher?.name || teacherName,
+        semester: selectedSemester,
+        schoolYear: selectedSchoolYear,
+      });
+
+      setSyncSuccessToast('Alhamdulillah, berkas Excel Rekap Nilai Seluruh Kelas berhasil diunduh!');
+    } catch (err) {
+      console.error('Gagal mengekspor rekap semua kelas:', err);
+      alert('Terjadi kendala saat menyiapkan berkas Excel rekap seluruh kelas.');
+    } finally {
+      setIsExportingAllRekap(false);
+    }
   };
 
   // Update TP dari workspace e-Rapor.
@@ -1318,7 +1719,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
             {academicAccess && classCards.length > 0 && (
               <section className="space-y-3">
                 {/* Section Header & Controls */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-0.5">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-0.5">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center">
                       <Layers className="h-3.5 w-3.5" />
@@ -1334,7 +1735,39 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Tombol 1 Global: Tarik Analisis (Semua Kelas) */}
+                    <button
+                      type="button"
+                      onClick={handleBatchSyncAllClasses}
+                      disabled={isBatchSyncing || isExportingAllRekap}
+                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-sm"
+                      title="Tarik nilai dari Analisis Soal otomatis untuk seluruh kelas yang Anda ampu sekaligus"
+                    >
+                      {isBatchSyncing ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400 shrink-0" />
+                      ) : (
+                        <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      )}
+                      <span>{isBatchSyncing ? (batchSyncStatusText || 'Menarik Nilai...') : '⚡ Tarik Analisis (Semua Kelas)'}</span>
+                    </button>
+
+                    {/* Tombol 2 Global: Rekap Nilai Semua Kelas (.xlsx) */}
+                    <button
+                      type="button"
+                      onClick={handleExportAllClassesRekap}
+                      disabled={isExportingAllRekap || isBatchSyncing}
+                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-sm"
+                      title="Download rekap nilai Excel seluruh kelas yang Anda ampu dalam 1 berkas multi-sheet (.xlsx)"
+                    >
+                      {isExportingAllRekap ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400 shrink-0" />
+                      ) : (
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      )}
+                      <span>{isExportingAllRekap ? 'Menyiapkan Excel...' : '📊 Rekap Nilai Semua Kelas (.xlsx)'}</span>
+                    </button>
+
                     {/* Class Search input */}
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -1343,16 +1776,16 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                         value={landingSearchQuery}
                         onChange={(e) => setLandingSearchQuery(e.target.value)}
                         placeholder="Cari kelas..."
-                        className="h-8 pl-8 pr-3 rounded-lg border border-white/[0.08] bg-slate-900/80 text-xs font-normal text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400/40 w-36 sm:w-44"
+                        className="h-8.5 sm:h-9 pl-8 pr-3 rounded-xl border border-white/[0.08] bg-slate-900/80 text-xs font-normal text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400/40 w-28 sm:w-36"
                       />
                     </div>
 
                     {/* View Mode Toggle */}
-                    <div className="flex items-center rounded-lg border border-white/[0.08] bg-slate-900/80 p-0.5 text-xs">
+                    <div className="flex items-center rounded-xl border border-white/[0.08] bg-slate-900/80 p-0.5 text-xs">
                       <button
                         type="button"
                         onClick={() => setLandingViewMode('card')}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
                           landingViewMode === 'card'
                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs font-semibold'
                             : 'text-slate-400 hover:text-white'
@@ -1365,7 +1798,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       <button
                         type="button"
                         onClick={() => setLandingViewMode('list')}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
                           landingViewMode === 'list'
                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs font-semibold'
                             : 'text-slate-400 hover:text-white'
@@ -1922,12 +2355,15 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         )}
 
         {/* Analysis To e-Rapor Sync Modal */}
-        {classData && (
+        {(syncTargetClass?.classData || classData) && (
           <RaporAnalysisSyncModal
             isOpen={isAnalysisSyncModalOpen}
-            onClose={() => setIsAnalysisSyncModalOpen(false)}
-            classData={classData}
-            students={classStudents}
+            onClose={() => {
+              setIsAnalysisSyncModalOpen(false);
+              setSyncTargetClass(null);
+            }}
+            classData={syncTargetClass?.classData || classData!}
+            students={syncTargetClass?.students || classStudents}
             onSyncComplete={handleAnalysisSyncComplete}
           />
         )}

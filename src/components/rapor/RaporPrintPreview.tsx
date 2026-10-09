@@ -751,7 +751,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               <div className="flex items-start">
                 <span className="w-44 font-normal shrink-0">NAMA</span>
                 <span className="w-3 font-normal shrink-0">:</span>
-                <span className="font-bold uppercase flex-1 truncate">{student.name}</span>
+                <span className="font-bold uppercase flex-1 break-words leading-tight">{student.name}</span>
               </div>
               <div className="flex items-start">
                 <span className="w-44 font-normal shrink-0">TEMPAT, TANGGAL LAHIR</span>
@@ -1255,7 +1255,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               <div className="flex items-start">
                 <span className="w-44 font-normal shrink-0">NAMA</span>
                 <span className="w-3 font-normal shrink-0">:</span>
-                <span className="font-bold uppercase flex-1 truncate">{student.name}</span>
+                <span className="font-bold uppercase flex-1 break-words leading-tight">{student.name}</span>
               </div>
               <div className="flex items-start">
                 <span className="w-44 font-normal shrink-0">TEMPAT, TANGGAL LAHIR</span>
