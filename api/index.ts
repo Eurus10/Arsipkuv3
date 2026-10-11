@@ -4064,11 +4064,13 @@ INPUT PARAMETER:
 - Kepala Sekolah: ${namaKepalaSekolah}
 - Catatan Tambahan / Fokus Khusus: ${catatanTambahan || '-'}
 
-PANDUAN KONTEN YANG HARUS DETAIL DAN MENDALAM:
-1. Uraian Materi Pembelajaran: WAJIB menyertakan ringkasan materi konseptual yang padat dan mendalam (2-3 paragraf kaya teks penjelasan konsep, 4-6 poin kunci, serta integrasi nilai Islam dan dalil naqli relevan).
-2. Langkah Kegiatan: Tuliskan skenario operasional langkah per menit yang jelas antara aktivitas guru dan peserta didik.
-3. Diferensiasi Pembelajaran: Tuliskan strategi nyata diferensiasi konten/proses bagi siswa yang perlu bimbingan vs siswa mahir.
-4. Asesmen: Lengkapi dengan instrumen asesmen diagnostik (3 pertanyaan pemantik), rubrik formatif detail skala 4-3-2-1, serta 2-3 butir soal sumatif lengkap dengan kunci jawaban dan bobot skor.
+PANDUAN KONTEN YANG HARUS DETAIL, MENDALAM, DAN PERSIS SESUAI INPUT GURU:
+1. Kesesuaian Penuh: Konten materi WAJIB 100% berfokus dan mendalam pada materi pokok "${babMateri}" dan sub-materi "${subMateri || babMateri}". JANGAN memberikan materi umum yang melenceng.
+2. Anti-Singkat & Anti-Rancu: DILARANG membuat kalimat terpotong, ringkasan terlalu singkat, atau menggunakan singkatan ambigu ("dll", "dsb", "dsb-nya"). Setiap konsep harus diuraikan dengan kalimat yang jelas, tuntas, dan berbobot ilmiah-edukatif.
+3. Uraian Materi Pembelajaran: WAJIB menyertakan ringkasan materi konseptual yang padat, komprehensif, dan mendalam (2-3 paragraf kaya teks penjelasan konsep, 4-6 poin kunci esensial, serta integrasi nilai Islam dan dalil naqli/adab yang kontekstual).
+4. Langkah Kegiatan: Tuliskan skenario operasional langkah per menit yang jelas antara aktivitas guru dan peserta didik (termasuk instruksi interaktif dan sintaks model ${modelPembelajaran}).
+5. Diferensiasi Pembelajaran: Tuliskan strategi nyata diferensiasi konten, proses, dan produk bagi murid yang perlu bimbingan vs murid reguler vs murid mahir.
+6. Asesmen Komprehensif: Lengkapi dengan instrumen asesmen diagnostik (3 pertanyaan pemantik eksploratif), rubrik formatif detail skala 4-3-2-1, serta butir soal sumatif lengkap dengan kunci jawaban detail dan bobot skor.
 
 PENTING: Keluaran HARUS HANYA SATU JSON OBJECT VALID. DILARANG MENAMBAHKAN TEKS CATATAN, KOMENTAR, ATAU MARKDOWN PENUTUP DI LUAR KURUNG KURAWAL JSON { }.
 OUTPUT WAJIB DALAM FORMAT JSON BERIKUT:
@@ -4416,18 +4418,20 @@ INPUT PARAMETER:
 - Format Bilingual: ${bilingual ? 'Sertakan terminologi penting dalam Bahasa Inggris atau Bahasa Arab' : 'Bahasa Indonesia baku yang ramah anak'}
 - Catatan / Permintaan Khusus: ${petunjukTambahan || '-'}
 
-FORMAT LKPD HARUS MEMILIKI:
-1. Identitas LKPD lengkap.
-2. Tujuan Pembelajaran terukur dan ramah anak.
-3. Petunjuk Belajar jelas (diawali doa).
-4. Stimulus Materi: WAJIB memuat narasi cerita / studi kasus kontekstual (2-3 paragraf mendalam dengan nama tokoh anak SDIT dan masalah nyata) serta pertanyaan pemandu.
-5. Empat (4) Aktivitas Berjenjang:
-   - Aktivitas 1: Temukan Fakta & Pemetaan Ciri (Format tabel pengamatan).
-   - Aktivitas 2: Analisis Observasi & Klasifikasi Ilmiah (Pertanyaan telaah mendalam).
+FORMAT LKPD HARUS MEMILIKI KONTEN YANG KAYA, MENDALAM, DAN TIDAK SINGKAT:
+1. Kesesuaian Penuh: Seluruh materi, narasi stimulus, dan aktivitas harus berakar langsung pada topik "${babMateri}" dan sub-topik "${subMateri || babMateri}". JANGAN membuat pertanyaan generik tanpa substansi materi.
+2. Anti-Singkat & Anti-Rancu: DILARANG membuat cerita atau soal yang terlalu singkat/menggantung. Gunakan narasi kontekstual yang hidup, ramah anak, dan mendidik.
+3. Identitas LKPD lengkap (satuan pendidikan, kelas, mata pelajaran, alokasi waktu).
+4. Tujuan Pembelajaran terukur berorientasi keterampilan dan karakter Islami.
+5. Petunjuk Belajar jelas (diawali adab doa sebelum belajar).
+6. Stimulus Materi: WAJIB memuat narasi cerita / studi kasus kontekstual mendalam (2-3 paragraf kaya detail tentang anak SDIT Al Fikri yang mengamati fenomena ini), poin-poin penting, serta pertanyaan pemandu.
+7. Empat (4) Aktivitas Berjenjang:
+   - Aktivitas 1: Temukan Fakta & Pemetaan Ciri (Format tabel pengamatan dengan kolom jelas).
+   - Aktivitas 2: Analisis Observasi & Klasifikasi Ilmiah (Pertanyaan telaah mendalam menuntut penjelasan alasan).
    - Aktivitas 3: Studi Kasus Pemecahan Masalah Kritis / HOTS (Tantangan kontekstual pemecahan masalah nyata).
    - Aktivitas 4: Kesimpulan & Aksi Nyata Karakter Islami (Komitmen kebaikan).
-6. Kunci Jawaban Lengkap dan Rubrik Penilaian Guru skala 4-3-2-1.
-7. Refleksi Diri Siswa.
+8. Kunci Jawaban Lengkap untuk seluruh aktivitas dan Rubrik Penilaian Guru skala 4-3-2-1.
+9. Refleksi Diri Siswa.
 
 OUTPUT WAJIB DALAM FORMAT JSON MURNI TANPA MARKDOWN TAMBAHAN:
 {

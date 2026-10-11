@@ -29,6 +29,8 @@ import {
   getProtaDrafts,
   deleteProtaDraft,
   type SavedProtaDraft,
+  saveFormAutosave,
+  getFormAutosave,
 } from '../../services/administrasiLocalStorage';
 import { getActiveTeacherSession } from '../../services/teacherStorage';
 
@@ -135,8 +137,9 @@ export const ProtaGeneratorModal: React.FC<ProtaGeneratorModalProps> = ({
   const [draftsList, setDraftsList] = useState<SavedProtaDraft[]>([]);
   const [showDraftsModal, setShowDraftsModal] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
+  const [isAutoSaved, setIsAutoSaved] = useState(false);
 
-  // Sync drafts from browser localStorage on open
+  // Sync drafts & form autosave from browser localStorage on open
   useEffect(() => {
     if (isOpen) {
       setDraftsList(getProtaDrafts());
@@ -144,8 +147,65 @@ export const ProtaGeneratorModal: React.FC<ProtaGeneratorModalProps> = ({
       if (session?.name && namaPenyusun === 'Guru Pengampu SDIT Al Fikri') {
         setNamaPenyusun(session.name);
       }
+      const savedForm = getFormAutosave<any>('sdit_form_draft_prota_v1');
+      if (savedForm?.data) {
+        const d = savedForm.data;
+        if (d.mataPelajaran) setMataPelajaran(d.mataPelajaran);
+        if (d.kelas) setKelas(d.kelas);
+        if (d.fase) setFase(d.fase);
+        if (d.tahunPelajaran) setTahunPelajaran(d.tahunPelajaran);
+        if (d.jpPerMinggu) setJpPerMinggu(d.jpPerMinggu);
+        if (d.namaPenyusun && !session?.name) setNamaPenyusun(d.namaPenyusun);
+        if (d.namaKepalaSekolah) setNamaKepalaSekolah(d.namaKepalaSekolah);
+        if (d.modeAcuan) setModeAcuan(d.modeAcuan);
+        if (d.daftarBabBuku) setDaftarBabBuku(d.daftarBabBuku);
+        if (d.fokusMateri) setFokusMateri(d.fokusMateri);
+        if (d.pekanEfektif1) setPekanEfektif1(d.pekanEfektif1);
+        if (d.pekanEfektif2) setPekanEfektif2(d.pekanEfektif2);
+      }
     }
   }, [isOpen]);
+
+  // Form input autosave
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveFormAutosave('sdit_form_draft_prota_v1', {
+        mataPelajaran,
+        kelas,
+        fase,
+        tahunPelajaran,
+        jpPerMinggu,
+        namaPenyusun,
+        namaKepalaSekolah,
+        modeAcuan,
+        daftarBabBuku,
+        fokusMateri,
+        pekanEfektif1,
+        pekanEfektif2,
+        integrasiIslami,
+      });
+      setIsAutoSaved(true);
+      const reset = setTimeout(() => setIsAutoSaved(false), 2000);
+      return () => clearTimeout(reset);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    mataPelajaran,
+    kelas,
+    fase,
+    tahunPelajaran,
+    jpPerMinggu,
+    namaPenyusun,
+    namaKepalaSekolah,
+    modeAcuan,
+    daftarBabBuku,
+    fokusMateri,
+    pekanEfektif1,
+    pekanEfektif2,
+    integrasiIslami,
+  ]);
 
   if (!isOpen) return null;
 
@@ -310,6 +370,11 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
                 <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   Kurikulum Merdeka BSKAP 2025
                 </span>
+                {isAutoSaved && (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 animate-pulse">
+                    ✓ Tersimpan di browser
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-slate-400">
                 Alur Tujuan Pembelajaran (ATP), Rincian Minggu Efektif (RME), dan Alokasi JP
@@ -702,10 +767,10 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
                     type="button"
                     onClick={handleDownloadWord}
                     className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                    title="Unduh dokumen resmi Prota dalam format Microsoft Word (.doc)"
+                    title="Unduh dokumen resmi Prota dalam format Microsoft Word (.docx)"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Unduh Word (.doc)</span>
+                    <span>Unduh Word (.docx)</span>
                   </button>
 
                   <button

@@ -1,11 +1,33 @@
 import { ProtaData } from '../components/administrasi/ProtaGeneratorModal';
 import { PromesData } from '../components/administrasi/PromesGeneratorModal';
+import {
+  exportProtaToWord as exportProtaToWordDocx,
+  exportPromesToWord as exportPromesToWordDocx,
+} from '../services/administrasiWordExportService';
 
 /**
- * Helper utility to export PROTA and PROMES to Microsoft Word (.doc)
+ * Helper utility to export PROTA and PROMES to Microsoft Word (.docx)
  * with pristine formatting, clean table borders, side-by-side signature tables,
  * and correct page orientation (Portrait for Prota, Landscape for Promes).
  */
+
+export async function exportProtaToWord(prota: ProtaData) {
+  try {
+    await exportProtaToWordDocx(prota);
+  } catch (err) {
+    console.error('Fallback to legacy HTML doc export for Prota:', err);
+    exportProtaToWordLegacy(prota);
+  }
+}
+
+export async function exportPromesToWord(promes: PromesData) {
+  try {
+    await exportPromesToWordDocx(promes);
+  } catch (err) {
+    console.error('Fallback to legacy HTML doc export for Promes:', err);
+    exportPromesToWordLegacy(promes);
+  }
+}
 
 function triggerWordDownload(filename: string, htmlContent: string) {
   const blob = new Blob(['\ufeff', htmlContent], {
@@ -30,9 +52,9 @@ function formatDateIndo(date = new Date()): string {
 }
 
 // ==========================================
-// 1. EXPORT PROGRAM TAHUNAN (PROTA) TO WORD
+// 1. LEGACY EXPORT PROGRAM TAHUNAN (PROTA)
 // ==========================================
-export function exportProtaToWord(prota: ProtaData) {
+function exportProtaToWordLegacy(prota: ProtaData) {
   const id = prota.identitas;
   const rincian = prota.rincianMingguEfektif;
   const distribusi = prota.distribusiMateri || [];
@@ -318,9 +340,9 @@ export function exportProtaToWord(prota: ProtaData) {
 }
 
 // ==========================================
-// 2. EXPORT PROGRAM SEMESTER (PROMES) TO WORD (LANDSCAPE)
+// 2. LEGACY EXPORT PROGRAM SEMESTER (PROMES)
 // ==========================================
-export function exportPromesToWord(promes: PromesData) {
+function exportPromesToWordLegacy(promes: PromesData) {
   const id = promes.identitas;
   const daftarBulan = promes.daftarBulan || ['Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const alokasi = promes.alokasiMateriDanMinggu || [];

@@ -28,6 +28,8 @@ import {
   getPromesDrafts,
   deletePromesDraft,
   type SavedPromesDraft,
+  saveFormAutosave,
+  getFormAutosave,
 } from '../../services/administrasiLocalStorage';
 import { getActiveTeacherSession } from '../../services/teacherStorage';
 
@@ -132,6 +134,7 @@ export const PromesGeneratorModal: React.FC<PromesGeneratorModalProps> = ({
   const [draftsList, setDraftsList] = useState<SavedPromesDraft[]>([]);
   const [showDraftsModal, setShowDraftsModal] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
+  const [isAutoSaved, setIsAutoSaved] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -140,8 +143,68 @@ export const PromesGeneratorModal: React.FC<PromesGeneratorModalProps> = ({
       if (session?.name && namaPenyusun === 'Guru Pengampu SDIT Al Fikri') {
         setNamaPenyusun(session.name);
       }
+      const savedForm = getFormAutosave<any>('sdit_form_draft_promes_v1');
+      if (savedForm?.data) {
+        const d = savedForm.data;
+        if (d.mataPelajaran) setMataPelajaran(d.mataPelajaran);
+        if (d.kelas) setKelas(d.kelas);
+        if (d.fase) setFase(d.fase);
+        if (d.semester) setSemester(d.semester);
+        if (d.tahunPelajaran) setTahunPelajaran(d.tahunPelajaran);
+        if (d.jpPerMinggu) setJpPerMinggu(d.jpPerMinggu);
+        if (d.namaPenyusun && !session?.name) setNamaPenyusun(d.namaPenyusun);
+        if (d.namaKepalaSekolah) setNamaKepalaSekolah(d.namaKepalaSekolah);
+        if (d.modeAcuan) setModeAcuan(d.modeAcuan);
+        if (d.daftarBabBuku) setDaftarBabBuku(d.daftarBabBuku);
+        if (d.fokusMateri) setFokusMateri(d.fokusMateri);
+        if (d.pekanEfektif) setPekanEfektif(d.pekanEfektif);
+        if (d.pekanCadangan) setPekanCadangan(d.pekanCadangan);
+      }
     }
   }, [isOpen]);
+
+  // Form input autosave
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveFormAutosave('sdit_form_draft_promes_v1', {
+        mataPelajaran,
+        kelas,
+        fase,
+        semester,
+        tahunPelajaran,
+        jpPerMinggu,
+        namaPenyusun,
+        namaKepalaSekolah,
+        modeAcuan,
+        daftarBabBuku,
+        fokusMateri,
+        pekanEfektif,
+        pekanCadangan,
+        integrasiIslami,
+      });
+      setIsAutoSaved(true);
+      const reset = setTimeout(() => setIsAutoSaved(false), 2000);
+      return () => clearTimeout(reset);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    mataPelajaran,
+    kelas,
+    fase,
+    semester,
+    tahunPelajaran,
+    jpPerMinggu,
+    namaPenyusun,
+    namaKepalaSekolah,
+    modeAcuan,
+    daftarBabBuku,
+    fokusMateri,
+    pekanEfektif,
+    pekanCadangan,
+    integrasiIslami,
+  ]);
 
   if (!isOpen) return null;
 
@@ -322,6 +385,11 @@ Bab 4: Asesmen Formatif & Proyek Kolaboratif`
                 <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
                   Matriks Distribusi Mingguan Kurikulum Merdeka
                 </span>
+                {isAutoSaved && (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 animate-pulse">
+                    ✓ Tersimpan di browser
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-slate-400">
                 Pemetaan TP, Materi, Alokasi JP, dan Matriks Mingguan Bulan 1–6 (STS, SAS, Libur)
@@ -728,10 +796,10 @@ Bab 4: Asesmen Formatif & Proyek Kolaboratif`
                     type="button"
                     onClick={handleDownloadWord}
                     className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                    title="Unduh dokumen resmi Promes dalam format Microsoft Word (.doc)"
+                    title="Unduh dokumen resmi Promes dalam format Microsoft Word (.docx)"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Unduh Word (.doc)</span>
+                    <span>Unduh Word (.docx)</span>
                   </button>
 
                   <button

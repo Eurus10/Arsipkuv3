@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
@@ -18,7 +18,20 @@ import {
   RotateCcw,
   Edit3,
   HelpCircle,
+  FolderHeart,
+  Save,
+  Trash2,
+  ExternalLink,
 } from 'lucide-react';
+import { exportModulAjarToWord } from '../../services/administrasiWordExportService';
+import {
+  getModulAjarDrafts,
+  saveModulAjarDraft,
+  deleteModulAjarDraft,
+  SavedModulAjarDraft,
+  saveFormAutosave,
+  getFormAutosave,
+} from '../../services/administrasiLocalStorage';
 
 export interface ModulAjarData {
   identitas: {
@@ -169,12 +182,114 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
 
   // Status & Hasil State
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExportingWord, setIsExportingWord] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasilModul, setHasilModul] = useState<ModulAjarData | null>(null);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [isEditable, setIsEditable] = useState<boolean>(false);
 
+  // Browser LocalStorage Drafts & Autosave State
+  const [draftsList, setDraftsList] = useState<SavedModulAjarDraft[]>([]);
+  const [showDraftsModal, setShowDraftsModal] = useState<boolean>(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<boolean>(false);
+  const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+
+  // Sync drafts and restore autosaved form on modal open
+  useEffect(() => {
+    if (isOpen) {
+      setDraftsList(getModulAjarDrafts());
+      const savedForm = getFormAutosave<any>('sdit_form_draft_modul_ajar_v1');
+      if (savedForm?.data) {
+        const d = savedForm.data;
+        if (d.tingkatKelas) setTingkatKelas(d.tingkatKelas);
+        if (d.mataPelajaran) setMataPelajaran(d.mataPelajaran);
+        if (d.semester) setSemester(d.semester);
+        if (d.tahunPelajaran) setTahunPelajaran(d.tahunPelajaran);
+        if (d.alokasiWaktu) setAlokasiWaktu(d.alokasiWaktu);
+        if (d.babMateri && !babMateri) setBabMateri(d.babMateri);
+        if (d.subMateri && !subMateri) setSubMateri(d.subMateri);
+        if (d.profilPancasila) setProfilPancasila(d.profilPancasila);
+        if (d.modelPembelajaran) setModelPembelajaran(d.modelPembelajaran);
+        if (d.targetPesertaDidik) setTargetPesertaDidik(d.targetPesertaDidik);
+        if (d.namaPenyusun) setNamaPenyusun(d.namaPenyusun);
+        if (d.namaKepalaSekolah) setNamaKepalaSekolah(d.namaKepalaSekolah);
+        if (d.catatanTambahan) setCatatanTambahan(d.catatanTambahan);
+      }
+    }
+  }, [isOpen]);
+
+  // Autosave form input whenever relevant fields change
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveFormAutosave('sdit_form_draft_modul_ajar_v1', {
+        tingkatKelas,
+        mataPelajaran,
+        semester,
+        tahunPelajaran,
+        alokasiWaktu,
+        babMateri,
+        subMateri,
+        profilPancasila,
+        modelPembelajaran,
+        targetPesertaDidik,
+        namaPenyusun,
+        namaKepalaSekolah,
+        catatanTambahan,
+      });
+      setIsAutoSaved(true);
+      const resetBadge = setTimeout(() => setIsAutoSaved(false), 2000);
+      return () => clearTimeout(resetBadge);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    tingkatKelas,
+    mataPelajaran,
+    semester,
+    tahunPelajaran,
+    alokasiWaktu,
+    babMateri,
+    subMateri,
+    profilPancasila,
+    modelPembelajaran,
+    targetPesertaDidik,
+    namaPenyusun,
+    namaKepalaSekolah,
+    catatanTambahan,
+  ]);
+
   if (!isOpen) return null;
+
+  const handleSaveToBrowser = () => {
+    if (!hasilModul) return;
+    try {
+      saveModulAjarDraft(hasilModul);
+      setDraftsList(getModulAjarDrafts());
+      setSaveSuccessMsg(true);
+      setTimeout(() => setSaveSuccessMsg(false), 2500);
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Gagal menyimpan ke penyimpanan lokal browser.');
+    }
+  };
+
+  const handleLoadDraft = (draft: SavedModulAjarDraft) => {
+    setHasilModul(draft.modulAjarData);
+    if (draft.mataPelajaran) setMataPelajaran(draft.mataPelajaran);
+    if (draft.kelas) {
+      const numOnly = draft.kelas.replace(/[^0-9]/g, '');
+      if (numOnly) setTingkatKelas(numOnly);
+    }
+    if (draft.babMateri) setBabMateri(draft.babMateri);
+    if (draft.subMateri) setSubMateri(draft.subMateri);
+    setShowDraftsModal(false);
+  };
+
+  const handleDeleteDraft = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteModulAjarDraft(id);
+    setDraftsList(getModulAjarDrafts());
+  };
 
   // Tentukan Fase Otomatis
   const getFase = (kelasStr: string) => {
@@ -310,79 +425,21 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
     setTimeout(() => setIsCopied(false), 2500);
   };
 
-  const handleDownloadDoc = () => {
+  const handleDownloadDoc = async () => {
     if (!hasilModul) return;
-    const content = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><meta charset='utf-8'><title>${hasilModul.identitas.babMateri} - Modul Ajar</title>
-      <style>
-        body { font-family: 'Calibri', Arial, sans-serif; line-height: 1.6; color: #111; margin: 40px; }
-        h1, h2, h3 { color: #0d3826; }
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
-        td, th { border: 1px solid #ccc; padding: 6px 10px; font-size: 13px; }
-        .header-title { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-      </style>
-      </head>
-      <body>
-        <div class="header-title">
-          <h2>MODUL AJAR KURIKULUM MERDEKA SDIT AL FIKRI</h2>
-          <p>Tahun Pelajaran ${hasilModul.identitas.tahunPelajaran} | ${hasilModul.identitas.semester}</p>
-        </div>
-        <h3>I. INFORMASI UMUM</h3>
-        <table>
-          <tr><td width="30%"><strong>Nama Sekolah</strong></td><td>${hasilModul.identitas.namaSekolah}</td></tr>
-          <tr><td><strong>Mata Pelajaran</strong></td><td>${hasilModul.identitas.mataPelajaran}</td></tr>
-          <tr><td><strong>Fase / Kelas</strong></td><td>${hasilModul.identitas.fase} / ${hasilModul.identitas.kelas}</td></tr>
-          <tr><td><strong>Alokasi Waktu</strong></td><td>${hasilModul.identitas.alokasiWaktu}</td></tr>
-          <tr><td><strong>Bab / Materi Pokok</strong></td><td>${hasilModul.identitas.babMateri}</td></tr>
-          <tr><td><strong>Sub-Materi</strong></td><td>${hasilModul.identitas.subMateri}</td></tr>
-          <tr><td><strong>Profil Pelajar Pancasila</strong></td><td>${hasilModul.profilPelajarPancasila.join(', ')}</td></tr>
-          <tr><td><strong>Model Pembelajaran</strong></td><td>${hasilModul.modelPembelajaran}</td></tr>
-          <tr><td><strong>Target Peserta Didik</strong></td><td>${hasilModul.targetPesertaDidik}</td></tr>
-        </table>
-        <h3>II. KOMPONEN INTI</h3>
-        <p><strong>Capaian Pembelajaran:</strong><br/>${hasilModul.komponenInti.capaianPembelajaran}</p>
-        <p><strong>Tujuan Pembelajaran:</strong></p>
-        <ol>${hasilModul.komponenInti.tujuanPembelajaran.map((tp) => `<li>${tp}</li>`).join('')}</ol>
-        <p><strong>Pemahaman Bermakna:</strong><br/>${hasilModul.komponenInti.pemahamanBermakna}</p>
-        <p><strong>Pertanyaan Pemantik:</strong></p>
-        <ul>${hasilModul.komponenInti.pertanyaanPemantik.map((q) => `<li>${q}</li>`).join('')}</ul>
-        <h3>III. KEGIATAN PEMBELAJARAN</h3>
-        <h4>A. Kegiatan Pendahuluan (${hasilModul.komponenInti.kegiatanPembelajaran.pendahuluan.durasi})</h4>
-        <ol>${hasilModul.komponenInti.kegiatanPembelajaran.pendahuluan.langkah.map((l) => `<li>${l}</li>`).join('')}</ol>
-        <h4>B. Kegiatan Inti (${hasilModul.komponenInti.kegiatanPembelajaran.inti.durasi})</h4>
-        <ol>${hasilModul.komponenInti.kegiatanPembelajaran.inti.langkah.map((l) => `<li>${l}</li>`).join('')}</ol>
-        ${hasilModul.komponenInti.kegiatanPembelajaran.inti.diferensiasi ? `<p><em>Diferensiasi: ${hasilModul.komponenInti.kegiatanPembelajaran.inti.diferensiasi}</em></p>` : ''}
-        <h4>C. Kegiatan Penutup (${hasilModul.komponenInti.kegiatanPembelajaran.penutup.durasi})</h4>
-        <ol>${hasilModul.komponenInti.kegiatanPembelajaran.penutup.langkah.map((l) => `<li>${l}</li>`).join('')}</ol>
-        <h3>IV. ASESMEN</h3>
-        <p><strong>1. Asesmen Diagnostik:</strong> ${hasilModul.komponenInti.asesmen.diagnostik}</p>
-        <p><strong>2. Asesmen Formatif:</strong> ${hasilModul.komponenInti.asesmen.formatif}</p>
-        <p><strong>3. Asesmen Sumatif:</strong> ${hasilModul.komponenInti.asesmen.sumatif}</p>
-        <table style="margin-top: 50px; border: none;">
-          <tr style="border: none;">
-            <td style="border: none; text-align: center;" width="50%">
-              Mengetahui,<br/>Kepala SDIT Al Fikri<br/><br/><br/><br/>
-              <strong><u>${hasilModul.identitas.kepalaSekolah}</u></strong>
-            </td>
-            <td style="border: none; text-align: center;" width="50%">
-              Depok, .................... 2026<br/>Guru Pengampu Mata Pelajaran<br/><br/><br/><br/>
-              <strong><u>${hasilModul.identitas.penyusun}</u></strong>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
-    const blob = new Blob(['\ufeff' + content], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Modul_Ajar_${hasilModul.identitas.mataPelajaran.replace(/[^a-zA-Z0-9]/g, '_')}_Kelas_${tingkatKelas}.doc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setIsExportingWord(true);
+    setErrorMessage(null);
+    try {
+      await exportModulAjarToWord(hasilModul);
+    } catch (err: any) {
+      console.error('Error export Modul Ajar ke Word (.docx):', err);
+      setErrorMessage(
+        'Gagal mengekspor berkas Word: ' +
+          (err?.message || 'Terjadi kesalahan pemformatan dokumen.')
+      );
+    } finally {
+      setIsExportingWord(false);
+    }
   };
 
   return (
@@ -402,6 +459,11 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-black text-emerald-300 flex items-center gap-1 uppercase">
                   <Sparkles className="w-3 h-3" /> AI Assistant
                 </span>
+                {isAutoSaved && (
+                  <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-medium animate-pulse border border-teal-500/30">
+                    ✓ Tersimpan otomatis di browser
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
                 Penyusunan instan RPP Plus standar BSKAP Kemendikbudristek & karakter Islam terpadu SDIT Al Fikri.
@@ -409,12 +471,24 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowDraftsModal(true)}
+              className="px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              title="Buka riwayat draft Modul Ajar tersimpan di browser"
+            >
+              <FolderHeart className="w-3.5 h-3.5 text-amber-400" />
+              <span>Draft Tersimpan ({draftsList.length})</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Konten Scrollable */}
@@ -711,8 +785,27 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    onClick={handleSaveToBrowser}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Simpan draft Modul Ajar ke penyimpanan lokal browser"
+                  >
+                    {saveSuccessMsg ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Tersimpan di Browser!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-3.5 h-3.5 text-teal-400" />
+                        <span>Simpan ke Browser</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={handleCopyText}
-                    className="px-3.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all"
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     {isCopied ? (
                       <>
@@ -729,17 +822,28 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
 
                   <button
                     type="button"
+                    disabled={isExportingWord}
                     onClick={handleDownloadDoc}
-                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                    title="Unduh dokumen resmi Modul Ajar dalam format Microsoft Word (.docx)"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Unduh Word (.doc)</span>
+                    {isExportingWord ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Mengekspor Word...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Unduh Word (.docx)</span>
+                      </>
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={handlePrint}
-                    className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/40"
+                    className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-emerald-950/40 cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Cetak / Simpan PDF</span>
@@ -1100,6 +1204,99 @@ export const ModulAjarGeneratorModal: React.FC<ModulAjarGeneratorModalProps> = (
             </div>
           )}
         </div>
+
+        {/* DIALOG RIWAYAT DRAFT MODUL AJAR (LOCALSTORAGE) */}
+        {showDraftsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+            <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+              <div className="px-5 py-4 bg-gradient-to-r from-emerald-950 to-slate-900 border-b border-slate-700/80 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center">
+                    <FolderHeart className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-white">
+                      Draft Modul Ajar Tersimpan (Browser)
+                    </h3>
+                    <p className="text-[11px] text-slate-300">
+                      Disimpan offline di browser Anda tanpa memakai kuota server.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDraftsModal(false)}
+                  className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="p-5 overflow-y-auto space-y-3 flex-1">
+                {draftsList.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400 text-xs">
+                    <FolderHeart className="w-10 h-10 mx-auto text-slate-600 mb-2 opacity-50" />
+                    <p className="font-semibold text-slate-300">Belum ada draft Modul Ajar tersimpan.</p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Setelah modul di-generate, klik tombol "Simpan ke Browser" untuk menyimpan arsip lokal.
+                    </p>
+                  </div>
+                ) : (
+                  draftsList.map((draft) => (
+                    <div
+                      key={draft.id}
+                      onClick={() => handleLoadDraft(draft)}
+                      className="p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-emerald-500/50 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                            {draft.kelas}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold">
+                            {draft.mataPelajaran}
+                          </span>
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                          {draft.babMateri || draft.judul}
+                        </h4>
+                        {draft.subMateri && (
+                          <p className="text-[11px] text-slate-400">Sub-Materi: {draft.subMateri}</p>
+                        )}
+                        <p className="text-[10px] text-slate-400">
+                          Diperbarui: {new Date(draft.updatedAt).toLocaleString('id-ID')}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportModulAjarToWord(draft.modulAjarData);
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-blue-600/80 hover:bg-blue-600 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          title="Unduh Word (.docx) langsung"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Word</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteDraft(draft.id, e)}
+                          className="w-7 h-7 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Hapus draft"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

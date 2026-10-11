@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
@@ -19,7 +19,20 @@ import {
   Clock,
   HeartHandshake,
   Languages,
+  FolderHeart,
+  Save,
+  Trash2,
+  ExternalLink,
 } from 'lucide-react';
+import { exportLkpdToWord } from '../../services/administrasiWordExportService';
+import {
+  getLkpdDrafts,
+  saveLkpdDraft,
+  deleteLkpdDraft,
+  SavedLkpdDraft,
+  saveFormAutosave,
+  getFormAutosave,
+} from '../../services/administrasiLocalStorage';
 
 export interface LkpdData {
   identitas: {
@@ -122,13 +135,106 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
 
   // Status & Result
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isExportingWord, setIsExportingWord] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hasilLkpd, setHasilLkpd] = useState<LkpdData | null>(null);
   const [tampilkanKunciGuru, setTampilkanKunciGuru] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [isEditable, setIsEditable] = useState<boolean>(false);
 
+  // Browser LocalStorage Drafts & Autosave State
+  const [draftsList, setDraftsList] = useState<SavedLkpdDraft[]>([]);
+  const [showDraftsModal, setShowDraftsModal] = useState<boolean>(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<boolean>(false);
+  const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
+
+  // Sync drafts and restore autosaved form on modal open
+  useEffect(() => {
+    if (isOpen) {
+      setDraftsList(getLkpdDrafts());
+      const savedForm = getFormAutosave<any>('sdit_form_draft_lkpd_v1');
+      if (savedForm?.data) {
+        const d = savedForm.data;
+        if (d.tingkatKelas) setTingkatKelas(d.tingkatKelas);
+        if (d.mataPelajaran) setMataPelajaran(d.mataPelajaran);
+        if (d.babMateri && !babMateri) setBabMateri(d.babMateri);
+        if (d.subMateri && !subMateri) setSubMateri(d.subMateri);
+        if (d.tipeAktivitas) setTipeAktivitas(d.tipeAktivitas);
+        if (d.tingkatKesulitan) setTingkatKesulitan(d.tingkatKesulitan);
+        if (d.alokasiWaktu) setAlokasiWaktu(d.alokasiWaktu);
+        if (typeof d.integrasiKeislaman === 'boolean') setIntegrasiKeislaman(d.integrasiKeislaman);
+        if (typeof d.bilingual === 'boolean') setBilingual(d.bilingual);
+        if (d.petunjukTambahan) setPetunjukTambahan(d.petunjukTambahan);
+      }
+    }
+  }, [isOpen]);
+
+  // Autosave form input whenever relevant fields change
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      saveFormAutosave('sdit_form_draft_lkpd_v1', {
+        tingkatKelas,
+        mataPelajaran,
+        babMateri,
+        subMateri,
+        tipeAktivitas,
+        tingkatKesulitan,
+        alokasiWaktu,
+        integrasiKeislaman,
+        bilingual,
+        petunjukTambahan,
+      });
+      setIsAutoSaved(true);
+      const resetBadge = setTimeout(() => setIsAutoSaved(false), 2000);
+      return () => clearTimeout(resetBadge);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [
+    isOpen,
+    tingkatKelas,
+    mataPelajaran,
+    babMateri,
+    subMateri,
+    tipeAktivitas,
+    tingkatKesulitan,
+    alokasiWaktu,
+    integrasiKeislaman,
+    bilingual,
+    petunjukTambahan,
+  ]);
+
   if (!isOpen) return null;
+
+  const handleSaveToBrowser = () => {
+    if (!hasilLkpd) return;
+    try {
+      saveLkpdDraft(hasilLkpd);
+      setDraftsList(getLkpdDrafts());
+      setSaveSuccessMsg(true);
+      setTimeout(() => setSaveSuccessMsg(false), 2500);
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Gagal menyimpan ke penyimpanan lokal browser.');
+    }
+  };
+
+  const handleLoadDraft = (draft: SavedLkpdDraft) => {
+    setHasilLkpd(draft.lkpdData);
+    if (draft.mataPelajaran) setMataPelajaran(draft.mataPelajaran);
+    if (draft.kelas) {
+      const numOnly = draft.kelas.replace(/[^0-9]/g, '');
+      if (numOnly) setTingkatKelas(numOnly);
+    }
+    if (draft.babMateri) setBabMateri(draft.babMateri);
+    if (draft.subMateri) setSubMateri(draft.subMateri);
+    setShowDraftsModal(false);
+  };
+
+  const handleDeleteDraft = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteLkpdDraft(id);
+    setDraftsList(getLkpdDrafts());
+  };
 
   const getFase = (kelasStr: string) => {
     const k = parseInt(kelasStr, 10);
@@ -223,75 +329,21 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
     setTimeout(() => setIsCopied(false), 2500);
   };
 
-  const handleDownloadDoc = () => {
+  const handleDownloadDoc = async () => {
     if (!hasilLkpd) return;
-    const content = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><meta charset='utf-8'><title>${hasilLkpd.identitas.babMateri} - LKPD SDIT Al Fikri</title>
-      <style>
-        body { font-family: 'Arial', sans-serif; line-height: 1.5; color: #111; margin: 30px; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 16px; }
-        .box { border: 1px solid #333; padding: 10px; margin: 12px 0; border-radius: 4px; }
-        table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-        th, td { border: 1px solid #444; padding: 6px 8px; font-size: 12px; }
-        th { background-color: #e2f0d9; }
-      </style>
-      </head>
-      <body>
-        <div class="header">
-          <h2 style="margin: 0; color: #0d3826;">${hasilLkpd.identitas.namaSekolah}</h2>
-          <h3 style="margin: 4px 0;">${hasilLkpd.identitas.judulLkpd}</h3>
-          <p style="margin: 0; font-size: 13px;">Mata Pelajaran: ${hasilLkpd.identitas.mataPelajaran} | ${hasilLkpd.identitas.kelas} (${hasilLkpd.identitas.fase}) | Waktu: ${hasilLkpd.identitas.alokasiWaktu}</p>
-        </div>
-        <div class="box">
-          <table style="border: none; margin: 0;">
-            <tr style="border: none;">
-              <td style="border: none;" width="60%">Nama Anggota/Siswa:<br/>1. ...................................................<br/>2. ...................................................<br/>3. ...................................................<br/>4. ...................................................</td>
-              <td style="border: none;" width="40%">Kelas / No. Presensi: .....................<br/>Tanggal: ............................................<br/>Nilai / Paraf Guru:</td>
-            </tr>
-          </table>
-        </div>
-        <h4>A. TUJUAN PEMBELAJARAN:</h4>
-        <ol>${hasilLkpd.tujuanPembelajaran.map((t) => `<li>${t}</li>`).join('')}</ol>
-        <h4>B. PETUNJUK PENGERJAAN:</h4>
-        <ol>${hasilLkpd.petunjukBelajar.map((p) => `<li>${p}</li>`).join('')}</ol>
-        <div class="box" style="background-color: #f9fbf9;">
-          <h4 style="margin-top: 0; color: #0d3826;">${hasilLkpd.stimulusMateri.judul}</h4>
-          <p>${hasilLkpd.stimulusMateri.teks}</p>
-        </div>
-        ${hasilLkpd.aktivitas
-          .map(
-            (act) => `
-          <h4>${act.judul}</h4>
-          <p><strong>Instruksi:</strong> ${act.instruksi}</p>
-          ${
-            act.tabelData
-              ? `<table>
-                  <tr>${act.tabelData.kolom.map((c) => `<th>${c}</th>`).join('')}</tr>
-                  ${act.tabelData.baris.map((row) => `<tr>${row.map((cell) => `<td>${cell}</td>`).join('')}</tr>`).join('')}
-                </table>`
-              : ''
-          }
-          ${
-            act.soalAtauPertanyaan
-              ? `<ol>${act.soalAtauPertanyaan.map((q) => `<li style="margin-bottom: 25px;">${q}<br/><div style="border-bottom: 1px dotted #888; height: 35px; width: 100%;"></div></li>`).join('')}</ol>`
-              : ''
-          }
-        `
-          )
-          .join('')}
-      </body>
-      </html>
-    `;
-    const blob = new Blob(['\ufeff' + content], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `LKPD_${hasilLkpd.identitas.mataPelajaran.replace(/[^a-zA-Z0-9]/g, '_')}_Kelas_${tingkatKelas}.doc`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setIsExportingWord(true);
+    setErrorMessage(null);
+    try {
+      await exportLkpdToWord(hasilLkpd);
+    } catch (err: any) {
+      console.error('Error export LKPD ke Word (.docx):', err);
+      setErrorMessage(
+        'Gagal mengekspor berkas Word: ' +
+          (err?.message || 'Terjadi kesalahan pemformatan dokumen.')
+      );
+    } finally {
+      setIsExportingWord(false);
+    }
   };
 
   return (
@@ -311,6 +363,11 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/20 border border-teal-500/40 text-[10px] font-black text-teal-300 flex items-center gap-1 uppercase">
                   <Sparkles className="w-3 h-3" /> AI Assistant
                 </span>
+                {isAutoSaved && (
+                  <span className="px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-medium animate-pulse border border-teal-500/30">
+                    ✓ Tersimpan otomatis di browser
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-300 mt-0.5">
                 Hasilkan lembar kerja siswa interaktif, stimulus kontekstual, rubrik guru, dan format siap cetak.
@@ -318,12 +375,24 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowDraftsModal(true)}
+              className="px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              title="Buka riwayat draft LKPD tersimpan di browser"
+            >
+              <FolderHeart className="w-3.5 h-3.5 text-amber-400" />
+              <span>Draft Tersimpan ({draftsList.length})</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Konten Scrollable */}
@@ -608,8 +677,27 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    onClick={handleSaveToBrowser}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Simpan draft LKPD ke penyimpanan lokal browser"
+                  >
+                    {saveSuccessMsg ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-teal-400" />
+                        <span className="text-teal-400">Tersimpan di Browser!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-3.5 h-3.5 text-teal-400" />
+                        <span>Simpan ke Browser</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={handleCopyText}
-                    className="px-3.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all"
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                   >
                     {isCopied ? (
                       <>
@@ -626,17 +714,28 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
 
                   <button
                     type="button"
+                    disabled={isExportingWord}
                     onClick={handleDownloadDoc}
-                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+                    title="Unduh dokumen resmi LKPD dalam format Microsoft Word (.docx)"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Unduh Word</span>
+                    {isExportingWord ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Mengekspor Word...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Unduh Word (.docx)</span>
+                      </>
+                    )}
                   </button>
 
                   <button
                     type="button"
                     onClick={handlePrint}
-                    className="px-4 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-teal-950/40"
+                    className="px-4 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-teal-950/40 cursor-pointer"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Cetak LKPD</span>
@@ -956,6 +1055,99 @@ export const LkpdGeneratorModal: React.FC<LkpdGeneratorModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* DIALOG RIWAYAT DRAFT LKPD (LOCALSTORAGE) */}
+        {showDraftsModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+            <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+              <div className="px-5 py-4 bg-gradient-to-r from-teal-950 to-slate-900 border-b border-slate-700/80 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center">
+                    <FolderHeart className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-white">
+                      Draft LKPD Tersimpan (Browser)
+                    </h3>
+                    <p className="text-[11px] text-slate-300">
+                      Disimpan offline di browser Anda tanpa memakai kuota server.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDraftsModal(false)}
+                  className="w-7 h-7 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="p-5 overflow-y-auto space-y-3 flex-1">
+                {draftsList.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400 text-xs">
+                    <FolderHeart className="w-10 h-10 mx-auto text-slate-600 mb-2 opacity-50" />
+                    <p className="font-semibold text-slate-300">Belum ada draft LKPD tersimpan.</p>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Setelah LKPD di-generate, klik tombol "Simpan ke Browser" untuk menyimpan arsip lokal.
+                    </p>
+                  </div>
+                ) : (
+                  draftsList.map((draft) => (
+                    <div
+                      key={draft.id}
+                      onClick={() => handleLoadDraft(draft)}
+                      className="p-4 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-teal-500/50 transition-all cursor-pointer group flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 text-[10px] font-bold">
+                            {draft.kelas}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[10px] font-bold">
+                            {draft.mataPelajaran}
+                          </span>
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-teal-300 transition-colors">
+                          {draft.babMateri || draft.judul}
+                        </h4>
+                        {draft.subMateri && (
+                          <p className="text-[11px] text-slate-400">Sub-Materi: {draft.subMateri}</p>
+                        )}
+                        <p className="text-[10px] text-slate-400">
+                          Diperbarui: {new Date(draft.updatedAt).toLocaleString('id-ID')}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            exportLkpdToWord(draft.lkpdData);
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-blue-600/80 hover:bg-blue-600 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          title="Unduh Word (.docx) langsung"
+                        >
+                          <Download className="w-3 h-3" />
+                          <span>Word</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteDraft(draft.id, e)}
+                          className="w-7 h-7 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Hapus draft"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
