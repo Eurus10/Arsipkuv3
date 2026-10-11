@@ -3,6 +3,7 @@ import { GLOBAL_CONFIG_LOCAL_KEY, LOCAL_STORAGE_PREFIX } from '../raporStsServic
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { MASTER_CLASSES } from '../../data/masterExamData';
+import { supabase, isSupabaseConfigured } from '../supabase';
 
 /**
  * Service jembatan (Bridge) untuk membaca data Wali Kelas dari modul e-Rapor
@@ -116,6 +117,36 @@ export function getEraporHomeroomForClass(
  * Dijalankan di background secara murni read-only.
  */
 export async function syncEraporHomeroomFromCloud(): Promise<Record<string, string>> {
+  // 1. Sync from Supabase if configured (Primary source of truth for assignments)
+  if (isSupabaseConfigured()) {
+    try {
+      const [assignRes, teachersRes, classesRes] = await Promise.all([
+        supabase.from('teacher_assignments').select('class_id, teacher_id, assignment_type').eq('assignment_type', 'homeroom_teacher').eq('active', true),
+        supabase.from('teachers').select('id, name'),
+        supabase.from('school_classes').select('id, name')
+      ]);
+
+      if (!assignRes.error && assignRes.data && teachersRes.data && classesRes.data) {
+        const teacherMap = new Map(teachersRes.data.map(t => [t.id, t.name]));
+        const classMap = new Map(classesRes.data.map(c => [c.id, c.name]));
+        const current = getEraporHomeroomMap();
+
+        for (const asm of assignRes.data) {
+          const className = classMap.get(asm.class_id);
+          const teacherName = teacherMap.get(asm.teacher_id);
+          if (className && teacherName && teacherName.trim()) {
+            current[className.toUpperCase()] = teacherName.trim();
+          }
+        }
+        homeroomCache = current;
+        return { ...current };
+      }
+    } catch (supErr) {
+      console.debug('[e-Rapor Bridge] Gagal sync dari Supabase:', supErr);
+    }
+  }
+
+  // 2. Fallback to Firestore global config
   try {
     const docRef = doc(db, 'rapor_sts_settings', 'global_config');
     const snap = await getDoc(docRef);

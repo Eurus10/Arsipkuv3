@@ -226,7 +226,7 @@ export const DEFAULT_CLASS_TEACHERS: Record<string, TeacherProfile> = {
   '5A': { name: 'Hendra Gunawan, M.Pd.', nip: '198302142009021010' },
   '5B': { name: 'Sri Mulyani, S.Pd.', nip: '198704222013042011' },
   '6A': { name: 'Dedi Kurniawan, S.Pd.', nip: '198401302008011012' },
-  '6B': { name: 'Yuliana Safitri, M.Pd.', nip: '198610052010032013' },
+  '6B': { name: 'Rini, S.Pd.', nip: '198610052010032013' },
 };
 
 export const DEFAULT_RAPOR_CONFIG: RaporStsConfig = {

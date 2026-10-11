@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Sparkles,
@@ -18,7 +18,19 @@ import {
   Layers,
   FileText,
   Book,
+  FolderOpen,
+  BookmarkCheck,
+  Trash2,
+  HardDrive,
 } from 'lucide-react';
+import { exportProtaToWord } from '../../utils/protaPromesWordExport';
+import {
+  saveProtaDraft,
+  getProtaDrafts,
+  deleteProtaDraft,
+  type SavedProtaDraft,
+} from '../../services/administrasiLocalStorage';
+import { getActiveTeacherSession } from '../../services/teacherStorage';
 
 export interface ProtaData {
   identitas: {
@@ -98,7 +110,10 @@ export const ProtaGeneratorModal: React.FC<ProtaGeneratorModalProps> = ({
   const [fase, setFase] = useState('Fase B');
   const [tahunPelajaran, setTahunPelajaran] = useState('2025/2026');
   const [jpPerMinggu, setJpPerMinggu] = useState<number>(4);
-  const [namaPenyusun, setNamaPenyusun] = useState('Guru Pengampu SDIT Al Fikri');
+  const [namaPenyusun, setNamaPenyusun] = useState(() => {
+    const session = getActiveTeacherSession();
+    return session?.name || 'Guru Pengampu SDIT Al Fikri';
+  });
   const [namaKepalaSekolah, setNamaKepalaSekolah] = useState('M. Yunus, S.Ag');
 
   // Mode Acuan Pembelajaran: Kurikulum Nasional vs Buku Paket
@@ -116,12 +131,55 @@ export const ProtaGeneratorModal: React.FC<ProtaGeneratorModalProps> = ({
   const [isCopied, setIsCopied] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
 
+  // Browser LocalStorage Drafts State
+  const [draftsList, setDraftsList] = useState<SavedProtaDraft[]>([]);
+  const [showDraftsModal, setShowDraftsModal] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
+
+  // Sync drafts from browser localStorage on open
+  useEffect(() => {
+    if (isOpen) {
+      setDraftsList(getProtaDrafts());
+      const session = getActiveTeacherSession();
+      if (session?.name && namaPenyusun === 'Guru Pengampu SDIT Al Fikri') {
+        setNamaPenyusun(session.name);
+      }
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleKelasChange = (kls: string) => {
     setKelas(kls);
     const item = DAFTAR_KELAS_FASE.find((k) => k.kelas === kls);
     if (item) setFase(item.fase);
+  };
+
+  const handleSaveToBrowser = () => {
+    if (!hasilProta) return;
+    try {
+      saveProtaDraft(hasilProta);
+      setDraftsList(getProtaDrafts());
+      setSaveSuccessMsg(true);
+      setTimeout(() => setSaveSuccessMsg(false), 2500);
+    } catch (e: any) {
+      setErrorMessage(e.message || 'Gagal menyimpan ke browser.');
+    }
+  };
+
+  const handleLoadDraft = (draft: SavedProtaDraft) => {
+    setHasilProta(draft.protaData);
+    setMataPelajaran(draft.mataPelajaran || DAFTAR_MAPEL[0]);
+    setKelas(draft.kelas || 'Kelas 4');
+    setFase(draft.fase || 'Fase B');
+    setTahunPelajaran(draft.tahunPelajaran || '2025/2026');
+    setShowDraftsModal(false);
+  };
+
+  const handleDeleteDraft = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteProtaDraft(id);
+    setDraftsList(getProtaDrafts());
   };
 
   const handleLoadSampleBab = () => {
@@ -205,6 +263,12 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
       }
 
       setHasilProta(data.prota);
+      try {
+        saveProtaDraft(data.prota);
+        setDraftsList(getProtaDrafts());
+      } catch (errDraft) {
+        console.warn('Gagal autosave ke browser:', errDraft);
+      }
     } catch (err: any) {
       setErrorMessage(err?.message || 'Terjadi kesalahan saat membuat Prota.');
     } finally {
@@ -225,34 +289,8 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
   };
 
   const handleDownloadWord = () => {
-    const el = document.getElementById('printable-prota-area');
-    if (!el) return;
-    const content = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head><title>Program Tahunan - ${mataPelajaran}</title>
-      <style>
-        body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; margin-bottom: 10px; }
-        th, td { border: 1px solid black; padding: 6px; }
-        th { background-color: #f2f2f2; text-align: center; }
-        .text-center { text-align: center; }
-        .font-bold { font-weight: bold; }
-      </style>
-      </head>
-      <body>
-        ${el.innerHTML}
-      </body>
-      </html>
-    `;
-    const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `PROTA_${mataPelajaran.replace(/[^a-zA-Z0-9]/g, '_')}_${kelas}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    if (!hasilProta) return;
+    exportProtaToWord(hasilProta);
   };
 
   return (
@@ -278,13 +316,24 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowDraftsModal(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all cursor-pointer shadow-sm"
+              title="Buka daftar draft Prota yang tersimpan di browser Anda"
+            >
+              <FolderOpen className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Draft Browser ({draftsList.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Body */}
@@ -614,6 +663,25 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    onClick={handleSaveToBrowser}
+                    className="px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-600 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Simpan dokumen Prota ini ke penyimpanan lokal browser Anda"
+                  >
+                    {saveSuccessMsg ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-300" />
+                        <span className="text-emerald-200">Tersimpan di Browser!</span>
+                      </>
+                    ) : (
+                      <>
+                        <HardDrive className="w-3.5 h-3.5 text-teal-300" />
+                        <span>Simpan ke Browser</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={handleCopyText}
                     className="px-3 py-1.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                   >
@@ -633,7 +701,8 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
                   <button
                     type="button"
                     onClick={handleDownloadWord}
-                    className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    title="Unduh dokumen resmi Prota dalam format Microsoft Word (.doc)"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Unduh Word (.doc)</span>
@@ -758,10 +827,10 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
                       <tr>
                         <th className="p-2 border-r border-slate-300 text-center w-8">No</th>
                         <th className="p-2 border-r border-slate-300 text-center w-12">Smt</th>
-                        <th className="p-2 border-r border-slate-300 w-32">Elemen CP</th>
+                        <th className="p-2 border-r border-slate-300 w-28">Elemen CP</th>
                         <th className="p-2 border-r border-slate-300">Alur Tujuan Pembelajaran (ATP / TP) & Materi Pokok</th>
                         <th className="p-2 border-r border-slate-300 text-center w-14">Alokasi (JP)</th>
-                        <th className="p-2 text-center w-28">Keterangan</th>
+                        <th className="p-2 text-left w-64 min-w-[200px]">Keterangan & Strategi KBM</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
@@ -782,8 +851,8 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
                           <td className="p-2 border-r border-slate-300 text-center font-bold text-slate-900">
                             {item.alokasiWaktuJP} JP
                           </td>
-                          <td className="p-2 text-center text-slate-600 font-medium text-[10px]">
-                            {item.keterangan || 'KBM Efektif'}
+                          <td className="p-2 text-slate-700 font-normal text-[10px] leading-relaxed text-justify">
+                            {item.keterangan || 'KBM Tatap Muka & Asesmen Formatif'}
                           </td>
                         </tr>
                       ))}
@@ -823,6 +892,105 @@ Bab 7: Gelar Karya & Evaluasi Akhir Tahun`
             </div>
           )}
         </div>
+
+        {/* MODAL / DRAWER DAFTAR DRAFT TERSIMPAN DI BROWSER */}
+        {showDraftsModal && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-3 bg-black/70 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-700/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-400">
+                    <HardDrive className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white">Draft Prota di Browser</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Tersimpan secara lokal di browser Anda (tanpa membebani cloud)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDraftsModal(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {draftsList.length === 0 ? (
+                <div className="py-8 text-center text-slate-400 space-y-2">
+                  <FolderOpen className="w-8 h-8 mx-auto text-slate-600" />
+                  <p className="text-xs">Belum ada draft Prota yang tersimpan di browser ini.</p>
+                  <p className="text-[11px] text-slate-500">
+                    Setelah meng-generate Prota, dokumen akan otomatis tersimpan di sini.
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                  {draftsList.map((draft) => (
+                    <div
+                      key={draft.id}
+                      onClick={() => handleLoadDraft(draft)}
+                      className="p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 hover:border-emerald-500/50 transition-all cursor-pointer flex items-center justify-between group"
+                    >
+                      <div className="space-y-1">
+                        <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <span>{draft.mataPelajaran}</span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-normal">
+                            {draft.kelas}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400">
+                          TP {draft.tahunPelajaran} • {draft.totalJP} JP ({draft.totalMinggu} Pekan)
+                        </p>
+                        <p className="text-[9px] text-slate-500">
+                          Disimpan: {new Date(draft.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => handleLoadDraft(draft)}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold cursor-pointer"
+                        >
+                          Muat
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => exportProtaToWord(draft.protaData)}
+                          className="p-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-[11px] cursor-pointer"
+                          title="Unduh Word langsung"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteDraft(draft.id, e)}
+                          className="p-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 text-[11px] cursor-pointer"
+                          title="Hapus dari browser"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="pt-2 border-t border-slate-700/60 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowDraftsModal(false)}
+                  className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

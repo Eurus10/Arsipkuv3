@@ -132,6 +132,123 @@ export interface DeleteLearningObjectiveScoreParams {
 // VALIDATION HELPERS
 // ============================================================
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+let classUuidCache = new Map<string, string>();
+let subjectUuidCache = new Map<string, string>();
+let studentUuidCache = new Map<string, string>();
+let loUuidCache = new Map<string, string>();
+
+async function resolveClassIdToUuid(classId: string): Promise<string> {
+  if (!classId) return classId;
+  if (UUID_REGEX.test(classId)) return classId;
+  if (classUuidCache.has(classId)) return classUuidCache.get(classId)!;
+
+  try {
+    const { data } = await supabase.from('school_classes').select('id, name');
+    if (data) {
+      for (const cls of data) {
+        classUuidCache.set(cls.id, cls.id);
+        classUuidCache.set(cls.name, cls.id);
+        classUuidCache.set(cls.name.toLowerCase().replace(/[^a-z0-9]/g, ''), cls.id);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  const clean = classId.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (classUuidCache.has(classId)) return classUuidCache.get(classId)!;
+  if (classUuidCache.has(clean)) return classUuidCache.get(clean)!;
+
+  for (const [key, uuid] of classUuidCache.entries()) {
+    if (key.includes(clean) || clean.includes(key)) {
+      return uuid;
+    }
+  }
+
+  return classId;
+}
+
+async function resolveSubjectIdToUuid(subjectId: string): Promise<string> {
+  if (!subjectId) return subjectId;
+  if (UUID_REGEX.test(subjectId)) return subjectId;
+  if (subjectUuidCache.has(subjectId)) return subjectUuidCache.get(subjectId)!;
+
+  try {
+    const { data } = await supabase.from('academic_subjects').select('id, name, code');
+    if (data) {
+      for (const subj of data) {
+        subjectUuidCache.set(subj.id, subj.id);
+        if (subj.code) {
+          subjectUuidCache.set(subj.code, subj.id);
+          subjectUuidCache.set(subj.code.toLowerCase().replace(/[^a-z0-9]/g, ''), subj.id);
+        }
+        subjectUuidCache.set(subj.name, subj.id);
+        subjectUuidCache.set(subj.name.toLowerCase().replace(/[^a-z0-9]/g, ''), subj.id);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  const clean = subjectId.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (subjectUuidCache.has(subjectId)) return subjectUuidCache.get(subjectId)!;
+  if (subjectUuidCache.has(clean)) return subjectUuidCache.get(clean)!;
+
+  for (const [key, uuid] of subjectUuidCache.entries()) {
+    if (clean.includes(key) || key.includes(clean)) {
+      return uuid;
+    }
+  }
+
+  return subjectId;
+}
+
+async function resolveStudentIdToUuid(studentId: string): Promise<string> {
+  if (!studentId) return studentId;
+  if (UUID_REGEX.test(studentId)) return studentId;
+  if (studentUuidCache.has(studentId)) return studentUuidCache.get(studentId)!;
+
+  try {
+    const { data } = await supabase.from('students').select('id, name, nisn, nim');
+    if (data) {
+      for (const st of data) {
+        studentUuidCache.set(st.id, st.id);
+        studentUuidCache.set(st.name, st.id);
+        if (st.nisn) studentUuidCache.set(st.nisn, st.id);
+        if (st.nim) studentUuidCache.set(st.nim, st.id);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (studentUuidCache.has(studentId)) return studentUuidCache.get(studentId)!;
+  return studentId;
+}
+
+async function resolveLoIdToUuid(loId: string): Promise<string> {
+  if (!loId) return loId;
+  if (UUID_REGEX.test(loId)) return loId;
+  if (loUuidCache.has(loId)) return loUuidCache.get(loId)!;
+
+  try {
+    const { data } = await supabase.from('learning_objectives').select('id, code');
+    if (data) {
+      for (const lo of data) {
+        loUuidCache.set(lo.id, lo.id);
+        if (lo.code) loUuidCache.set(lo.code, lo.id);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  if (loUuidCache.has(loId)) return loUuidCache.get(loId)!;
+  return loId;
+}
+
 function ensureSupabaseConfigured() {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase client is not configured or SUPABASE_URL / ANON_KEY is missing.');
@@ -159,7 +276,7 @@ export function validateAndSanitizeScore(
   return Math.round(num * 100) / 100;
 }
 
-function sanitizeSubjectScorePayload(input: UpsertSubjectScoreInput) {
+async function sanitizeSubjectScorePayload(input: UpsertSubjectScoreInput) {
   if (!input.academic_period_id || !input.academic_period_id.trim()) {
     throw new Error('academic_period_id is required for saving subject score.');
   }
@@ -173,16 +290,21 @@ function sanitizeSubjectScorePayload(input: UpsertSubjectScoreInput) {
     throw new Error('subject_id is required for saving subject score.');
   }
 
+  const classUuid = await resolveClassIdToUuid(input.class_id.trim());
+  const studentUuid = await resolveStudentIdToUuid(input.student_id.trim());
+  const subjectUuid = await resolveSubjectIdToUuid(input.subject_id.trim());
+  const teacherUuid = input.teacher_id && input.teacher_id.trim() ? await resolveStudentIdToUuid(input.teacher_id.trim()) : null;
+
   const stsScore = validateAndSanitizeScore(input.sts_score, 'sts_score');
   const finalScore = validateAndSanitizeScore(input.final_score, 'final_score');
 
   return {
-    ...(input.id ? { id: input.id } : {}),
+    ...(input.id && UUID_REGEX.test(input.id) ? { id: input.id } : {}),
     academic_period_id: input.academic_period_id.trim(),
-    class_id: input.class_id.trim(),
-    student_id: input.student_id.trim(),
-    subject_id: input.subject_id.trim(),
-    teacher_id: input.teacher_id && input.teacher_id.trim() ? input.teacher_id.trim() : null,
+    class_id: classUuid,
+    student_id: studentUuid,
+    subject_id: subjectUuid,
+    teacher_id: teacherUuid,
     sts_score: stsScore,
     final_score: finalScore !== null ? finalScore : stsScore,
     auto_description: input.auto_description !== undefined ? input.auto_description : null,
@@ -192,7 +314,7 @@ function sanitizeSubjectScorePayload(input: UpsertSubjectScoreInput) {
   };
 }
 
-function sanitizeLearningObjectiveScorePayload(input: UpsertLearningObjectiveScoreInput) {
+async function sanitizeLearningObjectiveScorePayload(input: UpsertLearningObjectiveScoreInput) {
   if (!input.academic_period_id || !input.academic_period_id.trim()) {
     throw new Error('academic_period_id is required for saving learning objective score.');
   }
@@ -206,14 +328,18 @@ function sanitizeLearningObjectiveScorePayload(input: UpsertLearningObjectiveSco
     throw new Error('learning_objective_id is required for saving learning objective score.');
   }
 
+  const classUuid = await resolveClassIdToUuid(input.class_id.trim());
+  const studentUuid = await resolveStudentIdToUuid(input.student_id.trim());
+  const loUuid = await resolveLoIdToUuid(input.learning_objective_id.trim());
+
   const score = validateAndSanitizeScore(input.score, 'learning_objective score');
 
   return {
-    ...(input.id ? { id: input.id } : {}),
+    ...(input.id && UUID_REGEX.test(input.id) ? { id: input.id } : {}),
     academic_period_id: input.academic_period_id.trim(),
-    class_id: input.class_id.trim(),
-    student_id: input.student_id.trim(),
-    learning_objective_id: input.learning_objective_id.trim(),
+    class_id: classUuid,
+    student_id: studentUuid,
+    learning_objective_id: loUuid,
     is_achieved: Boolean(input.is_achieved),
     score: score,
     updated_at: new Date().toISOString(),
@@ -238,15 +364,21 @@ export async function getSubjectScores(
     throw new Error('academicPeriodId, classId, and subjectId are required to get subject scores.');
   }
 
+  const resolvedClassId = await resolveClassIdToUuid(classId);
+  const resolvedSubjectId = await resolveSubjectIdToUuid(subjectId);
+  const resolvedStudentIds = studentIds && studentIds.length > 0
+    ? await Promise.all(studentIds.map(resolveStudentIdToUuid))
+    : undefined;
+
   let query = supabase
     .from('student_subject_scores')
     .select('*')
     .eq('academic_period_id', academicPeriodId)
-    .eq('class_id', classId)
-    .eq('subject_id', subjectId);
+    .eq('class_id', resolvedClassId)
+    .eq('subject_id', resolvedSubjectId);
 
-  if (studentIds && studentIds.length > 0) {
-    query = query.in('student_id', studentIds);
+  if (resolvedStudentIds && resolvedStudentIds.length > 0) {
+    query = query.in('student_id', resolvedStudentIds);
   }
 
   const { data, error } = await query;
@@ -273,18 +405,26 @@ export async function getClassSubjectScores(
     throw new Error('academicPeriodId and classId are required to get class subject scores.');
   }
 
+  const resolvedClassId = await resolveClassIdToUuid(classId);
+  const resolvedSubjectIds = subjectIds && subjectIds.length > 0
+    ? await Promise.all(subjectIds.map(resolveSubjectIdToUuid))
+    : undefined;
+  const resolvedStudentIds = studentIds && studentIds.length > 0
+    ? await Promise.all(studentIds.map(resolveStudentIdToUuid))
+    : undefined;
+
   let query = supabase
     .from('student_subject_scores')
     .select('*')
     .eq('academic_period_id', academicPeriodId)
-    .eq('class_id', classId);
+    .eq('class_id', resolvedClassId);
 
-  if (subjectIds && subjectIds.length > 0) {
-    query = query.in('subject_id', subjectIds);
+  if (resolvedSubjectIds && resolvedSubjectIds.length > 0) {
+    query = query.in('subject_id', resolvedSubjectIds);
   }
 
-  if (studentIds && studentIds.length > 0) {
-    query = query.in('student_id', studentIds);
+  if (resolvedStudentIds && resolvedStudentIds.length > 0) {
+    query = query.in('student_id', resolvedStudentIds);
   }
 
   const { data, error } = await query;
@@ -311,18 +451,26 @@ export async function getLearningObjectiveScores(
     throw new Error('academicPeriodId and classId are required to get learning objective scores.');
   }
 
+  const resolvedClassId = await resolveClassIdToUuid(classId);
+  const resolvedStudentIds = studentIds && studentIds.length > 0
+    ? await Promise.all(studentIds.map(resolveStudentIdToUuid))
+    : undefined;
+  const resolvedLoIds = learningObjectiveIds && learningObjectiveIds.length > 0
+    ? await Promise.all(learningObjectiveIds.map(resolveLoIdToUuid))
+    : undefined;
+
   let query = supabase
     .from('student_learning_objective_scores')
     .select('*')
     .eq('academic_period_id', academicPeriodId)
-    .eq('class_id', classId);
+    .eq('class_id', resolvedClassId);
 
-  if (studentIds && studentIds.length > 0) {
-    query = query.in('student_id', studentIds);
+  if (resolvedStudentIds && resolvedStudentIds.length > 0) {
+    query = query.in('student_id', resolvedStudentIds);
   }
 
-  if (learningObjectiveIds && learningObjectiveIds.length > 0) {
-    query = query.in('learning_objective_id', learningObjectiveIds);
+  if (resolvedLoIds && resolvedLoIds.length > 0) {
+    query = query.in('learning_objective_id', resolvedLoIds);
   }
 
   const { data, error } = await query;
@@ -350,7 +498,7 @@ export async function upsertSubjectScore(
 ): Promise<StudentSubjectScore> {
   ensureSupabaseConfigured();
 
-  const payload = sanitizeSubjectScorePayload(input);
+  const payload = await sanitizeSubjectScorePayload(input);
 
   const { data, error } = await supabase
     .from('student_subject_scores')
@@ -381,11 +529,19 @@ export async function upsertSubjectScores(
     return [];
   }
 
-  const payloads = inputs.map(sanitizeSubjectScorePayload);
+  const payloads = await Promise.all(inputs.map(sanitizeSubjectScorePayload));
+
+  // Deduplicate payloads by unique conflict key (academic_period_id, class_id, student_id, subject_id)
+  const uniqueMap = new Map<string, any>();
+  for (const p of payloads) {
+    const key = `${p.academic_period_id}_${p.class_id}_${p.student_id}_${p.subject_id}`;
+    uniqueMap.set(key, p);
+  }
+  const deduplicatedPayloads = Array.from(uniqueMap.values());
 
   const { data, error } = await supabase
     .from('student_subject_scores')
-    .upsert(payloads, {
+    .upsert(deduplicatedPayloads, {
       onConflict: 'academic_period_id,class_id,student_id,subject_id',
     })
     .select();
@@ -407,7 +563,7 @@ export async function upsertLearningObjectiveScore(
 ): Promise<StudentLearningObjectiveScore> {
   ensureSupabaseConfigured();
 
-  const payload = sanitizeLearningObjectiveScorePayload(input);
+  const payload = await sanitizeLearningObjectiveScorePayload(input);
 
   const { data, error } = await supabase
     .from('student_learning_objective_scores')
@@ -440,11 +596,19 @@ export async function upsertLearningObjectiveScores(
     return [];
   }
 
-  const payloads = inputs.map(sanitizeLearningObjectiveScorePayload);
+  const payloads = await Promise.all(inputs.map(sanitizeLearningObjectiveScorePayload));
+
+  // Deduplicate payloads by unique conflict key (academic_period_id, class_id, student_id, learning_objective_id)
+  const uniqueMap = new Map<string, any>();
+  for (const p of payloads) {
+    const key = `${p.academic_period_id}_${p.class_id}_${p.student_id}_${p.learning_objective_id}`;
+    uniqueMap.set(key, p);
+  }
+  const deduplicatedPayloads = Array.from(uniqueMap.values());
 
   const { data, error } = await supabase
     .from('student_learning_objective_scores')
-    .upsert(payloads, {
+    .upsert(deduplicatedPayloads, {
       onConflict: 'academic_period_id,class_id,student_id,learning_objective_id',
     })
     .select();
@@ -477,13 +641,17 @@ export async function deleteSubjectScore(params: DeleteSubjectScoreParams): Prom
     throw new Error('All context parameters are required to delete a subject score.');
   }
 
+  const resolvedClassId = await resolveClassIdToUuid(classId);
+  const resolvedStudentId = await resolveStudentIdToUuid(studentId);
+  const resolvedSubjectId = await resolveSubjectIdToUuid(subjectId);
+
   const { error } = await supabase
     .from('student_subject_scores')
     .delete()
     .eq('academic_period_id', academicPeriodId)
-    .eq('class_id', classId)
-    .eq('student_id', studentId)
-    .eq('subject_id', subjectId);
+    .eq('class_id', resolvedClassId)
+    .eq('student_id', resolvedStudentId)
+    .eq('subject_id', resolvedSubjectId);
 
   if (error) {
     console.error('Error in deleteSubjectScore from Supabase:', error);
@@ -505,13 +673,17 @@ export async function deleteLearningObjectiveScore(
     throw new Error('All context parameters are required to delete a learning objective score.');
   }
 
+  const resolvedClassId = await resolveClassIdToUuid(classId);
+  const resolvedStudentId = await resolveStudentIdToUuid(studentId);
+  const resolvedLoId = await resolveLoIdToUuid(learningObjectiveId);
+
   const { error } = await supabase
     .from('student_learning_objective_scores')
     .delete()
     .eq('academic_period_id', academicPeriodId)
-    .eq('class_id', classId)
-    .eq('student_id', studentId)
-    .eq('learning_objective_id', learningObjectiveId);
+    .eq('class_id', resolvedClassId)
+    .eq('student_id', resolvedStudentId)
+    .eq('learning_objective_id', resolvedLoId);
 
   if (error) {
     console.error('Error in deleteLearningObjectiveScore from Supabase:', error);

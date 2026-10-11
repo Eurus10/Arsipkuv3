@@ -92,6 +92,70 @@ export function isValidScore(val: unknown): boolean {
   return !isNaN(num) && num >= 0 && num <= 100;
 }
 
+// Short-term in-flight request deduping to prevent duplicate queries when multiple components load at the same second
+const inFlightProgressRequests = new Map<string, Promise<EraporOverallMonitoringProgress>>();
+
+/**
+ * Invalidate cached canonical progress
+ */
+export function invalidateEraporProgressCache(periodId?: string): void {
+  if (periodId) {
+    inFlightProgressRequests.delete(periodId);
+  } else {
+    inFlightProgressRequests.clear();
+  }
+}
+
+/**
+ * Fast parallel score fetcher for the specified academic period.
+ * Uses primary key ordering (`id`) for indexed access instead of expensive multi-column string sort.
+ * Executes concurrently with metadata tables.
+ */
+async function fetchScoresRawForPeriod(periodId: string): Promise<
+  Array<{
+    class_id: string | null;
+    subject_id: string | null;
+    student_id: string | null;
+    sts_score: number | null;
+    final_score: number | null;
+  }>
+> {
+  const SCORE_PAGE_SIZE = 1000;
+  const scores: Array<{
+    class_id: string | null;
+    subject_id: string | null;
+    student_id: string | null;
+    sts_score: number | null;
+    final_score: number | null;
+  }> = [];
+
+  let scorePage = 0;
+  while (true) {
+    const from = scorePage * SCORE_PAGE_SIZE;
+    const to = from + SCORE_PAGE_SIZE - 1;
+
+    // Use order on id (primary key index) for fast pagination without heavy memory sorting
+    const { data: pageData, error: scoresErr } = await supabase
+      .from('student_subject_scores')
+      .select('class_id, subject_id, student_id, sts_score, final_score')
+      .eq('academic_period_id', periodId)
+      .order('id', { ascending: true })
+      .range(from, to);
+
+    if (scoresErr) {
+      throw new Error(`Gagal memuat nilai siswa: ${scoresErr.message}`);
+    }
+
+    const page = pageData || [];
+    scores.push(...page);
+
+    if (page.length < SCORE_PAGE_SIZE) break;
+    scorePage++;
+  }
+
+  return scores;
+}
+
 /**
  * Fetches the canonical e-Rapor progress for a given academic period.
  * This is the SINGLE SOURCE OF TRUTH used by:
@@ -100,7 +164,8 @@ export function isValidScore(val: unknown): boolean {
  * 3. Class Monitoring & Reports
  */
 export async function fetchCanonicalEraporProgress(
-  periodId: string
+  periodId: string,
+  forceRefresh = false
 ): Promise<EraporOverallMonitoringProgress> {
   ensureConfigured();
 
@@ -108,112 +173,123 @@ export async function fetchCanonicalEraporProgress(
     throw new Error('academic_period_id wajib disertakan untuk mengambil data progress.');
   }
 
-  // 1. Fetch Academic Period
-  const { data: periodRaw, error: periodErr } = await supabase
-    .from('academic_periods')
-    .select('id, school_year, semester, label, is_active, is_archived')
-    .eq('id', periodId)
-    .maybeSingle();
-
-  if (periodErr) throw new Error(`Gagal memuat periode akademik: ${periodErr.message}`);
-
-  const periodLabel = periodRaw
-    ? `${periodRaw.school_year} - Semester ${periodRaw.semester}`
-    : 'Periode Tidak Dikenal';
-
-  // 2. Fetch Active Classes (Canonical Classes)
-  const { data: classesRaw, error: classErr } = await supabase
-    .from('school_classes')
-    .select('id, name, grade, phase, academic_level_id, active')
-    .eq('active', true)
-    .order('grade', { ascending: true })
-    .order('name', { ascending: true });
-
-  if (classErr) throw new Error(`Gagal memuat daftar rombel: ${classErr.message}`);
-  const classes = (classesRaw || []) as AcademicClass[];
-
-  // 3. Fetch Academic Levels to map level ID / grade correctly
-  const { data: levelsRaw } = await supabase
-    .from('academic_levels')
-    .select('id, name, grade, phase, active')
-    .eq('active', true);
-
-  const levelMap = new Map<string, { id: string; grade: number; name: string }>();
-  const levelByGrade = new Map<number, string>(); // grade number -> level UUID
-  for (const lvl of levelsRaw || []) {
-    levelMap.set(lvl.id, lvl);
-    if (lvl.grade) {
-      levelByGrade.set(lvl.grade, lvl.id);
-    }
+  if (forceRefresh) {
+    inFlightProgressRequests.delete(periodId);
   }
 
-  // 4. Fetch Active Subjects (Canonical Master Subjects)
-  const { data: subjectsRaw, error: subjErr } = await supabase
-    .from('academic_subjects')
-    .select('id, academic_level_id, name, code, display_order, category, active')
-    .eq('active', true)
-    .order('display_order', { ascending: true })
-    .order('name', { ascending: true });
-
-  if (subjErr) throw new Error(`Gagal memuat master mata pelajaran: ${subjErr.message}`);
-  const allSubjects = (subjectsRaw || []) as AcademicSubject[];
-
-  // 5. Fetch Teachers for names
-  const { data: teachersRaw } = await supabase
-    .from('teachers')
-    .select('id, name, status');
-
-  const teacherMap = new Map<string, string>();
-  for (const t of teachersRaw || []) {
-    teacherMap.set(t.id, t.name);
+  // If a request for this periodId is currently running, reuse the active in-flight Promise
+  const existing = inFlightProgressRequests.get(periodId);
+  if (existing) {
+    return existing;
   }
 
-  // 6. Fetch Teacher Assignments for this period
-  const { data: assignmentsRaw, error: assignErr } = await supabase
-    .from('teacher_assignments')
-    .select('id, teacher_id, academic_period_id, academic_level_id, class_id, subject_id, assignment_type, active')
-    .eq('academic_period_id', periodId)
-    .eq('active', true);
+  const promise = (async () => {
+    // 1-9. Parallel Fetching of All Master Data & Scores (Eliminates Waterfall Latency completely)
+    const [
+      periodRes,
+      classesRes,
+      levelsRes,
+      subjectsRes,
+      teachersRes,
+      assignmentsRes,
+      enrollmentsRes,
+      studentsRes,
+      scoresRaw,
+    ] = await Promise.all([
+      supabase
+        .from('academic_periods')
+        .select('id, school_year, semester, label, is_active, is_archived')
+        .eq('id', periodId)
+        .maybeSingle(),
+      supabase
+        .from('school_classes')
+        .select('id, name, grade, phase, academic_level_id, active')
+        .eq('active', true)
+        .order('grade', { ascending: true })
+        .order('name', { ascending: true }),
+      supabase
+        .from('academic_levels')
+        .select('id, name, grade, phase, active')
+        .eq('active', true),
+      supabase
+        .from('academic_subjects')
+        .select('id, academic_level_id, name, code, display_order, category, active')
+        .eq('active', true)
+        .order('display_order', { ascending: true })
+        .order('name', { ascending: true }),
+      supabase
+        .from('teachers')
+        .select('id, name, status'),
+      supabase
+        .from('teacher_assignments')
+        .select('id, teacher_id, academic_period_id, academic_level_id, class_id, subject_id, assignment_type, active')
+        .eq('academic_period_id', periodId)
+        .eq('active', true),
+      supabase
+        .from('student_enrollments')
+        .select('student_id, class_id')
+        .eq('academic_period_id', periodId),
+      supabase
+        .from('students')
+        .select('id, class_id, class_level, active')
+        .eq('active', true),
+      fetchScoresRawForPeriod(periodId),
+    ]);
 
-  if (assignErr) throw new Error(`Gagal memuat penugasan guru: ${assignErr.message}`);
-  const assignments = assignmentsRaw || [];
+    if (periodRes.error) throw new Error(`Gagal memuat periode akademik: ${periodRes.error.message}`);
+    if (classesRes.error) throw new Error(`Gagal memuat daftar rombel: ${classesRes.error.message}`);
+    if (subjectsRes.error) throw new Error(`Gagal memuat master mata pelajaran: ${subjectsRes.error.message}`);
+    if (assignmentsRes.error) throw new Error(`Gagal memuat penugasan guru: ${assignmentsRes.error.message}`);
 
-  // Group assignments by class_id
-  const classAssignmentsMap = new Map<string, typeof assignments>();
-  for (const a of assignments) {
-    const list = classAssignmentsMap.get(a.class_id) || [];
-    list.push(a);
-    classAssignmentsMap.set(a.class_id, list);
-  }
+    const periodRaw = periodRes.data;
+    const periodLabel = periodRaw
+      ? `${periodRaw.school_year} - Semester ${periodRaw.semester}`
+      : 'Periode Tidak Dikenal';
 
-  // 7. Canonical Student Count per Class
-  // Priority 1: student_enrollments for this academic period
-  const { data: enrollmentsRaw } = await supabase
-    .from('student_enrollments')
-    .select('student_id, class_id')
-    .eq('academic_period_id', periodId);
+    const classes = (classesRes.data || []) as AcademicClass[];
 
-  const enrolledStudentIdsByClass = new Map<string, Set<string>>();
-  if (enrollmentsRaw && enrollmentsRaw.length > 0) {
-    for (const e of enrollmentsRaw) {
-      if (!e.class_id || !e.student_id) continue;
-      let set = enrolledStudentIdsByClass.get(e.class_id);
-      if (!set) {
-        set = new Set<string>();
-        enrolledStudentIdsByClass.set(e.class_id, set);
+    const levelsRaw = levelsRes.data || [];
+    const levelMap = new Map<string, { id: string; grade: number; name: string }>();
+    const levelByGrade = new Map<number, string>();
+    for (const lvl of levelsRaw) {
+      levelMap.set(lvl.id, lvl);
+      if (lvl.grade) {
+        levelByGrade.set(lvl.grade, lvl.id);
       }
-      set.add(e.student_id);
     }
-  }
 
-  // Priority 2: Fallback to active students table if enrollments are not populated
-  const { data: studentsRaw } = await supabase
-    .from('students')
-    .select('id, class_id, class_level, active')
-    .eq('active', true);
+    const allSubjects = (subjectsRes.data || []) as AcademicSubject[];
 
-  const directStudentIdsByClass = new Map<string, Set<string>>();
-  if (studentsRaw) {
+    const teachersRaw = teachersRes.data || [];
+    const teacherMap = new Map<string, string>();
+    for (const t of teachersRaw) {
+      teacherMap.set(t.id, t.name);
+    }
+
+    const assignments = assignmentsRes.data || [];
+    const classAssignmentsMap = new Map<string, typeof assignments>();
+    for (const a of assignments) {
+      const list = classAssignmentsMap.get(a.class_id) || [];
+      list.push(a);
+      classAssignmentsMap.set(a.class_id, list);
+    }
+
+    const enrollmentsRaw = enrollmentsRes.data || [];
+    const enrolledStudentIdsByClass = new Map<string, Set<string>>();
+    if (enrollmentsRaw.length > 0) {
+      for (const e of enrollmentsRaw) {
+        if (!e.class_id || !e.student_id) continue;
+        let set = enrolledStudentIdsByClass.get(e.class_id);
+        if (!set) {
+          set = new Set<string>();
+          enrolledStudentIdsByClass.set(e.class_id, set);
+        }
+        set.add(e.student_id);
+      }
+    }
+
+    const studentsRaw = studentsRes.data || [];
+    const directStudentIdsByClass = new Map<string, Set<string>>();
     for (const st of studentsRaw) {
       const cId = st.class_id || st.class_level || '';
       if (cId) {
@@ -232,7 +308,6 @@ export async function fetchCanonicalEraporProgress(
         }
       }
     }
-  }
 
   // Function to get distinct registered student IDs for a class
   const getRegisteredStudentIdsForClass = (cls: AcademicClass): Set<string> => {
@@ -262,51 +337,6 @@ export async function fetchCanonicalEraporProgress(
 
     return new Set<string>();
   };
-
-  // 8. Fetch ALL student_subject_scores for this academic period
-  // Canonical Score Source
-  //
-  // IMPORTANT:
-  // Supabase/PostgREST can cap a normal SELECT response (commonly at 1,000 rows).
-  // Because one period can contain thousands of score rows, using one SELECT here
-  // can make the admin progress bar look incomplete even though the e-Rapor data
-  // is actually present in Supabase.
-  //
-  // We therefore fetch the score table in deterministic pages and merge all pages
-  // before calculating progress. This is READ-ONLY and does not modify any data.
-  const SCORE_PAGE_SIZE = 500;
-  const scoresRaw: Array<{
-    class_id: string | null;
-    subject_id: string | null;
-    student_id: string | null;
-    sts_score: number | null;
-    final_score: number | null;
-  }> = [];
-
-  let scorePage = 0;
-  while (true) {
-    const from = scorePage * SCORE_PAGE_SIZE;
-    const to = from + SCORE_PAGE_SIZE - 1;
-
-    const { data: pageData, error: scoresErr } = await supabase
-      .from('student_subject_scores')
-      .select('class_id, subject_id, student_id, sts_score, final_score')
-      .eq('academic_period_id', periodId)
-      .order('class_id', { ascending: true })
-      .order('subject_id', { ascending: true })
-      .order('student_id', { ascending: true })
-      .range(from, to);
-
-    if (scoresErr) {
-      throw new Error(`Gagal memuat nilai siswa: ${scoresErr.message}`);
-    }
-
-    const page = pageData || [];
-    scoresRaw.push(...page);
-
-    if (page.length < SCORE_PAGE_SIZE) break;
-    scorePage++;
-  }
 
   // Distinct scored students map: Map<`classId::subjectId`, Set<studentId>>
   // Supporting multiple classId alias keys (UUID and class name) for bulletproof matching
@@ -532,20 +562,35 @@ export async function fetchCanonicalEraporProgress(
   const globalOverallProgress =
     globalTargetScored > 0 ? Math.round((globalActualScored / globalTargetScored) * 100) : 0;
 
-  return {
-    periodId,
-    periodLabel,
-    totalClasses: classes.length,
-    totalSubjects: allSubjects.length,
-    totalTeacherAssignments: assignments.length,
-    totalTargetScoredEntries: globalTargetScored,
-    totalActualScoredEntries: globalActualScored,
-    overallProgress: globalOverallProgress,
-    completedSubjectCount: globalCompletedSubjects,
-    inProgressSubjectCount: globalInProgressSubjects,
-    notStartedSubjectCount: globalNotStartedSubjects,
-    classes: classProgressList,
-  };
+    return {
+      periodId,
+      periodLabel,
+      totalClasses: classes.length,
+      totalSubjects: allSubjects.length,
+      totalTeacherAssignments: assignments.length,
+      totalTargetScoredEntries: globalTargetScored,
+      totalActualScoredEntries: globalActualScored,
+      overallProgress: globalOverallProgress,
+      completedSubjectCount: globalCompletedSubjects,
+      inProgressSubjectCount: globalInProgressSubjects,
+      notStartedSubjectCount: globalNotStartedSubjects,
+      classes: classProgressList,
+    };
+  })();
+
+  inFlightProgressRequests.set(periodId, promise);
+
+  try {
+    const result = await promise;
+    // Keep in-flight cache active for 2.5 seconds to prevent redundant parallel executions
+    setTimeout(() => {
+      inFlightProgressRequests.delete(periodId);
+    }, 2500);
+    return result;
+  } catch (err) {
+    inFlightProgressRequests.delete(periodId);
+    throw err;
+  }
 }
 
 /**

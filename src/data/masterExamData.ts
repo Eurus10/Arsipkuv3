@@ -308,7 +308,7 @@ export const MASTER_CLASSES: MasterClass[] = [
     name: '6B',
     level: 6,
     levelName: 'Kelas 6',
-    waliKelas: 'Bu Rini',
+    waliKelas: 'Rini, S.Pd.',
     subjects: [
       { id: '6b-pai', name: 'PAI', order: 1 },
       { id: '6b-akidah', name: 'AKIDAH AKHLAK', order: 2 },

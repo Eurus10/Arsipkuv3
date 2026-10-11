@@ -229,7 +229,7 @@ export const FirestoreQuotaWidget: React.FC<FirestoreQuotaWidgetProps> = ({ comp
       <div className="px-5 py-3 bg-slate-50/60 border-t border-slate-100 text-xs text-slate-500 flex items-start gap-2.5">
         <Zap className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-slate-700">Optimasi Hemat Aktif:</span> Polling redundan 10 detik &amp; listener global telah dinonaktifkan. Kuota harian gratis di-reset otomatis oleh Google Firebase setiap hari pada pukul 00:00 PST.
+          <span className="font-semibold text-slate-700">Pusat Setoran Dialihkan ke Supabase:</span> Bebas dari batas kuota harian. Berkas setoran guru dan penarikan nilai e-Rapor kini berjalan melalui database Supabase tanpa membebani limit 50.000 pembacaan harian Firestore.
         </div>
       </div>
     </div>

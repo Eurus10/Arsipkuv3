@@ -3,12 +3,10 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  onSnapshot,
-  query,
-  orderBy,
   getDocs,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import {
   AnalysisSubmissionItem,
   AnalysisSubmissionStatus,
@@ -16,9 +14,22 @@ import {
   SubmissionChatMessage,
 } from '../types/analysisSubmissionTypes';
 import { sendTeacherNotification } from './teacherNotificationService';
+import { isAdminLoggedIn } from './auth';
+import { normalizeTeacherName } from './teacherStorage';
+import { getEraporHomeroomForClass } from './analysis/eraporHomeroomBridge';
+import { MASTER_CLASSES } from '../data/masterExamData';
 
 const LOCAL_STORAGE_KEY = 'sdit_analysis_submissions_v1';
 const FIRESTORE_COLLECTION = 'analysis_submissions';
+const SUPABASE_TABLE = 'analysis_submissions';
+
+// Shared subscriber pool to prevent duplicate listeners and wasteful network calls
+type SubmissionListener = (items: AnalysisSubmissionItem[]) => void;
+const subscribers = new Set<SubmissionListener>();
+let isRealtimeSubscribed = false;
+let realtimeChannel: any = null;
+let lastFetchTimestamp = 0;
+const FETCH_COOLDOWN_MS = 2500; // prevent rapid-fire requests
 
 /**
  * Clean object so Firestore does not throw on undefined values
@@ -37,6 +48,84 @@ function cleanObjectForFirestore(obj: any): any {
     return cleaned;
   }
   return obj;
+}
+
+/**
+ * Convert AnalysisSubmissionItem (TypeScript camelCase) to Supabase row (snake_case)
+ */
+export function toSupabaseAnalysisRow(item: AnalysisSubmissionItem): Record<string, any> {
+  return {
+    id: item.id,
+    submission_type: item.submissionType || 'session',
+    subject_name: item.subjectName || '',
+    class_id: item.classId || '',
+    class_name: item.className || '',
+    exam_type: item.examType || '',
+    school_year: item.schoolYear || '',
+    teacher_name: item.teacherName || '',
+    teacher_id: item.teacherId || null,
+    teacher_role_title: item.teacherRoleTitle || null,
+    kktp: item.kktp ?? 75,
+    total_students: item.totalStudents || 0,
+    completed_students: item.completedStudents || 0,
+    passed_students: item.passedStudents || 0,
+    average_grade: item.averageGrade || 0,
+    teacher_note: item.teacherNote || null,
+    admin_note: item.adminNote || null,
+    status: item.status || 'menunggu',
+    subject_statuses: item.subjectStatuses || {},
+    messages: item.messages || [],
+    payload: item.payload || {},
+    first_submitted_at: item.firstSubmittedAt || item.submittedAt || new Date().toISOString(),
+    submitted_at: item.submittedAt || new Date().toISOString(),
+    updated_at: item.updatedAt || new Date().toISOString(),
+    is_revision_resubmitted: Boolean(item.isRevisionResubmitted),
+    last_revision_resubmitted_at: item.lastRevisionResubmittedAt || null,
+  };
+}
+
+/**
+ * Convert Supabase row (snake_case) to AnalysisSubmissionItem (TypeScript camelCase)
+ */
+export function fromSupabaseAnalysisRow(row: any): AnalysisSubmissionItem {
+  return {
+    id: row.id,
+    submissionType: row.submission_type || 'session',
+    subjectName: row.subject_name || '',
+    classId: row.class_id || '',
+    className: row.class_name || '',
+    examType: row.exam_type || '',
+    schoolYear: row.school_year || '',
+    teacherName: row.teacher_name || '',
+    teacherId: row.teacher_id || undefined,
+    teacherRoleTitle: row.teacher_role_title || undefined,
+    kktp: Number(row.kktp) || 75,
+    totalStudents: Number(row.total_students) || 0,
+    completedStudents: Number(row.completed_students) || 0,
+    passedStudents: Number(row.passed_students) || 0,
+    averageGrade: Number(row.average_grade) || 0,
+    teacherNote: row.teacher_note || undefined,
+    adminNote: row.admin_note || undefined,
+    status: row.status || 'menunggu',
+    subjectStatuses: row.subject_statuses || {},
+    messages: Array.isArray(row.messages) ? row.messages : [],
+    payload: row.payload || {},
+    firstSubmittedAt: row.first_submitted_at || undefined,
+    submittedAt: row.submitted_at || new Date().toISOString(),
+    updatedAt: row.updated_at || undefined,
+    isRevisionResubmitted: Boolean(row.is_revision_resubmitted),
+    lastRevisionResubmittedAt: row.last_revision_resubmitted_at || undefined,
+  };
+}
+
+function notifySubscribers(items: AnalysisSubmissionItem[]) {
+  subscribers.forEach((cb) => {
+    try {
+      cb(items);
+    } catch (e) {
+      console.warn('Error in submission subscriber callback:', e);
+    }
+  });
 }
 
 export function getLocalAnalysisSubmissions(): AnalysisSubmissionItem[] {
@@ -63,13 +152,251 @@ export function saveLocalAnalysisSubmissions(items: AnalysisSubmissionItem[]): v
 }
 
 /**
+ * Fetch fresh submissions from Supabase table
+ */
+export async function fetchSubmissionsFromSupabase(force: boolean = false): Promise<AnalysisSubmissionItem[]> {
+  const now = Date.now();
+  if (!force && now - lastFetchTimestamp < FETCH_COOLDOWN_MS) {
+    return getLocalAnalysisSubmissions();
+  }
+  lastFetchTimestamp = now;
+
+  if (!isSupabaseConfigured()) {
+    return getLocalAnalysisSubmissions();
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from(SUPABASE_TABLE)
+      .select('*')
+      .order('submitted_at', { ascending: false });
+
+    if (error) {
+      console.warn('[Supabase] Warning fetching analysis submissions:', error.message);
+      return getLocalAnalysisSubmissions();
+    }
+
+    if (data && Array.isArray(data)) {
+      const parsedItems = data.map(fromSupabaseAnalysisRow);
+      // Merge with any local submissions that haven't been pushed to Supabase yet
+      const local = getLocalAnalysisSubmissions();
+      const supabaseIds = new Set(parsedItems.map((s) => s.id));
+      const unpushedLocal = local.filter((s) => !supabaseIds.has(s.id));
+
+      const merged = [...unpushedLocal, ...parsedItems].sort(
+        (a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime()
+      );
+
+      saveLocalAnalysisSubmissions(merged);
+      notifySubscribers(merged);
+
+      // If we found local submissions that aren't in Supabase yet, push them in the background
+      if (unpushedLocal.length > 0) {
+        void syncLocalSubmissionsToSupabase();
+      }
+
+      return merged;
+    }
+  } catch (err) {
+    console.warn('[Supabase] Exception fetching analysis submissions:', err);
+  }
+
+  return getLocalAnalysisSubmissions();
+}
+
+/**
+ * Upsert berkas setoran ke Supabase dengan toleransi otomatis jika ada kolom yang belum dibuat di database
+ */
+async function safeUpsertSubmissions(
+  rows: Record<string, any>[]
+): Promise<{ error?: any; omittedColumns?: string[] }> {
+  let currentRows = rows.map((r) => ({ ...r }));
+  const omittedColumns: string[] = [];
+  const maxRetries = 15;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const { error } = await supabase
+      .from(SUPABASE_TABLE)
+      .upsert(currentRows, { onConflict: 'id' });
+
+    if (!error) {
+      return { omittedColumns: omittedColumns.length > 0 ? omittedColumns : undefined };
+    }
+
+    // Periksa apakah error disebabkan oleh kolom yang belum ada di schema cache Supabase
+    const match = error.message.match(/Could not find the '([^']+)' column/i);
+    if (match && match[1]) {
+      const missingCol = match[1];
+      console.warn(
+        `[Supabase] Kolom '${missingCol}' belum terdaftar di tabel Supabase. Menyimpan data tanpa kolom '${missingCol}'...`
+      );
+      if (!omittedColumns.includes(missingCol)) {
+        omittedColumns.push(missingCol);
+      }
+      currentRows = currentRows.map((r) => {
+        const copy = { ...r };
+        delete copy[missingCol];
+        return copy;
+      });
+      continue;
+    }
+
+    return { error, omittedColumns };
+  }
+
+  return { error: new Error('Percobaan penyimpanan ke Supabase melebihi batas toleransi.') };
+}
+
+/**
+ * Push all local cache submissions to Supabase (Emergency rescue & auto-migration)
+ */
+export async function syncLocalSubmissionsToSupabase(): Promise<{ total: number; pushed: number; error?: string; omittedColumns?: string[] }> {
+  if (!isSupabaseConfigured()) {
+    return {
+      total: 0,
+      pushed: 0,
+      error: 'Koneksi Supabase belum dikonfigurasi. Silakan klik tombol pengaturan Supabase untuk mengisi URL & Anon Key.',
+    };
+  }
+
+  const local = getLocalAnalysisSubmissions();
+  if (local.length === 0) {
+    return {
+      total: 0,
+      pushed: 0,
+      error: 'Tidak ditemukan berkas setoran di cache lokal browser ini untuk disinkronkan.',
+    };
+  }
+
+  try {
+    const rows = local.map(toSupabaseAnalysisRow);
+    const { error, omittedColumns } = await safeUpsertSubmissions(rows);
+
+    if (error) {
+      console.warn('[Supabase] Gagal menyimpan data lokal ke Supabase:', error.message);
+      return { total: local.length, pushed: 0, error: `Supabase Error: ${error.message}` };
+    }
+
+    return { total: local.length, pushed: local.length, omittedColumns };
+  } catch (err: any) {
+    console.error('[Supabase] Exception syncing local submissions to Supabase:', err);
+    return { total: local.length, pushed: 0, error: err?.message || 'Gagal sinkron' };
+  }
+}
+
+/**
+ * Tarik data setoran dari Firestore dan salin ke Supabase
+ */
+export async function syncFirestoreToSupabase(): Promise<{ total: number; pushed: number; error?: string }> {
+  if (!isSupabaseConfigured()) {
+    return { total: 0, pushed: 0, error: 'Koneksi Supabase belum dikonfigurasi.' };
+  }
+
+  try {
+    const q = collection(db, FIRESTORE_COLLECTION);
+    const snapshot = await getDocs(q);
+    const items: AnalysisSubmissionItem[] = [];
+    snapshot.forEach((d) => {
+      items.push(d.data() as AnalysisSubmissionItem);
+    });
+
+    if (items.length === 0) {
+      return { total: 0, pushed: 0, error: 'Tidak ada dokumen setoran ditemukan di Firestore.' };
+    }
+
+    const rows = items.map(toSupabaseAnalysisRow);
+    const { error } = await supabase.from(SUPABASE_TABLE).upsert(rows, { onConflict: 'id' });
+
+    if (error) {
+      return { total: items.length, pushed: 0, error: error.message };
+    }
+
+    saveLocalAnalysisSubmissions(items);
+    notifySubscribers(items);
+    return { total: items.length, pushed: items.length };
+  } catch (err: any) {
+    return {
+      total: 0,
+      pushed: 0,
+      error: err?.message || 'Gagal membaca data dari Firestore (kemungkinan kuota Firestore sedang habis)',
+    };
+  }
+}
+
+/**
+ * Setup lightweight Supabase Realtime channel for live updates without polling
+ */
+function ensureRealtimeSubscription() {
+  if (isRealtimeSubscribed || !isSupabaseConfigured()) return;
+  isRealtimeSubscribed = true;
+
+  try {
+    realtimeChannel = supabase
+      .channel('public:analysis_submissions_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: SUPABASE_TABLE },
+        (_payload) => {
+          // Re-fetch on any INSERT, UPDATE, DELETE event
+          void fetchSubmissionsFromSupabase(true);
+        }
+      )
+      .subscribe();
+  } catch (err) {
+    console.warn('[Supabase] Error initializing realtime channel for submissions:', err);
+  }
+}
+
+/**
+ * Realtime listener for Admin (Pak Zaki) & Teachers
+ * - Emits local cache immediately (instant UI)
+ * - Fetches from Supabase in background
+ * - Uses single shared listener pool (Zero Firestore read overhead!)
+ */
+export function subscribeToAnalysisSubmissions(
+  onUpdate: (submissions: AnalysisSubmissionItem[]) => void
+): () => void {
+  // 1. Emit local cache immediately
+  const initialLocal = getLocalAnalysisSubmissions();
+  onUpdate(initialLocal);
+
+  // 2. Register subscriber
+  subscribers.add(onUpdate);
+
+  // 3. Ensure background realtime & fetch
+  ensureRealtimeSubscription();
+  void fetchSubmissionsFromSupabase();
+
+  return () => {
+    subscribers.delete(onUpdate);
+  };
+}
+
+/**
  * Send an analysis submission to Pak Zaki (Admin)
- * Uses Smart Overwrite: If a submission for the same class + subject already exists,
- * updates the existing document and preserves existing discussion thread and per-subject print statuses.
+ * Primary target: Supabase table (Zero Firestore quota used!)
+ * Fallback: LocalStorage + optional Firestore backup
  */
 export async function sendAnalysisSubmission(
   data: Omit<AnalysisSubmissionItem, 'id' | 'submittedAt' | 'status' | 'messages'>
 ): Promise<AnalysisSubmissionItem> {
+  // Otoritas Keamanan: Cegah guru mengirimkan paket kelas penuh jika bukan Wali Kelas resmi
+  if (data.submissionType === 'session' && data.teacherName) {
+    const officialHomeroom =
+      getEraporHomeroomForClass(data.classId) ||
+      MASTER_CLASSES.find((c) => c.id.toUpperCase() === (data.classId || '').toUpperCase())?.waliKelas;
+
+    if (!isAdminLoggedIn() && officialHomeroom) {
+      const normTeacher = normalizeTeacherName(data.teacherName);
+      const normHomeroom = normalizeTeacherName(officialHomeroom);
+      if (normTeacher !== normHomeroom) {
+        throw new Error(
+          `Setoran paket kelas ditolak: Anda (${data.teacherName}) bukan Wali Kelas resmi ${data.className} (Wali Kelas: ${officialHomeroom}). Untuk menyetorkan nilai mapel yang Anda ampu, silakan gunakan mode Guru Bidang.`
+        );
+      }
+    }
+  }
+
   const currentLocal = getLocalAnalysisSubmissions();
   const now = new Date().toISOString();
 
@@ -98,7 +425,7 @@ export async function sendAnalysisSubmission(
     existingSubmission?.status === 'revisi' ||
     Object.values(existingSubmission?.subjectStatuses || {}).some((s) => s.status === 'revisi');
 
-  // Prepare per-subject statuses: preserve existing print / approval statuses
+  // Prepare per-subject statuses
   const mergedSubjectStatuses: Record<string, SubjectPrintStatus> = {
     ...(existingSubmission?.subjectStatuses || {}),
   };
@@ -123,7 +450,6 @@ export async function sendAnalysisSubmission(
           : 0;
 
       if (!mergedSubjectStatuses[name]) {
-        // Newly added subject in multi-subject session: starts as 'menunggu' (belum print)
         mergedSubjectStatuses[name] = {
           status: 'menunggu',
           lastSubmittedAt: now,
@@ -132,7 +458,6 @@ export async function sendAnalysisSubmission(
         };
       } else {
         const prevStatus = mergedSubjectStatuses[name].status;
-        // If subject was marked as revisi, reset to menunggu because teacher has submitted their revised data
         const nextStatus = prevStatus === 'revisi' ? 'menunggu' : prevStatus;
         mergedSubjectStatuses[name] = {
           ...mergedSubjectStatuses[name],
@@ -154,7 +479,6 @@ export async function sendAnalysisSubmission(
       };
     } else {
       const prevStatus = mergedSubjectStatuses[subName].status;
-      // If subject was marked as revisi, reset to menunggu because teacher has submitted their revised data
       const nextStatus = prevStatus === 'revisi' ? 'menunggu' : prevStatus;
       mergedSubjectStatuses[subName] = {
         ...mergedSubjectStatuses[subName],
@@ -166,7 +490,7 @@ export async function sendAnalysisSubmission(
     }
   }
 
-  // Calculate overall submission status based on individual subject statuses
+  // Calculate overall status
   let overallStatus: AnalysisSubmissionStatus = 'menunggu';
   const statusValues = Object.values(mergedSubjectStatuses).map((s) => s.status);
   if (statusValues.length > 0 && statusValues.every((st) => st === 'telah_diprint')) {
@@ -182,7 +506,7 @@ export async function sendAnalysisSubmission(
     overallStatus = 'menunggu';
   }
 
-  // Prepare messages: keep existing messages or start new thread
+  // Prepare messages
   const existingMessages: SubmissionChatMessage[] = existingSubmission?.messages || [];
   const updatedMessages: SubmissionChatMessage[] = [...existingMessages];
 
@@ -233,74 +557,47 @@ export async function sendAnalysisSubmission(
     status: overallStatus,
     subjectStatuses: mergedSubjectStatuses,
     firstSubmittedAt: existingSubmission?.firstSubmittedAt || existingSubmission?.submittedAt || now,
-    submittedAt: now, // Always set to current submission / resubmission time so it is prioritized at top
+    submittedAt: now,
     updatedAt: now,
     isRevisionResubmitted: wasUnderRevision ? true : existingSubmission?.isRevisionResubmitted,
     lastRevisionResubmittedAt: wasUnderRevision ? now : existingSubmission?.lastRevisionResubmittedAt,
     messages: updatedMessages,
   };
 
-  // 1. Save to local cache (sorted newest first)
+  // 1. Save to local cache (instant response)
   const updatedLocal = [
     targetSubmission,
     ...currentLocal.filter((s) => s.id !== submissionId),
   ].sort((a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime());
   saveLocalAnalysisSubmissions(updatedLocal);
+  notifySubscribers(updatedLocal);
 
-  // 2. Persist to Firestore
+  // 2. Persist to Supabase (Primary storage engine)
+  if (isSupabaseConfigured()) {
+    try {
+      const row = toSupabaseAnalysisRow(targetSubmission);
+      const { error } = await safeUpsertSubmissions([row]);
+      if (error) {
+        console.warn('[Supabase] Warning upserting submission:', error.message);
+      }
+    } catch (err) {
+      console.warn('[Supabase] Exception upserting submission:', err);
+    }
+  }
+
+  // 3. Silent backup to Firestore (optional, non-blocking)
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
-    await setDoc(docRef, cleanObjectForFirestore(targetSubmission));
+    void setDoc(docRef, cleanObjectForFirestore(targetSubmission));
   } catch (err) {
-    console.warn('Failed to sync analysis submission to Firestore, saved locally:', err);
+    // Ignore firestore quota errors silently
   }
 
   return targetSubmission;
 }
 
 /**
- * Realtime listener for Admin (Pak Zaki) & Teachers
- */
-export function subscribeToAnalysisSubmissions(
-  onUpdate: (submissions: AnalysisSubmissionItem[]) => void
-): () => void {
-  // Emit local cache immediately (sorted newest activity first)
-  const initialLocal = getLocalAnalysisSubmissions().sort(
-    (a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime()
-  );
-  onUpdate(initialLocal);
-
-  try {
-    const q = query(collection(db, FIRESTORE_COLLECTION), orderBy('submittedAt', 'desc'));
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const items: AnalysisSubmissionItem[] = [];
-        snapshot.forEach((docSnap) => {
-          items.push(docSnap.data() as AnalysisSubmissionItem);
-        });
-        // Always enforce sorting by newest activity (updatedAt or submittedAt)
-        items.sort(
-          (a, b) => new Date(b.updatedAt || b.submittedAt).getTime() - new Date(a.updatedAt || a.submittedAt).getTime()
-        );
-        saveLocalAnalysisSubmissions(items);
-        onUpdate(items);
-      },
-      (err) => {
-        console.warn('Firestore analysis submissions listener error, falling back to cache:', err);
-        onUpdate(getLocalAnalysisSubmissions());
-      }
-    );
-    return unsubscribe;
-  } catch (err) {
-    console.warn('Failed to create Firestore listener for analysis submissions:', err);
-    return () => {};
-  }
-}
-
-/**
  * Update print / approval status of a single subject within a submission
- * (Critical for multi-subject homeroom sessions so already printed subjects are not reset!)
  */
 export async function updateSingleSubjectStatus(
   submissionId: string,
@@ -343,7 +640,6 @@ export async function updateSingleSubjectStatus(
     overallStatus = 'menunggu';
   }
 
-  // System log
   let logText = '';
   if (status === 'telah_diprint') {
     logText = `🖨️ Pak Zaki (Admin) menandai mapel ${subjectName} (${sub.className}): Selesai dicetak fisik di TU.`;
@@ -366,6 +662,7 @@ export async function updateSingleSubjectStatus(
 
   const updatedMessages = [...(sub.messages || []), sysMsg];
 
+  // Update in local cache
   local[idx] = {
     ...sub,
     status: overallStatus,
@@ -374,8 +671,9 @@ export async function updateSingleSubjectStatus(
     messages: updatedMessages,
   };
   saveLocalAnalysisSubmissions(local);
+  notifySubscribers(local);
 
-  // Send automated notification to Teacher
+  // Send teacher notification
   try {
     let notifType: 'print' | 'revision' | 'approved' = 'print';
     let notifTitle = 'Soal Selesai Dicetak';
@@ -402,10 +700,27 @@ export async function updateSingleSubjectStatus(
     console.warn('Failed to send teacher notification on single subject update:', err);
   }
 
-  // Update in Firestore
+  // Update in Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase
+        .from(SUPABASE_TABLE)
+        .update({
+          status: overallStatus,
+          subject_statuses: updatedStatuses,
+          updated_at: now,
+          messages: updatedMessages,
+        })
+        .eq('id', submissionId);
+    } catch (err) {
+      console.warn('[Supabase] Warning updating single subject status:', err);
+    }
+  }
+
+  // Silent Firestore update (catch errors safely)
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
-    await setDoc(
+    void setDoc(
       docRef,
       cleanObjectForFirestore({
         status: overallStatus,
@@ -416,7 +731,7 @@ export async function updateSingleSubjectStatus(
       { merge: true }
     );
   } catch (err) {
-    console.error('Failed to update single subject status in Firestore:', err);
+    // Ignore firestore quota errors
   }
 }
 
@@ -434,64 +749,64 @@ export async function updateAnalysisSubmissionStatus(
   let newMessages: SubmissionChatMessage[] = [];
   const now = new Date().toISOString();
 
-  // Generate automated status log message
   let systemText = '';
   if (status === 'telah_diprint') {
-    systemText = '🖨️ Pak Zaki (Admin) menandai: Berkas fisik analisis telah selesai dicetak di ruang TU.';
+    systemText = '🖨️ Berkas analisis telah selesai dicetak fisik oleh Pak Zaki (Admin TU).';
   } else if (status === 'disetujui') {
-    systemText = '✅ Pak Zaki (Admin) telah menyetujui lembar analisis ini.';
+    systemText = '✅ Lembar analisis soal telah disetujui oleh Pak Zaki (Admin).';
   } else if (status === 'revisi') {
-    systemText = `⚠️ Pak Zaki (Admin) meminta revisi.${adminNote ? ` Catatan: "${adminNote}"` : ''}`;
-  } else if (status === 'menunggu') {
-    systemText = '⏳ Lembar analisis dikirim ulang untuk verifikasi Pak Zaki.';
+    systemText = `⚠️ Pak Zaki (Admin) meminta revisi berkas analisis ini.${adminNote ? ` Catatan: "${adminNote}"` : ''}`;
+  } else {
+    systemText = '⏳ Berkas dikembalikan ke status antrean menunggu.';
   }
 
-  const sysMsg: SubmissionChatMessage = {
-    id: 'msg-sys-' + Date.now().toString(36),
-    senderName: 'Sistem SDIT',
-    senderRole: 'system',
-    text: systemText,
-    timestamp: Date.now(),
-    isSystem: true,
-  };
-
-  let updatedSubjectStatuses: Record<string, SubjectPrintStatus> | undefined = undefined;
+  let updatedSubjectStatuses: Record<string, SubjectPrintStatus> | undefined;
 
   if (idx !== -1) {
-    const existingMessages = Array.isArray(local[idx].messages) ? local[idx].messages! : [];
-    newMessages = [...existingMessages, sysMsg];
+    const currentSub = local[idx];
+    const existingMsgs = currentSub.messages || [];
 
-    // If marking whole submission as printed or approved, cascade to subject statuses
-    if (local[idx].subjectStatuses) {
-      updatedSubjectStatuses = { ...local[idx].subjectStatuses };
-      for (const k of Object.keys(updatedSubjectStatuses)) {
-        updatedSubjectStatuses[k] = {
-          ...updatedSubjectStatuses[k],
-          status: status,
+    const sysMsg: SubmissionChatMessage = {
+      id: 'msg-sys-' + Date.now().toString(36),
+      senderName: 'Sistem SDIT',
+      senderRole: 'system',
+      text: systemText,
+      timestamp: Date.now(),
+      isSystem: true,
+    };
+    newMessages = [...existingMsgs, sysMsg];
+
+    if (currentSub.subjectStatuses && Object.keys(currentSub.subjectStatuses).length > 0) {
+      updatedSubjectStatuses = { ...currentSub.subjectStatuses };
+      for (const subjKey of Object.keys(updatedSubjectStatuses)) {
+        updatedSubjectStatuses[subjKey] = {
+          ...updatedSubjectStatuses[subjKey],
+          status,
           ...(status === 'telah_diprint' ? { printedAt: now } : {}),
           ...(status === 'disetujui' ? { approvedAt: now } : {}),
+          ...(adminNote !== undefined ? { revisionNote: adminNote } : {}),
         };
       }
     }
 
-    const targetSub = local[idx];
     local[idx] = {
-      ...targetSub,
+      ...currentSub,
       status,
       ...(updatedSubjectStatuses ? { subjectStatuses: updatedSubjectStatuses } : {}),
-      adminNote: adminNote !== undefined ? adminNote : targetSub.adminNote,
+      ...(adminNote !== undefined ? { adminNote } : {}),
       updatedAt: now,
       messages: newMessages,
     };
     saveLocalAnalysisSubmissions(local);
+    notifySubscribers(local);
 
-    // Send automated notification to Teacher
     try {
+      const targetSub = local[idx];
       let notifType: 'print' | 'revision' | 'approved' = 'print';
       let notifTitle = 'Soal Selesai Dicetak';
       if (status === 'revisi') {
         notifType = 'revision';
-        notifTitle = 'Catatan Revisi dari Pak Zaki';
+        notifTitle = 'Catatan Revisi Analisis Soal';
       } else if (status === 'disetujui') {
         notifType = 'approved';
         notifTitle = 'Analisis Soal Disetujui';
@@ -513,9 +828,26 @@ export async function updateAnalysisSubmissionStatus(
     }
   }
 
+  // Update in Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      const updateData: Record<string, any> = {
+        status,
+        updated_at: now,
+        ...(updatedSubjectStatuses ? { subject_statuses: updatedSubjectStatuses } : {}),
+        ...(adminNote !== undefined ? { admin_note: adminNote } : {}),
+        ...(newMessages.length > 0 ? { messages: newMessages } : {}),
+      };
+      await supabase.from(SUPABASE_TABLE).update(updateData).eq('id', id);
+    } catch (err) {
+      console.warn('[Supabase] Warning updating submission status:', err);
+    }
+  }
+
+  // Silent Firestore update (catch errors safely)
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, id);
-    await setDoc(
+    void setDoc(
       docRef,
       cleanObjectForFirestore({
         status,
@@ -527,7 +859,7 @@ export async function updateAnalysisSubmissionStatus(
       { merge: true }
     );
   } catch (err) {
-    console.error('Failed to update submission status in Firestore:', err);
+    // Ignore firestore quota errors
   }
 }
 
@@ -548,7 +880,6 @@ export async function sendSubmissionChatMessage(
     senderRole: message.senderRole,
     text: message.text.trim(),
     timestamp: Date.now(),
-    isSystem: false,
   };
 
   const local = getLocalAnalysisSubmissions();
@@ -564,15 +895,15 @@ export async function sendSubmissionChatMessage(
       updatedAt: new Date().toISOString(),
     };
     saveLocalAnalysisSubmissions(local);
+    notifySubscribers(local);
 
-    // If message is sent by Admin, automatically notify the teacher
     if (message.senderRole === 'admin') {
       try {
         await sendTeacherNotification({
           teacherId: local[idx].teacherId,
           teacherName: local[idx].teacherName,
-          title: `Pesan Diskusi Baru dari ${message.senderName}`,
-          message: `Di setoran ${local[idx].subjectName} (${local[idx].className}): "${message.text.trim()}"`,
+          title: `Pesan Diskusi Analisis (${local[idx].subjectName})`,
+          message: `💬 Pak Zaki: "${message.text.trim().substring(0, 80)}${message.text.trim().length > 80 ? '...' : ''}"`,
           type: 'chat',
           submissionId: local[idx].id,
           subjectName: local[idx].subjectName,
@@ -586,9 +917,25 @@ export async function sendSubmissionChatMessage(
     }
   }
 
+  // Update in Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase
+        .from(SUPABASE_TABLE)
+        .update({
+          messages: updatedMessages,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', submissionId);
+    } catch (err) {
+      console.warn('[Supabase] Warning saving chat message:', err);
+    }
+  }
+
+  // Silent Firestore update (catch errors safely)
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
-    await setDoc(
+    void setDoc(
       docRef,
       cleanObjectForFirestore({
         messages: updatedMessages,
@@ -597,7 +944,7 @@ export async function sendSubmissionChatMessage(
       { merge: true }
     );
   } catch (err) {
-    console.error('Failed to save chat message to Firestore:', err);
+    // Ignore firestore quota errors
   }
 
   return newMsg;
@@ -623,11 +970,26 @@ export async function deleteSubmissionChatMessage(
       updatedAt: new Date().toISOString(),
     };
     saveLocalAnalysisSubmissions(local);
+    notifySubscribers(local);
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase
+        .from(SUPABASE_TABLE)
+        .update({
+          messages: updatedMessages,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', submissionId);
+    } catch (err) {
+      console.warn('[Supabase] Warning deleting chat message:', err);
+    }
   }
 
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
-    await setDoc(
+    void setDoc(
       docRef,
       cleanObjectForFirestore({
         messages: updatedMessages,
@@ -636,7 +998,7 @@ export async function deleteSubmissionChatMessage(
       { merge: true }
     );
   } catch (err) {
-    console.error('Failed to delete chat message in Firestore:', err);
+    // Ignore firestore errors
   }
 }
 
@@ -649,7 +1011,6 @@ export async function clearSubmissionChatMessages(
   const local = getLocalAnalysisSubmissions();
   const idx = local.findIndex((s) => s.id === submissionId);
 
-  // Leave a clean single system restart log
   const resetLog: SubmissionChatMessage[] = [
     {
       id: 'msg-sys-reset-' + Date.now().toString(36),
@@ -668,11 +1029,26 @@ export async function clearSubmissionChatMessages(
       updatedAt: new Date().toISOString(),
     };
     saveLocalAnalysisSubmissions(local);
+    notifySubscribers(local);
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      await supabase
+        .from(SUPABASE_TABLE)
+        .update({
+          messages: resetLog,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', submissionId);
+    } catch (err) {
+      console.warn('[Supabase] Warning clearing chat messages:', err);
+    }
   }
 
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, submissionId);
-    await setDoc(
+    void setDoc(
       docRef,
       cleanObjectForFirestore({
         messages: resetLog,
@@ -681,22 +1057,38 @@ export async function clearSubmissionChatMessages(
       { merge: true }
     );
   } catch (err) {
-    console.error('Failed to clear chat messages in Firestore:', err);
+    // Ignore firestore errors
   }
 }
 
 /**
  * Delete a submission by Pak Zaki
+ * PERMANENTLY deletes from Supabase & LocalStorage & Firestore!
+ * Meja langsung bersih, 0 MB tersisa di server.
  */
 export async function deleteAnalysisSubmission(id: string): Promise<void> {
+  // 1. Remove from local storage
   const local = getLocalAnalysisSubmissions().filter((s) => s.id !== id);
   saveLocalAnalysisSubmissions(local);
+  notifySubscribers(local);
 
+  // 2. Remove permanently from Supabase
+  if (isSupabaseConfigured()) {
+    try {
+      const { error } = await supabase.from(SUPABASE_TABLE).delete().eq('id', id);
+      if (error) {
+        console.warn('[Supabase] Warning deleting analysis submission:', error.message);
+      }
+    } catch (err) {
+      console.warn('[Supabase] Error deleting analysis submission:', err);
+    }
+  }
+
+  // 3. Remove permanently from Firestore if possible
   try {
     const docRef = doc(db, FIRESTORE_COLLECTION, id);
-    await deleteDoc(docRef);
+    void deleteDoc(docRef);
   } catch (err) {
-    console.error('Failed to delete submission from Firestore:', err);
+    // Ignore firestore errors
   }
 }
-

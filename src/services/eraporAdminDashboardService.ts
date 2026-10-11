@@ -69,6 +69,12 @@ export interface ClassSubjectTreeItem {
   }[];
 }
 
+export interface EraporMonitoringBundle {
+  summary: EraporPeriodSummary;
+  monitoringRows: EraporMonitoringRow[];
+  classTree: ClassSubjectTreeItem[];
+}
+
 const ensureConfigured = () => {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase belum dikonfigurasi.');
@@ -101,21 +107,30 @@ export async function fetchPeriods(): Promise<{
 }
 
 /**
- * Fetch complete dashboard summary for an academic period using Canonical Progress
+ * Fast unified fetcher: Retrieves the canonical progress once and builds
+ * Summary, Monitoring Rows, and Class-Subject Tree concurrently in memory.
  */
-export async function fetchEraporDashboardSummary(
-  periodId: string
-): Promise<EraporPeriodSummary> {
+export async function fetchEraporMonitoringBundle(
+  periodId: string,
+  options?: {
+    allPeriods?: AcademicPeriod[];
+    forceRefresh?: boolean;
+  }
+): Promise<EraporMonitoringBundle> {
   ensureConfigured();
 
-  const [{ allPeriods }, canonicalData] = await Promise.all([
-    fetchPeriods(),
-    fetchCanonicalEraporProgress(periodId),
+  const needsPeriods = !options?.allPeriods || options.allPeriods.length === 0;
+
+  const [periodsRes, canonicalData] = await Promise.all([
+    needsPeriods ? fetchPeriods() : Promise.resolve(null),
+    fetchCanonicalEraporProgress(periodId, options?.forceRefresh),
   ]);
 
+  const allPeriods = options?.allPeriods || periodsRes?.allPeriods || [];
   const currentPeriod = allPeriods.find((p) => p.id === periodId) || null;
 
-  return {
+  // 1. Dashboard summary
+  const summary: EraporPeriodSummary = {
     period: currentPeriod,
     allPeriods,
     totalClasses: canonicalData.totalClasses,
@@ -128,22 +143,12 @@ export async function fetchEraporDashboardSummary(
     inProgressSubjectCount: canonicalData.inProgressSubjectCount,
     notStartedSubjectCount: canonicalData.notStartedSubjectCount,
   };
-}
 
-/**
- * Fetch detailed monitoring progress per Class & Subject from Canonical Progress Source
- */
-export async function fetchEraporMonitoringData(
-  periodId: string
-): Promise<EraporMonitoringRow[]> {
-  ensureConfigured();
-
-  const canonicalData = await fetchCanonicalEraporProgress(periodId);
-  const rows: EraporMonitoringRow[] = [];
-
+  // 2. Flat monitoring rows
+  const monitoringRows: EraporMonitoringRow[] = [];
   for (const cls of canonicalData.classes) {
     for (const subj of cls.subjects) {
-      rows.push({
+      monitoringRows.push({
         id: `${cls.classId}::${subj.subjectId}`,
         classId: cls.classId,
         className: cls.className,
@@ -164,20 +169,8 @@ export async function fetchEraporMonitoringData(
     }
   }
 
-  return rows;
-}
-
-/**
- * Fetch hierarchical tree of classes -> subjects -> teacher for "Kelas & Mapel" view
- */
-export async function fetchClassSubjectTree(
-  periodId: string
-): Promise<ClassSubjectTreeItem[]> {
-  ensureConfigured();
-
-  const canonicalData = await fetchCanonicalEraporProgress(periodId);
-
-  return canonicalData.classes.map((cls) => ({
+  // 3. Hierarchical tree
+  const classTree: ClassSubjectTreeItem[] = canonicalData.classes.map((cls) => ({
     classId: cls.classId,
     className: cls.className,
     grade: cls.grade,
@@ -202,4 +195,39 @@ export async function fetchClassSubjectTree(
       status: s.status,
     })),
   }));
+
+  return { summary, monitoringRows, classTree };
+}
+
+/**
+ * Fetch complete dashboard summary for an academic period using Canonical Progress
+ */
+export async function fetchEraporDashboardSummary(
+  periodId: string,
+  forceRefresh = false
+): Promise<EraporPeriodSummary> {
+  const bundle = await fetchEraporMonitoringBundle(periodId, { forceRefresh });
+  return bundle.summary;
+}
+
+/**
+ * Fetch detailed monitoring progress per Class & Subject from Canonical Progress Source
+ */
+export async function fetchEraporMonitoringData(
+  periodId: string,
+  forceRefresh = false
+): Promise<EraporMonitoringRow[]> {
+  const bundle = await fetchEraporMonitoringBundle(periodId, { forceRefresh });
+  return bundle.monitoringRows;
+}
+
+/**
+ * Fetch hierarchical tree of classes -> subjects -> teacher for "Kelas & Mapel" view
+ */
+export async function fetchClassSubjectTree(
+  periodId: string,
+  forceRefresh = false
+): Promise<ClassSubjectTreeItem[]> {
+  const bundle = await fetchEraporMonitoringBundle(periodId, { forceRefresh });
+  return bundle.classTree;
 }

@@ -16,11 +16,15 @@ import {
   Loader2,
   Check,
   HelpCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { RaporStsClassData } from '../../types/raporSts';
 import { Student } from '../../services/studentStorage';
 import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
-import { subscribeToAnalysisSubmissions } from '../../services/analysisSubmissionService';
+import {
+  subscribeToAnalysisSubmissions,
+  fetchSubmissionsFromSupabase,
+} from '../../services/analysisSubmissionService';
 import {
   getAvailableSubmissionsForClass,
   extractSubjectsFromSubmission,
@@ -50,6 +54,7 @@ export const RaporAnalysisSyncModal: React.FC<RaporAnalysisSyncModalProps> = ({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [syncResult, setSyncResult] = useState<AnalysisSyncResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   // File upload state for Excel import
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -72,6 +77,9 @@ export const RaporAnalysisSyncModal: React.FC<RaporAnalysisSyncModalProps> = ({
       };
 
       updateSubs();
+      // Fetch fresh items from Supabase cloud
+      void fetchSubmissionsFromSupabase(true).then(() => updateSubs());
+
       const unsub = subscribeToAnalysisSubmissions(() => {
         updateSubs();
       });
@@ -319,23 +327,45 @@ export const RaporAnalysisSyncModal: React.FC<RaporAnalysisSyncModalProps> = ({
           ) : activeMode === 'cloud' ? (
             /* Cloud Submissions List */
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                   <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
                   Daftar Setoran Analisis Kelas {classData.config.classLevel}
                 </span>
 
-                {availableSubmissions.length > 0 && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={toggleSelectAll}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 font-bold cursor-pointer"
+                    disabled={isRefreshing}
+                    onClick={async () => {
+                      setIsRefreshing(true);
+                      await fetchSubmissionsFromSupabase(true);
+                      const subs = getAvailableSubmissionsForClass(
+                        classData.config.classLevel,
+                        classData.config.schoolYear
+                      );
+                      setAvailableSubmissions(subs);
+                      setIsRefreshing(false);
+                    }}
+                    title="Segarkan data dari server Supabase"
+                    className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 transition-all cursor-pointer disabled:opacity-50"
                   >
-                    {selectedSubIds.length === availableSubmissions.length
-                      ? 'Batal Pilih Semua'
-                      : 'Pilih Semua'}
+                    <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+                    <span>{isRefreshing ? 'Menyegarkan...' : 'Segarkan'}</span>
                   </button>
-                )}
+
+                  {availableSubmissions.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={toggleSelectAll}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 font-bold cursor-pointer"
+                    >
+                      {selectedSubIds.length === availableSubmissions.length
+                        ? 'Batal Pilih Semua'
+                        : 'Pilih Semua'}
+                    </button>
+                  )}
+                </div>
               </div>
 
               {availableSubmissions.length === 0 ? (

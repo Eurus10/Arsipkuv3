@@ -30,6 +30,7 @@ import {
   fetchEraporDashboardSummary,
   fetchEraporMonitoringData,
   fetchClassSubjectTree,
+  fetchEraporMonitoringBundle,
   fetchPeriods,
   EraporPeriodSummary,
   EraporMonitoringRow,
@@ -92,24 +93,25 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const { activePeriod, allPeriods } = await fetchPeriods();
+      // 1. Fetch periods and teachers simultaneously in parallel (eliminates waterfall)
+      const [{ activePeriod, allPeriods }, teachersList] = await Promise.all([
+        fetchPeriods(),
+        fetchAllTeachers(),
+      ]);
       setPeriods(allPeriods);
+      setTeachers(teachersList);
 
       const targetPeriodId = activePeriod?.id || allPeriods[0]?.id || '';
       setSelectedPeriodId(targetPeriodId);
 
-      const teachersList = await fetchAllTeachers();
-      setTeachers(teachersList);
-
       if (targetPeriodId) {
-        const [sumData, monData, treeData] = await Promise.all([
-          fetchEraporDashboardSummary(targetPeriodId),
-          fetchEraporMonitoringData(targetPeriodId),
-          fetchClassSubjectTree(targetPeriodId),
-        ]);
-        setSummary(sumData);
-        setMonitoringRows(monData);
-        setClassTree(treeData);
+        // 2. Fetch the entire monitoring bundle in a single canonical run
+        const bundle = await fetchEraporMonitoringBundle(targetPeriodId, {
+          allPeriods,
+        });
+        setSummary(bundle.summary);
+        setMonitoringRows(bundle.monitoringRows);
+        setClassTree(bundle.classTree);
       }
     } catch (err: any) {
       console.error('Error loading Erapor Admin Dashboard data:', err);
@@ -129,14 +131,12 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
     setSelectedPeriodId(periodId);
     setIsRefreshing(true);
     try {
-      const [sumData, monData, treeData] = await Promise.all([
-        fetchEraporDashboardSummary(periodId),
-        fetchEraporMonitoringData(periodId),
-        fetchClassSubjectTree(periodId),
-      ]);
-      setSummary(sumData);
-      setMonitoringRows(monData);
-      setClassTree(treeData);
+      const bundle = await fetchEraporMonitoringBundle(periodId, {
+        allPeriods: periods,
+      });
+      setSummary(bundle.summary);
+      setMonitoringRows(bundle.monitoringRows);
+      setClassTree(bundle.classTree);
     } catch (err: any) {
       console.error('Error switching period:', err);
       showNotification?.('Gagal memuat data periode yang dipilih.', 'info');
@@ -149,15 +149,16 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
     if (!selectedPeriodId) return;
     setIsRefreshing(true);
     try {
-      const [sumData, monData, treeData, teachersList] = await Promise.all([
-        fetchEraporDashboardSummary(selectedPeriodId),
-        fetchEraporMonitoringData(selectedPeriodId),
-        fetchClassSubjectTree(selectedPeriodId),
+      const [bundle, teachersList] = await Promise.all([
+        fetchEraporMonitoringBundle(selectedPeriodId, {
+          allPeriods: periods,
+          forceRefresh: true,
+        }),
         fetchAllTeachers(),
       ]);
-      setSummary(sumData);
-      setMonitoringRows(monData);
-      setClassTree(treeData);
+      setSummary(bundle.summary);
+      setMonitoringRows(bundle.monitoringRows);
+      setClassTree(bundle.classTree);
       setTeachers(teachersList);
       showNotification?.('Data monitoring berhasil disinkronkan.', 'success');
     } catch (err: any) {

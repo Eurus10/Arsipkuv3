@@ -14,13 +14,18 @@ import {
   Calendar,
   MessageSquare,
   AlertCircle,
+  AlertTriangle,
+  ShieldAlert,
   Download,
   ZoomIn,
   Maximize2,
 } from 'lucide-react';
 import { getLocalBranding, AppBranding } from '../../services/brandingStorage';
 import { sendAnalysisSubmission } from '../../services/analysisSubmissionService';
-import { getActiveTeacherSession } from '../../services/teacherStorage';
+import { getActiveTeacherSession, normalizeTeacherName } from '../../services/teacherStorage';
+import { getEraporHomeroomForClass } from '../../services/analysis/eraporHomeroomBridge';
+import { MASTER_CLASSES } from '../../data/masterExamData';
+import { isAdminLoggedIn } from '../../services/auth';
 
 interface SendToPakZakiModalProps {
   isOpen: boolean;
@@ -121,12 +126,38 @@ export const SendToPakZakiModal: React.FC<SendToPakZakiModalProps> = ({
 
   if (!isOpen) return null;
 
+  const activeSession = getActiveTeacherSession();
+  const isAdmin = isAdminLoggedIn();
+
+  // Cari wali kelas resmi dari e-Rapor dan Master Classes
+  const officialHomeroom =
+    getEraporHomeroomForClass(classId) ||
+    MASTER_CLASSES.find((c) => c.id.toUpperCase() === (classId || '').toUpperCase())?.waliKelas ||
+    '';
+
+  const isHomeroomMismatch = Boolean(
+    !isAdmin &&
+    submissionType === 'session' &&
+    activeSession?.name &&
+    officialHomeroom &&
+    normalizeTeacherName(activeSession.name) !== normalizeTeacherName(officialHomeroom) &&
+    !(activeSession.loginAliases || []).some(
+      (a) => normalizeTeacherName(a) === normalizeTeacherName(officialHomeroom)
+    )
+  );
+
   const handleSend = async () => {
+    if (isHomeroomMismatch) {
+      setErrorMessage(
+        `Peringatan Otoritas: Anda login sebagai ${activeSession?.name}, sedangkan Wali Kelas resmi untuk ${className} adalah ${officialHomeroom}. Setoran paket kelas hanya dapat dikirim oleh Wali Kelas yang bersangkutan agar tidak menimpa nilai mapel lain. Silakan gunakan mode Guru Bidang untuk menyetorkan nilai mapel yang Anda ampu.`
+      );
+      return;
+    }
+
     setIsSending(true);
     setErrorMessage(null);
 
     try {
-      const activeSession = getActiveTeacherSession();
       await sendAnalysisSubmission({
         submissionType,
         subjectName,
@@ -218,6 +249,25 @@ export const SendToPakZakiModal: React.FC<SendToPakZakiModalProps> = ({
           </div>
         ) : (
           <>
+            {/* Warning Banner: Proteksi Otoritas Wali Kelas */}
+            {isHomeroomMismatch && (
+              <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/40 text-rose-200 text-xs space-y-2 shadow-md">
+                <div className="flex items-center gap-2 font-black text-rose-300 text-sm">
+                  <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0" />
+                  <span>Proteksi Setoran: Pembatasan Wewenang Wali Kelas</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-slate-300">
+                  Anda saat ini login sebagai <strong className="text-white font-bold">{activeSession?.name}</strong>, sedangkan Wali Kelas resmi untuk <strong className="text-white font-bold">{className}</strong> adalah <strong className="text-emerald-300 font-bold">{officialHomeroom}</strong>.
+                </p>
+                <p className="text-[11px] leading-relaxed text-amber-200 font-medium bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20">
+                  🛡️ <strong>Perlindungan Nilai Siswa:</strong> Pengiriman paket analisis lengkap kelas ini dinonaktifkan demi keamanan data, agar rekap nilai mata pelajaran milik guru atau wali kelas lain tidak terhapus atau tertimpa secara tidak sengaja.
+                </p>
+                <p className="text-[11px] leading-relaxed text-slate-400">
+                  💡 <strong>Solusi:</strong> Jika Anda mengajar di kelas ini (misalnya mapel Qur'an Hadits), silakan tutup jendela ini lalu gunakan mode <strong className="text-sky-300 font-bold">Guru Bidang</strong> untuk menyetorkan nilai mapel yang Anda ampu saja.
+                </p>
+              </div>
+            )}
+
             {/* Summary Data Card */}
             <div className="bg-slate-950/60 border border-white/10 rounded-2xl p-4 space-y-2.5">
               <div className="flex items-center justify-between text-xs pb-2 border-b border-white/5">
@@ -395,14 +445,23 @@ export const SendToPakZakiModal: React.FC<SendToPakZakiModalProps> = ({
 
               <button
                 type="button"
-                disabled={isSending}
+                disabled={isSending || isHomeroomMismatch}
                 onClick={handleSend}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/25 transition-all cursor-pointer disabled:opacity-50"
+                className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  isHomeroomMismatch
+                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-slate-950 shadow-lg shadow-emerald-500/25 cursor-pointer disabled:opacity-50'
+                }`}
               >
                 {isSending ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
                     <span>Sedang Mengirim...</span>
+                  </>
+                ) : isHomeroomMismatch ? (
+                  <>
+                    <ShieldAlert className="w-4 h-4 text-rose-400" />
+                    <span>Setoran Dikunci (Bukan Wali Kelas)</span>
                   </>
                 ) : (
                   <>

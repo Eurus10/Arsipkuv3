@@ -7,6 +7,7 @@ import {
   Download,
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   Clock,
   Trash2,
   FileSpreadsheet,
@@ -33,6 +34,13 @@ import {
   User,
   Hourglass,
   Edit3,
+  RefreshCw,
+  Database,
+  Settings,
+  Key,
+  Link2,
+  Copy,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   AnalysisSubmissionItem,
@@ -43,7 +51,16 @@ import {
   updateAnalysisSubmissionStatus,
   updateSingleSubjectStatus,
   deleteAnalysisSubmission,
+  fetchSubmissionsFromSupabase,
+  syncLocalSubmissionsToSupabase,
+  syncFirestoreToSupabase,
 } from '../../services/analysisSubmissionService';
+import {
+  getStoredSupabaseConfig,
+  saveStoredSupabaseConfig,
+  isSupabaseConfigured,
+  testSupabaseConnection,
+} from '../../services/supabase';
 import {
   exportSingleSubjectToExcel,
   exportMultiClassSubjectToExcel,
@@ -51,6 +68,8 @@ import {
 } from '../../services/analysis/analysisExcelService';
 import { getStoredStudentsLocal } from '../../services/studentStorage';
 import { MASTER_CLASSES } from '../../data/masterExamData';
+import { normalizeTeacherName } from '../../services/teacherStorage';
+import { getEraporHomeroomForClass } from '../../services/analysis/eraporHomeroomBridge';
 import { AnalysisSubmissionChatModal } from '../analysis/AnalysisSubmissionChatModal';
 import {
   createBroadcastAnnouncement,
@@ -281,7 +300,127 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
   const [announcementTarget, setAnnouncementTarget] = useState<string>('all');
   const [isSendingAnnouncement, setIsSendingAnnouncement] = useState<boolean>(false);
 
+  const [isRefreshingSupabase, setIsRefreshingSupabase] = useState<boolean>(false);
+  const [isSyncingSupabase, setIsSyncingSupabase] = useState<boolean>(false);
+  const [isSyncingFirestore, setIsSyncingFirestore] = useState<boolean>(false);
+
+  // Supabase Configuration Modal State
+  const [showSupabaseSettingsModal, setShowSupabaseSettingsModal] = useState<boolean>(false);
+  const [supabaseUrlInput, setSupabaseUrlInput] = useState<string>('');
+  const [supabaseKeyInput, setSupabaseKeyInput] = useState<string>('');
+  const [isTestingSupabase, setIsTestingSupabase] = useState<boolean>(false);
+  const [supabaseTestFeedback, setSupabaseTestFeedback] = useState<{
+    success: boolean;
+    message: string;
+    tableFound?: boolean;
+    latencyMs?: number;
+  } | null>(null);
+  const [isConfiguredSupabase, setIsConfiguredSupabase] = useState<boolean>(() => isSupabaseConfigured());
+  const [sqlCopied, setSqlCopied] = useState<boolean>(false);
+
   const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
+  const [actionWarningMsg, setActionWarningMsg] = useState<string | null>(null);
+
+  const handleOpenSupabaseSettings = () => {
+    const cfg = getStoredSupabaseConfig();
+    setSupabaseUrlInput(cfg.url || '');
+    setSupabaseKeyInput(cfg.anonKey || '');
+    setSupabaseTestFeedback(null);
+    setShowSupabaseSettingsModal(true);
+  };
+
+  const handleTestAndSaveSupabase = async () => {
+    setIsTestingSupabase(true);
+    setSupabaseTestFeedback(null);
+    try {
+      const res = await testSupabaseConnection(supabaseUrlInput, supabaseKeyInput);
+      setSupabaseTestFeedback(res);
+      if (res.success) {
+        saveStoredSupabaseConfig(supabaseUrlInput, supabaseKeyInput);
+        setIsConfiguredSupabase(true);
+        setActionSuccessMsg('Konfigurasi Supabase berhasil disimpan dan terhubung!');
+        setTimeout(() => setActionSuccessMsg(null), 3000);
+        // Refresh submissions immediately from the new Supabase instance
+        void handleRefreshSupabase();
+      }
+    } catch (err: any) {
+      setSupabaseTestFeedback({
+        success: false,
+        message: err?.message || 'Gagal menguji koneksi ke Supabase.',
+      });
+    } finally {
+      setIsTestingSupabase(false);
+    }
+  };
+
+  const handleRefreshSupabase = async () => {
+    setIsRefreshingSupabase(true);
+    try {
+      const items = await fetchSubmissionsFromSupabase(true);
+      setSubmissions(items);
+      setIsConfiguredSupabase(isSupabaseConfigured());
+      setActionSuccessMsg('Antrean setoran berhasil diperbarui dari Supabase.');
+      setTimeout(() => setActionSuccessMsg(null), 2500);
+    } catch (err) {
+      console.error('Failed to refresh from Supabase:', err);
+    } finally {
+      setIsRefreshingSupabase(false);
+    }
+  };
+
+  const handleSyncLocalToSupabase = async () => {
+    if (!isSupabaseConfigured()) {
+      setActionWarningMsg('Supabase belum terhubung! Silakan isi URL dan Anon Key Supabase terlebih dahulu.');
+      setTimeout(() => setActionWarningMsg(null), 4000);
+      handleOpenSupabaseSettings();
+      return;
+    }
+
+    setIsSyncingSupabase(true);
+    setActionWarningMsg(null);
+    try {
+      const result = await syncLocalSubmissionsToSupabase();
+      if (result.error) {
+        setActionWarningMsg(`Sinkronisasi tidak berhasil: ${result.error}`);
+        setTimeout(() => setActionWarningMsg(null), 6000);
+      } else {
+        setActionSuccessMsg(`✅ Berhasil menyinkronkan ${result.pushed} berkas analisis dari cache lokal ke Supabase!`);
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+        await handleRefreshSupabase();
+      }
+    } catch (err: any) {
+      setActionWarningMsg(`Terjadi kesalahan: ${err?.message || 'Gagal sinkron'}`);
+      setTimeout(() => setActionWarningMsg(null), 5000);
+    } finally {
+      setIsSyncingSupabase(false);
+    }
+  };
+
+  const handleSyncFirestoreToSupabase = async () => {
+    if (!isSupabaseConfigured()) {
+      handleOpenSupabaseSettings();
+      return;
+    }
+
+    setIsSyncingFirestore(true);
+    setActionWarningMsg(null);
+    try {
+      const result = await syncFirestoreToSupabase();
+      if (result.error) {
+        setActionWarningMsg(`Penyalinan dari Firestore: ${result.error}`);
+        setTimeout(() => setActionWarningMsg(null), 6000);
+      } else {
+        setActionSuccessMsg(`✅ Berhasil menarik & menyalin ${result.pushed} berkas dari Firestore ke Supabase!`);
+        setTimeout(() => setActionSuccessMsg(null), 4000);
+        await handleRefreshSupabase();
+      }
+    } catch (err: any) {
+      setActionWarningMsg(`Gagal: ${err?.message || 'Koneksi Firestore gagal'}`);
+      setTimeout(() => setActionWarningMsg(null), 5000);
+    } finally {
+      setIsSyncingFirestore(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -648,10 +787,10 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Hapus setoran analisis "${name}" dari daftar?`)) return;
+    if (!window.confirm(`Hapus setoran analisis "${name}" dari daftar?\n\n(Aman: Penghapusan ini HANYA menghapus riwayat setoran di sistem admin. Nilai siswa di database e-Rapor tetap aman, utuh, dan tidak akan terhapus atau hilang).`)) return;
     try {
       await deleteAnalysisSubmission(id);
-      setActionSuccessMsg('Setoran berhasil dihapus.');
+      setActionSuccessMsg('Setoran berhasil dihapus (nilai e-Rapor siswa tetap aman & utuh).');
       setTimeout(() => setActionSuccessMsg(null), 2500);
     } catch (err) {
       console.error('Failed to delete submission:', err);
@@ -785,42 +924,103 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
     >
       <div className="w-full max-w-5xl bg-slate-900 border border-[#2A3044] rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 text-slate-100 max-h-[94vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-white/10 gap-3 shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-white/10 gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-teal-500/20 to-emerald-500/20 border border-teal-500/30 text-teal-400 flex items-center justify-center shadow-lg shadow-teal-500/10 shrink-0">
               <Inbox className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-lg font-black text-white">Pusat Setoran Guru</h3>
+              <div className="flex items-center gap-2.5">
+                <h3 className="text-lg font-black text-white whitespace-nowrap">Pusat Setoran Guru</h3>
                 {(pendingCount > 0 || pendingAttendanceCount > 0) && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-extrabold border border-amber-500/30 animate-pulse">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-extrabold border border-amber-500/30 animate-pulse whitespace-nowrap">
                     {pendingCount + pendingAttendanceCount} Menunggu Cetak / Verifikasi
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 whitespace-nowrap hidden sm:block">
                 Pusat antrean cetak &amp; validasi berkas analisis nilai dan rekap absensi SDIT Al Fikri
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap lg:justify-end">
+            {/* Supabase Connection Status Badge */}
+            {isConfiguredSupabase ? (
+              <button
+                type="button"
+                onClick={handleOpenSupabaseSettings}
+                className="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm shrink-0"
+                title="Supabase Terhubung. Klik untuk melihat atau mengubah URL & API Key"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Supabase</span>
+                <Settings className="w-3 h-3 text-emerald-400 opacity-70 ml-0.5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleOpenSupabaseSettings}
+                className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 font-extrabold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm animate-pulse shrink-0"
+                title="Supabase belum terhubung! Klik untuk mengisi URL & Anon Key Supabase"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
+                <span>Hubungkan Supabase</span>
+                <Settings className="w-3 h-3 text-rose-300 ml-0.5" />
+              </button>
+            )}
+
+            {/* Sync Firestore to Supabase Button */}
+            <button
+              type="button"
+              disabled={isSyncingFirestore || !isConfiguredSupabase}
+              onClick={handleSyncFirestoreToSupabase}
+              className="px-3 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm disabled:opacity-50 shrink-0"
+              title="Tarik berkas kiriman guru dari Google Firestore dan salin ke Supabase"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-indigo-400 ${isSyncingFirestore ? 'animate-spin' : ''}`} />
+              <span>{isSyncingFirestore ? 'Menarik...' : 'Tarik dari Firestore'}</span>
+            </button>
+
+            {/* Sync Local to Supabase Rescue Button */}
+            <button
+              type="button"
+              disabled={isSyncingSupabase}
+              onClick={handleSyncLocalToSupabase}
+              className="px-3 py-1.5 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm disabled:opacity-50 shrink-0"
+              title="Amankan & Salin seluruh berkas setoran dari cache lokal ke database Supabase"
+            >
+              <Database className={`w-3.5 h-3.5 text-teal-400 ${isSyncingSupabase ? 'animate-pulse' : ''}`} />
+              <span>{isSyncingSupabase ? 'Menyinkronkan...' : 'Amankan ke Supabase'}</span>
+            </button>
+
+            {/* Refresh Supabase Button */}
+            <button
+              type="button"
+              disabled={isRefreshingSupabase}
+              onClick={handleRefreshSupabase}
+              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all disabled:opacity-50 shrink-0"
+              title="Segarkan antrean setoran dari Supabase"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingSupabase ? 'animate-spin text-emerald-400' : ''}`} />
+              <span>Segarkan</span>
+            </button>
+
             {/* Broadcast Announcement Button */}
             <button
               type="button"
               onClick={() => setShowAnnouncementModal(true)}
-              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
+              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm shrink-0"
               title="Kirim pesan atau info rapor langsung ke dashboard guru"
             >
               <Megaphone className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Kirim Info / Pesan</span>
+              <span>Kirim Info</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+              className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all shrink-0 ml-auto lg:ml-0"
             >
               <X className="w-4 h-4" />
             </button>
@@ -829,9 +1029,35 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
 
         {/* Action success alert */}
         {actionSuccessMsg && (
-          <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl flex items-center gap-2 shrink-0 animate-fadeIn">
-            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{actionSuccessMsg}</span>
+          <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl flex items-center justify-between gap-2 shrink-0 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{actionSuccessMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActionSuccessMsg(null)}
+              className="text-emerald-400 hover:text-white p-1 rounded"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        )}
+
+        {/* Action warning alert */}
+        {actionWarningMsg && (
+          <div className="p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs rounded-xl flex items-center justify-between gap-2 shrink-0 animate-fadeIn">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>{actionWarningMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActionWarningMsg(null)}
+              className="text-rose-400 hover:text-white p-1 rounded"
+            >
+              <X className="w-3 h-3" />
+            </button>
           </div>
         )}
 
@@ -1226,6 +1452,27 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                         <span>•</span>
                         <span className="text-slate-500">{formattedDate}</span>
                       </div>
+
+                      {(() => {
+                        const officialWalas =
+                          getEraporHomeroomForClass(sub.classId) ||
+                          MASTER_CLASSES.find((c) => c.id.toUpperCase() === (sub.classId || '').toUpperCase())?.waliKelas ||
+                          '';
+                        const isMismatch =
+                          sub.submissionType === 'session' &&
+                          officialWalas &&
+                          normalizeTeacherName(sub.teacherName) !== normalizeTeacherName(officialWalas);
+
+                        if (!isMismatch) return null;
+                        return (
+                          <div className="mt-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5 text-amber-300 text-[11px] font-semibold">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <span>
+                              Catatan Audit: Pengirim ({sub.teacherName}) bukan Wali Kelas resmi {sub.className} (Wali Kelas: {officialWalas}).
+                            </span>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -2041,6 +2288,27 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
                             <p className="text-[11px] text-slate-400 mt-0.5">
                               Disetor: <span className="text-slate-300 font-medium">{formattedDate}</span>
                             </p>
+
+                            {(() => {
+                              const officialWalas =
+                                getEraporHomeroomForClass(sub.classId) ||
+                                MASTER_CLASSES.find((c) => c.id.toUpperCase() === (sub.classId || '').toUpperCase())?.waliKelas ||
+                                '';
+                              const isMismatch =
+                                sub.submissionType === 'session' &&
+                                officialWalas &&
+                                normalizeTeacherName(sub.teacherName) !== normalizeTeacherName(officialWalas);
+
+                              if (!isMismatch) return null;
+                              return (
+                                <div className="mt-1.5 p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5 text-amber-300 text-[10px] font-semibold">
+                                  <AlertTriangle className="w-3 h-3 text-amber-400 shrink-0" />
+                                  <span>
+                                    Audit: Pengirim ({sub.teacherName}) bukan Wali Kelas resmi {sub.className} (Wali Kelas: {officialWalas}).
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </div>
 
@@ -2323,6 +2591,272 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
           </div>
         );
       })()}
-    </div>
+
+        {/* ======================================================== */}
+        {/* MODAL PENGATURAN KONEKSI SUPABASE                        */}
+        {/* ======================================================== */}
+        {showSupabaseSettingsModal && (
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !isTestingSupabase) {
+                setShowSupabaseSettingsModal(false);
+              }
+            }}
+          >
+            <div className="w-full max-w-xl bg-slate-900 border border-teal-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-slate-100 max-h-[92vh] overflow-y-auto">
+              {/* Header Modal */}
+              <div className="flex items-start justify-between pb-3 border-b border-white/10 gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-500/20 border border-teal-500/30 text-teal-400 flex items-center justify-center shrink-0">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white flex items-center gap-2">
+                      Pengaturan Koneksi Supabase
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                        Bebas Kuota Harian
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Hubungkan database PostgreSQL Supabase sekolah untuk meja setoran guru &amp; e-Rapor
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isTestingSupabase}
+                  onClick={() => setShowSupabaseSettingsModal(false)}
+                  className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Status Feedback Banner */}
+              {supabaseTestFeedback && (
+                <div
+                  className={`p-3.5 rounded-2xl border text-xs flex items-start gap-2.5 animate-fadeIn ${
+                    supabaseTestFeedback.success
+                      ? supabaseTestFeedback.tableFound
+                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                        : 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                      : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+                  }`}
+                >
+                  {supabaseTestFeedback.success ? (
+                    supabaseTestFeedback.tableFound ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                    )
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  )}
+                  <div className="space-y-1">
+                    <p className="font-bold">{supabaseTestFeedback.message}</p>
+                    {supabaseTestFeedback.success && !supabaseTestFeedback.tableFound && (
+                      <p className="text-[11px] opacity-90">
+                        Koneksi akun sudah benar! Namun Anda perlu menjalankan SQL script tabel <code className="bg-black/30 px-1 rounded">011_analysis_submissions.sql</code> di menu SQL Editor Supabase agar data bisa disimpan.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Form Input URL & Anon Key */}
+              <div className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Link2 className="w-3.5 h-3.5 text-teal-400" />
+                      Project URL Supabase
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      Contoh: https://xyzcompany.supabase.co
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={supabaseUrlInput}
+                    onChange={(e) => setSupabaseUrlInput(e.target.value.trim())}
+                    placeholder="https://YOUR_PROJECT_REF.supabase.co"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-teal-400 font-mono transition-all"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Didapat dari dashboard Supabase &gt; Project Settings &gt; Data API &gt; URL.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-teal-400" />
+                      API Key (anon public)
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      Bukan service_role secret
+                    </span>
+                  </label>
+                  <input
+                    type="password"
+                    value={supabaseKeyInput}
+                    onChange={(e) => setSupabaseKeyInput(e.target.value.trim())}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/70 border border-white/10 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-teal-400 font-mono transition-all"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Didapat dari dashboard Supabase &gt; Project Settings &gt; Data API &gt; Project API keys (anon public).
+                  </p>
+                </div>
+              </div>
+
+              {/* SQL Script Quick Copy Box */}
+              <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-white/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+                    Script Tabel: 011_analysis_submissions.sql
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sql = `-- MIGRATION 011: MEJA TITIPAN ANALISIS
+CREATE TABLE IF NOT EXISTS public.analysis_submissions (
+    id TEXT PRIMARY KEY,
+    submission_type TEXT NOT NULL DEFAULT 'session',
+    subject_name TEXT NOT NULL,
+    class_id TEXT NOT NULL,
+    class_name TEXT NOT NULL,
+    exam_type TEXT,
+    school_year TEXT NOT NULL,
+    teacher_name TEXT NOT NULL,
+    teacher_id TEXT,
+    teacher_role_title TEXT,
+    kktp NUMERIC DEFAULT 75,
+    total_students INTEGER DEFAULT 0,
+    completed_students INTEGER DEFAULT 0,
+    passed_students INTEGER DEFAULT 0,
+    average_grade NUMERIC DEFAULT 0,
+    teacher_note TEXT,
+    admin_note TEXT,
+    status TEXT NOT NULL DEFAULT 'menunggu',
+    subject_statuses JSONB DEFAULT '{}'::jsonb,
+    messages JSONB DEFAULT '[]'::jsonb,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    first_submitted_at TIMESTAMPTZ DEFAULT now(),
+    submitted_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    is_revision_resubmitted BOOLEAN DEFAULT false,
+    last_revision_resubmitted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Pastikan seluruh kolom tersedia jika tabel sebelumnya sudah pernah dibuat
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS average_grade NUMERIC DEFAULT 0;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS passed_students INTEGER DEFAULT 0;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS completed_students INTEGER DEFAULT 0;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS total_students INTEGER DEFAULT 0;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS kktp NUMERIC DEFAULT 75;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS submission_type TEXT DEFAULT 'session';
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS exam_type TEXT;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS teacher_id TEXT;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS teacher_role_title TEXT;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS teacher_note TEXT;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS admin_note TEXT;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'menunggu';
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS subject_statuses JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS messages JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS payload JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS first_submitted_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS is_revision_resubmitted BOOLEAN DEFAULT false;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS last_revision_resubmitted_at TIMESTAMPTZ;
+ALTER TABLE public.analysis_submissions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS idx_analysis_subs_class_year ON public.analysis_submissions(class_id, school_year);
+CREATE INDEX IF NOT EXISTS idx_analysis_subs_status ON public.analysis_submissions(status);
+CREATE INDEX IF NOT EXISTS idx_analysis_subs_submitted_at ON public.analysis_submissions(submitted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analysis_subs_teacher ON public.analysis_submissions(teacher_name);
+
+ALTER TABLE public.analysis_submissions ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+    DROP POLICY IF EXISTS "Allow select on analysis_submissions" ON public.analysis_submissions;
+    DROP POLICY IF EXISTS "Allow insert on analysis_submissions" ON public.analysis_submissions;
+    DROP POLICY IF EXISTS "Allow update on analysis_submissions" ON public.analysis_submissions;
+    DROP POLICY IF EXISTS "Allow delete on analysis_submissions" ON public.analysis_submissions;
+END $$;
+
+CREATE POLICY "Allow select on analysis_submissions" ON public.analysis_submissions FOR SELECT USING (true);
+CREATE POLICY "Allow insert on analysis_submissions" ON public.analysis_submissions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update on analysis_submissions" ON public.analysis_submissions FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Allow delete on analysis_submissions" ON public.analysis_submissions FOR DELETE USING (true);
+
+NOTIFY pgrst, 'reload schema';`;
+                      navigator.clipboard.writeText(sql);
+                      setSqlCopied(true);
+                      setTimeout(() => setSqlCopied(false), 2500);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/30 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>{sqlCopied ? '✓ Disalin ke Clipboard!' : 'Salin Script SQL'}</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Jika tabel belum pernah dibuat di dashboard Supabase, klik tombol di atas lalu tempel (Paste) di menu <strong>SQL Editor</strong> Supabase Anda.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/10 gap-2 flex-wrap">
+                <button
+                  type="button"
+                  disabled={isSyncingFirestore || isTestingSupabase}
+                  onClick={handleSyncFirestoreToSupabase}
+                  className="px-3 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                  title="Tarik data lama dari Google Firestore dan salin ke Supabase"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingFirestore ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingFirestore ? 'Menarik...' : 'Salin Data dari Firestore'}</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isTestingSupabase}
+                    onClick={() => setShowSupabaseSettingsModal(false)}
+                    className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Batal
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isTestingSupabase}
+                    onClick={handleTestAndSaveSupabase}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg shadow-teal-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isTestingSupabase ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Menguji Koneksi...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Uji Koneksi &amp; Simpan</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
   );
 };

@@ -17,6 +17,9 @@ import {
 import { getLocalAnalysisSubmissions } from './analysisSubmissionService';
 import { detectCategoryFromName } from './academicSubjectStorage';
 import { getStoredMasterClasses } from './storage';
+import { normalizeTeacherName } from './teacherStorage';
+import { getEraporHomeroomForClass } from './analysis/eraporHomeroomBridge';
+import { MASTER_CLASSES } from '../data/masterExamData';
 
 /**
  * Result structure of the Analysis to e-Rapor synchronization
@@ -308,7 +311,36 @@ export function extractSubjectsFromSubmission(
     const session = payload.session;
     const students = payload.students || session.studentSnapshot || [];
 
+    // Verifikasi otoritas: cek apakah pengirim setoran adalah wali kelas resmi kelas ini
+    const classId = session.classId || submission.classId || '';
+    const officialHomeroom =
+      getEraporHomeroomForClass(classId) ||
+      MASTER_CLASSES.find((c) => c.id.toUpperCase() === classId.toUpperCase())?.waliKelas ||
+      '';
+
+    const submitterNorm = normalizeTeacherName(submission.teacherName || '');
+    const homeroomNorm = normalizeTeacherName(officialHomeroom);
+    const isOfficialWalas = !officialHomeroom || !submitterNorm || submitterNorm === homeroomNorm;
+
     session.subjects.forEach((subj: any) => {
+      // JIKA BUKAN WALI KELAS RESMI:
+      // Hanya ekstrak mapel yang memang diajarkan oleh guru tersebut (misal Qurdist).
+      // Mapel lain (Matematika, IPAS, dll) dilewati agar tidak merusak/menimpa nilai guru lain!
+      if (!isOfficialWalas) {
+        const subTeacherNorm = normalizeTeacherName(subj.teacherName || '');
+        const subNameNorm = (subj.subjectName || subj.name || '').toLowerCase();
+        const roleNorm = (submission.teacherRoleTitle || '').toLowerCase();
+
+        const isAuthorizedSubject =
+          (subTeacherNorm && (subTeacherNorm === submitterNorm || subTeacherNorm.includes(submitterNorm) || submitterNorm.includes(subTeacherNorm))) ||
+          subNameNorm.includes('qur') ||
+          (roleNorm && subNameNorm.includes(roleNorm));
+
+        if (!isAuthorizedSubject) {
+          return; // Lewatkan mapel di luar wewenang guru ini
+        }
+      }
+
       const parsed = parseFromAnalysisSubject(subj, subj.subjectName || submission.subjectName, students);
       if (parsed) {
         results.push(parsed);
@@ -491,21 +523,34 @@ export function applySubjectScoresToClassData(
         remedialCount++;
       }
 
-      // Auto-assign TP Achievement based on KKTP:
-      // Score >= KKTP -> All TPs achieved (100 / true)
-      // Score < KKTP -> TPs unachieved (0 / false)
+      const existingDetail = subjectRecord.scores[studentId];
+
+      // PERLINDUNGAN NILAI SISWA:
+      // 1. Jika nilai setoran 0 atau kosong, namun siswa sebelumnya sudah memiliki nilai STS valid (> 0),
+      //    pertahankan nilai STS lama agar tidak ter-reset atau hilang menjadi 0.
+      let effectiveStsScore = stsScore;
+      if (effectiveStsScore === 0 && (existingDetail?.stsScore || 0) > 0) {
+        effectiveStsScore = existingDetail?.stsScore ?? 0;
+      }
+
+      // 2. Pertahankan nilai capaian TP yang sudah pernah diinput sebelumnya (jangan di-overwrite/reset ke 100/0)
       const tpScores: Record<string, number | null> = {};
       const tpAchieved: Record<string, boolean> = {};
 
       activeTps.forEach((tp) => {
-        tpScores[tp.id] = isPassed ? 100 : 0;
-        tpAchieved[tp.id] = isPassed;
+        if (existingDetail?.tpScores?.[tp.id] !== undefined && existingDetail?.tpScores?.[tp.id] !== null) {
+          tpScores[tp.id] = existingDetail.tpScores[tp.id];
+          tpAchieved[tp.id] = existingDetail.tpAchieved?.[tp.id] ?? ((tpScores[tp.id] ?? 0) >= subjectKktp);
+        } else {
+          tpScores[tp.id] = isPassed ? 100 : 0;
+          tpAchieved[tp.id] = isPassed;
+        }
       });
 
       const finalScore = calculateFinalScore(
         tpScores,
         activeTps.map((t) => t.id),
-        stsScore,
+        effectiveStsScore,
         updatedData.config.tpWeight || 60,
         updatedData.config.stsWeight || 40
       );
@@ -514,30 +559,28 @@ export function applySubjectScoresToClassData(
         matchedStudent.name,
         tpAchieved,
         activeTps,
-        stsScore,
+        effectiveStsScore,
         subjectKktp
       );
 
       const teacherNote = generateTeacherNote(
         matchedStudent.name,
-        stsScore,
+        effectiveStsScore,
         isPassed ? activeTps.length : 0,
         activeTps.length,
         subjectKktp
       );
 
-      const existingDetail = subjectRecord.scores[studentId];
-
       subjectRecord.scores[studentId] = {
         studentId,
         studentName: matchedStudent.name,
-        nisn: matchedStudent.nisn || '',
-        nis: matchedStudent.nim || '',
+        nisn: matchedStudent.nisn || existingDetail?.nisn || '',
+        nis: matchedStudent.nim || existingDetail?.nis || '',
         tpScores,
         tpAchieved,
-        stsScore,
+        stsScore: effectiveStsScore,
         finalScore,
-        autoDescription,
+        autoDescription: existingDetail?.customDescription ? '' : autoDescription,
         customDescription: existingDetail?.customDescription,
         teacherNote: existingDetail?.teacherNote || teacherNote,
       };

@@ -4613,110 +4613,110 @@ app.post('/api/evaluation/generate-prota', async (req, res) => {
           semester: 1,
           elemen: 'Fondasi Konsep & Literasi',
           capaianPembelajaran: 'Memahami teks dan pesan pokok materi secara mendalam serta mengamalkannya dalam kehidupan sehari-hari.',
-          tujuanPembelajaran: '1.1 Memahami makna, pesan pokok, dan konsep utama secara terstruktur.',
+          tujuanPembelajaran: '1.1 Memahami makna, pesan pokok, dan konsep utama materi secara terstruktur melalui telaah literasi kontekstual.',
           materiPokok: 'Bab 1: Eksplorasi Konsep Dasar & Pemahaman Awal',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Formatif'
+          keterangan: 'KBM Tatap Muka & Eksplorasi Konsep (4 Pekan); Asesmen formatif awal & berkala via LKPD terbimbing; Integrasi pembiasaan adab belajar dan rasa ingin tahu.'
         },
         {
           no: 2,
           semester: 1,
           elemen: 'Akidah & Karakter / Nalar Kritis',
-          capaianPembelajaran: 'Mengenal sifat-sifat mulia, prinsip ketauhidan, dan mengimplementasikannya dalam pembiasaan adab.',
-          tujuanPembelajaran: '1.2 Menjelaskan makna nilai-nilai luhur dan menghubungkannya dengan fenomena kontekstual.',
+          capaianPembelajaran: 'Mengenal sifat-sifat mulia, prinsip ketauhidan, dan mengimplementasikannya dalam pembiasaan adab mulia.',
+          tujuanPembelajaran: '1.2 Menjelaskan makna nilai-nilai luhur dan menghubungkannya dengan fenomena kontekstual di lingkungan sekolah.',
           materiPokok: 'Bab 2: Pembentukan Karakter & Penerapan Konseptual',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Unjuk Kerja'
+          keterangan: 'KBM Tatap Muka Interaktif & Diskusi Kelompok; Asesmen unjuk kerja dan observasi sikap; Penguatan Profil Pelajar Pancasila & Karakter Islami JSIT.'
         },
         {
           no: 3,
           semester: 1,
           elemen: 'Akhlak & Adab Terpuji',
-          capaianPembelajaran: 'Membiasakan perilaku terpuji kepada sesama teman, guru, orang tua, dan lingkungan sekitar.',
-          tujuanPembelajaran: '1.3 Menampilkan sikap santun, jujur, peduli, dan bertanggung jawab di sekolah dan rumah.',
+          capaianPembelajaran: 'Membiasakan perilaku terpuji kepada sesama teman, guru, orang tua, dan menjaga keharmonisan lingkungan.',
+          tujuanPembelajaran: '1.3 Menampilkan sikap santun, jujur, peduli, dan bertanggung jawab di sekolah serta lingkungan keluarga.',
           materiPokok: 'Bab 3: Implementasi Adab & Akhlak Luhur Islami',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Observasi Sikap'
+          keterangan: 'KBM Kolaboratif & Simulasi Praktik Perilaku Baik; Penilaian portofolio refleksi diri dan jurnal pembiasaan adab harian di rumah dan kelas.'
         },
         {
           no: 4,
           semester: 1,
           elemen: 'Evaluasi Tengah Semester (STS)',
-          capaianPembelajaran: 'Mengukur ketercapaian kompetensi pembelajaran paruh semester pertama.',
-          tujuanPembelajaran: '1.4 Melaksanakan refleksi dan evaluasi sumatif tengah semester (STS).',
+          capaianPembelajaran: 'Mengukur ketercapaian kompetensi pembelajaran paruh semester pertama secara komprehensif.',
+          tujuanPembelajaran: '1.4 Melaksanakan refleksi dan evaluasi sumatif tengah semester 1 serta analisis ketercapaian tujuan pembelajaran.',
           materiPokok: 'Sumatif Tengah Semester (STS) 1 & Remedial / Pengayaan',
           alokasiWaktuJP: jpMinggu * 2,
-          keterangan: 'Jadwal STS Sekolah'
+          keterangan: 'Pelaksanaan asesmen Sumatif Tengah Semester (STS) terjadwal; Analisis hasil belajar dan pelaksanaan program tindak lanjut (remedial dan pengayaan).'
         },
         {
           no: 5,
           semester: 1,
           elemen: 'Fikih Ibadah / Praktik Aplikasi',
-          capaianPembelajaran: 'Memahami tata cara dan ketentuan pelaksanaan ibadah serta kegiatan ilmiah secara teratur.',
-          tujuanPembelajaran: '1.5 Mempraktikkan tata cara dan prosedur yang benar dan tertib.',
+          capaianPembelajaran: 'Memahami tata cara dan ketentuan pelaksanaan ibadah serta kegiatan ilmiah secara tertib dan berkelanjutan.',
+          tujuanPembelajaran: '1.5 Mempraktikkan tata cara dan prosedur yang benar sesuai tuntunan syariat dan kaidah keilmuan.',
           materiPokok: 'Bab 4: Keterampilan Praktik Ibadah & Pembiasaan Harian',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Praktik'
+          keterangan: 'KBM Praktik Langsung & Demonstrasi Terbimbing; Asesmen unjuk kerja psikomotorik dan lembar ceklis ketuntasan ibadah harian peserta didik.'
         },
         {
           no: 6,
           semester: 1,
           elemen: 'Asesmen Sumatif Akhir Semester (SAS)',
-          capaianPembelajaran: 'Mengukur ketercapaian seluruh tujuan pembelajaran pada Semester 1.',
-          tujuanPembelajaran: '1.6 Mengikuti asesmen sumatif akhir semester (SAS) dan refleksi semester 1.',
+          capaianPembelajaran: 'Mengukur ketercapaian seluruh tujuan pembelajaran pada Semester 1 secara terstandar.',
+          tujuanPembelajaran: '1.6 Mengikuti asesmen sumatif akhir semester (SAS) dan refleksi ketercapaian kompetensi semester 1.',
           materiPokok: 'Sumatif Akhir Semester (SAS) 1 & Pembagian Rapor',
           alokasiWaktuJP: jpMinggu * 2,
-          keterangan: 'Jadwal SAS Sekolah'
+          keterangan: 'Pelaksanaan asesmen Sumatif Akhir Semester (SAS) 1; Pengolahan nilai rapor Kurikulum Merdeka, penyerahan rapor hasil belajar, dan libur semester.'
         },
         {
           no: 7,
           semester: 2,
           elemen: 'Sejarah / Pengetahuan Lingkungan & Sosial',
-          capaianPembelajaran: 'Memahami keteladanan tokoh mulia dan kearifan lingkungan dalam membangun peradaban.',
-          tujuanPembelajaran: '2.1 Mengidentifikasi kisah teladan dan mengambil ibrah untuk diterapkan dalam kehidupan.',
+          capaianPembelajaran: 'Memahami keteladanan tokoh mulia dan kearifan lingkungan dalam membangun peradaban berkeadaban.',
+          tujuanPembelajaran: '2.1 Mengidentifikasi kisah teladan dan mengambil ibrah untuk diterapkan dalam kehidupan bermasyarakat.',
           materiPokok: 'Bab 5: Ibrah Keteladanan & Kisah Tokoh Inspiratif',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Diskusi Studi Kasus'
+          keterangan: 'KBM Kontekstual & Storytelling Bermakna; Asesmen penugasan peta konsep keteladanan tokoh; Internalisasi adab menghormati sejarah dan sesama.'
         },
         {
           no: 8,
           semester: 2,
           elemen: 'Literasi Kritis & Sains Kontekstual',
           capaianPembelajaran: 'Menganalisis fenomena sains dan sosial dengan berlandaskan keimanan dan nalar kritis.',
-          tujuanPembelajaran: '2.2 Menyajikan gagasan solutif atas masalah lingkungan atau sosial di sekitar.',
+          tujuanPembelajaran: '2.2 Menyajikan gagasan solutif atas masalah lingkungan atau sosial di sekitar dengan argumentasi ilmiah yang santun.',
           materiPokok: 'Bab 6: Kolaborasi Proyek Literasi & Sains Kontekstual',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Mini Project'
+          keterangan: 'KBM Berbasis Proyek (PjBL) & Eksperimen Sederhana; Asesmen produk hasil karya mini-riset; Penguatan nalar kritis dan kepedulian lingkungan hidup.'
         },
         {
           no: 9,
           semester: 2,
           elemen: 'Sumatif Tengah Semester (STS) 2',
           capaianPembelajaran: 'Evaluasi ketercapaian tujuan pembelajaran paruh semester genap.',
-          tujuanPembelajaran: '2.3 Melaksanakan asesmen sumatif tengah semester 2.',
+          tujuanPembelajaran: '2.3 Melaksanakan asesmen sumatif tengah semester 2 dan mengidentifikasi area peningkatan kompetensi.',
           materiPokok: 'Sumatif Tengah Semester (STS) 2 & Pembahasan Evaluasi',
           alokasiWaktuJP: jpMinggu * 2,
-          keterangan: 'Jadwal STS Sekolah'
+          keterangan: 'Pelaksanaan STS Semester Genap; Analisis daya serap kompetensi materi; Bimbingan remedial terarah dan penguatan pemahaman konsep esensial.'
         },
         {
           no: 10,
           semester: 2,
           elemen: 'Penguatan Karakter & Aksi Nyata Berkelanjutan',
           capaianPembelajaran: 'Menginternalisasi nilai-nilai keislaman terpadu dan Profil Pelajar Pancasila dalam tindakan nyata.',
-          tujuanPembelajaran: '2.4 Menghasilkan karya atau aksi nyata yang bermanfaat bagi lingkungan sekolah/masyarakat.',
+          tujuanPembelajaran: '2.4 Menghasilkan karya atau aksi nyata yang bermanfaat bagi lingkungan sekolah dan masyarakat luas.',
           materiPokok: 'Bab 7: Aksi Nyata Karakter & Gelar Karya Pembelajaran',
           alokasiWaktuJP: Math.round(jpMinggu * 4),
-          keterangan: 'KBM Efektif + Pameran Karya'
+          keterangan: 'KBM Gelar Karya & Presentasi Kelompok; Asesmen unjuk performa komunikasi dan kolaborasi; Apresiasi pembiasaan karakter rahmatan lil alamin.'
         },
         {
           no: 11,
           semester: 2,
           elemen: 'Sumatif Akhir Tahun (SAT) / Kenaikan Kelas',
           capaianPembelajaran: 'Mengukur ketercapaian seluruh capaian pembelajaran tingkat kelas.',
-          tujuanPembelajaran: '2.5 Melaksanakan asesmen sumatif akhir tahun (SAT) dan persiapan kenaikan kelas.',
+          tujuanPembelajaran: '2.5 Melaksanakan asesmen sumatif akhir tahun (SAT) dan persiapan kenaikan kelas secara optimal.',
           materiPokok: 'Sumatif Akhir Tahun (SAT), Leger Nilai & Penyerahan Rapor Kenaikan Kelas',
           alokasiWaktuJP: jpMinggu * 2,
-          keterangan: 'Jadwal SAT Sekolah'
+          keterangan: 'Pelaksanaan SAT Kenaikan Kelas; Rapat dewan guru penentuan kelulusan fase/kenaikan kelas; Pengisian buku rapor dan libur akhir tahun ajaran.'
         }
       ]
     };
@@ -4757,6 +4757,14 @@ ${integrasiIslami ? '- Integrasikan nilai-nilai karakter Islami (ADAB, Al-Qur’
 
 ${panduanSumberAcuan}
 
+PETUNJUK KHUSUS KOLOM KETERANGAN (SANGAT PENTING):
+Guru menghendaki kalimat pada kolom "keterangan" dibuat LENGKAP, MENDALAM, DAN LEBIH BANYAK (2-3 klausa / kalimat penjelasan per baris). 
+Jelaskan:
+1. Metode & Sintaks KBM (misal: "KBM Tatap Muka & Diskusi Terbimbing LKPD (4 Pekan)"),
+2. Bentuk Asesmen Formatif (misal: "Asesmen formatif unjuk kerja & observasi proses"),
+3. Penguatan Karakter & Integrasi Adab JSIT (misal: "Pembiasaan adab syukur, ketertiban ibadah, dan Profil Pelajar Pancasila").
+Untuk STS / SAS / SAT: Jelaskan agenda tes sekolah, analisis butir soal, serta program remedial dan pengayaan.
+
 OUTPUT DALAM FORMAT JSON MURNI TANPA MARKDOWN:
 {
   "identitas": {
@@ -4767,7 +4775,8 @@ OUTPUT DALAM FORMAT JSON MURNI TANPA MARKDOWN:
     "tahunPelajaran": "${tahunPelajaran}",
     "penyusun": "${namaPenyusun}",
     "kepalaSekolah": "${namaKepalaSekolah}",
-    "jpPerMinggu": ${jpMinggu}
+    "jpPerMinggu": ${jpMinggu},
+    "modeAcuan": "${modeAcuan}"
   },
   "rincianMingguEfektif": {
     "semester1": { "totalMinggu": 26, "mingguTidakEfektif": ${26 - sem1Weeks}, "mingguEfektif": ${sem1Weeks}, "totalJP": ${sem1Weeks * jpMinggu} },
@@ -4780,11 +4789,11 @@ OUTPUT DALAM FORMAT JSON MURNI TANPA MARKDOWN:
       "no": 1,
       "semester": 1,
       "elemen": "Nama Elemen Kurikulum Merdeka",
-      "capaianPembelajaran": "Rumusan CP",
+      "capaianPembelajaran": "Rumusan CP lengkap",
       "tujuanPembelajaran": "TP 1.1 ...",
       "materiPokok": "Bab 1: ...",
-      "alokasiWaktuJP": 16,
-      "keterangan": "KBM Efektif"
+      "alokasiWaktuJP": ${jpMinggu * 4},
+      "keterangan": "KBM Tatap Muka & Eksplorasi Konsep (4 Pekan); Asesmen formatif awal & berkala via LKPD terbimbing; Integrasi pembiasaan adab belajar dan rasa ingin tahu."
     }
   ]
 }
@@ -4833,6 +4842,8 @@ app.post('/api/evaluation/generate-promes', async (req, res) => {
 
     const ai = getGeminiClient();
     const jpMinggu = Number(jpPerMinggu) || 4;
+    const pekanEfektifNum = Number(pekanEfektif) || 18;
+    const totalJPSemester = pekanEfektifNum * jpMinggu;
 
     const defaultPromes = {
       identitas: {
@@ -4845,31 +4856,28 @@ app.post('/api/evaluation/generate-promes', async (req, res) => {
         penyusun: namaPenyusun,
         kepalaSekolah: namaKepalaSekolah,
         jpPerMinggu: jpMinggu,
+        totalMingguEfektif: pekanEfektifNum,
+        totalJP: totalJPSemester,
         modeAcuan,
+        fokusMateri,
       },
-      bulan: bulanDaftar.map((nama) => ({
-        nama,
-        mingguKe: [1, 2, 3, 4, 5],
-      })),
-      agendaKhusus: [
-        { kode: 'STS', nama: 'Sumatif Tengah Semester', warna: 'bg-amber-500/20 text-amber-300' },
-        { kode: 'SAS', nama: 'Sumatif Akhir Semester / SAT', warna: 'bg-rose-500/20 text-rose-300' },
-        { kode: 'P5', nama: 'Projek Penguatan P5', warna: 'bg-indigo-500/20 text-indigo-300' },
-        { kode: 'LIB', nama: 'Libur Semester / Nasional', warna: 'bg-slate-700 text-slate-300' },
-      ],
-      distribusiBab: [
+      daftarBulan: bulanDaftar,
+      alokasiMateriDanMinggu: [
         {
           no: 1,
           elemen: 'Fondasi Konsep & Literasi',
           tujuanPembelajaran: 'Menganalisis konsep dasar dan karakteristik materi esensial secara kritis dan santun.',
           materiPokok: isSemester1 ? 'Bab 1: Eksplorasi Konsep Dasar & Pemahaman Awal' : 'Bab 5: Ibrah Keteladanan Tokoh Inspiratif',
           alokasiJP: jpMinggu * 4,
-          alokasiMingguan: {
-            [`${bulanDaftar[0]}_3`]: jpMinggu,
-            [`${bulanDaftar[0]}_4`]: jpMinggu,
-            [`${bulanDaftar[1]}_1`]: jpMinggu,
-            [`${bulanDaftar[1]}_2`]: jpMinggu,
-          }
+          matriksMingguan: {
+            [bulanDaftar[0]]: ['', '', jpMinggu, jpMinggu, ''],
+            [bulanDaftar[1]]: [jpMinggu, jpMinggu, '', '', ''],
+            [bulanDaftar[2]]: ['', '', '', '', ''],
+            [bulanDaftar[3]]: ['', '', '', '', ''],
+            [bulanDaftar[4]]: ['', '', '', '', ''],
+            [bulanDaftar[5]]: ['', '', '', '', ''],
+          },
+          keterangan: 'KBM Tatap Muka Eksploratif 4 Pekan, Asesmen Formatif Awal & Pembiasaan Adab Harian'
         },
         {
           no: 2,
@@ -4877,52 +4885,72 @@ app.post('/api/evaluation/generate-promes', async (req, res) => {
           tujuanPembelajaran: 'Menghubungkan nilai-nilai luhur dengan fenomena kontekstual dalam pembiasaan adab.',
           materiPokok: isSemester1 ? 'Bab 2: Pembentukan Karakter & Penerapan Konseptual' : 'Bab 6: Kolaborasi Proyek Literasi & Sains',
           alokasiJP: jpMinggu * 4,
-          alokasiMingguan: {
-            [`${bulanDaftar[1]}_3`]: jpMinggu,
-            [`${bulanDaftar[1]}_4`]: jpMinggu,
-            [`${bulanDaftar[2]}_1`]: jpMinggu,
-            [`${bulanDaftar[2]}_2`]: jpMinggu,
-          }
+          matriksMingguan: {
+            [bulanDaftar[0]]: ['', '', '', '', ''],
+            [bulanDaftar[1]]: ['', '', jpMinggu, jpMinggu, ''],
+            [bulanDaftar[2]]: [jpMinggu, jpMinggu, '', '', ''],
+            [bulanDaftar[3]]: ['', '', '', '', ''],
+            [bulanDaftar[4]]: ['', '', '', '', ''],
+            [bulanDaftar[5]]: ['', '', '', '', ''],
+          },
+          keterangan: 'KBM Diskusi Kelompok & Praktik LKPD, Asesmen Formatif Proses & Penilaian Sikap Santun'
         },
         {
           no: 3,
           elemen: 'Evaluasi Tengah Semester',
-          tujuanPembelajaran: 'Mengukur ketercapaian kompetensi paruh semester pertama/kedua.',
-          materiPokok: 'Sumatif Tengah Semester (STS) & Pembahasan Refleksi',
+          tujuanPembelajaran: 'Mengukur ketercapaian kompetensi pembelajaran paruh semester secara terstruktur.',
+          materiPokok: 'Sumatif Tengah Semester (STS) & Pembahasan Evaluasi',
           alokasiJP: jpMinggu * 2,
-          alokasiMingguan: {
-            [`${bulanDaftar[2]}_3`]: 'STS',
-            [`${bulanDaftar[2]}_4`]: jpMinggu,
-          }
+          matriksMingguan: {
+            [bulanDaftar[0]]: ['', '', '', '', ''],
+            [bulanDaftar[1]]: ['', '', '', '', ''],
+            [bulanDaftar[2]]: ['', '', 'STS', jpMinggu, ''],
+            [bulanDaftar[3]]: ['', '', '', '', ''],
+            [bulanDaftar[4]]: ['', '', '', '', ''],
+            [bulanDaftar[5]]: ['', '', '', '', ''],
+          },
+          keterangan: 'Pelaksanaan Asesmen STS Terjadwal, Analisis Butir Soal & Program Remedial / Pengayaan'
         },
         {
           no: 4,
           elemen: 'Aplikasi Praktik & Kolaborasi',
-          tujuanPembelajaran: 'Mempraktikkan keterampilan dan adab terpuji melalui kerja sama kelompok.',
+          tujuanPembelajaran: 'Mempraktikkan keterampilan dan adab terpuji melalui proyek nyata dan unjuk kerja.',
           materiPokok: isSemester1 ? 'Bab 3: Implementasi Adab & Akhlak Luhur Islami' : 'Bab 7: Aksi Nyata Karakter & Gelar Karya',
           alokasiJP: jpMinggu * 4,
-          alokasiMingguan: {
-            [`${bulanDaftar[3]}_1`]: jpMinggu,
-            [`${bulanDaftar[3]}_2`]: jpMinggu,
-            [`${bulanDaftar[3]}_3`]: jpMinggu,
-            [`${bulanDaftar[3]}_4`]: jpMinggu,
-          }
+          matriksMingguan: {
+            [bulanDaftar[0]]: ['', '', '', '', ''],
+            [bulanDaftar[1]]: ['', '', '', '', ''],
+            [bulanDaftar[2]]: ['', '', '', '', ''],
+            [bulanDaftar[3]]: [jpMinggu, jpMinggu, jpMinggu, jpMinggu, ''],
+            [bulanDaftar[4]]: ['', '', '', '', ''],
+            [bulanDaftar[5]]: ['', '', '', '', ''],
+          },
+          keterangan: 'KBM Terbimbing & Penugasan Portofolio Kreatif, Penguatan Karakter Profil Pelajar Pancasila'
         },
         {
           no: 5,
-          elemen: 'Projek & Asesmen Akhir',
+          elemen: 'Asesmen Akhir Semester & Rapor',
           tujuanPembelajaran: 'Mengukur seluruh capaian pembelajaran semester secara komprehensif.',
-          materiPokok: isSemester1 ? 'Sumatif Akhir Semester (SAS) 1 & Rapor' : 'Sumatif Akhir Tahun (SAT) & Kenaikan Kelas',
+          materiPokok: isSemester1 ? 'Sumatif Akhir Semester (SAS) 1 & Pembagian Rapor' : 'Sumatif Akhir Tahun (SAT) & Kenaikan Kelas',
           alokasiJP: jpMinggu * 2,
-          alokasiMingguan: {
-            [`${bulanDaftar[4]}_4`]: 'SAS',
-            [`${bulanDaftar[5]}_1`]: 'SAS',
-            [`${bulanDaftar[5]}_2`]: 'Rapor',
-            [`${bulanDaftar[5]}_3`]: 'LIB',
-            [`${bulanDaftar[5]}_4`]: 'LIB',
-          }
+          matriksMingguan: {
+            [bulanDaftar[0]]: ['', '', '', '', ''],
+            [bulanDaftar[1]]: ['', '', '', '', ''],
+            [bulanDaftar[2]]: ['', '', '', '', ''],
+            [bulanDaftar[3]]: ['', '', '', '', ''],
+            [bulanDaftar[4]]: ['', '', '', '', 'SAS'],
+            [bulanDaftar[5]]: ['SAS', 'Rapor', 'LIB', 'LIB', ''],
+          },
+          keterangan: 'Pelaksanaan Asesmen SAS Terstandar, Pengolahan Nilai Rapor Semester & Penyerahan Hasil Belajar'
         }
-      ]
+      ],
+      rekapitulasiAgenda: {
+        kbmEfektifJP: jpMinggu * 12,
+        asesmenTengahSemesterJP: jpMinggu * 2,
+        asesmenAkhirSemesterJP: jpMinggu * 2,
+        cadanganDanRemedialJP: jpMinggu * 2,
+        totalSemesterJP: totalJPSemester,
+      }
     };
 
     if (!ai) {
@@ -4939,8 +4967,8 @@ ${daftarBabBuku.trim()}
 PETUNJUK WAJIB SUMBER BUKU PAKET:
 1. Jadikan setiap bab/unit di atas sebagai "materiPokok" dalam tabel distribusi PROMES secara runtut (jangan mengubah nama bab buku).
 2. Rumuskan elemen Kurikulum Merdeka dan Tujuan Pembelajaran (TP) terukur untuk masing-masing bab buku tersebut.
-3. Distribusikan alokasi mingguan (kolom bulan & mingguKe) secara realistis sesuai ${jpMinggu} JP per minggu dengan total ± ${pekanEfektif} pekan efektif.
-4. Sisipkan jadwal agenda khusus seperti STS pada akhir bulan ke-3 (minggu 3/4), SAS/SAT pada bulan ke-5/ke-6, dan minggu libur.`
+3. Distribusikan alokasi mingguan (kolom bulan & mingguKe 1..5) secara realistis dengan total alokasi jam sesuai ${jpMinggu} JP per minggu.
+4. Sisipkan jadwal agenda khusus: STS pada bulan ke-3 minggu 3/4, SAS/SAT pada bulan ke-5/ke-6, serta agenda Rapor & Libur.`
         : `SUMBER ACUAN: STANDAR KURIKULUM NASIONAL (CAPAIAN PEMBELAJARAN BSKAP 046/H/KR/2025).
 ${fokusMateri ? `Catatan / Fokus materi khusus dari guru: "${fokusMateri}"` : ''}
 Susunlah bab-bab esensial sesuai standar resmi jenjang SD/MI Fase ${fase} / ${kelas}.`;
@@ -4959,10 +4987,14 @@ INPUT PARAMETER:
 - Guru Pengampu: ${namaPenyusun}
 - Kepala Sekolah: ${namaKepalaSekolah}
 - Bulan: ${bulanDaftar.join(', ')} (masing-masing 5 minggu per bulan)
-- Target Minggu Efektif KBM: ± ${pekanEfektif} pekan (${pekanEfektif * jpMinggu} JP)
+- Target Minggu Efektif KBM: ± ${pekanEfektifNum} pekan (${totalJPSemester} JP)
 ${integrasiIslami ? '- Integrasikan nilai-nilai karakter Islami (ADAB, Al-Qur’an/Hadits, Profil Pelajar Pancasila & Rahmatan Lil Alamin)' : ''}
 
 ${panduanSumberAcuanPromes}
+
+PETUNJUK KHUSUS KOLOM KETERANGAN (SANGAT PENTING):
+Guru menghendaki kalimat keterangan yang lengkap, mendalam, dan lebih banyak untuk tiap pokok bahasan (2-3 klausa / kalimat penjelasan per baris).
+Jelaskan strategi KBM tatap muka, bentuk asesmen formatif (LKPD, observasi, portofolio), serta penanaman adab dan karakter Islami.
 
 OUTPUT DALAM FORMAT JSON MURNI TANPA MARKDOWN:
 {
@@ -4975,31 +5007,39 @@ OUTPUT DALAM FORMAT JSON MURNI TANPA MARKDOWN:
     "tahunPelajaran": "${tahunPelajaran}",
     "penyusun": "${namaPenyusun}",
     "kepalaSekolah": "${namaKepalaSekolah}",
-    "jpPerMinggu": ${jpMinggu}
+    "jpPerMinggu": ${jpMinggu},
+    "totalMingguEfektif": ${pekanEfektifNum},
+    "totalJP": ${totalJPSemester},
+    "modeAcuan": "${modeAcuan}"
   },
-  "bulan": [
-    ${bulanDaftar.map((b) => `{"nama": "${b}", "mingguKe": [1, 2, 3, 4, 5]}`).join(',\n    ')}
-  ],
-  "agendaKhusus": [
-    { "kode": "STS", "nama": "Sumatif Tengah Semester", "warna": "bg-amber-500/20 text-amber-300" },
-    { "kode": "SAS", "nama": "Sumatif Akhir Semester / SAT", "warna": "bg-rose-500/20 text-rose-300" },
-    { "kode": "P5", "nama": "Projek Penguatan P5", "warna": "bg-indigo-500/20 text-indigo-300" },
-    { "kode": "LIB", "nama": "Libur Semester / Nasional", "warna": "bg-slate-700 text-slate-300" }
-  ],
-  "distribusiBab": [
+  "daftarBulan": ${JSON.stringify(bulanDaftar)},
+  "alokasiMateriDanMinggu": [
     {
       "no": 1,
       "elemen": "Nama Elemen",
-      "tujuanPembelajaran": "TP terukur ...",
       "materiPokok": "Bab 1: ...",
-      "alokasiJP": 16,
-      "alokasiMingguan": {
-        "${bulanDaftar[0]}_3": ${jpMinggu},
-        "${bulanDaftar[0]}_4": ${jpMinggu}
-      }
+      "tujuanPembelajaran": "TP terukur ...",
+      "alokasiJP": ${jpMinggu * 4},
+      "matriksMingguan": {
+        "${bulanDaftar[0]}": ["", "", ${jpMinggu}, ${jpMinggu}, ""],
+        "${bulanDaftar[1]}": [${jpMinggu}, ${jpMinggu}, "", "", ""],
+        "${bulanDaftar[2]}": ["", "", "", "", ""],
+        "${bulanDaftar[3]}": ["", "", "", "", ""],
+        "${bulanDaftar[4]}": ["", "", "", "", ""],
+        "${bulanDaftar[5]}": ["", "", "", "", ""]
+      },
+      "keterangan": "KBM Tatap Muka 4 JP/pekan, Diskusi Berbantuan LKPD, Formatif Awal & Pembiasaan Adab Harian"
     }
-  ]
+  ],
+  "rekapitulasiAgenda": {
+    "kbmEfektifJP": ${jpMinggu * Math.max(1, pekanEfektifNum - 4)},
+    "asesmenTengahSemesterJP": ${jpMinggu * 2},
+    "asesmenAkhirSemesterJP": ${jpMinggu * 2},
+    "cadanganDanRemedialJP": 0,
+    "totalSemesterJP": ${totalJPSemester}
+  }
 }
+Catatan: Pada objek "matriksMingguan", setiap bulan harus memiliki array 5 elemen persis [w1, w2, w3, w4, w5]. Isi dengan angka JP (misal ${jpMinggu}) atau kode string khusus seperti "STS", "SAS", "LIB", atau string kosong "" jika tidak ada KBM.
 `;
 
     const response = await generateContentWithRetry(ai, {
@@ -5009,6 +5049,21 @@ OUTPUT DALAM FORMAT JSON MURNI TANPA MARKDOWN:
 
     const text = response.text || '{}';
     const parsed = safeExtractJson(text);
+
+    // Pastikan fallback atau normalisasi jika ada field yang kurang
+    if (!parsed.daftarBulan || !Array.isArray(parsed.daftarBulan)) {
+      parsed.daftarBulan = bulanDaftar;
+    }
+    if (!parsed.identitas) {
+      parsed.identitas = defaultPromes.identitas;
+    }
+    if (!parsed.rekapitulasiAgenda) {
+      parsed.rekapitulasiAgenda = defaultPromes.rekapitulasiAgenda;
+    }
+    if (!Array.isArray(parsed.alokasiMateriDanMinggu) || parsed.alokasiMateriDanMinggu.length === 0) {
+      parsed.alokasiMateriDanMinggu = defaultPromes.alokasiMateriDanMinggu;
+    }
+
     return res.json({ status: 'ok', promes: parsed });
   } catch (err: any) {
     console.error('Error generating Promes with Gemini:', err);
