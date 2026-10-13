@@ -75,6 +75,7 @@ const PRESET_SUBJECTS = [
   'Pendidikan Agama Islam & BP',
   'Akidah Akhlak',
   'Fiqih',
+  'QURDIST (Al-Qur\'an Hadits)',
   'Bahasa Arab',
   'PJOK',
   'Bahasa Inggris',

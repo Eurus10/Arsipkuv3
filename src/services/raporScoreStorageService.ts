@@ -914,8 +914,15 @@ export async function saveRaporWorkspaceToSupabase(
     throw new Error('academicPeriodId dan classId wajib diisi untuk menyimpan nilai ke Supabase.');
   }
 
-  const subjectScoreInputs: UpsertSubjectScoreInput[] = [];
-  const loScoreInputs: UpsertLearningObjectiveScoreInput[] = [];
+  interface SubjectBatchTask {
+    subjectId: string;
+    subjectInputs: UpsertSubjectScoreInput[];
+    loInputs: UpsertLearningObjectiveScoreInput[];
+  }
+
+  const tasks: SubjectBatchTask[] = [];
+  const allSubjectScoreInputs: UpsertSubjectScoreInput[] = [];
+  const allLoScoreInputs: UpsertLearningObjectiveScoreInput[] = [];
 
   const subjectRecordEntries = Object.entries(classData.subjectRecords || {});
 
@@ -925,6 +932,7 @@ export async function saveRaporWorkspaceToSupabase(
     }
 
     const scoreDetails = Object.values(subjectRecord.scores || {});
+    if (scoreDetails.length === 0) continue;
 
     // Identifikasi seluruh ID TP yang dimiliki oleh mapel ini
     const subjMaster = (classData.subjects || []).find((s) => s.id === subjectId);
@@ -935,10 +943,13 @@ export async function saveRaporWorkspaceToSupabase(
       Object.keys(sc.tpAchieved || {}).forEach((id) => subjectTpIds.add(id));
     });
 
+    const inputsForSubject: UpsertSubjectScoreInput[] = [];
+    const loInputsForSubject: UpsertLearningObjectiveScoreInput[] = [];
+
     for (const scoreDetail of scoreDetails) {
       // Selalu sertakan setiap siswa dalam subjectScoreInputs agar perubahan nilai ke null/kosong
       // benar-benar ter-update di database Supabase (memperbaiki bug nilai lama 85 tertinggal saat di-clear).
-      subjectScoreInputs.push({
+      inputsForSubject.push({
         academic_period_id: academicPeriodId,
         class_id: classId,
         student_id: scoreDetail.studentId,
@@ -955,7 +966,7 @@ export async function saveRaporWorkspaceToSupabase(
       for (const tpId of subjectTpIds) {
         const achieved = scoreDetail.tpAchieved?.[tpId];
         const tpScore = scoreDetail.tpScores?.[tpId];
-        loScoreInputs.push({
+        loInputsForSubject.push({
           academic_period_id: academicPeriodId,
           class_id: classId,
           student_id: scoreDetail.studentId,
@@ -970,66 +981,74 @@ export async function saveRaporWorkspaceToSupabase(
         });
       }
     }
+
+    if (inputsForSubject.length > 0 || loInputsForSubject.length > 0) {
+      tasks.push({
+        subjectId,
+        subjectInputs: inputsForSubject,
+        loInputs: loInputsForSubject,
+      });
+      allSubjectScoreInputs.push(...inputsForSubject);
+      allLoScoreInputs.push(...loInputsForSubject);
+    }
   }
 
   // Eksekusi batch upsert ke Supabase
   const session = getActiveEraporSession();
   const sessionToken = session?.sessionToken;
 
-  if (sessionToken && isSupabaseConfigured()) {
+  if (sessionToken && isSupabaseConfigured() && tasks.length > 0) {
     try {
-      // 1. Eksekusi penyimpanan nilai mapel via RPC terpercaya
-      for (const [subjectId, subjectRecord] of subjectRecordEntries) {
-        if (subjectIdFilter && subjectId !== subjectIdFilter) continue;
+      // 1. Eksekusi penyimpanan nilai mapel via RPC terpercaya secara concurrent (paralel per batch)
+      const saveTaskViaRpc = async (task: SubjectBatchTask) => {
+        const promises: Promise<void>[] = [];
 
-        const inputsForSubject = subjectScoreInputs.filter((s) => s.subject_id === subjectId);
-        if (inputsForSubject.length > 0) {
-          const { error: rpcSubErr } = await supabase.rpc('erapor_save_subject_scores', {
-            p_session_token: sessionToken,
-            p_academic_period_id: academicPeriodId,
-            p_class_id: classId,
-            p_subject_id: subjectId,
-            p_scores: inputsForSubject,
-          });
-
-          if (rpcSubErr) {
-            console.error('RPC erapor_save_subject_scores error:', rpcSubErr);
-            throw new Error(`Gagal menyimpan nilai: ${rpcSubErr.message || 'Izin ditolak oleh database.'}`);
-          }
+        if (task.subjectInputs.length > 0) {
+          promises.push((async () => {
+            const { error: rpcSubErr } = await supabase.rpc('erapor_save_subject_scores', {
+              p_session_token: sessionToken,
+              p_academic_period_id: academicPeriodId,
+              p_class_id: classId,
+              p_subject_id: task.subjectId,
+              p_scores: task.subjectInputs,
+            });
+            if (rpcSubErr) {
+              console.error('RPC erapor_save_subject_scores error:', rpcSubErr);
+              throw new Error(`Gagal menyimpan nilai: ${rpcSubErr.message || 'Izin ditolak oleh database.'}`);
+            }
+          })());
         }
 
-        // Ambil seluruh LO score input yang ditujukan untuk TP pada mapel ini
-        const subjMaster = (classData.subjects || []).find((s) => s.id === subjectId);
-        const subjectTpIds = new Set<string>();
-        (subjMaster?.tpList || []).forEach((tp) => subjectTpIds.add(tp.id));
-        const tpObj = subjectRecord.scores;
-        Object.values(tpObj || {}).forEach((sc) => {
-          Object.keys(sc.tpScores || {}).forEach((id) => subjectTpIds.add(id));
-          Object.keys(sc.tpAchieved || {}).forEach((id) => subjectTpIds.add(id));
-        });
-
-        const loInputsForSubject = loScoreInputs.filter((lo) => subjectTpIds.has(lo.learning_objective_id));
-
-        if (loInputsForSubject.length > 0) {
-          const { error: rpcLoErr } = await supabase.rpc('erapor_save_lo_scores', {
-            p_session_token: sessionToken,
-            p_academic_period_id: academicPeriodId,
-            p_class_id: classId,
-            p_subject_id: subjectId,
-            p_scores: loInputsForSubject,
-          });
-
-          if (rpcLoErr) {
-            console.error('RPC erapor_save_lo_scores error:', rpcLoErr);
-            throw new Error(`Gagal menyimpan capaian TP: ${rpcLoErr.message || 'Izin ditolak oleh database.'}`);
-          }
+        if (task.loInputs.length > 0) {
+          promises.push((async () => {
+            const { error: rpcLoErr } = await supabase.rpc('erapor_save_lo_scores', {
+              p_session_token: sessionToken,
+              p_academic_period_id: academicPeriodId,
+              p_class_id: classId,
+              p_subject_id: task.subjectId,
+              p_scores: task.loInputs,
+            });
+            if (rpcLoErr) {
+              console.error('RPC erapor_save_lo_scores error:', rpcLoErr);
+              throw new Error(`Gagal menyimpan capaian TP: ${rpcLoErr.message || 'Izin ditolak oleh database.'}`);
+            }
+          })());
         }
+
+        await Promise.all(promises);
+      };
+
+      // Jalankan batch tasks secara terkelola (4 mapel paralel sekaligus) agar cepat dan efisien tanpa over-saturating koneksi
+      const BATCH_CONCURRENCY = 4;
+      for (let i = 0; i < tasks.length; i += BATCH_CONCURRENCY) {
+        const chunk = tasks.slice(i, i + BATCH_CONCURRENCY);
+        await Promise.all(chunk.map((task) => saveTaskViaRpc(task)));
       }
 
       return {
         success: true,
-        savedSubjectCount: subjectScoreInputs.length,
-        savedLoCount: loScoreInputs.length,
+        savedSubjectCount: allSubjectScoreInputs.length,
+        savedLoCount: allLoScoreInputs.length,
       };
     } catch (rpcExecutionErr: any) {
       // Jika error adalah error otorisasi (42501 / Forbidden / Unauthorized), lemparkan langsung
@@ -1045,18 +1064,17 @@ export async function saveRaporWorkspaceToSupabase(
   }
 
   // Fallback direct batch upsert jika RPC belum ter-apply di Supabase environment
-  if (subjectScoreInputs.length > 0) {
-    await upsertSubjectScores(subjectScoreInputs);
-  }
-
-  if (loScoreInputs.length > 0) {
-    await upsertLearningObjectiveScores(loScoreInputs);
+  if (allSubjectScoreInputs.length > 0 || allLoScoreInputs.length > 0) {
+    await Promise.all([
+      allSubjectScoreInputs.length > 0 ? upsertSubjectScores(allSubjectScoreInputs) : Promise.resolve(),
+      allLoScoreInputs.length > 0 ? upsertLearningObjectiveScores(allLoScoreInputs) : Promise.resolve(),
+    ]);
   }
 
   return {
     success: true,
-    savedSubjectCount: subjectScoreInputs.length,
-    savedLoCount: loScoreInputs.length,
+    savedSubjectCount: allSubjectScoreInputs.length,
+    savedLoCount: allLoScoreInputs.length,
   };
 }
 

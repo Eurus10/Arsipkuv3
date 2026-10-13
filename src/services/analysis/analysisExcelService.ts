@@ -718,7 +718,7 @@ export function generateSubjectWorksheet(
   };
 
   ws[`C${sigRow2}`] = { t: 's', v: 'Kepala SDIT AL FIKRI', s: STYLE_SIGNATURE };
-  ws[`BC${sigRow2}`] = { t: 's', v: 'Guru Kelas / Guru Bidang', s: STYLE_SIGNATURE };
+  ws[`BC${sigRow2}`] = { t: 's', v: 'Guru Kelas', s: STYLE_SIGNATURE };
 
   ws[`C${sigRow3}`] = { t: 's', v: 'H. M. HALIM MUSTOMI, S.Pd.', s: STYLE_SIGNATURE_BOLD };
   ws[`BC${sigRow3}`] = {

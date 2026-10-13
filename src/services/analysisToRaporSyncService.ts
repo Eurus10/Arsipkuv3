@@ -65,7 +65,31 @@ export function matchRaporSubject(
     }
   }
 
-  // 2. Strict Alias Dictionary
+  // 2. Specialized semantic check for Qurdist / Al-Qur'an Hadits family
+  const isQurdistFamily = (str: string) => {
+    const s = normalize(str);
+    return (
+      s.includes('kurdis') ||
+      s.includes('kurdist') ||
+      s.includes('qurdis') ||
+      s.includes('qurdist') ||
+      (s.includes('kuran') && (s.includes('hadis') || s.includes('hadit')))
+    );
+  };
+
+  if (isQurdistFamily(inputSubjectName)) {
+    for (const subj of raporSubjects) {
+      if (
+        isQurdistFamily(subj.name) ||
+        isQurdistFamily(subj.code || '') ||
+        isQurdistFamily(subj.id)
+      ) {
+        return subj;
+      }
+    }
+  }
+
+  // 3. Strict Alias Dictionary
   const aliases: Record<string, string[]> = {
     pai: ['pendidikanagamaislam', 'paibp', 'pai', 'agamaislam', 'agama', 'pendidikanagama'],
     pancasila: ['pendidikanpancasila', 'pancasila', 'ppkn', 'pkn', 'pendpancasila'],
@@ -79,7 +103,26 @@ export function matchRaporSubject(
     bahasa_sunda: ['bahasasunda', 'bsunda', 'sunda', 'muloksunda'],
     akidah_akhlak: ['akidahakhlak', 'akidah', 'aqidahakhlaq', 'aqidahakhlak', 'akidahakhlak', 'aqidah'],
     fiqih: ['fiqih', 'fikih', 'feqih'],
-    quran_hadits: ['alquranhadits', 'quranhadits', 'qurdis', 'alquran'],
+    quran_hadits: [
+      'alquranhadits',
+      'alquranhadist',
+      'alquranhadis',
+      'quranhadits',
+      'quranhadist',
+      'quranhadis',
+      'qurdis',
+      'qurdist',
+      'kurdis',
+      'kurdist',
+      'alquran',
+      'quran',
+      'alhadits',
+      'hadits',
+      'hadist',
+      'hadis',
+      'tahfidzquranhadits',
+      'alqurandishadits',
+    ],
     ski: ['sejarahkebudayaanislam', 'ski', 'sejarahislam'],
     tahfidz: ['tahfidz', 'tahfiz', 'tahfidzulquran'],
     informatika: ['informatika', 'tik', 'informatik'],
@@ -115,7 +158,7 @@ export function matchRaporSubject(
     }
   }
 
-  // 3. Fallback: Word boundary matching
+  // 4. Fallback: Word boundary matching
   const inputWords = (inputSubjectName || '')
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
@@ -334,6 +377,8 @@ export function extractSubjectsFromSubmission(
         const isAuthorizedSubject =
           (subTeacherNorm && (subTeacherNorm === submitterNorm || subTeacherNorm.includes(submitterNorm) || submitterNorm.includes(subTeacherNorm))) ||
           subNameNorm.includes('qur') ||
+          subNameNorm.includes('hadis') ||
+          subNameNorm.includes('hadit') ||
           (roleNorm && subNameNorm.includes(roleNorm));
 
         if (!isAuthorizedSubject) {
