@@ -2150,7 +2150,9 @@ export const buildRekapNilaiKelasWorksheet = (params: {
   const totalDataRows = dataRows.length;
 
   const footerDateRow = Array(totalCols).fill('');
-  footerDateRow[footerColStart] = (config.reportDatePlace || 'Tangerang') + ', ' + formattedToday;
+  const baseReportDate = config.reportDatePlace || 'Depok, 20 Maret 2025';
+  const hasCityInPlace = /,/.test(baseReportDate);
+  footerDateRow[footerColStart] = hasCityInPlace ? `${baseReportDate.split(',')[0].trim()}, ${formattedToday}` : `${baseReportDate}, ${formattedToday}`;
 
   const footerRoleRow = Array(totalCols).fill('');
   footerRoleRow[footerColStart] = 'Guru Mata Pelajaran';
