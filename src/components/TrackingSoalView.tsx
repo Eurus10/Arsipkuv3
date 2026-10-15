@@ -637,52 +637,47 @@ const [activeExamSession, setActiveExamSession] =
   ]);
 
   return (
-    <div className="p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-5 animate-fade-in font-sans">
+    <div className="p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-5 animate-fade-in font-sans text-slate-800">
       {/* Toast Notification */}
       {actionFeedback && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#181B26] border border-amber-400/50 text-slate-100 px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-semibold animate-slide-in">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-semibold animate-slide-in">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span>{actionFeedback}</span>
         </div>
       )}
 
-      {/* Header Banner - Luxury Glassmorphic Header Container with Custom Background Asset */}
-      <div className="border border-[#1e2738] rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 shadow-2xl relative bg-[#0a0e17] transition-all duration-300">
-        {/* Inner Background & Ambient Glows Container with Overflow Hidden */}
-        <div 
-          className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden pointer-events-none bg-cover bg-center"
-          style={{ backgroundImage: `linear-gradient(to right, rgba(10, 14, 23, 0.92), rgba(15, 20, 32, 0.82)), url('/assets/Templateadmin/headertrackingsoal.webp')` }}
-        >
-          <div className="absolute -top-16 -left-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 right-1/3 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
-        </div>
+      {/* Header Banner - High-contrast Clean Glassmorphic Container with School Banner */}
+      <div className="border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 shadow-sm relative bg-white transition-all duration-300 overflow-hidden">
+        {/* Soft Background Accents */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-100/40 via-sky-100/30 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-50/50 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 relative z-10">
           {/* Left Column: Information & Status */}
           <div className="space-y-2 max-w-xl">
             {/* Top Pill Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#131926]/90 border border-amber-500/40 rounded-full text-[10px] sm:text-xs font-bold text-amber-400 uppercase tracking-wider shadow-lg backdrop-blur-md">
-              <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200/80 rounded-full text-[10px] sm:text-xs font-bold text-amber-800 uppercase tracking-wider shadow-xs">
+              <Sparkles className="w-3 h-3 text-amber-600 shrink-0" />
               <span>MONITORING PENDATAAN &amp; PENGUMPULAN SOAL</span>
             </div>
 
             {/* Main Title */}
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
-              Tracking Naskah <span className="bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(56,189,248,0.4)]">Soal Ujian</span>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+              Tracking Naskah <span className="bg-gradient-to-r from-blue-700 via-sky-600 to-indigo-600 bg-clip-text text-transparent">Soal Ujian</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xs sm:text-sm text-slate-300/90 font-medium leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
               Sistem pendataan pengumpulan dan cetak naskah soal per kelas secara berurutan.
             </p>
 
             {/* Bottom Status Badges */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0e131f]/90 border border-[#232d42] rounded-xl text-xs font-semibold text-slate-200 shadow-sm backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse"></span>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs animate-pulse"></span>
                 <span>{activeExamSession.name || 'Pendataan Soal Ujian Aktif'}</span>
               </div>
-              <div className="inline-flex items-center px-3 py-1 bg-[#0e131f]/90 border border-amber-500/50 rounded-xl text-xs font-bold text-amber-400 tracking-wide shadow-sm backdrop-blur-md">
+              <div className="inline-flex items-center px-3 py-1 bg-amber-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-800 tracking-wide shadow-xs">
                 <span>TP {activeExamSession.schoolYear || '2026/2027'}</span>
               </div>
             </div>
@@ -691,10 +686,10 @@ const [activeExamSession, setActiveExamSession] =
           {/* Right Column: Motivation Accent & Horizontal Action Toolbar */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center lg:items-end justify-between lg:justify-end gap-3 sm:gap-4 shrink-0">
             {/* Motivation Quote Accent */}
-            <div className="hidden xl:flex flex-col items-end text-right justify-center pr-4 border-r border-slate-700/60 my-auto">
-              <span className="text-[11px] font-medium text-slate-300">Data Tertata · Proses Lebih Mudah</span>
-              <span className="text-xs font-extrabold text-white tracking-wide">Hasil Lebih Maksimal</span>
-              <div className="w-20 h-0.5 bg-gradient-to-r from-sky-400 to-cyan-300 rounded-full mt-1.5 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
+            <div className="hidden xl:flex flex-col items-end text-right justify-center pr-4 border-r border-slate-200 my-auto">
+              <span className="text-[11px] font-medium text-slate-500">Data Tertata · Proses Lebih Mudah</span>
+              <span className="text-xs font-extrabold text-slate-800 tracking-wide">Hasil Lebih Maksimal</span>
+              <div className="w-20 h-0.5 bg-gradient-to-r from-sky-500 to-indigo-500 rounded-full mt-1.5" />
             </div>
 
             {/* Horizontal Action Toolbar */}
@@ -705,10 +700,10 @@ const [activeExamSession, setActiveExamSession] =
                   type="button"
                   onClick={() => setIsDriveTransitionOpen(true)}
                   title={`Buka Google Drive: ${activeDriveFolderUrl}`}
-                  className="px-3.5 py-2.5 bg-[#121724]/90 border border-[#2b364e] hover:border-amber-400/80 rounded-xl flex items-center gap-2 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 group backdrop-blur-md"
+                  className="px-3.5 py-2.5 bg-white border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 rounded-xl flex items-center gap-2 cursor-pointer shadow-xs transition-all duration-200 group text-slate-700 hover:text-slate-900"
                 >
-                  <FolderOpen className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs font-bold text-slate-200 group-hover:text-amber-300">Kelola Data</span>
+                  <FolderOpen className="w-4 h-4 text-amber-600 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-bold">Kelola Data</span>
                 </button>
 
                 {/* 2. Lampiran */}
@@ -716,14 +711,14 @@ const [activeExamSession, setActiveExamSession] =
                   type="button"
                   onClick={handleCopyDriveUrl}
                   title={copiedLink ? "Tautan Berhasil Disalin!" : "Salin Tautan Google Drive"}
-                  className="px-3.5 py-2.5 bg-[#121724]/90 border border-[#2b364e] hover:border-slate-300/80 rounded-xl flex items-center gap-2 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 group backdrop-blur-md"
+                  className="px-3.5 py-2.5 bg-white border border-slate-200 hover:border-slate-400 hover:bg-slate-50 rounded-xl flex items-center gap-2 cursor-pointer shadow-xs transition-all duration-200 group text-slate-700 hover:text-slate-900"
                 >
                   {copiedLink ? (
-                    <Check className="w-4 h-4 text-emerald-400 animate-bounce" />
+                    <Check className="w-4 h-4 text-emerald-600 animate-bounce" />
                   ) : (
-                    <Paperclip className="w-4 h-4 text-slate-300 group-hover:text-white group-hover:scale-110 transition-transform" />
+                    <Paperclip className="w-4 h-4 text-slate-500 group-hover:scale-110 transition-transform" />
                   )}
-                  <span className="text-xs font-bold text-slate-200 group-hover:text-white">Lampiran</span>
+                  <span className="text-xs font-bold">Lampiran</span>
                 </button>
 
                 {/* 3. Sinkronisasi */}
@@ -732,10 +727,10 @@ const [activeExamSession, setActiveExamSession] =
                   onClick={() => handleSyncDrive(false)}
                   disabled={isSyncingDrive}
                   title="Sinkronkan File Soal dari Google Drive"
-                  className="px-3.5 py-2.5 bg-[#121724]/90 border border-[#2b364e] hover:border-sky-400/80 rounded-xl flex items-center gap-2 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 group disabled:opacity-50 backdrop-blur-md"
+                  className="px-3.5 py-2.5 bg-white border border-slate-200 hover:border-sky-400 hover:bg-sky-50/50 rounded-xl flex items-center gap-2 cursor-pointer shadow-xs transition-all duration-200 group disabled:opacity-50 text-slate-700 hover:text-slate-900"
                 >
-                  <RefreshCw className={`w-4 h-4 text-sky-400 ${isSyncingDrive ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-                  <span className="text-xs font-bold text-slate-200 group-hover:text-sky-300">Sinkronisasi</span>
+                  <RefreshCw className={`w-4 h-4 text-sky-600 ${isSyncingDrive ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+                  <span className="text-xs font-bold">Sinkronisasi</span>
                 </button>
 
                 {/* 4. Aksi ▾ Dropdown */}
@@ -744,10 +739,10 @@ const [activeExamSession, setActiveExamSession] =
                     type="button"
                     onClick={() => setIsActionDropdownOpen(!isActionDropdownOpen)}
                     title="Menu Aksi Lainnya"
-                    className="px-3.5 py-2.5 bg-[#121724]/90 border border-[#2b364e] hover:border-amber-400/80 rounded-xl flex items-center gap-2 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 group backdrop-blur-md"
+                    className="px-3.5 py-2.5 bg-white border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 rounded-xl flex items-center gap-2 cursor-pointer shadow-xs transition-all duration-200 group text-slate-700 hover:text-slate-900"
                   >
-                    <MoreHorizontal className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-bold text-slate-200 group-hover:text-amber-300">Aksi</span>
+                    <MoreHorizontal className="w-4 h-4 text-amber-600" />
+                    <span className="text-xs font-bold">Aksi</span>
                     <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isActionDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -759,46 +754,46 @@ const [activeExamSession, setActiveExamSession] =
                         className="fixed inset-0 z-40" 
                         onClick={() => setIsActionDropdownOpen(false)} 
                       />
-                      <div className="absolute right-0 mt-2 w-56 bg-[#121622] border border-[#2a344d] rounded-2xl shadow-2xl p-1.5 z-50 backdrop-blur-2xl animate-fade-in">
-                        <div className="px-3 py-2 border-b border-[#222a3d] text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl p-1.5 z-50 animate-fade-in">
+                        <div className="px-3 py-2 border-b border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                           Menu Aksi &amp; Pengaturan
                         </div>
                         
                         <button
                           type="button"
                           onClick={() => { setIsActionDropdownOpen(false); setIsSettingsModalOpen(true); }}
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-[#1c2333] text-xs font-medium text-slate-200 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-amber-50 text-xs font-medium text-slate-700 hover:text-slate-900 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
-                          <SlidersHorizontal className="w-4 h-4 text-amber-400" />
+                          <SlidersHorizontal className="w-4 h-4 text-amber-600" />
                           <span>Pengaturan Mapel &amp; Kelas</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => { setIsActionDropdownOpen(false); setIsExportModalOpen(true); }}
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-[#1c2333] text-xs font-medium text-slate-200 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-amber-50 text-xs font-medium text-slate-700 hover:text-slate-900 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
-                          <Download className="w-4 h-4 text-amber-400" />
+                          <Download className="w-4 h-4 text-amber-600" />
                           <span>Export &amp; Cetak Rekap</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => { setIsActionDropdownOpen(false); handleOpenEditDriveModal(); }}
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-[#1c2333] text-xs font-medium text-slate-200 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-sky-50 text-xs font-medium text-slate-700 hover:text-slate-900 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
-                          <Edit2 className="w-4 h-4 text-sky-400" />
+                          <Edit2 className="w-4 h-4 text-sky-600" />
                           <span>Edit Link Google Drive</span>
                         </button>
 
-                        <div className="my-1 border-t border-[#222a3d]" />
+                        <div className="my-1 border-t border-slate-100" />
 
                         <button
                           type="button"
                           onClick={() => { setIsActionDropdownOpen(false); setIsClearModalOpen(true); }}
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-rose-500/15 text-xs font-medium text-rose-400 hover:text-rose-300 flex items-center gap-2.5 transition-colors cursor-pointer"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-rose-50 text-xs font-medium text-rose-600 hover:text-rose-700 flex items-center gap-2.5 transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-4 h-4 text-rose-400" />
+                          <Trash2 className="w-4 h-4 text-rose-600" />
                           <span>Kosongkan Data Ujian</span>
                         </button>
                       </div>
@@ -814,9 +809,9 @@ const [activeExamSession, setActiveExamSession] =
                     type="button"
                     onClick={onRequestLogin}
                     title="Masuk Mode Admin untuk mencentang dan mengubah data tracking"
-                    className="px-4 py-2.5 bg-amber-500/15 border border-amber-500/40 hover:bg-amber-500/25 rounded-xl sm:rounded-2xl flex items-center gap-2 text-xs font-bold text-amber-300 hover:text-amber-200 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 backdrop-blur-md"
+                    className="px-4 py-2.5 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-xl sm:rounded-2xl flex items-center gap-2 text-xs font-bold text-amber-800 cursor-pointer shadow-xs transition-all duration-200"
                   >
-                    <Lock className="w-4 h-4 text-amber-400" />
+                    <Lock className="w-4 h-4 text-amber-600" />
                     <span>Mode Admin</span>
                   </button>
                 )}
@@ -824,9 +819,9 @@ const [activeExamSession, setActiveExamSession] =
                   type="button"
                   onClick={() => setIsExportModalOpen(true)}
                   title="Lihat & Cetak Rekapitulasi Monitoring"
-                  className="px-4 py-2.5 bg-[#121724]/90 border border-[#2b364e] hover:border-amber-400/80 rounded-xl sm:rounded-2xl flex items-center gap-2 text-xs font-bold text-slate-200 hover:text-amber-300 cursor-pointer shadow-lg transition-all duration-200 hover:scale-105 backdrop-blur-md"
+                  className="px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-400 hover:bg-slate-50 rounded-xl sm:rounded-2xl flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 cursor-pointer shadow-xs transition-all duration-200"
                 >
-                  <Download className="w-4 h-4 text-amber-400" />
+                  <Download className="w-4 h-4 text-slate-600" />
                   <span>Lihat &amp; Cetak Rekap</span>
                 </button>
               </div>
@@ -838,22 +833,22 @@ const [activeExamSession, setActiveExamSession] =
       {/* 5 Statistics Cards Horizontal Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* CARD 1: TOTAL TARGET */}
-        <div className="col-span-2 sm:col-span-1 bg-[#121622] border border-[#232d42] hover:border-amber-500/40 rounded-2xl p-3.5 shadow-xl flex flex-col justify-between relative overflow-hidden group transition-all">
+        <div className="col-span-2 sm:col-span-1 bg-white border border-slate-200/90 hover:border-amber-400/80 rounded-2xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden group transition-all">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               TOTAL TARGET
             </span>
-            <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-xs shadow-inner">
-              <Layers className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center font-bold text-xs shadow-xs">
+              <Layers className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div>
-              <div className="text-2xl font-black text-white tracking-tight">
+              <div className="text-2xl font-black text-slate-900 tracking-tight">
                 {stats.totalTarget}
               </div>
-              <div className="text-[10px] text-slate-400 font-medium mt-0.5">
-                Dari <strong className="text-amber-400">
+              <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                Dari <strong className="text-slate-800 font-bold">
                   {masterClasses.filter(
                     (c) => activeExamSession.activeClasses?.[c.id] !== false
                   ).length}
@@ -861,130 +856,130 @@ const [activeExamSession, setActiveExamSession] =
               </div>
             </div>
             {/* Mini SVG Bar Chart Graphic */}
-            <div className="w-12 h-7 flex items-end justify-between gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-              <div className="w-2 bg-amber-500/30 rounded-t h-[40%]" />
-              <div className="w-2 bg-amber-500/50 rounded-t h-[70%]" />
-              <div className="w-2 bg-amber-500/80 rounded-t h-[55%]" />
-              <div className="w-2 bg-amber-400 rounded-t h-[90%]" />
+            <div className="w-12 h-7 flex items-end justify-between gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
+              <div className="w-2 bg-amber-200 rounded-t h-[40%]" />
+              <div className="w-2 bg-amber-300 rounded-t h-[70%]" />
+              <div className="w-2 bg-amber-400 rounded-t h-[55%]" />
+              <div className="w-2 bg-amber-500 rounded-t h-[90%]" />
             </div>
           </div>
         </div>
 
         {/* CARD 2: SUDAH KUMPUL */}
-        <div className="bg-[#121622] border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl p-3.5 shadow-xl flex flex-col justify-between relative overflow-hidden group transition-all">
+        <div className="bg-white border border-emerald-200 hover:border-emerald-400 rounded-2xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden group transition-all">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
               SUDAH KUMPUL
             </span>
-            <div className="w-7 h-7 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-inner">
-              <FileCheck className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center shadow-xs">
+              <FileCheck className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div className="w-full">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-black text-emerald-400">
+                <span className="text-2xl font-black text-emerald-700">
                   {stats.totalCollected}
                 </span>
-                <span className="text-xs font-bold text-emerald-300">
+                <span className="text-xs font-bold text-emerald-600">
                   ({stats.collectedPercentage}%)
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-slate-800/80 rounded-full mt-2 overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                   style={{ width: `${stats.collectedPercentage}%` }}
                 />
               </div>
             </div>
             {/* Mini SVG Wave Trend Chart */}
-            <svg className="w-10 h-6 shrink-0 text-emerald-400 opacity-80 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
+            <svg className="w-10 h-6 shrink-0 text-emerald-600 opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
               <path d="M2 18 Q 10 12, 18 16 T 38 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
             </svg>
           </div>
         </div>
 
         {/* CARD 3: BELUM KUMPUL */}
-        <div className="bg-[#121622] border border-rose-500/30 hover:border-rose-500/60 rounded-2xl p-3.5 shadow-xl flex flex-col justify-between relative overflow-hidden group transition-all">
+        <div className="bg-white border border-rose-200 hover:border-rose-400 rounded-2xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden group transition-all">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider">
               BELUM KUMPUL
             </span>
-            <div className="w-7 h-7 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-inner">
-              <Hourglass className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-center shadow-xs">
+              <Hourglass className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div>
-              <div className="text-2xl font-black text-rose-400">
+              <div className="text-2xl font-black text-rose-700">
                 {stats.totalNotCollected}
               </div>
-              <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+              <div className="text-[11px] text-slate-500 font-medium mt-0.5">
                 Menunggu setor guru
               </div>
             </div>
             {/* Mini SVG Wave Trend Chart */}
-            <svg className="w-10 h-6 shrink-0 text-rose-400 opacity-80 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
+            <svg className="w-10 h-6 shrink-0 text-rose-600 opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
               <path d="M2 6 Q 12 20, 22 10 T 38 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
             </svg>
           </div>
         </div>
 
         {/* CARD 4: SUDAH FOTOCOPY */}
-        <div className="bg-[#121622] border border-sky-500/30 hover:border-sky-500/60 rounded-2xl p-3.5 shadow-xl flex flex-col justify-between relative overflow-hidden group transition-all">
+        <div className="bg-white border border-sky-200 hover:border-sky-400 rounded-2xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden group transition-all">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-sky-700 uppercase tracking-wider">
               SUDAH FOTOCOPY
             </span>
-            <div className="w-7 h-7 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shadow-inner">
-              <Printer className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 flex items-center justify-center shadow-xs">
+              <Printer className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div className="w-full">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-black text-sky-400">
+                <span className="text-2xl font-black text-sky-700">
                   {stats.totalPrinted}
                 </span>
-                <span className="text-xs font-bold text-sky-300">
+                <span className="text-xs font-bold text-sky-600">
                   ({stats.printedPercentage}%)
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-slate-800/80 rounded-full mt-2 overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-100 rounded-full mt-2 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-sky-500 to-cyan-400 rounded-full transition-all duration-500"
+                  className="h-full bg-sky-500 rounded-full transition-all duration-500"
                   style={{ width: `${stats.printedPercentage}%` }}
                 />
               </div>
             </div>
             {/* Mini SVG Wave Trend Chart */}
-            <svg className="w-10 h-6 shrink-0 text-sky-400 opacity-80 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
+            <svg className="w-10 h-6 shrink-0 text-sky-600 opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
               <path d="M2 20 Q 14 10, 24 14 T 38 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
             </svg>
           </div>
         </div>
 
         {/* CARD 5: BELUM FOTOCOPY */}
-        <div className="bg-[#121622] border border-amber-500/30 hover:border-amber-500/60 rounded-2xl p-3.5 shadow-xl flex flex-col justify-between relative overflow-hidden group transition-all">
+        <div className="bg-white border border-amber-200 hover:border-amber-400 rounded-2xl p-4 shadow-xs flex flex-col justify-between relative overflow-hidden group transition-all">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
               BELUM FOTOCOPY
             </span>
-            <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-inner">
-              <Printer className="w-3.5 h-3.5" />
+            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shadow-xs">
+              <Printer className="w-4 h-4" />
             </div>
           </div>
           <div className="flex items-end justify-between gap-2">
             <div>
-              <div className="text-2xl font-black text-amber-400">
+              <div className="text-2xl font-black text-amber-700">
                 {stats.totalNotPrinted}
               </div>
-              <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+              <div className="text-[11px] text-slate-500 font-medium mt-0.5">
                 Menunggu fotocopy
               </div>
             </div>
             {/* Mini SVG Wave Trend Chart */}
-            <svg className="w-10 h-6 shrink-0 text-amber-400 opacity-80 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
+            <svg className="w-10 h-6 shrink-0 text-amber-600 opacity-70 group-hover:opacity-100 transition-opacity" viewBox="0 0 40 24" fill="none">
               <path d="M2 8 Q 12 18, 22 8 T 38 16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
             </svg>
           </div>
@@ -992,11 +987,11 @@ const [activeExamSession, setActiveExamSession] =
       </div>
 
       {/* Filter & Search Panel Container */}
-      <div className="bg-[#121622] border border-[#232d42] rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-xl">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Search Box */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               CARI MAPEL / GURU
             </label>
             <div className="relative">
@@ -1006,20 +1001,20 @@ const [activeExamSession, setActiveExamSession] =
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Ketik nama mapel atau guru..."
-                className="w-full pl-9 pr-3 py-2 bg-[#0c0f17] border border-[#232d42] focus:border-amber-400/80 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors shadow-inner"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors"
               />
             </div>
           </div>
 
           {/* Status Filter */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               FILTER STATUS
             </label>
             <select
               value={selectedStatusFilter}
               onChange={(e) => setSelectedStatusFilter(e.target.value as any)}
-              className="w-full px-3 py-2 bg-[#0c0f17] border border-[#232d42] focus:border-amber-400/80 rounded-xl text-xs font-medium text-white focus:outline-none cursor-pointer shadow-inner"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs font-medium text-slate-900 focus:outline-none cursor-pointer"
             >
               <option value="all">Semua Status Mapel</option>
               <option value="collected">📥 Sudah Kumpul (Semua yang Dikumpulkan)</option>
@@ -1032,7 +1027,7 @@ const [activeExamSession, setActiveExamSession] =
 
           {/* Level Filter */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
               FILTER JENJANG KELAS
             </label>
             <select
@@ -1042,7 +1037,7 @@ const [activeExamSession, setActiveExamSession] =
                   e.target.value === 'all' ? 'all' : Number(e.target.value)
                 )
               }
-              className="w-full px-3 py-2 bg-[#0c0f17] border border-[#232d42] focus:border-amber-400/80 rounded-xl text-xs font-bold text-amber-300 focus:outline-none cursor-pointer shadow-inner"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
             >
               <option value="all">Semua Kelas (1A s/d 6B)</option>
               <option value={1}>Kelas 1 (1A, 1B)</option>
@@ -1056,15 +1051,15 @@ const [activeExamSession, setActiveExamSession] =
         </div>
 
         {/* Quick Filter Pill Buttons */}
-        <div className="flex items-center gap-2 pt-2.5 border-t border-[#232d42] overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[10px] font-bold text-slate-400 mr-1 uppercase flex-shrink-0">KELAS:</span>
+        <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100 overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-[10px] font-bold text-slate-500 mr-1 uppercase flex-shrink-0">KELAS:</span>
           <button
             type="button"
             onClick={() => setSelectedLevelFilter('all')}
             className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex-shrink-0 ${
               selectedLevelFilter === 'all'
-                ? 'bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.5)] font-black'
-                : 'bg-[#0c0f17] hover:bg-slate-800 text-slate-300 border border-[#232d42]'
+                ? 'bg-amber-400 text-slate-950 font-black shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
             }`}
           >
             Semua
@@ -1076,8 +1071,8 @@ const [activeExamSession, setActiveExamSession] =
               onClick={() => setSelectedLevelFilter(lvl)}
               className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex-shrink-0 ${
                 selectedLevelFilter === lvl
-                  ? 'bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.5)] font-black'
-                  : 'bg-[#0c0f17] hover:bg-slate-800 text-slate-300 border border-[#232d42]'
+                  ? 'bg-amber-400 text-slate-950 font-black shadow-xs'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
               }`}
             >
               Kelas {lvl}
@@ -1086,14 +1081,11 @@ const [activeExamSession, setActiveExamSession] =
         </div>
       </div>
 
-      {/* CONTINUOUS 4-COLUMN GRID (NO JENJANG DIVIDERS)
-          Baris 1: 1A, 1B, 2A, 2B
-          Baris 2: 2C, 3A, 3B, 3C (REVISI 4: Kelas 2C proporsional dan disamakan)
-      */}
+      {/* CONTINUOUS 4-COLUMN GRID */}
       {filteredOrderedClasses.length === 0 ? (
-        <div className="bg-[#141722] border border-[#232A3B] rounded-2xl p-8 text-center text-slate-400 space-y-2">
-          <p className="text-sm font-semibold text-slate-300">Tidak ada kelas yang sesuai dengan kriteria filter.</p>
-          <p className="text-xs text-slate-500">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500 space-y-2">
+          <p className="text-sm font-semibold text-slate-700">Tidak ada kelas yang sesuai dengan kriteria filter.</p>
+          <p className="text-xs text-slate-400">
             {selectedStatusFilter === 'collected_unprinted'
               ? 'Semua soal yang terkumpul sudah selesai difotokopi, atau belum ada naskah soal yang masuk.'
               : selectedStatusFilter === 'printed'
@@ -1124,14 +1116,12 @@ const [activeExamSession, setActiveExamSession] =
             const rec = trackingRecords[key];
 
             if (selectedStatusFilter === 'collected') {
-              // Tampilkan SELURUH soal yang sudah dikumpulkan (isCollected === true), baik yang belum atau sudah diprint
               if (!rec?.isCollected) {
                 return false;
               }
             }
 
             if (selectedStatusFilter === 'collected_unprinted') {
-              // Hanya tampilkan jika SUDAH kumpul (isCollected === true) DAN BELUM cetak (!isPrinted)
               if (!rec?.isCollected || rec?.isPrinted) {
                 return false;
               }
@@ -1188,31 +1178,31 @@ const [activeExamSession, setActiveExamSession] =
           return (
             <div
               key={c.id}
-              className="bg-[#181B26] border border-[#272D3E] rounded-2xl overflow-hidden shadow-lg flex flex-col hover:border-slate-600 transition-colors"
+              className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col hover:border-slate-300 hover:shadow-md transition-all"
             >
               {/* Compact Class Card Header */}
-              <div className="p-3 bg-[#151722] border-b border-[#272D3E]">
+              <div className="p-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="w-7 h-7 rounded-xl bg-amber-400 text-slate-950 font-black flex items-center justify-center text-xs shadow-xs flex-shrink-0">
                       {c.name}
                     </span>
                     <div className="min-w-0">
-                      <h3 className="text-xs font-bold text-white leading-none truncate">
+                      <h3 className="text-xs font-bold text-slate-900 leading-none truncate">
                         Kelas {c.name}
                       </h3>
-                      <span className="text-[10px] text-amber-300 font-medium leading-none block mt-0.5 truncate max-w-[120px]" title={`Wali: ${c.waliKelas}`}>
+                      <span className="text-[10px] text-slate-500 font-medium leading-none block mt-0.5 truncate max-w-[120px]" title={`Wali: ${c.waliKelas}`}>
                         Wali: {c.waliKelas}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right text-[10px] font-semibold flex-shrink-0">
-                    <span className={isClassFullyCollected ? 'text-emerald-400' : 'text-slate-300'}>
+                    <span className={isClassFullyCollected ? 'text-emerald-700 font-bold' : 'text-slate-600'}>
                       K: {classCollected}/{c.subjects.length}
                     </span>
-                    <span className="text-slate-500 mx-1">•</span>
-                    <span className={isClassFullyPrinted ? 'text-blue-400' : 'text-slate-300'}>
+                    <span className="text-slate-300 mx-1">•</span>
+                    <span className={isClassFullyPrinted ? 'text-blue-700 font-bold' : 'text-slate-600'}>
                       F: {classPrinted}/{c.subjects.length}
                     </span>
                   </div>
@@ -1220,14 +1210,14 @@ const [activeExamSession, setActiveExamSession] =
 
                 {/* Admin Batch Quick Action Buttons */}
                 {isAdmin && (
-                  <div className="flex items-center justify-end gap-1 mt-2 pt-1.5 border-t border-[#272D3E]/60 text-[10px]">
+                  <div className="flex items-center justify-end gap-1 mt-2 pt-1.5 border-t border-slate-200/80 text-[10px]">
                     <button
                       type="button"
                       onClick={() => handleBatchClass(c, 'isCollected', !isClassFullyCollected)}
                       className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer ${
                         isClassFullyCollected
-                          ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                          : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'
+                          ? 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                          : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                       }`}
                     >
                       {isClassFullyCollected ? 'Reset K' : 'Semua K'}
@@ -1237,8 +1227,8 @@ const [activeExamSession, setActiveExamSession] =
                       onClick={() => handleBatchClass(c, 'isPrinted', !isClassFullyPrinted)}
                       className={`px-2 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer ${
                         isClassFullyPrinted
-                          ? 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                          : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30'
+                          ? 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                          : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
                       }`}
                     >
                       {isClassFullyPrinted ? 'Reset F' : 'Semua F'}
@@ -1251,17 +1241,17 @@ const [activeExamSession, setActiveExamSession] =
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11px] border-collapse table-fixed">
                   <thead>
-                    <tr className="bg-[#12141D] text-[10px] font-bold text-slate-400 border-b border-[#272D3E]">
+                    <tr className="bg-slate-100/75 text-[10px] font-bold text-slate-600 border-b border-slate-200">
                       <th className="py-1 px-1.5 w-6 text-center">NO</th>
                       <th className="py-1 px-2">MAPEL</th>
                       <th className="py-1 px-1.5 w-14 text-center">KUMPUL</th>
                       <th className="py-1 px-1.5 w-16 text-center">FOTOCOPY</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#272D3E]/40">
+                  <tbody className="divide-y divide-slate-100">
                     {subjectsList.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-4 text-center text-slate-500 text-[10px]">
+                        <td colSpan={4} className="py-4 text-center text-slate-400 text-[10px]">
                           Tidak ada mapel
                         </td>
                       </tr>
@@ -1273,13 +1263,13 @@ const [activeExamSession, setActiveExamSession] =
                         const isPrint = !!rec?.isPrinted;
 
                         return (
-                          <tr key={sub.id} className="hover:bg-slate-800/30 transition-colors">
-                            <td className="py-1 px-1.5 text-center text-slate-500 text-[10px] font-semibold">
+                          <tr key={sub.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-1 px-1.5 text-center text-slate-400 text-[10px] font-semibold">
                               {idx + 1}
                             </td>
-                            <td className="py-1 px-2 text-slate-200 truncate">
+                            <td className="py-1 px-2 text-slate-700 truncate">
                               <div
-                                className="font-semibold text-white truncate"
+                                className="font-semibold text-slate-800 truncate"
                                 title={formatSubjectDisplayName(sub.name, sub.teacher)}
                               >
                                 {formatSubjectDisplayName(sub.name, sub.teacher)}
@@ -1298,8 +1288,8 @@ const [activeExamSession, setActiveExamSession] =
                                     }
                                     className={`w-full py-0.5 px-1 rounded text-[10px] font-extrabold flex items-center justify-center transition-all cursor-pointer ${
                                       isKumpul
-                                        ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40'
-                                        : 'bg-slate-900/90 text-slate-500 border border-slate-800 hover:text-slate-300'
+                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-black'
+                                        : 'bg-slate-100 text-slate-400 border border-slate-200 hover:text-slate-600'
                                     }`}
                                   >
                                     {isKumpul ? '✓' : '—'}
@@ -1311,7 +1301,7 @@ const [activeExamSession, setActiveExamSession] =
                                         ? `Status Kumpul: Sudah dikumpulkan${rec?.collectedAt ? ` (${new Date(rec.collectedAt).toLocaleDateString('id-ID')} ${new Date(rec.collectedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })})` : ''}`
                                         : 'Status Kumpul: Belum dikumpulkan'
                                     }
-                                    className={isKumpul ? 'text-emerald-400 font-bold' : 'text-slate-600'}
+                                    className={isKumpul ? 'text-emerald-600 font-bold' : 'text-slate-400'}
                                   >
                                     {isKumpul ? '✓' : '—'}
                                   </span>
@@ -1321,7 +1311,7 @@ const [activeExamSession, setActiveExamSession] =
                                     href={rec.driveFileUrl || rec.driveUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="p-0.5 text-amber-400 hover:text-amber-300 transition-colors flex-shrink-0"
+                                    className="p-0.5 text-amber-600 hover:text-amber-700 transition-colors flex-shrink-0"
                                     title="Buka File Soal di Google Drive"
                                   >
                                     <ExternalLink className="w-3 h-3" />
@@ -1341,8 +1331,8 @@ const [activeExamSession, setActiveExamSession] =
                                   }
                                   className={`w-full py-0.5 px-1 rounded text-[10px] font-extrabold flex items-center justify-center transition-all cursor-pointer ${
                                     isPrint
-                                      ? 'bg-blue-500/25 text-blue-300 border border-blue-500/40'
-                                      : 'bg-slate-900/90 text-slate-500 border border-slate-800 hover:text-slate-300'
+                                      ? 'bg-blue-100 text-blue-800 border border-blue-300 font-black'
+                                      : 'bg-slate-100 text-slate-400 border border-slate-200 hover:text-slate-600'
                                   }`}
                                 >
                                   {isPrint ? '✓' : '—'}
@@ -1354,7 +1344,7 @@ const [activeExamSession, setActiveExamSession] =
                                       ? `Status Fotocopy: Sudah dicetak/fotocopy${rec?.printedAt ? ` (${new Date(rec.printedAt).toLocaleDateString('id-ID')} ${new Date(rec.printedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })})` : ''}`
                                       : 'Status Fotocopy: Belum dicetak/fotocopy'
                                   }
-                                  className={isPrint ? 'text-blue-400 font-bold' : 'text-slate-600'}
+                                  className={isPrint ? 'text-blue-600 font-bold' : 'text-slate-400'}
                                 >
                                   {isPrint ? '✓' : '—'}
                                 </span>
@@ -1375,39 +1365,39 @@ const [activeExamSession, setActiveExamSession] =
 
       {/* Modal Edit Link Google Drive Folder */}
       {isEditDriveModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg bg-[#181B26] border border-[#2B3245] rounded-3xl p-6 shadow-2xl text-slate-100 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in font-sans">
+          <div className="w-full max-w-lg bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xl text-slate-800 relative">
             <button
               type="button"
               onClick={() => setIsEditDriveModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#252B3B] transition-colors cursor-pointer"
+              className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#24293A]">
-              <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400 flex items-center justify-center flex-shrink-0">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center flex-shrink-0">
                 <FolderOpen className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-slate-900">
                   Pengaturan Tautan Google Drive Soal
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Update tautan folder tempat guru mengunggah & menyimpan file soal
                 </p>
               </div>
             </div>
 
             {driveSaveError && (
-              <div className="mb-4 p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-xs text-rose-300">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700">
                 {driveSaveError}
               </div>
             )}
 
             <form onSubmit={handleSaveDriveUrl} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   URL / Tautan Folder Google Drive *
                 </label>
                 <div className="relative">
@@ -1418,7 +1408,7 @@ const [activeExamSession, setActiveExamSession] =
                     value={tempDriveUrlInput}
                     onChange={(e) => setTempDriveUrlInput(e.target.value)}
                     placeholder="https://drive.google.com/drive/folders/..."
-                    className="w-full pl-9 pr-3 py-2.5 bg-[#12141D] border border-[#2B3245] focus:border-amber-400 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -1429,34 +1419,34 @@ const [activeExamSession, setActiveExamSession] =
                     href={sanitizeDriveUrl(tempDriveUrlInput)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
                   >
-                    <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
+                    <ExternalLink className="w-3.5 h-3.5 text-amber-600" />
                     <span>Uji Tautan</span>
                   </a>
                 )}
                 <button
                   type="button"
                   onClick={handleCopyDriveUrl}
-                  className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  {copiedLink ? <CheckCheck className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedLink ? <CheckCheck className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedLink ? 'Tersalin' : 'Salin URL'}</span>
                 </button>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-[#24293A]">
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsEditDriveModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingDrive}
-                  className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+                  className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                 >
                   <Save className="w-4 h-4" />
                   <span>{isSavingDrive ? 'Menyimpan...' : 'Simpan Link'}</span>
@@ -1469,38 +1459,38 @@ const [activeExamSession, setActiveExamSession] =
 
       {/* Confirmation Modal to Clear All Tracking Data */}
       {isClearModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#181B26] border border-rose-500/40 rounded-3xl p-6 shadow-2xl text-slate-100 relative">
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#24293A]">
-              <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/40 text-rose-400 flex items-center justify-center flex-shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in font-sans">
+          <div className="w-full max-w-md bg-white border border-rose-200 rounded-3xl p-6 shadow-2xl text-slate-800 relative">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-slate-900">
                   Kosongkan Seluruh Data Tracking?
                 </h3>
-                <p className="text-xs text-rose-300">
+                <p className="text-xs text-rose-600">
                   Tindakan ini akan mereset centang kumpul & print untuk menghadapi ujian baru.
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 mb-6 leading-relaxed">
+            <p className="text-xs text-slate-600 mb-6 leading-relaxed">
               Semua status pengumpulan soal akan dikembalikan ke posisi 0 (belum kumpul). Master data mapel dan kelas tetap aman.
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#24293A]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setIsClearModalOpen(false)}
-                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmClearAll}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
               >
                 Ya, Kosongkan Data
               </button>
@@ -1578,19 +1568,19 @@ const [activeExamSession, setActiveExamSession] =
 
       {/* Modal Log & Diagnostik Sinkronisasi Google Drive (Hasil Transparan) */}
       {syncResultModalData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-          <div className="w-full max-w-3xl bg-[#141722] border border-amber-500/30 rounded-3xl p-6 shadow-2xl text-slate-100 relative max-h-[90vh] flex flex-col my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto font-sans">
+          <div className="w-full max-w-3xl bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl text-slate-800 relative max-h-[90vh] flex flex-col my-auto">
             {/* Modal Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-[#24293A]">
+            <div className="flex items-start justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center flex-shrink-0">
                   <RefreshCw className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                     Hasil Diagnostik & Sinkronisasi Drive
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Detail pemindaian file naskah soal dari folder Google Drive
                   </p>
                 </div>
@@ -1599,7 +1589,7 @@ const [activeExamSession, setActiveExamSession] =
               <button
                 type="button"
                 onClick={() => setSyncResultModalData(null)}
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1607,37 +1597,37 @@ const [activeExamSession, setActiveExamSession] =
 
             {/* Top Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
-              <div className="bg-[#1C2030] border border-slate-700/50 rounded-2xl p-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0">
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                   <FolderCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400 font-medium">Total File Terbaca</div>
-                  <div className="text-lg font-extrabold text-white">
+                  <div className="text-[10px] text-slate-500 font-medium">Total File Terbaca</div>
+                  <div className="text-lg font-extrabold text-slate-900">
                     {syncResultModalData.totalDriveFilesFound}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-[#1C2030] border border-emerald-500/30 rounded-2xl p-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <div className="bg-slate-50 border border-emerald-200 rounded-2xl p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-[10px] text-emerald-400/90 font-medium">Tercocokkan (Kumpul)</div>
-                  <div className="text-lg font-extrabold text-emerald-300">
+                  <div className="text-[10px] text-emerald-700 font-medium">Tercocokkan (Kumpul)</div>
+                  <div className="text-lg font-extrabold text-emerald-700">
                     {syncResultModalData.matchedCount}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-[#1C2030] border border-amber-500/30 rounded-2xl p-3 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0">
+              <div className="bg-slate-50 border border-amber-200 rounded-2xl p-3 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
                   <HelpCircle className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-[10px] text-amber-400/90 font-medium">Belum Matched</div>
-                  <div className="text-lg font-extrabold text-amber-300">
+                  <div className="text-[10px] text-amber-700 font-medium">Belum Matched</div>
+                  <div className="text-lg font-extrabold text-amber-700">
                     {syncResultModalData.unmatchedFiles.length}
                   </div>
                 </div>
@@ -1645,14 +1635,14 @@ const [activeExamSession, setActiveExamSession] =
             </div>
 
             {/* Modal Tabs */}
-            <div className="flex items-center gap-2 border-b border-[#24293A] pb-2 mb-4">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-2 mb-4">
               <button
                 type="button"
                 onClick={() => setSyncModalTab('matched')}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   syncModalTab === 'matched'
-                    ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1664,8 +1654,8 @@ const [activeExamSession, setActiveExamSession] =
                 onClick={() => setSyncModalTab('unmatched')}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   syncModalTab === 'unmatched'
-                    ? 'bg-amber-600/30 text-amber-300 border border-amber-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    ? 'bg-amber-50 text-amber-800 border border-amber-200 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -1677,8 +1667,8 @@ const [activeExamSession, setActiveExamSession] =
                 onClick={() => setSyncModalTab('guide')}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ml-auto ${
                   syncModalTab === 'guide'
-                    ? 'bg-sky-600/30 text-sky-300 border border-sky-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                    ? 'bg-sky-50 text-sky-700 border border-sky-200 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
@@ -1692,9 +1682,9 @@ const [activeExamSession, setActiveExamSession] =
               {syncModalTab === 'matched' && (
                 <div>
                   {syncResultModalData.matchedDetails.length === 0 ? (
-                    <div className="text-center py-8 bg-[#181B26] rounded-2xl border border-dashed border-slate-700">
-                      <FileCheck className="w-10 h-10 text-slate-500 mx-auto mb-2 opacity-60" />
-                      <p className="text-xs text-slate-300 font-medium">
+                    <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <FileCheck className="w-10 h-10 text-slate-400 mx-auto mb-2 opacity-60" />
+                      <p className="text-xs text-slate-600 font-medium">
                         Belum ada file soal yang cocok dengan tabel kelas & mapel aktif.
                       </p>
                       <p className="text-[11px] text-slate-400 mt-1">
@@ -1706,18 +1696,18 @@ const [activeExamSession, setActiveExamSession] =
                       {syncResultModalData.matchedDetails.map((item, idx) => (
                         <div
                           key={idx}
-                          className="p-3 bg-[#1A1E2C] border border-emerald-500/20 rounded-2xl flex items-center justify-between gap-3 hover:border-emerald-500/40 transition-colors"
+                          className="p-3 bg-slate-50 border border-emerald-100 rounded-2xl flex items-center justify-between gap-3 hover:border-emerald-300 transition-colors"
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <span className="px-2.5 py-1 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold rounded-lg flex-shrink-0">
+                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg flex-shrink-0">
                               Kelas {item.classId}
                             </span>
                             <div className="min-w-0">
-                              <div className="text-xs font-bold text-white truncate">
+                              <div className="text-xs font-bold text-slate-800 truncate">
                                 {item.subjectName}
                               </div>
-                              <div className="text-[11px] text-slate-400 truncate flex items-center gap-1">
-                                <FileText className="w-3 h-3 text-emerald-400" />
+                              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                                <FileText className="w-3 h-3 text-emerald-600" />
                                 {item.fileName}
                               </div>
                             </div>
@@ -1728,7 +1718,7 @@ const [activeExamSession, setActiveExamSession] =
                               href={item.driveUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-sm"
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-xs"
                             >
                               <span>Buka File</span>
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -1744,18 +1734,18 @@ const [activeExamSession, setActiveExamSession] =
               {/* Tab 2: Unmatched Files */}
               {syncModalTab === 'unmatched' && (
                 <div>
-                  <div className="p-3 mb-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs text-amber-200/90 leading-relaxed flex items-start gap-2.5">
-                    <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="p-3 mb-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 leading-relaxed flex items-start gap-2.5">
+                    <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
                       File di bawah ini ditemukan di Google Drive Anda, namun sistem belum mengenali nama kelas atau mata pelajarannya. 
-                      <strong className="text-amber-300 ml-1">Saran:</strong> Tambahkan kode kelas (misal <code className="bg-amber-950/60 px-1 rounded text-amber-300">1A</code>) dan nama mapel (misal <code className="bg-amber-950/60 px-1 rounded text-amber-300">Matematika</code>) pada nama file di Drive.
+                      <strong className="text-amber-900 ml-1">Saran:</strong> Tambahkan kode kelas (misal <code className="bg-amber-100 px-1 rounded text-amber-900 font-bold">1A</code>) dan nama mapel (misal <code className="bg-amber-100 px-1 rounded text-amber-900 font-bold">Matematika</code>) pada nama file di Drive.
                     </div>
                   </div>
 
                   {syncResultModalData.unmatchedFiles.length === 0 ? (
-                    <div className="text-center py-8 bg-[#181B26] rounded-2xl border border-dashed border-slate-700">
-                      <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2 opacity-80" />
-                      <p className="text-xs text-emerald-300 font-medium">
+                    <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2 opacity-80" />
+                      <p className="text-xs text-emerald-700 font-medium">
                         Luar biasa! Tidak ada file yang tidak cocok. Seluruh file di Drive berhasil dikenali.
                       </p>
                     </div>
@@ -1764,15 +1754,15 @@ const [activeExamSession, setActiveExamSession] =
                       {syncResultModalData.unmatchedFiles.map((file, idx) => (
                         <div
                           key={file.id || idx}
-                          className="p-3 bg-[#1A1E2C] border border-amber-500/20 rounded-2xl flex items-center justify-between gap-3"
+                          className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3"
                         >
                           <div className="min-w-0">
-                            <div className="text-xs font-semibold text-slate-200 truncate flex items-center gap-1.5">
-                              <FileText className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                            <div className="text-xs font-semibold text-slate-800 truncate flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                               <span className="truncate">{file.name}</span>
                             </div>
                             {file.path && (
-                              <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                              <div className="text-[10px] text-slate-500 mt-0.5 truncate">
                                 Subfolder: {file.path}
                               </div>
                             )}
@@ -1783,7 +1773,7 @@ const [activeExamSession, setActiveExamSession] =
                               href={file.webViewLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs transition-colors flex items-center gap-1 flex-shrink-0 cursor-pointer"
+                              className="px-2.5 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs transition-colors flex items-center gap-1 flex-shrink-0 cursor-pointer"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                               <span>Buka</span>
@@ -1798,17 +1788,17 @@ const [activeExamSession, setActiveExamSession] =
 
               {/* Tab 3: Panduan & API Key */}
               {syncModalTab === 'guide' && (
-                <div className="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <div className="space-y-4 text-xs text-slate-600 leading-relaxed">
                   {/* Option A: Public Share */}
-                  <div className="p-4 bg-[#181C2B] border border-sky-500/30 rounded-2xl space-y-2">
-                    <h4 className="font-bold text-sky-300 text-sm flex items-center gap-2">
-                      <FolderOpen className="w-4 h-4 text-sky-400" />
+                  <div className="p-4 bg-sky-50/50 border border-sky-200 rounded-2xl space-y-2">
+                    <h4 className="font-bold text-sky-900 text-sm flex items-center gap-2">
+                      <FolderOpen className="w-4 h-4 text-sky-600" />
                       Langkah 1: Atur Hak Akses Folder Google Drive
                     </h4>
-                    <p className="text-slate-300">
+                    <p className="text-slate-600">
                       Agar sistem dapat memindai file tanpa hambatan, buka folder Google Drive Anda dan ubah pengaturan aksesnya:
                     </p>
-                    <ol className="list-decimal list-inside space-y-1 pl-1 text-slate-300 font-medium">
+                    <ol className="list-decimal list-inside space-y-1 pl-1 text-slate-700 font-medium">
                       <li>Buka folder penyimpanan naskah soal di Google Drive.</li>
                       <li>Klik tombol <strong>"Bagikan" (Share)</strong> di pojok kanan atas folder.</li>
                       <li>Di bagian <em>Akses Umum (General Access)</em>, ubah dari <strong>Dibatasi</strong> menjadi <strong>"Siapa saja yang memiliki link"</strong>.</li>
@@ -1818,15 +1808,15 @@ const [activeExamSession, setActiveExamSession] =
                   </div>
 
                   {/* Option B: Standard Naming Format */}
-                  <div className="p-4 bg-[#181C2B] border border-emerald-500/30 rounded-2xl space-y-2">
-                    <h4 className="font-bold text-emerald-300 text-sm flex items-center gap-2">
-                      <FileCheck className="w-4 h-4 text-emerald-400" />
+                  <div className="p-4 bg-emerald-50/50 border border-emerald-200 rounded-2xl space-y-2">
+                    <h4 className="font-bold text-emerald-900 text-sm flex items-center gap-2">
+                      <FileCheck className="w-4 h-4 text-emerald-600" />
                       Langkah 2: Format Penamaan File yang Disarankan
                     </h4>
-                    <p>
+                    <p className="text-slate-600">
                       Sistem menggunakan kecerdasan pencocokan otomatis (*Flex-Matching*). Pastikan nama file atau file di subfolder memuat kode kelas dan nama mapel:
                     </p>
-                    <div className="bg-[#11131D] p-3 rounded-xl space-y-1 font-mono text-[11px] text-emerald-300 border border-emerald-950">
+                    <div className="bg-white p-3 rounded-xl space-y-1 font-mono text-[11px] text-emerald-800 border border-emerald-200">
                       <div>• 1A_Matematika_Soal_PAS.docx</div>
                       <div>• Soal PAS Kelas 1-A PAI.pdf</div>
                       <div>• 2B IPAS Ujian Akhir.docx</div>
@@ -1835,20 +1825,20 @@ const [activeExamSession, setActiveExamSession] =
                   </div>
 
                   {/* Option C: Google Drive API Key Setup */}
-                  <div className="p-4 bg-[#181C2B] border border-slate-700 rounded-2xl space-y-2">
-                    <h4 className="font-bold text-white text-sm flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                    <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-500" />
                       Langkah 3: Mengaktifkan Google Drive API Key (Opsional)
                     </h4>
-                    <p>
+                    <p className="text-slate-600">
                       Jika folder Anda bersifat privat atau Anda ingin mempercepat proses sinkronisasi melalui API resmi Google:
                     </p>
-                    <ol className="list-decimal list-inside space-y-1 pl-1 text-slate-300">
-                      <li>Buka <strong>Google Cloud Console</strong> (<a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-sky-400 underline">console.cloud.google.com</a>).</li>
+                    <ol className="list-decimal list-inside space-y-1 pl-1 text-slate-700">
+                      <li>Buka <strong>Google Cloud Console</strong> (<a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-sky-600 underline">console.cloud.google.com</a>).</li>
                       <li>Buka menu <strong>APIs & Services &gt; Library</strong>.</li>
                       <li>Cari <strong>Google Drive API</strong> lalu klik <strong>Enable (Aktifkan)</strong>.</li>
                       <li>Buka menu <strong>APIs & Services &gt; Credentials</strong>, lalu klik <strong>Create Credentials &gt; API Key</strong>.</li>
-                      <li>Salin Kunci API tersebut dan masukkan sebagai environment variable <code className="bg-slate-800 px-1 py-0.5 rounded text-amber-300">GOOGLE_DRIVE_API_KEY</code> di pengaturan server.</li>
+                      <li>Salin Kunci API tersebut dan masukkan sebagai environment variable <code className="bg-slate-200 px-1 py-0.5 rounded text-slate-800">GOOGLE_DRIVE_API_KEY</code> di pengaturan server.</li>
                     </ol>
                   </div>
                 </div>
@@ -1856,14 +1846,14 @@ const [activeExamSession, setActiveExamSession] =
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-between pt-4 mt-4 border-t border-[#24293A]">
-              <div className="text-[11px] text-slate-400">
+            <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100">
+              <div className="text-[11px] text-slate-500">
                 {syncResultModalData.totalDriveFilesFound > 0 ? (
                   <span>
-                    Status: Dipindai melalui <strong className="text-slate-200">{syncResultModalData.apiMethodUsed || 'Pembaca Folder Publik'}</strong>
+                    Status: Dipindai melalui <strong className="text-slate-700">{syncResultModalData.apiMethodUsed || 'Pembaca Folder Publik'}</strong>
                   </span>
                 ) : (
-                  <span className="text-amber-400">
+                  <span className="text-amber-700">
                     Pastikan folder Drive diset publik atau beri nama file sesuai format.
                   </span>
                 )}
@@ -1872,7 +1862,7 @@ const [activeExamSession, setActiveExamSession] =
               <button
                 type="button"
                 onClick={() => setSyncResultModalData(null)}
-                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
               >
                 Tutup Diagnostik
               </button>

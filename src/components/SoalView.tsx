@@ -376,7 +376,7 @@ export const SoalView: React.FC<SoalViewProps> = ({
       className="
         mx-auto max-w-[1440px]
         px-4 py-5
-        text-slate-100
+        text-slate-900
         sm:px-6 sm:py-7
         lg:px-8
         xl:px-10
@@ -390,35 +390,30 @@ export const SoalView: React.FC<SoalViewProps> = ({
         className="
           relative overflow-hidden
           rounded-[28px]
-          border border-white/[0.09]
-          bg-[linear-gradient(135deg,rgba(18,24,42,0.88),rgba(11,17,31,0.94))]
-          shadow-[0_20px_70px_rgba(0,0,0,0.22)]
-          backdrop-blur-2xl
+          border border-emerald-900/20
+          bg-emerald-950
+          p-5 sm:p-7
+          shadow-lg
         "
       >
-        <div className="pointer-events-none absolute -left-24 -top-28 h-72 w-72 rounded-full bg-fuchsia-500/[0.08] blur-3xl" />
+        <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-teal-500/10 blur-3xl" />
 
-        <div className="pointer-events-none absolute -right-20 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full bg-blue-500/[0.10] blur-3xl" />
-
-        <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-        <div className="relative z-10 flex flex-col justify-between gap-5 p-5 sm:p-7 lg:flex-row lg:items-center">
+        <div className="relative z-10 flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
           <div className="min-w-0">
             <div
               className="
-                mb-3 inline-flex items-center gap-2
+                mb-2.5 inline-flex items-center gap-2
                 rounded-full
-                border border-fuchsia-300/20
-                bg-fuchsia-400/[0.07]
-                px-3 py-1.5
-                text-[10px] font-black uppercase
-                tracking-[0.16em]
-                text-fuchsia-200
-                backdrop-blur-xl
+                border border-emerald-500/30
+                bg-emerald-500/20
+                px-3 py-1
+                text-[10px] font-bold uppercase
+                tracking-wider
+                text-emerald-200
               "
             >
               <FolderOpen className="h-3.5 w-3.5" />
-
               <span>Galeri Bank Soal</span>
             </div>
 
@@ -427,16 +422,14 @@ export const SoalView: React.FC<SoalViewProps> = ({
                 font-heading
                 text-2xl font-black
                 tracking-tight text-white
-                sm:text-4xl
+                sm:text-3xl lg:text-4xl
               "
             >
               Bank Soal & Naskah Evaluasi
             </h1>
 
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-400 sm:text-sm">
-              Akses langsung naskah soal ujian
-              berdasarkan tahun pelajaran dan
-              jenis ujian.
+            <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-emerald-100/80 sm:text-sm">
+              Akses langsung naskah soal ujian berdasarkan tahun pelajaran dan jenis ujian resmi Kurikulum Merdeka.
             </p>
           </div>
 
@@ -445,12 +438,11 @@ export const SoalView: React.FC<SoalViewProps> = ({
             className="
               shrink-0
               rounded-2xl
-              border border-white/[0.09]
-              bg-white/[0.035]
+              border border-white/15
+              bg-white/10
               p-4
-              backdrop-blur-2xl
-              shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]
-              lg:min-w-[290px]
+              backdrop-blur-md
+              lg:min-w-[280px]
             "
           >
             <div className="flex items-center gap-3">
@@ -459,9 +451,9 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   flex h-10 w-10 shrink-0
                   items-center justify-center
                   rounded-xl
-                  border border-cyan-300/20
-                  bg-cyan-400/[0.08]
-                  text-cyan-200
+                  border border-emerald-400/30
+                  bg-emerald-400/20
+                  text-emerald-200
                 "
               >
                 <GraduationCap className="h-5 w-5" />
@@ -472,9 +464,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   SDIT AL FIKRI
                 </h3>
 
-                <p className="mt-0.5 text-[9px] leading-relaxed text-cyan-200/65">
-                  Religius, Berprestasi dan
-                  Berwawasan Lingkungan
+                <p className="mt-0.5 text-[9px] leading-relaxed text-emerald-100/70">
+                  Religius, Berprestasi dan Berwawasan Lingkungan
                 </p>
               </div>
             </div>
@@ -493,11 +484,10 @@ export const SoalView: React.FC<SoalViewProps> = ({
             flex items-center justify-between gap-3
             overflow-hidden
             rounded-2xl
-            border border-blue-300/15
-            bg-blue-400/[0.055]
+            border border-sky-200
+            bg-sky-50
             p-3.5
-            backdrop-blur-xl
-            shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]
+            shadow-xs
           "
         >
           <div className="flex min-w-0 items-center gap-3">
@@ -506,22 +496,20 @@ export const SoalView: React.FC<SoalViewProps> = ({
                 flex h-9 w-9 shrink-0
                 items-center justify-center
                 rounded-xl
-                border border-blue-300/20
-                bg-blue-400/[0.08]
-                text-blue-200
+                border border-sky-200
+                bg-sky-100
+                text-sky-700
               "
             >
               <Info className="h-4 w-4" />
             </div>
 
-            <p className="text-[11px] leading-relaxed text-blue-100/75 sm:text-xs">
+            <p className="text-[11px] leading-relaxed text-sky-800 sm:text-xs">
               Setiap tahun pelajaran memiliki{' '}
-              <strong className="text-blue-100">
+              <strong className="text-sky-950">
                 4 jenis ujian utama
               </strong>
-              : STS 1, SAS 1, STS 2, dan SAT
-              untuk seluruh kelas 1–6 dan semua
-              mata pelajaran.
+              : STS 1, SAS 1, STS 2, dan SAT untuk seluruh kelas 1–6 dan semua mata pelajaran.
             </p>
           </div>
 
@@ -533,10 +521,10 @@ export const SoalView: React.FC<SoalViewProps> = ({
             className="
               shrink-0 rounded-lg
               p-1.5
-              text-blue-200/50
+              text-sky-400
               transition-all
-              hover:bg-blue-400/10
-              hover:text-white
+              hover:bg-sky-100
+              hover:text-sky-800
               cursor-pointer
             "
             title="Tutup informasi"
@@ -558,10 +546,9 @@ export const SoalView: React.FC<SoalViewProps> = ({
               className="
                 flex items-center
                 rounded-2xl
-                border border-white/[0.08]
-                bg-white/[0.035]
+                border border-slate-200
+                bg-slate-100
                 p-1
-                backdrop-blur-xl
               "
             >
               <button
@@ -577,8 +564,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   cursor-pointer
                   ${
                     sortOrder === 'newest'
-                      ? 'bg-white/[0.11] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]'
-                      : 'text-slate-500 hover:text-slate-200'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }
                 `}
               >
@@ -598,8 +585,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   cursor-pointer
                   ${
                     sortOrder === 'oldest'
-                      ? 'bg-white/[0.11] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]'
-                      : 'text-slate-500 hover:text-slate-200'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
                   }
                 `}
               >
@@ -614,14 +601,12 @@ export const SoalView: React.FC<SoalViewProps> = ({
                 flex h-10 w-10
                 items-center justify-center
                 rounded-xl
-                border border-white/[0.08]
-                bg-white/[0.035]
-                text-slate-400
-                backdrop-blur-xl
+                border border-slate-200
+                bg-slate-100
+                text-slate-600
                 transition-all
-                hover:border-white/[0.15]
-                hover:bg-white/[0.07]
-                hover:text-white
+                hover:bg-slate-200
+                hover:text-slate-900
                 cursor-pointer
               "
               title="Balik urutan"
@@ -632,7 +617,7 @@ export const SoalView: React.FC<SoalViewProps> = ({
 
           {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
             <input
               type="text"
@@ -644,19 +629,18 @@ export const SoalView: React.FC<SoalViewProps> = ({
               className="
                 h-11 w-full
                 rounded-2xl
-                border border-white/[0.08]
-                bg-white/[0.035]
+                border border-slate-200
+                bg-white
                 pl-11 pr-11
                 text-xs font-medium
-                text-white
-                placeholder:text-slate-600
+                text-slate-900
+                placeholder:text-slate-400
                 outline-none
-                backdrop-blur-xl
                 transition-all
-                focus:border-blue-300/30
-                focus:bg-white/[0.05]
+                focus:border-emerald-500
                 focus:ring-2
-                focus:ring-blue-400/[0.08]
+                focus:ring-emerald-500/10
+                shadow-xs
               "
             />
 
@@ -668,10 +652,10 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   absolute right-3.5 top-1/2
                   -translate-y-1/2
                   rounded-lg p-1
-                  text-slate-500
+                  text-slate-400
                   transition-colors
-                  hover:bg-white/[0.07]
-                  hover:text-white
+                  hover:bg-slate-100
+                  hover:text-slate-900
                   cursor-pointer
                 "
                 title="Hapus pencarian"
@@ -687,10 +671,9 @@ export const SoalView: React.FC<SoalViewProps> = ({
               flex items-center
               self-start
               rounded-2xl
-              border border-white/[0.08]
-              bg-white/[0.035]
+              border border-slate-200
+              bg-slate-100
               p-1
-              backdrop-blur-xl
               xl:self-auto
             "
           >
@@ -707,8 +690,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                 cursor-pointer
                 ${
                   viewMode === 'grid'
-                    ? 'bg-white/[0.11] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]'
-                    : 'text-slate-500 hover:text-slate-200'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }
               `}
               title="Tampilan Grid"
@@ -729,8 +712,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                 cursor-pointer
                 ${
                   viewMode === 'list'
-                    ? 'bg-white/[0.11] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]'
-                    : 'text-slate-500 hover:text-slate-200'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }
               `}
               title="Tampilan List"
@@ -752,22 +735,21 @@ export const SoalView: React.FC<SoalViewProps> = ({
               flex h-8 w-8 items-center
               justify-center
               rounded-xl
-              border border-purple-300/15
-              bg-purple-400/[0.07]
-              text-purple-200
+              border border-emerald-200
+              bg-emerald-50
+              text-emerald-700
             "
           >
             <BookOpen className="h-4 w-4" />
           </div>
 
           <div>
-            <h2 className="font-heading text-xs font-black uppercase tracking-[0.14em] text-slate-200 sm:text-sm">
+            <h2 className="font-heading text-xs font-black uppercase tracking-[0.14em] text-slate-900 sm:text-sm">
               Daftar Tahun Pelajaran
             </h2>
 
-            <p className="mt-0.5 hidden text-[10px] text-slate-600 sm:block">
-              Pilih jenis ujian langsung dari
-              kartu tahun
+            <p className="mt-0.5 hidden text-[10px] text-slate-500 sm:block">
+              Pilih jenis ujian langsung dari kartu tahun
             </p>
           </div>
         </div>
@@ -776,15 +758,14 @@ export const SoalView: React.FC<SoalViewProps> = ({
           className="
             inline-flex items-center gap-1.5
             rounded-full
-            border border-white/[0.07]
-            bg-white/[0.025]
+            border border-slate-200
+            bg-slate-100
             px-3 py-1.5
             text-[10px] font-bold
-            text-slate-500
-            backdrop-blur-xl
+            text-slate-700
           "
         >
-          <LayoutGrid className="h-3 w-3 text-cyan-400" />
+          <LayoutGrid className="h-3 w-3 text-emerald-600" />
 
           <span>
             {filteredYearGroups.length} Tahun
@@ -799,12 +780,12 @@ export const SoalView: React.FC<SoalViewProps> = ({
       {filteredYearGroups.length === 0 ? (
         <div
           className="
-            mt-4 rounded-[26px]
-            border border-white/[0.08]
-            bg-white/[0.025]
+            mt-4 rounded-3xl
+            border border-slate-200
+            bg-white
             p-12
             text-center
-            backdrop-blur-xl
+            shadow-xs
           "
         >
           <div
@@ -813,21 +794,20 @@ export const SoalView: React.FC<SoalViewProps> = ({
               flex h-14 w-14
               items-center justify-center
               rounded-2xl
-              border border-blue-300/15
-              bg-blue-400/[0.07]
-              text-blue-200
+              border border-slate-200
+              bg-slate-50
+              text-slate-400
             "
           >
             <BookOpen className="h-7 w-7" />
           </div>
 
-          <p className="text-base font-bold text-slate-200">
+          <p className="text-base font-bold text-slate-900">
             Tahun Pelajaran Tidak Ditemukan
           </p>
 
           <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-slate-500">
-            Tidak ada tahun pelajaran yang cocok
-            dengan kata kunci &quot;{search}&quot;.
+            Tidak ada tahun pelajaran yang cocok dengan kata kunci &quot;{search}&quot;.
           </p>
 
           <button
@@ -836,13 +816,13 @@ export const SoalView: React.FC<SoalViewProps> = ({
             className="
               mt-4 inline-flex items-center gap-2
               rounded-xl
-              border border-blue-300/15
-              bg-blue-400/[0.07]
+              border border-slate-200
+              bg-slate-100
               px-4 py-2
               text-xs font-bold
-              text-blue-200
+              text-slate-700
               transition-all
-              hover:bg-blue-400/[0.12]
+              hover:bg-slate-200
               cursor-pointer
             "
           >
@@ -922,18 +902,15 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   className="
                     group relative overflow-hidden
                     rounded-[22px]
-                    border border-white/[0.08]
-                    bg-white/[0.025]
+                    border border-slate-200
+                    bg-white
                     p-4
-                    backdrop-blur-2xl
-                    shadow-[0_14px_45px_rgba(0,0,0,0.14)]
+                    shadow-xs
                     transition-all duration-300
-                    hover:border-white/[0.14]
-                    hover:bg-white/[0.035]
+                    hover:border-slate-300
+                    hover:shadow-md
                   "
                 >
-                  <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.12] to-transparent" />
-
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
                     {/* Year */}
                     <div className="flex min-w-[220px] items-center gap-3">
@@ -942,22 +919,21 @@ export const SoalView: React.FC<SoalViewProps> = ({
                           flex h-11 w-11 shrink-0
                           items-center justify-center
                           rounded-2xl
-                          border border-white/[0.08]
-                          bg-white/[0.045]
-                          text-purple-200
+                          border border-emerald-200
+                          bg-emerald-50
+                          text-emerald-700
                         "
                       >
                         <BookOpen className="h-5 w-5" />
                       </div>
 
                       <div className="min-w-0">
-                        <h3 className="text-sm font-black text-white">
+                        <h3 className="text-sm font-black text-slate-900">
                           T.P. {group.schoolYear}
                         </h3>
 
-                        <p className="mt-1 text-[10px] font-medium text-slate-500">
-                          Kelas 1–6 • Semua
-                          Mata Pelajaran
+                        <p className="mt-0.5 text-[10px] font-medium text-slate-500">
+                          Kelas 1–6 • Semua Mata Pelajaran
                         </p>
                       </div>
                     </div>
@@ -1002,14 +978,13 @@ export const SoalView: React.FC<SoalViewProps> = ({
                                 border
                                 px-3.5 py-2
                                 text-xs font-bold
-                                backdrop-blur-xl
                                 transition-all
                                 cursor-pointer
 
                                 ${
                                   hasDriveLink
-                                    ? 'border-white/[0.10] bg-white/[0.045] text-slate-200 hover:-translate-y-0.5 hover:border-blue-300/25 hover:bg-blue-300/[0.07] hover:text-white'
-                                    : 'border-white/[0.045] bg-white/[0.012] text-slate-600 opacity-50 hover:border-white/[0.10] hover:bg-white/[0.03] hover:text-slate-400 hover:opacity-75'
+                                    ? 'border-slate-200 bg-slate-50 text-slate-700 hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-slate-100 hover:text-slate-900 shadow-xs'
+                                    : 'border-slate-200 bg-slate-50/50 text-slate-400 opacity-60 hover:opacity-100 hover:bg-slate-100'
                                 }
                               `}
                               title={
@@ -1021,7 +996,7 @@ export const SoalView: React.FC<SoalViewProps> = ({
                               {hasDriveLink ? (
                                 <GoogleDriveIcon className="h-3.5 w-3.5" />
                               ) : (
-                                <FileText className="h-3.5 w-3.5" />
+                                <FileText className="h-3.5 w-3.5 text-slate-400" />
                               )}
 
                               <span>
@@ -1041,13 +1016,13 @@ export const SoalView: React.FC<SoalViewProps> = ({
                     <div className="flex shrink-0 items-center gap-2">
                       {configuredCount ===
                       4 ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/10 bg-emerald-400/[0.05] px-2.5 py-1.5 text-[9px] font-bold text-emerald-300">
-                          <CircleCheck className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[9px] font-bold text-emerald-800">
+                          <CircleCheck className="h-3 w-3 text-emerald-600" />
                           Lengkap
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/10 bg-amber-400/[0.05] px-2.5 py-1.5 text-[9px] font-bold text-amber-300">
-                          <CircleAlert className="h-3 w-3" />
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[9px] font-bold text-amber-800">
+                          <CircleAlert className="h-3 w-3 text-amber-600" />
                           {configuredCount}/4
                         </span>
                       )}
@@ -1067,13 +1042,12 @@ export const SoalView: React.FC<SoalViewProps> = ({
                               flex h-8 w-8
                               items-center justify-center
                               rounded-xl
-                              border border-white/[0.08]
-                              bg-white/[0.035]
-                              text-slate-500
+                              border border-slate-200
+                              bg-slate-100
+                              text-slate-600
                               transition-all
-                              hover:border-white/[0.15]
-                              hover:bg-white/[0.07]
-                              hover:text-white
+                              hover:bg-slate-200
+                              hover:text-slate-900
                               cursor-pointer
                             "
                             title="Kelola Link Drive"
@@ -1087,8 +1061,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   {/* Other exams in list */}
                   {group.otherDocs.length >
                     0 && (
-                    <div className="mt-3 flex items-center gap-2 border-t border-white/[0.055] pt-3">
-                      <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-600">
+                    <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
+                      <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500">
                         Ujian Lainnya
                       </span>
 
@@ -1132,15 +1106,15 @@ export const SoalView: React.FC<SoalViewProps> = ({
                                   cursor-pointer
                                   ${
                                     hasDrive
-                                      ? 'border-white/[0.08] bg-white/[0.035] text-slate-400 hover:bg-white/[0.07] hover:text-white'
-                                      : 'border-white/[0.04] bg-white/[0.01] text-slate-700 opacity-50 hover:opacity-75'
+                                      ? 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:text-slate-900 shadow-xs'
+                                      : 'border-slate-200 bg-slate-50/50 text-slate-400 opacity-60 hover:opacity-100'
                                   }
                                 `}
                               >
                                 {hasDrive ? (
                                   <GoogleDriveIcon className="h-3 w-3" />
                                 ) : (
-                                  <FileText className="h-3 w-3" />
+                                  <FileText className="h-3 w-3 text-slate-400" />
                                 )}
 
                                 <span>
@@ -1170,9 +1144,9 @@ export const SoalView: React.FC<SoalViewProps> = ({
           className="
             fixed inset-0 z-50
             flex items-center justify-center
-            bg-slate-950/75
+            bg-slate-950/60
             p-4
-            backdrop-blur-md
+            backdrop-blur-sm
           "
           onMouseDown={(e) => {
             if (
@@ -1188,21 +1162,16 @@ export const SoalView: React.FC<SoalViewProps> = ({
               relative w-full max-w-xl
               overflow-hidden
               rounded-[28px]
-              border border-white/[0.10]
-              bg-[linear-gradient(145deg,rgba(20,27,46,0.97),rgba(8,13,24,0.98))]
+              border border-slate-200
+              bg-white
               p-5
-              shadow-[0_30px_100px_rgba(0,0,0,0.50)]
-              backdrop-blur-2xl
+              shadow-2xl
               sm:p-6
+              text-slate-900
             "
           >
-            {/* Glow */}
-            <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-purple-500/[0.08] blur-3xl" />
-
-            <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
             {/* Header */}
-            <div className="relative z-10 flex items-start justify-between gap-4 border-b border-white/[0.07] pb-4">
+            <div className="relative z-10 flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
                 <div
                   className="
@@ -1210,16 +1179,16 @@ export const SoalView: React.FC<SoalViewProps> = ({
                     shrink-0 items-center
                     justify-center
                     rounded-2xl
-                    border border-purple-300/20
-                    bg-purple-400/[0.08]
-                    text-purple-200
+                    border border-emerald-200
+                    bg-emerald-50
+                    text-emerald-700
                   "
                 >
                   <BookOpen className="h-5 w-5" />
                 </div>
 
                 <div>
-                  <h3 className="text-base font-black text-white sm:text-lg">
+                  <h3 className="text-base font-black text-slate-900 sm:text-lg">
                     Ujian T.P.{' '}
                     {
                       selectedYearModal.schoolYear
@@ -1227,8 +1196,7 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   </h3>
 
                   <p className="mt-0.5 text-[10px] text-slate-500">
-                    Status dan tautan setiap
-                    jenis ujian
+                    Status dan tautan setiap jenis ujian
                   </p>
                 </div>
               </div>
@@ -1242,12 +1210,12 @@ export const SoalView: React.FC<SoalViewProps> = ({
                   flex h-8 w-8
                   items-center justify-center
                   rounded-xl
-                  border border-white/[0.08]
-                  bg-white/[0.035]
-                  text-slate-500
+                  border border-slate-200
+                  bg-slate-100
+                  text-slate-600
                   transition-all
-                  hover:bg-white/[0.08]
-                  hover:text-white
+                  hover:bg-slate-200
+                  hover:text-slate-900
                   cursor-pointer
                 "
                 title="Tutup"
@@ -1275,13 +1243,12 @@ export const SoalView: React.FC<SoalViewProps> = ({
                       justify-between
                       gap-3
                       rounded-2xl
-                      border border-white/[0.07]
-                      bg-white/[0.025]
+                      border border-slate-200
+                      bg-slate-50/80
                       p-3
-                      backdrop-blur-xl
                       transition-all
-                      hover:border-white/[0.12]
-                      hover:bg-white/[0.045]
+                      hover:border-slate-300
+                      hover:bg-slate-100/80
                     "
                   >
                     <div className="flex min-w-0 items-center gap-3">
@@ -1294,8 +1261,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                           border
                           ${
                             hasDrive
-                              ? 'border-emerald-300/15 bg-emerald-400/[0.06] text-emerald-300'
-                              : 'border-white/[0.07] bg-white/[0.025] text-slate-600'
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                              : 'border-slate-200 bg-slate-100 text-slate-400'
                           }
                         `}
                       >
@@ -1307,7 +1274,7 @@ export const SoalView: React.FC<SoalViewProps> = ({
                       </div>
 
                       <div className="min-w-0">
-                        <h4 className="truncate text-xs font-bold text-white">
+                        <h4 className="truncate text-xs font-bold text-slate-900">
                           {item.label}
                         </h4>
 
@@ -1318,8 +1285,8 @@ export const SoalView: React.FC<SoalViewProps> = ({
                         <p
                           className={`mt-0.5 text-[9px] font-semibold ${
                             hasDrive
-                              ? 'text-emerald-300/70'
-                              : 'text-slate-600'
+                              ? 'text-emerald-700'
+                              : 'text-slate-400'
                           }`}
                         >
                           {hasDrive
@@ -1342,15 +1309,13 @@ export const SoalView: React.FC<SoalViewProps> = ({
                             inline-flex
                             items-center gap-1.5
                             rounded-xl
-                            border border-blue-300/15
-                            bg-blue-400/[0.07]
+                            bg-emerald-600
                             px-3 py-2
                             text-[10px] font-bold
-                            text-blue-200
+                            text-white
                             transition-all
-                            hover:border-blue-300/25
-                            hover:bg-blue-400/[0.12]
-                            hover:text-white
+                            hover:bg-emerald-700
+                            shadow-xs
                             cursor-pointer
                           "
                         >
@@ -1380,12 +1345,12 @@ export const SoalView: React.FC<SoalViewProps> = ({
                               items-center
                               justify-center
                               rounded-xl
-                              border border-white/[0.08]
-                              bg-white/[0.035]
-                              text-slate-500
+                              border border-slate-200
+                              bg-white
+                              text-slate-600
                               transition-all
-                              hover:bg-white/[0.08]
-                              hover:text-white
+                              hover:bg-slate-100
+                              hover:text-slate-900
                               cursor-pointer
                             "
                             title="Edit tautan"
@@ -1400,7 +1365,7 @@ export const SoalView: React.FC<SoalViewProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="relative z-10 mt-4 flex justify-end border-t border-white/[0.07] pt-4">
+            <div className="relative z-10 mt-4 flex justify-end border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={() =>
@@ -1408,14 +1373,14 @@ export const SoalView: React.FC<SoalViewProps> = ({
                 }
                 className="
                   rounded-xl
-                  border border-white/[0.08]
-                  bg-white/[0.045]
+                  border border-slate-200
+                  bg-slate-100
                   px-4 py-2
                   text-xs font-bold
-                  text-slate-300
+                  text-slate-700
                   transition-all
-                  hover:bg-white/[0.08]
-                  hover:text-white
+                  hover:bg-slate-200
+                  hover:text-slate-900
                   cursor-pointer
                 "
               >

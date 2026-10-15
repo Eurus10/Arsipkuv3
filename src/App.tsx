@@ -871,7 +871,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#12141D] text-slate-100 flex flex-col md:flex-row antialiased selection:bg-amber-500/30 selection:text-amber-300">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col md:flex-row antialiased selection:bg-emerald-500/20 selection:text-emerald-900">
       {/* Sidebar for Desktop & Mobile Bottom Nav */}
       <Sidebar
         currentTab={currentTab}
@@ -890,7 +890,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-[#F8FAFC]">
         {/* Mobile Header */}
         <Header
           currentTab={currentTab}
@@ -906,16 +906,16 @@ export default function App() {
 
         {/* Global Notification Banner */}
         {authNotification && (
-          <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 max-w-sm p-4 bg-[#181B26] border border-amber-400/40 text-slate-100 rounded-2xl shadow-2xl flex items-start gap-3 animate-slide-in print:hidden">
-            <span className="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0 animate-pulse"></span>
+          <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 max-w-sm p-4 bg-white border border-amber-300 text-slate-800 rounded-2xl shadow-xl flex items-start gap-3 animate-slide-in print:hidden">
+            <span className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0 animate-pulse"></span>
             <div className="flex-1">
-              <p className="text-xs font-semibold leading-relaxed">
+              <p className="text-xs font-semibold leading-relaxed text-slate-800">
                 {authNotification.message}
               </p>
             </div>
             <button
               onClick={() => setAuthNotification(null)}
-              className="text-slate-400 hover:text-white p-0.5 rounded-lg cursor-pointer"
+              className="text-slate-400 hover:text-slate-700 p-0.5 rounded-lg cursor-pointer"
             >
               ✕
             </button>
@@ -925,16 +925,16 @@ export default function App() {
         {/* ADMIN PREVIEW TEACHER BANNER */}
         {isAdmin && previewTeacher && (
           <div className="sticky top-0 z-40 px-3 sm:px-5 pt-3 print:hidden">
-            <div className="max-w-7xl mx-auto rounded-2xl border border-violet-400/25 bg-[#171827]/95 backdrop-blur-xl shadow-xl shadow-violet-950/10">
+            <div className="max-w-7xl mx-auto rounded-2xl border border-violet-200 bg-white/95 backdrop-blur-xl shadow-md">
               <div className="px-3.5 py-3 sm:px-4 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-400/25 text-violet-300 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-violet-100 border border-violet-200 text-violet-700 flex items-center justify-center shrink-0">
                   👁
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[9px] font-black uppercase tracking-[0.16em] text-violet-300">Admin Preview</span>
-                    <span className="text-[10px] text-slate-500">•</span>
-                    <span className="text-xs font-bold text-white truncate">{previewTeacher.name}</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.16em] text-violet-700">Admin Preview</span>
+                    <span className="text-[10px] text-slate-400">•</span>
+                    <span className="text-xs font-bold text-slate-800 truncate">{previewTeacher.name}</span>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-0.5 truncate">
                     Melihat e-Rapor menggunakan akses akademik guru ini · ID {previewTeacher.id}
@@ -943,7 +943,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={handleExitPreviewTeacher}
-                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 border border-violet-400/20 text-[10px] font-bold text-violet-200 transition-colors cursor-pointer"
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-violet-50 hover:bg-violet-100 border border-violet-200 text-[10px] font-bold text-violet-700 transition-colors cursor-pointer"
                 >
                   Keluar Preview
                 </button>
@@ -953,7 +953,7 @@ export default function App() {
         )}
 
         {/* Content Views */}
-        <main className="flex-1 pb-20 md:pb-8">
+        <main className="flex-1 pb-24 sm:pb-28 md:pb-8">
           <Suspense fallback={<LazyViewLoader label="Memuat halaman..." />}>
             {currentTab === 'dashboard' && (
               <DashboardView

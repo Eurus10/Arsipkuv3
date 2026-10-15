@@ -782,27 +782,27 @@ const handleExportAllClasses = () => {
   // ====================================================
   if (!isConfigured) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6 animate-[fadeIn_150ms_ease-out]">
-        <div className="relative bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-2xl space-y-6 overflow-hidden">
-          {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
-          <div className="hidden sm:block absolute -top-12 -right-12 w-64 h-32 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
+      <div className="max-w-4xl mx-auto space-y-6 animate-[fadeIn_150ms_ease-out] font-sans text-slate-800">
+        <div className="relative bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xs space-y-6 overflow-hidden">
+          {/* Subtle Ambient Top Glow */}
+          <div className="hidden sm:block absolute -top-12 -right-12 w-64 h-32 bg-indigo-50/60 blur-3xl pointer-events-none -z-10" />
 
           {/* Header Banner Mode Guru Bidang */}
-          <div className="flex items-start justify-between pb-5 border-b border-white/10 gap-4">
+          <div className="flex items-start justify-between pb-5 border-b border-slate-200 gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-400/30 flex items-center justify-center text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-2xs shrink-0">
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-black text-white">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">
                     Setup Mode Guru Bidang (Per-Mata Pelajaran)
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
                     Multi-Kelas
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Atur 1 mata pelajaran & konfigurasi butir soal sekali saja, lalu pilih seluruh kelas yang Anda ajar untuk dinilai secara praktis.
                 </p>
               </div>
@@ -813,22 +813,22 @@ const handleExportAllClasses = () => {
           <div className="space-y-5">
             {/* 0. Sekolah / Lembaga */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 1. Sekolah / Lembaga
               </label>
               <div className="relative">
                 <select
                   value={selectedSchool}
                   onChange={(e) => setSelectedSchool(e.target.value)}
-                  className="w-full bg-slate-950/50 border border-white/10 focus:border-indigo-400/50 rounded-xl px-3.5 py-2.5 text-sm text-indigo-300 font-bold outline-none transition-all cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 rounded-xl px-3.5 py-2.5 text-sm text-indigo-900 font-bold outline-none transition-all cursor-pointer shadow-2xs"
                 >
                   {schoolsList.map((sch) => (
-                    <option key={sch} value={sch} className="bg-slate-900 text-white">
+                    <option key={sch} value={sch} className="bg-white text-slate-800">
                       {sch}
                     </option>
                   ))}
                 </select>
-                <Building2 className="w-4 h-4 text-indigo-400 absolute right-3.5 top-3 pointer-events-none" />
+                <Building2 className="w-4 h-4 text-indigo-600 absolute right-3.5 top-3 pointer-events-none" />
               </div>
               <p className="text-[10px] text-slate-500 mt-1">Data siswa dan kelas akan disaring berdasarkan ekosistem sekolah ini.</p>
             </div>
@@ -836,7 +836,7 @@ const handleExportAllClasses = () => {
             {/* 1. Mata Pelajaran & Nama Guru */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   2. Pilih Mata Pelajaran
                 </label>
                 <select
@@ -849,14 +849,14 @@ const handleExportAllClasses = () => {
                       setSubjectName(e.target.value);
                     }
                   }}
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none focus:border-indigo-400/50 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-2xs"
                 >
                   {PRESET_SUBJECTS.map((subj) => (
-                    <option key={subj} value={subj} className="bg-slate-900 text-white">
+                    <option key={subj} value={subj} className="bg-white text-slate-800">
                       {subj}
                     </option>
                   ))}
-                  <option value="__CUSTOM__" className="bg-slate-900 text-amber-300">
+                  <option value="__CUSTOM__" className="bg-white text-amber-700 font-bold">
                     + Input Mata Pelajaran Lainnya...
                   </option>
                 </select>
@@ -867,14 +867,14 @@ const handleExportAllClasses = () => {
                     placeholder="Ketik nama mata pelajaran custom..."
                     value={customSubjectText}
                     onChange={(e) => setCustomSubjectText(e.target.value)}
-                    className="w-full mt-2 bg-slate-950/50 border border-amber-500/40 rounded-xl px-3.5 py-2 text-xs text-white font-bold outline-none focus:border-amber-400"
+                    className="w-full mt-2 bg-white border border-amber-300 rounded-xl px-3.5 py-2 text-xs text-slate-800 font-bold outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-2xs"
                     autoFocus
                   />
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   3. Nama Guru Pengampu
                 </label>
                 <div className="relative">
@@ -883,9 +883,9 @@ const handleExportAllClasses = () => {
                     placeholder="Contoh: Ust. Ahmad Fauzi, S.Pd.I"
                     value={teacherName}
                     onChange={(e) => setTeacherName(e.target.value)}
-                    className="w-full bg-slate-950/50 border border-white/10 focus:border-indigo-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-semibold outline-none transition-all placeholder:text-slate-600"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-semibold outline-none transition-all placeholder:text-slate-400 shadow-2xs"
                   />
-                  <UserCheck className="w-4 h-4 text-slate-500 absolute right-3.5 top-3" />
+                  <UserCheck className="w-4 h-4 text-slate-400 absolute right-3.5 top-3" />
                 </div>
               </div>
             </div>
@@ -893,13 +893,13 @@ const handleExportAllClasses = () => {
             {/* 2. Jenis Ujian, Tahun Pelajaran, KKTP */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   4. Jenis Ujian
                 </label>
                 <select
                   value={examType}
                   onChange={(e) => setExamType(e.target.value as ExamType)}
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none focus:border-indigo-400/50 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-2xs"
                 >
                   <option value="STS1">1. STS 1 (Sumatif Tengah Semester 1)</option>
                   <option value="SAS 1">2. SAS 1 (Sumatif Akhir Semester 1)</option>
@@ -910,20 +910,20 @@ const handleExportAllClasses = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   5. Tahun Pelajaran
                 </label>
                 <input
                   type="text"
                   value={schoolYear}
                   onChange={(e) => setSchoolYear(e.target.value)}
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none focus:border-indigo-400/50"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 shadow-2xs"
                   placeholder="2026/2027"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   6. Standar KKTP / KKM
                 </label>
                 <PillStepper
@@ -938,28 +938,28 @@ const handleExportAllClasses = () => {
             </div>
 
             {/* 3. Konfigurasi Butir Soal */}
-            <div className="bg-slate-950/40 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
+            <div className="bg-slate-50/70 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-2xs">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-indigo-400" />
+                <h4 className="text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-indigo-600" />
                   Konfigurasi Struktur Butir Soal
                 </h4>
-                <span className="text-[11px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-lg">
+                <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
                   Total Skor Maksimal: {maxScore}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
                 {/* PG */}
-                <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3.5 flex flex-col justify-between space-y-3 shadow-sm">
+                <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 flex flex-col justify-between space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">1. Pilihan Ganda</span>
-                    <span className="text-[10px] font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-slate-800">1. Pilihan Ganda</span>
+                    <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md">
                       PG
                     </span>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Jumlah Soal PG
                     </label>
                     <PillStepper
@@ -971,7 +971,7 @@ const handleExportAllClasses = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Bobot per Nomor
                     </label>
                     <PillStepper
@@ -985,15 +985,15 @@ const handleExportAllClasses = () => {
                 </div>
 
                 {/* Isian */}
-                <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3.5 flex flex-col justify-between space-y-3 shadow-sm">
+                <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 flex flex-col justify-between space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">2. Isian Singkat</span>
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-slate-800">2. Isian Singkat</span>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
                       IS
                     </span>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Jumlah Soal Isian
                     </label>
                     <PillStepper
@@ -1005,7 +1005,7 @@ const handleExportAllClasses = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Bobot per Nomor
                     </label>
                     <PillStepper
@@ -1019,21 +1019,21 @@ const handleExportAllClasses = () => {
                 </div>
 
                 {/* Bagian C */}
-                <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3.5 flex flex-col justify-between space-y-3 shadow-sm">
+                <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 flex flex-col justify-between space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">3. Bagian C</span>
-                    <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-bold text-slate-800">3. Bagian C</span>
+                    <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
                       {cType}
                     </span>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Jenis Bagian C
                     </label>
                     <select
                       value={cType}
                       onChange={(e) => setCType(e.target.value as any)}
-                      className="w-full bg-slate-950/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold outline-none cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-bold outline-none cursor-pointer focus:bg-white focus:border-indigo-500"
                     >
                       <option value="Uraian">Uraian</option>
                       <option value="Essay">Essay</option>
@@ -1041,7 +1041,7 @@ const handleExportAllClasses = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Jumlah Soal {cType}
                     </label>
                     <PillStepper
@@ -1053,7 +1053,7 @@ const handleExportAllClasses = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                    <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                       Bobot Maks. per Soal
                     </label>
                     <PillStepper
@@ -1072,11 +1072,11 @@ const handleExportAllClasses = () => {
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                     6. Pilih Kelas yang Diampu ({selectedClassIds.length} Terpilih)
                   </label>
                   {availableClassesForSchool.length < masterClasses.length && (
-                    <span className="text-[10px] text-sky-300 bg-sky-950/70 border border-sky-800/40 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-[10px] text-sky-800 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full font-bold">
                       Hanya Rombel Berisi Siswa ({availableClassesForSchool.length})
                     </span>
                   )}
@@ -1085,28 +1085,28 @@ const handleExportAllClasses = () => {
                   <button
                     type="button"
                     onClick={() => handleSelectPhase('ALL')}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                   >
                     Semua
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSelectPhase('FASE_A')}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                   >
                     Kelas 1-2
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSelectPhase('FASE_B')}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                   >
                     Kelas 3-4
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSelectPhase('FASE_C')}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                   >
                     Kelas 5-6
                   </button>
@@ -1114,7 +1114,7 @@ const handleExportAllClasses = () => {
                     <button
                       type="button"
                       onClick={() => setShowAllClasses((prev) => !prev)}
-                      className="px-2.5 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-400/30 text-[10.5px] font-bold text-indigo-300 cursor-pointer transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-[10.5px] font-bold text-indigo-700 cursor-pointer transition-all shadow-2xs"
                     >
                       {showAllClasses ? 'Sembunyikan Rombel Kosong' : 'Tampilkan Semua (14 Rombel)'}
                     </button>
@@ -1133,18 +1133,18 @@ const handleExportAllClasses = () => {
                       onClick={() => handleToggleClass(cls.id)}
                       className={`p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-indigo-500/25 border-indigo-400/40 text-white shadow-sm shadow-indigo-500/20'
-                          : 'bg-white/5 border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
+                          ? 'bg-indigo-50 border-indigo-300 text-indigo-900 shadow-2xs'
+                          : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center gap-1">
                         <span className="font-extrabold text-sm">Kelas {cls.name}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-indigo-400 stroke-[3]" />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 stroke-[3]" />}
                       </div>
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                         count > 0 
-                          ? isSelected ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/10 text-sky-300'
-                          : 'bg-rose-500/15 text-rose-300'
+                          ? isSelected ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-100 text-slate-700'
+                          : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
                         {count > 0 ? `${count} Siswa` : '0 Siswa'}
                       </span>
@@ -1156,13 +1156,13 @@ const handleExportAllClasses = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={handleApplyConfig}
-              className="w-full sm:w-auto px-7 py-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 active:scale-[0.99] text-indigo-200 border border-indigo-400/30 font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.2)] cursor-pointer transition-all"
+              className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-700 hover:to-sky-700 active:scale-[0.99] text-white font-black text-sm flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-all"
             >
-              <Sparkles className="w-4 h-4 text-indigo-400" />
+              <Sparkles className="w-4 h-4 text-white" />
               <span>Buka Workspace Guru Bidang Multi-Kelas</span>
             </button>
           </div>
@@ -1175,27 +1175,27 @@ const handleExportAllClasses = () => {
   // RENDER 2: WORKSPACE AKTIF GURU BIDANG (MULTI-KELAS)
   // ====================================================
   return (
-    <div className="space-y-5 animate-[fadeIn_150ms_ease-out]">
-      {/* Top Banner Guru Bidang (Executive Glass) */}
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900 sm:bg-gradient-to-br sm:from-slate-900/90 sm:via-slate-900/80 sm:to-slate-950/90 p-4 sm:p-6 shadow-xl sm:shadow-2xl backdrop-blur-none sm:backdrop-blur-xl">
-        {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
-        <div className="hidden sm:block pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="hidden sm:block pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl" />
+    <div className="space-y-5 animate-[fadeIn_150ms_ease-out] font-sans text-slate-800">
+      {/* Top Banner Guru Bidang (Clean Executive Light) */}
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
+        {/* Subtle Ambient Glow */}
+        <div className="hidden sm:block pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-indigo-100/40 blur-3xl" />
+        <div className="hidden sm:block pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-purple-100/40 blur-3xl" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch justify-between gap-5 lg:gap-6">
           {/* Info Utama Mapel */}
           <div className="flex-1 flex flex-col justify-between min-w-0">
             {/* 1. Top Row: Institutional Context & Tags */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 shadow-sm">
-                <Building2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-bold text-slate-200">{selectedSchool || DEFAULT_SCHOOL_NAME}</span>
-                <span className="text-white/20">•</span>
-                <span className="text-slate-400 font-mono">TP {schoolYear}</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100/90 border border-slate-200/90 text-slate-700 shadow-2xs">
+                <Building2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="font-bold text-slate-800">{selectedSchool || DEFAULT_SCHOOL_NAME}</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-slate-500 font-mono">TP {schoolYear}</span>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-500/15 border border-indigo-400/30 text-indigo-200 tracking-wider uppercase shadow-[0_0_12px_rgba(99,102,241,0.15)]">
-                <BookOpen className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-50 border border-indigo-200 text-indigo-700 tracking-wider uppercase shadow-2xs">
+                <BookOpen className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                 <span>{activeSubjectName}</span>
               </div>
 
@@ -1203,74 +1203,74 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={handleOpenAddSubjectModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-emerald-200 transition-all cursor-pointer shadow-sm active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 transition-all cursor-pointer shadow-2xs active:scale-95"
                 title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
               >
-                <Plus className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <Plus className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span>+ Tambah Mapel Lain</span>
               </button>
 
               {teacherName && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 border border-amber-400/25 text-amber-200">
-                  <UserCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 border border-amber-200 text-amber-800 shadow-2xs">
+                  <UserCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                   <span>Guru: {teacherName}</span>
                 </div>
               )}
             </div>
 
             {/* 2. Middle Row: Main Title & Description */}
-            <div className="mt-3 mb-3.5">
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="mt-3.5 mb-3.5">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug flex flex-wrap items-center gap-2 sm:gap-3">
                 <span>Workspace Analisis {activeSubjectName}</span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-400/30 font-mono">
-                  <FileText className="w-3 h-3 text-purple-400" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 font-mono">
+                  <FileText className="w-3 h-3 text-purple-600" />
                   {examType}
                 </span>
               </h2>
-              <p className="text-xs text-slate-400 mt-1 line-clamp-1">
+              <p className="text-xs text-slate-500 mt-1 line-clamp-1">
                 Pengelolaan dan analisis terpusat untuk {selectedClassIds.length} rombel kelas yang diampu
               </p>
             </div>
 
             {/* 3. Bottom Row: 4-Card Parametric Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
-              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-indigo-300" />
+              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-indigo-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Jenis Ujian</p>
-                  <p className="text-xs font-bold text-white truncate">{examType}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Jenis Ujian</p>
+                  <p className="text-xs font-bold text-slate-800 truncate">{examType}</p>
                 </div>
               </div>
 
-              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-4 h-4 text-sky-300" />
+              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-4 h-4 text-sky-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Kelas Diampu</p>
-                  <p className="text-xs font-bold text-white truncate">{selectedClassIds.length} Rombel</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Kelas Diampu</p>
+                  <p className="text-xs font-bold text-slate-800 truncate">{selectedClassIds.length} Rombel</p>
                 </div>
               </div>
 
-              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
-                  <Target className="w-4 h-4 text-amber-300" />
+              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                  <Target className="w-4 h-4 text-amber-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Target KKTP</p>
-                  <p className="text-xs font-black text-amber-300 truncate">≥ {kktp}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Target KKTP</p>
+                  <p className="text-xs font-black text-amber-700 truncate">≥ {kktp}</p>
                 </div>
               </div>
 
-              <div className="bg-slate-950/50 border border-white/5 hover:border-white/10 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4 text-emerald-300" />
+              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
+                  <Calendar className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Tanggal Asesmen</p>
-                  <p className="text-xs font-bold text-white truncate">{analysisDate}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Tanggal Asesmen</p>
+                  <p className="text-xs font-bold text-slate-800 truncate">{analysisDate}</p>
                 </div>
               </div>
             </div>
@@ -1281,7 +1281,7 @@ const handleExportAllClasses = () => {
             <button
               type="button"
               onClick={handleExportAllClasses}
-              className="w-full h-11 px-4 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 border border-emerald-400/40 cursor-pointer transition-all"
+              className="w-full h-11 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm border border-emerald-500/40 cursor-pointer transition-all"
               title="Download berkas Excel untuk semua kelas yang diajar"
             >
               <Download className="w-4 h-4 stroke-[2.5]" />
@@ -1294,7 +1294,7 @@ const handleExportAllClasses = () => {
                 setSendTargetMode('all');
                 setIsSendToPakZakiOpen(true);
               }}
-              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-teal-500 via-emerald-600 to-teal-600 hover:from-teal-400 hover:to-emerald-500 active:scale-[0.98] text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-md shadow-emerald-500/20 border border-emerald-400/35 cursor-pointer transition-all"
+              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-600 hover:from-teal-700 hover:to-emerald-700 active:scale-[0.98] text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-sm border border-teal-500/40 cursor-pointer transition-all"
               title="Kirim lembar analisis seluruh kelas ini langsung ke Pak Zaki"
             >
               <Send className="w-3.5 h-3.5" />
@@ -1305,40 +1305,40 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={handleOpenAddSubjectModal}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 active:scale-[0.98] text-emerald-200 border border-emerald-500/35 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                className="h-10 px-2 sm:px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] text-emerald-800 border border-emerald-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
                 title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
               >
-                <Plus className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+                <Plus className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 <span className="truncate">+ Tambah Mapel</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowSwitchSessionModal(true)}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 active:scale-[0.98] text-sky-200 border border-sky-500/35 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                className="h-10 px-2 sm:px-3 rounded-xl bg-sky-50 hover:bg-sky-100 active:scale-[0.98] text-sky-800 border border-sky-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
                 title="Pilih atau beralih ke mapel / sesi yang pernah dibuat"
               >
-                <RotateCcw className="w-3.5 h-3.5 text-sky-300 shrink-0" />
+                <RotateCcw className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                 <span className="truncate">Ganti Mapel</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(true)}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 active:scale-[0.98] text-purple-200 border border-purple-500/30 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                className="h-10 px-2 sm:px-3 rounded-xl bg-purple-50 hover:bg-purple-100 active:scale-[0.98] text-purple-800 border border-purple-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
                 title="Edit struktur & bobot butir soal atau tambah rombel kelas"
               >
-                <Settings2 className="w-3.5 h-3.5 text-purple-300 shrink-0" />
-                <span className="truncate">Atur Kelas &amp; Bobot</span>
+                <Settings2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                <span className="truncate">Atur Bobot &amp; Kelas</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowDeleteSessionModal(true)}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 active:scale-[0.98] text-rose-300 border border-rose-500/25 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-sm"
+                className="h-10 px-2 sm:px-3 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-[0.98] text-rose-700 border border-rose-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
                 title="Hapus sesi analisis mata pelajaran ini"
               >
-                <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
                 <span className="truncate">Hapus Sesi</span>
               </button>
             </div>
@@ -1346,7 +1346,7 @@ const handleExportAllClasses = () => {
         </div>
 
         {batchDownloadStatus && (
-          <div className="mt-3 text-xs font-semibold text-sky-300 bg-sky-950/60 border border-sky-500/30 px-3.5 py-2 rounded-xl">
+          <div className="mt-3 text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-3.5 py-2 rounded-xl">
             {batchDownloadStatus}
           </div>
         )}
@@ -1358,25 +1358,25 @@ const handleExportAllClasses = () => {
       {activeSubjectSubmission && (
         <div className="animate-fadeIn">
           {activeSubjectSubmission.status === 'revisi' && (
-            <div className="bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+            <div className="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
                     <AlertCircle className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-sm font-black text-amber-200 uppercase tracking-wide">
+                      <h4 className="text-sm font-black text-amber-900 uppercase tracking-wide">
                         ⚠️ Catatan Revisi dari Pak Zaki
                       </h4>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/25 text-amber-300 font-extrabold border border-amber-500/40">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold border border-amber-300">
                         {activeSubjectSubmission.className}
                       </span>
                     </div>
-                    <div className="text-xs text-white font-medium bg-slate-950/70 p-3 rounded-xl border border-amber-500/20 mt-1.5 leading-relaxed">
+                    <div className="text-xs text-slate-800 font-medium bg-white p-3 rounded-xl border border-amber-200 mt-1.5 leading-relaxed shadow-2xs">
                       "{activeSubjectSubmission.adminNote || 'Mohon periksa kembali kelengkapan skor siswa.'}"
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-slate-500 mt-1">
                       Silakan perbaiki data pada kelas terkait di bawah, lalu kirim ulang ke Pak Zaki.
                     </p>
                   </div>
@@ -1386,10 +1386,10 @@ const handleExportAllClasses = () => {
                   <button
                     type="button"
                     onClick={() => setIsChatModalOpen(true)}
-                    className="px-3.5 py-2.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                    className="px-3.5 py-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
                     title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
                   >
-                    <MessageSquare className="w-3.5 h-3.5 text-indigo-300" />
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
                     <span>💬 Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
                   </button>
 
@@ -1399,7 +1399,7 @@ const handleExportAllClasses = () => {
                       setSendTargetMode('single');
                       setIsSendToPakZakiOpen(true);
                     }}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-95 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/25 cursor-pointer transition-all"
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-black text-xs flex items-center gap-2 shadow-sm cursor-pointer transition-all"
                   >
                     <Send className="w-4 h-4" />
                     <span>🚀 Kirim Ulang Hasil Revisi</span>
@@ -1410,21 +1410,21 @@ const handleExportAllClasses = () => {
           )}
 
           {activeSubjectSubmission.status === 'telah_diprint' && (
-            <div className="bg-gradient-to-r from-cyan-500/20 via-teal-500/15 to-transparent border border-cyan-400/40 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-cyan-50/80 border border-cyan-200 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-cyan-100 border border-cyan-300 text-cyan-700 flex items-center justify-center shrink-0 shadow-2xs">
                   <Printer className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-xs sm:text-sm font-black text-cyan-200">
+                    <h4 className="text-xs sm:text-sm font-black text-cyan-900">
                       🖨️ Telah di-Print oleh Pak Zaki
                     </h4>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-extrabold border border-cyan-500/40">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-extrabold border border-cyan-300">
                       Selesai Dicetak
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5">
                     Berkas fisik analisis mapel {activeSubjectName} telah selesai dicetak untuk arsip dan pengesahan sekolah.
                   </p>
                 </div>
@@ -1433,31 +1433,31 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setIsChatModalOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                className="px-3.5 py-2 rounded-xl bg-cyan-100/80 hover:bg-cyan-100 text-cyan-800 border border-cyan-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
                 title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-cyan-300" />
+                <MessageSquare className="w-3.5 h-3.5 text-cyan-700" />
                 <span>💬 Ruang Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
               </button>
             </div>
           )}
 
           {activeSubjectSubmission.status === 'disetujui' && (
-            <div className="bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent border border-emerald-400/30 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-xs sm:text-sm font-black text-emerald-200">
+                    <h4 className="text-xs sm:text-sm font-black text-emerald-900">
                       ✓ Telah Disetujui oleh Pak Zaki
                     </h4>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/40">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300">
                       Disetujui
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-0.5">
+                  <p className="text-xs text-slate-600 mt-0.5">
                     Lembar analisis mapel {activeSubjectName} telah diverifikasi &amp; disetujui. Menunggu proses cetak fisik.
                   </p>
                 </div>
@@ -1466,26 +1466,26 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setIsChatModalOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                className="px-3.5 py-2 rounded-xl bg-emerald-100/80 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
                 title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-300" />
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-700" />
                 <span>💬 Ruang Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
               </button>
             </div>
           )}
 
           {activeSubjectSubmission.status === 'menunggu' && (
-            <div className="bg-gradient-to-r from-sky-500/15 via-slate-900/60 to-transparent border border-sky-400/30 rounded-2xl p-3.5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-sky-50/80 border border-sky-200 rounded-2xl p-3.5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/30 text-sky-300 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-sky-100 border border-sky-300 text-sky-700 flex items-center justify-center shrink-0">
                   <Clock3 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-sky-200">
+                  <h4 className="text-xs font-bold text-sky-900">
                     ⏳ Sedang Menunggu Verifikasi Pak Zaki
                   </h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-slate-500 mt-0.5">
                     Lembar analisis telah disetorkan ke Pak Zaki. Menunggu giliran pemeriksaan.
                   </p>
                 </div>
@@ -1494,10 +1494,10 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setIsChatModalOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/30 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
+                className="px-3.5 py-2 rounded-xl bg-sky-100/80 hover:bg-sky-100 text-sky-800 border border-sky-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-center"
                 title="Buka ruang diskusi dan riwayat chat dengan Pak Zaki"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-sky-300" />
+                <MessageSquare className="w-3.5 h-3.5 text-sky-700" />
                 <span>💬 Ruang Diskusi {activeSubjectSubmission.messages?.length ? `(${activeSubjectSubmission.messages.length})` : ''}</span>
               </button>
             </div>
@@ -1509,16 +1509,16 @@ const handleExportAllClasses = () => {
           CLASS SWITCHER BAR (HYBRID OPTION A + B)
           Refined Mobile Carousel + Edge Fade + Fast Grid Modal
           ==================================================== */}
-      <div className="bg-slate-900/95 sm:bg-slate-900/70 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg overflow-hidden select-none">
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden select-none">
         {/* Top Control Bar: Active Class Context & Actions */}
-        <div className="px-3.5 py-2.5 bg-slate-950/40 border-b border-white/5 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+        <div className="px-3.5 py-2.5 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0">
-              <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="w-6 h-6 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
+              <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300 truncate">
-              <span className="text-slate-400 hidden xs:inline">Daftar Kelas:</span>
-              <span className="text-white font-extrabold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2 py-0.5 rounded-md text-[11px]">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 truncate">
+              <span className="text-slate-500 hidden xs:inline">Daftar Kelas:</span>
+              <span className="font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-md text-[11px]">
                 Kelas {activeClassId} ({selectedClassIds.indexOf(activeClassId) + 1}/{selectedClassIds.length})
               </span>
             </div>
@@ -1529,20 +1529,20 @@ const handleExportAllClasses = () => {
             <button
               type="button"
               onClick={() => setShowClassPickerModal(true)}
-              className="h-7 px-2.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 active:scale-95 text-indigo-300 border border-indigo-400/30 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              className="h-7 px-2.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 active:scale-95 text-indigo-700 border border-indigo-200 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
               title="Tampilkan semua kelas dalam bentuk grid cepat"
             >
               <LayoutGrid className="w-3 h-3" />
               <span>Pilih Cepat ({selectedClassIds.length})</span>
             </button>
 
-            {/* Scroll Navigation Arrows (For quick nudging) */}
+            {/* Scroll Navigation Arrows */}
             {selectedClassIds.length > 3 && (
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => handleScrollClasses('left')}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-slate-400 hover:text-white border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
                   title="Geser kelas ke kiri"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -1550,7 +1550,7 @@ const handleExportAllClasses = () => {
                 <button
                   type="button"
                   onClick={() => handleScrollClasses('right')}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-slate-400 hover:text-white border border-white/10 flex items-center justify-center transition-all cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
                   title="Geser kelas ke kanan"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1563,7 +1563,7 @@ const handleExportAllClasses = () => {
         {/* Horizontal Carousel Track with Left/Right Fading Edge Masks */}
         <div className="relative overflow-hidden p-2 sm:p-2.5">
           {/* Left Edge Fade Mask */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent z-10" />
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
 
           {/* Scrollable Classes Row */}
           <div
@@ -1589,18 +1589,20 @@ const handleExportAllClasses = () => {
                   onClick={() => setActiveClassId(cId)}
                   className={`h-9 px-3.5 rounded-xl text-xs font-bold flex items-center gap-2 shrink-0 transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-indigo-500/25 text-white border-2 border-indigo-400 shadow-md shadow-indigo-500/25 font-black scale-[1.02]'
-                      : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
+                      ? 'bg-indigo-600 text-white border-2 border-indigo-700 shadow-sm font-black scale-[1.02]'
+                      : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs'
                   }`}
                 >
                   <span>Kelas {cId}</span>
                   <span
                     className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                      isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      isActive
+                        ? 'bg-indigo-700/80 text-indigo-100'
+                        : isCompleted
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : completedCount > 0
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                        : 'bg-white/10 text-slate-400'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-slate-100 text-slate-500'
                     }`}
                   >
                     {completedCount}/{totalCount}
@@ -1613,16 +1615,16 @@ const handleExportAllClasses = () => {
             <button
               type="button"
               onClick={() => setIsEditModalOpen(true)}
-              className="h-9 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
+              className="h-9 px-3 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 transition-all cursor-pointer shadow-2xs active:scale-95"
               title="Tambah atau kelola rombel kelas yang diampu untuk mapel ini"
             >
-              <Plus className="w-3.5 h-3.5 text-purple-400" />
+              <Plus className="w-3.5 h-3.5 text-purple-600" />
               <span>+ Tambah Kelas</span>
             </button>
           </div>
 
           {/* Right Edge Fade Mask */}
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
         </div>
       </div>
 
@@ -1631,22 +1633,22 @@ const handleExportAllClasses = () => {
           ==================================================== */}
       {showClassPickerModal && (
         <div
-          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] font-sans"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowClassPickerModal(false);
           }}
         >
-          <div className="w-full sm:max-w-lg bg-slate-900 border-t sm:border border-white/15 rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="w-full sm:max-w-lg bg-white border border-slate-200/90 rounded-t-3xl sm:rounded-3xl p-5 shadow-xl space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-2xs">
                   <LayoutGrid className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white">
+                  <h3 className="text-sm font-black text-slate-900">
                     Pilih Kelas / Rombel
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     {selectedClassIds.length} Kelas diampu untuk {activeSubjectName}
                   </p>
                 </div>
@@ -1654,7 +1656,7 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setShowClassPickerModal(false)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1683,14 +1685,14 @@ const handleExportAllClasses = () => {
                     }}
                     className={`p-3 rounded-2xl border text-left flex flex-col justify-between gap-2.5 transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-indigo-500/25 border-indigo-400 text-white shadow-lg shadow-indigo-500/20 ring-2 ring-indigo-400/30'
-                        : 'bg-slate-950/50 hover:bg-slate-950/80 border-white/10 hover:border-white/20 text-slate-300'
+                        ? 'bg-indigo-50 border-indigo-400 text-indigo-950 shadow-xs ring-2 ring-indigo-200'
+                        : 'bg-white hover:bg-slate-50/80 border-slate-200 text-slate-700 shadow-2xs'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-black text-sm">Kelas {cId}</span>
                       {isActive ? (
-                        <span className="w-5 h-5 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[10px] font-bold">
+                        <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
                           ✓
                         </span>
                       ) : (
@@ -1702,27 +1704,27 @@ const handleExportAllClasses = () => {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[10.5px]">
-                        <span className="text-slate-400">Progres Nilai</span>
+                        <span className="text-slate-500">Progres Nilai</span>
                         <span
                           className={`font-bold ${
                             isCompleted
-                              ? 'text-emerald-300'
+                              ? 'text-emerald-700'
                               : completedCount > 0
-                              ? 'text-amber-300'
-                              : 'text-slate-500'
+                              ? 'text-amber-700'
+                              : 'text-slate-400'
                           }`}
                         >
                           {completedCount}/{totalCount} Siswa
                         </span>
                       </div>
-                      <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
                         <div
                           className={`h-full rounded-full transition-all ${
                             isCompleted
-                              ? 'bg-emerald-400'
+                              ? 'bg-emerald-500'
                               : completedCount > 0
-                              ? 'bg-amber-400'
-                              : 'bg-slate-600'
+                              ? 'bg-amber-500'
+                              : 'bg-slate-300'
                           }`}
                           style={{ width: `${percent}%` }}
                         />
@@ -1737,25 +1739,25 @@ const handleExportAllClasses = () => {
       )}
 
       {/* Selected Class Dashboard Workspace */}
-      <div className="bg-slate-900/95 sm:bg-slate-900/60 backdrop-blur-none sm:backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl space-y-5">
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-xs space-y-5">
         {/* Class Overview Header & Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-400/30 flex items-center justify-center text-indigo-400 font-black text-base shadow-[0_0_12px_rgba(99,102,241,0.15)] shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 font-black text-base shadow-2xs shrink-0">
               {activeClassId}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-slate-900">
                   Lembar Nilai Kelas {activeClassId}
                 </h3>
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-500">
                   ({activeClassStudents.length} Siswa Terdaftar)
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Wali Kelas:{' '}
-                <span className="text-slate-300 font-semibold">
+                <span className="text-slate-700 font-semibold">
                   {masterClasses.find((c) => c.id === activeClassId)?.waliKelas || '-'}
                 </span>
               </p>
@@ -1771,9 +1773,9 @@ const handleExportAllClasses = () => {
                   onOpenStudentInput(activeClassSession, activeSubjectInSession);
                 }
               }}
-              className="h-10 px-3.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 active:scale-[0.98] text-indigo-200 border border-indigo-400/30 font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_12px_rgba(99,102,241,0.15)] cursor-pointer transition-all"
+              className="h-10 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-all"
             >
-              <Edit3 className="w-3.5 h-3.5 text-indigo-400" />
+              <Edit3 className="w-3.5 h-3.5" />
               <span>Input / Edit Nilai</span>
             </button>
 
@@ -1784,9 +1786,9 @@ const handleExportAllClasses = () => {
                   onOpenSubjectStats(activeClassSession, activeSubjectInSession);
                 }
               }}
-              className="h-10 px-3.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-[0.98] text-sky-300 font-bold text-xs flex items-center justify-center gap-2 border border-white/10 cursor-pointer transition-all"
+              className="h-10 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 cursor-pointer transition-all shadow-2xs"
             >
-              <BarChart3 className="w-3.5 h-3.5 text-sky-400" />
+              <BarChart3 className="w-3.5 h-3.5 text-sky-600" />
               <span>Analisis Soal</span>
             </button>
 
@@ -1804,20 +1806,20 @@ const handleExportAllClasses = () => {
                   targetClassSession: activeClassSession,
                 });
               }}
-              className="h-10 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 active:scale-[0.98] text-purple-200 font-bold text-xs flex items-center justify-center gap-2 border border-purple-500/30 cursor-pointer transition-all shadow-[0_0_12px_rgba(168,85,247,0.15)]"
+              className="h-10 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 active:scale-[0.98] text-purple-700 font-bold text-xs flex items-center justify-center gap-2 border border-purple-200 cursor-pointer transition-all shadow-2xs"
               title="Import file Excel nilai guru mapel untuk kelas ini"
             >
-              <FolderUp className="w-3.5 h-3.5 text-purple-400" />
+              <FolderUp className="w-3.5 h-3.5 text-purple-600" />
               <span>Import Excel</span>
             </button>
 
             <button
               type="button"
               onClick={handleExportActiveClass}
-              className="h-10 px-3.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 active:scale-[0.98] text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_12px_rgba(16,185,129,0.15)] border border-emerald-500/30 cursor-pointer transition-all"
+              className="h-10 px-3.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] text-emerald-800 font-bold text-xs flex items-center justify-center gap-2 border border-emerald-200 cursor-pointer transition-all shadow-2xs"
               title="Unduh berkas Excel resmi rapi untuk kelas ini"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-300" />
+              <Download className="w-3.5 h-3.5 text-emerald-600" />
               <span>Download Excel</span>
             </button>
 
@@ -1827,10 +1829,10 @@ const handleExportAllClasses = () => {
                 setSendTargetMode('single');
                 setIsSendToPakZakiOpen(true);
               }}
-              className="h-10 px-3.5 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 active:scale-[0.98] text-teal-300 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-[0_0_12px_rgba(20,184,166,0.15)] border border-teal-500/30 cursor-pointer transition-all"
+              className="h-10 px-3.5 rounded-xl bg-teal-50 hover:bg-teal-100 active:scale-[0.98] text-teal-800 font-bold text-xs flex items-center justify-center gap-1.5 border border-teal-200 cursor-pointer transition-all shadow-2xs"
               title="Kirim lembar analisis kelas ini langsung ke Pak Zaki"
             >
-              <Send className="w-3.5 h-3.5 text-teal-300" />
+              <Send className="w-3.5 h-3.5 text-teal-600" />
               <span>Kirim ke Pak Zaki</span>
             </button>
           </div>
@@ -1839,47 +1841,47 @@ const handleExportAllClasses = () => {
         {/* Quick Summary Metrics Cards */}
         {activeStats && (
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-slate-950/40 border border-white/10 rounded-xl p-3 shadow-sm">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                 Siswa Terisi
               </span>
-              <div className="text-lg font-black text-white mt-0.5">
+              <div className="text-lg font-black text-slate-800 mt-0.5">
                 {activeStats.completedStudents} / {activeStats.totalStudents}
               </div>
             </div>
 
-            <div className="bg-slate-950/40 border border-white/10 rounded-xl p-3 shadow-sm">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                 Rata-rata Nilai
               </span>
-              <div className="text-lg font-black text-sky-400 mt-0.5">
+              <div className="text-lg font-black text-sky-700 mt-0.5">
                 {activeStats.averageGrade.toFixed(1)}
               </div>
             </div>
 
-            <div className="bg-slate-950/40 border border-white/10 rounded-xl p-3 shadow-sm">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                 Tuntas (L)
               </span>
-              <div className="text-lg font-black text-emerald-400 mt-0.5">
+              <div className="text-lg font-black text-emerald-700 mt-0.5">
                 {activeStats.passedCount} Siswa ({activeStats.passedPercentage.toFixed(0)}%)
               </div>
             </div>
 
-            <div className="bg-slate-950/40 border border-white/10 rounded-xl p-3 shadow-sm">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                 Remidi (TL)
               </span>
-              <div className="text-lg font-black text-rose-400 mt-0.5">
+              <div className="text-lg font-black text-rose-700 mt-0.5">
                 {activeStats.failedCount} Siswa
               </div>
             </div>
 
-            <div className="bg-slate-950/40 border border-white/10 rounded-xl p-3 col-span-2 sm:col-span-1 shadow-sm">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3 col-span-2 sm:col-span-1 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
                 Tertinggi / Terendah
               </span>
-              <div className="text-lg font-black text-amber-300 mt-0.5">
+              <div className="text-lg font-black text-amber-700 mt-0.5">
                 {activeStats.highestGrade} / {activeStats.lowestGrade}
               </div>
             </div>
@@ -1889,27 +1891,27 @@ const handleExportAllClasses = () => {
         {/* Student List Table & Search */}
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-indigo-400" />
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-indigo-600" />
               Daftar Siswa Kelas {activeClassId} ({filteredStudents.length})
             </h4>
 
             <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
               <input
                 type="text"
                 placeholder="Cari nama siswa..."
                 value={searchStudent}
                 onChange={(e) => setSearchStudent(e.target.value)}
-                className="w-full bg-slate-950/50 border border-white/10 focus:border-indigo-400/50 rounded-xl pl-8 pr-3 py-2 text-xs text-white outline-none transition-all"
+                className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-800 outline-none transition-all shadow-2xs"
               />
             </div>
           </div>
 
-          <div className="border border-white/10 rounded-xl overflow-hidden bg-slate-950/40">
+          <div className="border border-slate-200/90 rounded-2xl overflow-hidden bg-white shadow-2xs">
             <div className="overflow-x-auto max-h-[360px]">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-950 sm:bg-slate-900/95 text-slate-300 uppercase text-[10px] font-extrabold sticky top-0 z-10 border-b border-white/10">
+                <thead className="bg-slate-50/90 text-slate-700 uppercase text-[10px] font-extrabold sticky top-0 z-10 border-b border-slate-200">
                   <tr>
                     <th className="py-2.5 px-3 text-center w-12">No</th>
                     <th className="py-2.5 px-3">Nama Siswa</th>
@@ -1922,7 +1924,7 @@ const handleExportAllClasses = () => {
                     <th className="py-2.5 px-3 text-center w-24">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-100">
                   {filteredStudents.map((student, idx) => {
                     const rowData = studentRowDisplayMap.get(student.id) || {
                       isFilled: false,
@@ -1937,27 +1939,27 @@ const handleExportAllClasses = () => {
                     return (
                       <tr
                         key={student.id}
-                        className="hover:bg-white/[0.03] transition-colors group"
+                        className="hover:bg-slate-50/70 transition-colors group"
                       >
-                        <td className="py-2.5 px-3 text-center text-slate-400 font-mono">
+                        <td className="py-2.5 px-3 text-center text-slate-500 font-mono">
                           {idx + 1}
                         </td>
-                        <td className="py-2.5 px-3 font-semibold text-white">
+                        <td className="py-2.5 px-3 font-semibold text-slate-900">
                           {student.name}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-mono text-sky-300">
+                        <td className="py-2.5 px-3 text-center font-mono text-sky-700 font-bold">
                           {rowData.correctPg}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-mono text-amber-300">
+                        <td className="py-2.5 px-3 text-center font-mono text-amber-700 font-bold">
                           {rowData.correctIsian}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-mono text-purple-300">
+                        <td className="py-2.5 px-3 text-center font-mono text-purple-700 font-bold">
                           {rowData.correctC}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-bold text-white font-mono">
+                        <td className="py-2.5 px-3 text-center font-bold text-slate-900 font-mono">
                           {rowData.totalScore}
                         </td>
-                        <td className="py-2.5 px-3 text-center font-extrabold text-white text-sm font-mono">
+                        <td className="py-2.5 px-3 text-center font-black text-slate-900 text-sm font-mono">
                           {rowData.finalGrade !== null ? rowData.finalGrade : '-'}
                         </td>
                         <td className="py-2.5 px-3 text-center">
@@ -1965,14 +1967,14 @@ const handleExportAllClasses = () => {
                             <span
                               className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
                                 rowData.isPassed
-                                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                  : 'bg-rose-50 text-rose-700 border border-rose-200'
                               }`}
                             >
                               {rowData.isPassed ? 'L' : 'TL'}
                             </span>
                           ) : (
-                            <span className="text-slate-500 text-[10px]">-</span>
+                            <span className="text-slate-400 text-[10px]">-</span>
                           )}
                         </td>
                         <td className="py-2.5 px-3 text-center">
@@ -1983,7 +1985,7 @@ const handleExportAllClasses = () => {
                                 onOpenStudentInput(activeClassSession, activeSubjectInSession);
                               }
                             }}
-                            className="px-3 py-1 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/30 text-indigo-300 hover:text-white text-[11px] font-bold transition-all cursor-pointer"
+                            className="px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-[11px] font-bold transition-all cursor-pointer shadow-2xs"
                           >
                             {rowData.isFilled ? 'Edit' : 'Input'}
                           </button>
@@ -2008,30 +2010,30 @@ const handleExportAllClasses = () => {
       {/* Modal 1: Edit Konfigurasi & Atur Bobot Soal */}
       {isEditModalOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] font-sans"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsEditModalOpen(false);
           }}
         >
-          <div className="w-full max-w-3xl bg-slate-900 sm:bg-slate-900/90 backdrop-blur-none sm:backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="w-full max-w-3xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xl space-y-5 text-slate-800 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 shadow-[0_0_12px_rgba(168,85,247,0.15)]">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-2xs">
                   <Settings2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
+                  <h3 className="text-base font-black text-slate-900">
                     Ubah Konfigurasi & Atur Bobot Soal
                   </h3>
-                  <p className="text-xs text-slate-400">
-                    Mata Pelajaran: <span className="text-indigo-300 font-bold">{activeSubjectName}</span>
+                  <p className="text-xs text-slate-500">
+                    Mata Pelajaran: <span className="text-indigo-700 font-bold">{activeSubjectName}</span>
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-all"
               >
                 ✕
               </button>
@@ -2041,7 +2043,7 @@ const handleExportAllClasses = () => {
               {/* Info Pengampu & Ujian */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     Nama Guru Pengampu
                   </label>
                   <input
@@ -2049,12 +2051,12 @@ const handleExportAllClasses = () => {
                     value={teacherName}
                     onChange={(e) => setTeacherName(e.target.value)}
                     placeholder="Contoh: Ust. Ahmad Fauzi, S.Pd.I"
-                    className="w-full bg-slate-950/50 border border-white/10 focus:border-indigo-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none transition-all shadow-2xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     Standar KKTP / KKM
                   </label>
                   <PillStepper
@@ -2069,28 +2071,28 @@ const handleExportAllClasses = () => {
               </div>
 
               {/* Konfigurasi Bobot & Jumlah Soal */}
-              <div className="bg-slate-950/40 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
+              <div className="bg-slate-50/70 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-2xs">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <h4 className="text-xs font-black text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-indigo-400" />
+                  <h4 className="text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-indigo-600" />
                     Pengaturan Bobot & Jumlah Butir Soal
                   </h4>
-                  <span className="text-[11px] font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-lg">
+                  <span className="text-[11px] font-black text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
                     Total Skor Maksimal: {maxScore}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   {/* PG */}
-                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-sm">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">1. Pilihan Ganda</span>
-                      <span className="text-[10px] font-bold text-sky-400 bg-sky-500/15 border border-sky-500/30 px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-bold text-slate-800">1. Pilihan Ganda</span>
+                      <span className="text-[10px] font-bold text-sky-700 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-md">
                         PG
                       </span>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Jumlah Soal PG
                       </label>
                       <PillStepper
@@ -2102,7 +2104,7 @@ const handleExportAllClasses = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Bobot per Nomor
                       </label>
                       <PillStepper
@@ -2116,15 +2118,15 @@ const handleExportAllClasses = () => {
                   </div>
 
                   {/* Isian */}
-                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-sm">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">2. Isian Singkat</span>
-                      <span className="text-[10px] font-bold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-bold text-slate-800">2. Isian Singkat</span>
+                      <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
                         IS
                       </span>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Jumlah Soal Isian
                       </label>
                       <PillStepper
@@ -2136,7 +2138,7 @@ const handleExportAllClasses = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Bobot per Nomor
                       </label>
                       <PillStepper
@@ -2150,21 +2152,21 @@ const handleExportAllClasses = () => {
                   </div>
 
                   {/* Bagian C */}
-                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-sm">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">3. Bagian C</span>
-                      <span className="text-[10px] font-bold text-purple-300 bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-bold text-slate-800">3. Bagian C</span>
+                      <span className="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-md">
                         {cType}
                       </span>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Jenis Bagian C
                       </label>
                       <select
                         value={cType}
                         onChange={(e) => setCType(e.target.value as any)}
-                        className="w-full bg-slate-950/50 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white font-bold outline-none cursor-pointer"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-bold outline-none cursor-pointer focus:bg-white focus:border-indigo-500"
                       >
                         <option value="Uraian">Uraian</option>
                         <option value="Essay">Essay</option>
@@ -2172,7 +2174,7 @@ const handleExportAllClasses = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Jumlah Soal {cType}
                       </label>
                       <PillStepper
@@ -2184,7 +2186,7 @@ const handleExportAllClasses = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
                         Bobot Maks. per Soal
                       </label>
                       <PillStepper
@@ -2202,35 +2204,35 @@ const handleExportAllClasses = () => {
               {/* Daftar Kelas yang Diampu */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                     Daftar Kelas yang Diampu ({selectedClassIds.length} Terpilih)
                   </label>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <button
                       type="button"
                       onClick={() => handleSelectPhase('ALL')}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                     >
                       Semua
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSelectPhase('FASE_A')}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                     >
                       Kelas 1-2
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSelectPhase('FASE_B')}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                     >
                       Kelas 3-4
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSelectPhase('FASE_C')}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer transition-all"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer transition-all shadow-2xs"
                     >
                       Kelas 5-6
                     </button>
@@ -2247,8 +2249,8 @@ const handleExportAllClasses = () => {
                         onClick={() => handleToggleClass(cls.id)}
                         className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-indigo-500/25 border-indigo-400/40 text-white font-black shadow-sm shadow-indigo-500/20'
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                            ? 'bg-indigo-50 border-indigo-300 text-indigo-900 font-black shadow-2xs'
+                            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600 shadow-2xs'
                         }`}
                       >
                         <span className="text-xs">Kelas {cls.name}</span>
@@ -2259,20 +2261,20 @@ const handleExportAllClasses = () => {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-2.5">
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-2xs"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleApplyConfig}
-                className="px-5 py-2.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 active:scale-[0.99] text-indigo-200 border border-indigo-400/30 font-bold text-xs cursor-pointer shadow-[0_0_12px_rgba(99,102,241,0.2)] transition-all flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-xs cursor-pointer shadow-sm transition-all flex items-center gap-1.5"
               >
-                <Check className="w-4 h-4 text-indigo-400" />
+                <Check className="w-4 h-4 text-white" />
                 <span>Simpan & Terapkan Perubahan</span>
               </button>
             </div>
@@ -2283,31 +2285,31 @@ const handleExportAllClasses = () => {
       {/* Modal: Konfirmasi Hapus Sesi */}
       {showDeleteSessionModal && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] font-sans"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
               setShowDeleteSessionModal(false);
             }
           }}
         >
-          <div className="w-full max-w-md bg-slate-900 sm:bg-slate-900/95 backdrop-blur-none sm:backdrop-blur-2xl border border-rose-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-100">
+          <div className="w-full max-w-md bg-white border border-rose-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl text-slate-800">
             <div className="flex items-start gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(244,63,94,0.15)]">
-                <AlertCircle className="w-5 h-5 text-rose-400" />
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0 shadow-2xs">
+                <AlertCircle className="w-5 h-5 text-rose-600" />
               </div>
 
               <div>
-                <h3 className="text-base font-black text-white">
+                <h3 className="text-base font-black text-slate-900">
                   Hapus Sesi Analisis?
                 </h3>
 
-                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
                   Sesi{' '}
-                  <span className="text-white font-bold">
+                  <span className="text-slate-900 font-bold">
                     {activeSubjectName}
                   </span>{' '}
                   untuk{' '}
-                  <span className="text-white font-bold">
+                  <span className="text-slate-900 font-bold">
                     {selectedClassIds.length} kelas
                   </span>{' '}
                   akan dihapus dari aplikasi.
@@ -2315,8 +2317,8 @@ const handleExportAllClasses = () => {
               </div>
             </div>
 
-            <div className="mt-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <p className="text-[11px] text-amber-300 leading-relaxed">
+            <div className="mt-4 p-3.5 rounded-xl bg-amber-50 border border-amber-200 shadow-2xs">
+              <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
                 Pastikan Anda sudah menyimpan file Excel hasil analisis.
                 Setelah sesi dihapus, data yang tersimpan di aplikasi
                 tidak dapat dipulihkan kecuali dari file Excel.
@@ -2327,7 +2329,7 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setShowDeleteSessionModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-2xs"
               >
                 Batal
               </button>
@@ -2335,10 +2337,10 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={handleDeleteCurrentSession}
-                className="px-4 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-300 hover:text-white font-bold text-xs cursor-pointer transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(244,63,94,0.2)]"
+                className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
               >
                 <AlertCircle className="w-3.5 h-3.5" />
-                Ya, Hapus Sesi
+                <span>Ya, Hapus Sesi</span>
               </button>
             </div>
           </div>
@@ -2348,22 +2350,22 @@ const handleExportAllClasses = () => {
       {/* Modal 2: Ganti Sesi / Pilih Mata Pelajaran Lain */}
       {showSwitchSessionModal && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-none sm:backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] font-sans"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setShowSwitchSessionModal(false);
           }}
         >
-          <div className="w-full max-w-xl bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 text-slate-100 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="w-full max-w-xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl space-y-4 text-slate-800 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-[0_0_12px_rgba(14,165,233,0.15)]">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shadow-2xs">
                   <RotateCcw className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
+                  <h3 className="text-base font-black text-slate-900">
                     Pilih & Kelola Sesi Analisis
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Beralih ke mata pelajaran lain atau buat sesi analisis baru
                   </p>
                 </div>
@@ -2371,7 +2373,7 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setShowSwitchSessionModal(false)}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-all"
                 title="Tutup"
               >
                 ✕
@@ -2379,9 +2381,9 @@ const handleExportAllClasses = () => {
             </div>
 
             {/* Banner Keamanan Data */}
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <p className="text-[11.5px] text-emerald-200/90 leading-relaxed font-medium">
+            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-2.5 shadow-2xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-[11.5px] text-emerald-800 leading-relaxed font-medium">
                 Data nilai dan progres seluruh sesi <strong>tersimpan aman secara otomatis</strong> di browser. Anda dapat berpindah sesi kapan saja tanpa khawatir kehilangan nilai yang sudah diisi.
               </p>
             </div>
@@ -2389,7 +2391,7 @@ const handleExportAllClasses = () => {
             {/* List Mata Pelajaran yang Tersimpan */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Mata Pelajaran yang Tersedia ({availableSubjectsList.length})
                 </label>
               </div>
@@ -2404,31 +2406,31 @@ const handleExportAllClasses = () => {
                         key={item.subjectName}
                         className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 transition-all ${
                           isCurrent
-                            ? 'bg-indigo-500/15 border-indigo-500/35 ring-1 ring-indigo-500/30'
-                            : 'bg-white/5 border-white/10 hover:border-white/20'
+                            ? 'bg-indigo-50/80 border-indigo-300 ring-1 ring-indigo-200 shadow-2xs'
+                            : 'bg-white hover:bg-slate-50 border-slate-200 shadow-2xs'
                         }`}
                       >
                         <div className="space-y-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-black text-sm text-white truncate">
+                            <span className="font-black text-sm text-slate-900 truncate">
                               {item.subjectName}
                             </span>
                             {isCurrent && (
-                              <span className="text-[10px] font-bold bg-indigo-500/25 text-indigo-300 border border-indigo-400/40 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-full">
                                 Sedang Aktif
                               </span>
                             )}
                           </div>
-                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-400">
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
                             {item.teacherName && (
-                              <span className="text-amber-300 font-semibold truncate max-w-[140px]">
+                              <span className="text-amber-700 font-semibold truncate max-w-[140px]">
                                 {item.teacherName}
                               </span>
                             )}
                             <span>•</span>
                             <span>{item.classIds.length} Rombel ({item.classIds.join(', ')})</span>
                             <span>•</span>
-                            <span className="text-sky-300 font-semibold">
+                            <span className="text-sky-700 font-semibold">
                               {item.completedStudents}/{item.totalStudents} Terisi
                             </span>
                           </div>
@@ -2438,13 +2440,13 @@ const handleExportAllClasses = () => {
                           <button
                             type="button"
                             onClick={() => handleSelectExistingSubject(item)}
-                            className="px-3.5 py-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/35 text-indigo-200 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-sm flex items-center gap-1"
+                            className="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-2xs flex items-center gap-1"
                           >
                             <span>Buka Sesi Ini</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         ) : (
-                          <span className="text-xs text-indigo-400 font-bold shrink-0 px-2 py-1 rounded-lg bg-indigo-500/10">
+                          <span className="text-xs text-indigo-700 font-bold shrink-0 px-2 py-1 rounded-lg bg-indigo-50">
                             Aktif
                           </span>
                         )}
@@ -2453,37 +2455,37 @@ const handleExportAllClasses = () => {
                   })}
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-center text-xs text-slate-400">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
                   Belum ada riwayat mata pelajaran lain yang tersimpan.
                 </div>
               )}
             </div>
 
             {/* Opsi Buat / Setup Baru */}
-            <div className="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/25 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-200 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
               <div>
-                <h4 className="text-xs font-black text-sky-200">
+                <h4 className="text-xs font-black text-sky-900">
                   Ingin Mengatur Mata Pelajaran Baru?
                 </h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Mata pelajaran aktif saat ini tetap tersimpan aman dan dapat dibuka kembali kapan saja.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleStartNewSubjectSetup}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/35 text-sky-200 font-bold text-xs cursor-pointer transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs cursor-pointer transition-all shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
               >
-                <Plus className="w-3.5 h-3.5 text-sky-300" />
+                <Plus className="w-3.5 h-3.5 text-white" />
                 <span>+ Setup Mapel Baru</span>
               </button>
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-end">
+            <div className="pt-3 border-t border-slate-200 flex items-center justify-end">
               <button
                 type="button"
                 onClick={() => setShowSwitchSessionModal(false)}
-                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-2xs"
               >
                 Tutup
               </button>
@@ -2560,23 +2562,23 @@ const handleExportAllClasses = () => {
       {/* Modal: Tambah Mata Pelajaran Baru (Tanpa Ganti Sesi & Tanpa Hilang Data) */}
       {isAddSubjectModalOpen && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] font-sans"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsAddSubjectModalOpen(false);
           }}
         >
-          <div className="w-full max-w-3xl bg-slate-900 border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 text-slate-100 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-3xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xl space-y-5 text-slate-800 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-2xs">
                   <Plus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
+                  <h3 className="text-base font-black text-slate-900">
                     Tambah Mata Pelajaran Baru
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Mata pelajaran aktif ({activeSubjectName}) tetap tersimpan aman dan dapat dibuka kembali kapan saja
                   </p>
                 </div>
@@ -2584,7 +2586,7 @@ const handleExportAllClasses = () => {
               <button
                 type="button"
                 onClick={() => setIsAddSubjectModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-all"
               >
                 ✕
               </button>
@@ -2594,7 +2596,7 @@ const handleExportAllClasses = () => {
             <div className="space-y-4">
               {/* Pilihan Mapel */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
                   Pilih atau Ketik Nama Mata Pelajaran
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2609,7 +2611,7 @@ const handleExportAllClasses = () => {
                           setNewSubjName(e.target.value);
                         }
                       }}
-                      className="w-full bg-slate-950/60 border border-white/10 focus:border-emerald-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none cursor-pointer shadow-2xs"
                     >
                       {PRESET_SUBJECTS.map((subj) => (
                         <option key={subj} value={subj}>
@@ -2626,7 +2628,7 @@ const handleExportAllClasses = () => {
                         value={newSubjCustomText}
                         onChange={(e) => setNewSubjCustomText(e.target.value)}
                         placeholder="Ketik nama mata pelajaran baru..."
-                        className="w-full bg-slate-950/60 border border-emerald-400/40 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none"
+                        className="w-full bg-white border border-emerald-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none focus:border-emerald-500 shadow-2xs"
                       />
                     </div>
                   )}
@@ -2636,7 +2638,7 @@ const handleExportAllClasses = () => {
               {/* Guru & KKTP */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     Nama Guru Pengampu
                   </label>
                   <input
@@ -2644,11 +2646,11 @@ const handleExportAllClasses = () => {
                     value={newSubjTeacherName}
                     onChange={(e) => setNewSubjTeacherName(e.target.value)}
                     placeholder="Contoh: Ust. Ahmad Fauzi, S.Pd.I"
-                    className="w-full bg-slate-950/50 border border-white/10 focus:border-emerald-400/50 rounded-xl px-3.5 py-2.5 text-sm text-white font-bold outline-none transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none transition-all shadow-2xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     Standar KKTP / KKM (≥ Nilai Lulus)
                   </label>
                   <PillStepper
@@ -2663,52 +2665,52 @@ const handleExportAllClasses = () => {
               </div>
 
               {/* Bobot Soal */}
-              <div className="bg-slate-950/40 border border-white/10 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
+              <div className="bg-slate-50/70 border border-slate-200/90 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-2xs">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <h4 className="text-xs font-black text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Layers className="w-4 h-4 text-emerald-400" />
+                  <h4 className="text-xs font-black text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-emerald-600" />
                     Pengaturan Bobot &amp; Butir Soal
                   </h4>
-                  <span className="text-[11px] font-black text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-lg">
+                  <span className="text-[11px] font-black text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-lg shadow-2xs">
                     Total Skor: {newSubjPgCount * newSubjPgWeight + newSubjIsianCount * newSubjIsianWeight + newSubjCCount * newSubjCWeight}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   {/* PG */}
-                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5">
-                    <span className="text-xs font-bold text-slate-200">1. Pilihan Ganda (PG)</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-2xs">
+                    <span className="text-xs font-bold text-slate-800">1. Pilihan Ganda (PG)</span>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Jumlah Soal</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Jumlah Soal</label>
                       <PillStepper value={newSubjPgCount} onChange={setNewSubjPgCount} min={0} max={100} className="w-full" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bobot / Soal</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Bobot / Soal</label>
                       <PillStepper value={newSubjPgWeight} onChange={setNewSubjPgWeight} min={1} max={20} className="w-full" />
                     </div>
                   </div>
 
                   {/* Isian */}
-                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5">
-                    <span className="text-xs font-bold text-slate-200">2. Isian Singkat</span>
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-2xs">
+                    <span className="text-xs font-bold text-slate-800">2. Isian Singkat</span>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Jumlah Soal</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Jumlah Soal</label>
                       <PillStepper value={newSubjIsianCount} onChange={setNewSubjIsianCount} min={0} max={100} className="w-full" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bobot / Soal</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Bobot / Soal</label>
                       <PillStepper value={newSubjIsianWeight} onChange={setNewSubjIsianWeight} min={1} max={20} className="w-full" />
                     </div>
                   </div>
 
                   {/* Bagian C */}
-                  <div className="bg-slate-900/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between space-y-2.5">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between space-y-2.5 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200">3. Bagian C</span>
+                      <span className="text-xs font-bold text-slate-800">3. Bagian C</span>
                       <select
                         value={newSubjCType}
                         onChange={(e) => setNewSubjCType(e.target.value as any)}
-                        className="bg-slate-950 border border-white/10 rounded px-1.5 py-0.5 text-[10px] text-purple-300 font-bold"
+                        className="bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-[10px] text-purple-700 font-bold focus:bg-white"
                       >
                         <option value="Uraian">Uraian</option>
                         <option value="Essay">Essay</option>
@@ -2716,11 +2718,11 @@ const handleExportAllClasses = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Jumlah Soal</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Jumlah Soal</label>
                       <PillStepper value={newSubjCCount} onChange={setNewSubjCCount} min={0} max={100} className="w-full" />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-400 mb-1">Bobot / Soal</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Bobot / Soal</label>
                       <PillStepper value={newSubjCWeight} onChange={setNewSubjCWeight} min={1} max={50} className="w-full" />
                     </div>
                   </div>
@@ -2730,35 +2732,35 @@ const handleExportAllClasses = () => {
               {/* Rombel Kelas yang Diampu */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                     Pilih Rombel Kelas yang Diampu ({newSubjTargetClasses.length} Terpilih)
                   </label>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <button
                       type="button"
                       onClick={() => setNewSubjTargetClasses(availableClassesForSchool.map(c => c.id))}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer shadow-2xs"
                     >
                       Semua
                     </button>
                     <button
                       type="button"
                       onClick={() => setNewSubjTargetClasses(availableClassesForSchool.filter(c => c.level === 1 || c.level === 2).map(c => c.id))}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer shadow-2xs"
                     >
                       Kelas 1-2
                     </button>
                     <button
                       type="button"
                       onClick={() => setNewSubjTargetClasses(availableClassesForSchool.filter(c => c.level === 3 || c.level === 4).map(c => c.id))}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer shadow-2xs"
                     >
                       Kelas 3-4
                     </button>
                     <button
                       type="button"
                       onClick={() => setNewSubjTargetClasses(availableClassesForSchool.filter(c => c.level === 5 || c.level === 6).map(c => c.id))}
-                      className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10.5px] font-bold text-slate-300 cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[10.5px] font-bold text-slate-700 cursor-pointer shadow-2xs"
                     >
                       Kelas 5-6
                     </button>
@@ -2779,8 +2781,8 @@ const handleExportAllClasses = () => {
                         }}
                         className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-emerald-500/25 border-emerald-400/40 text-white font-black shadow-sm shadow-emerald-500/20'
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                            ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-black shadow-2xs'
+                            : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-600 shadow-2xs'
                         }`}
                       >
                         <span className="text-xs">Kelas {cls.name}</span>
@@ -2792,20 +2794,20 @@ const handleExportAllClasses = () => {
             </div>
 
             {/* Footer */}
-            <div className="pt-4 border-t border-white/10 flex items-center justify-end gap-2.5">
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsAddSubjectModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-2xs"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleSaveNewSubject}
-                className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] text-white font-bold text-xs cursor-pointer shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-xs cursor-pointer shadow-sm transition-all flex items-center gap-1.5"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 text-white" />
                 <span>Simpan &amp; Buka Mapel Ini</span>
               </button>
             </div>

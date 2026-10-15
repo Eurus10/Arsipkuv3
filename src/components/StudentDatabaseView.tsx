@@ -816,21 +816,21 @@ const StudentDatabaseView: React.FC<
   };
 
   return (
-    <div className="space-y-6 text-slate-100 pb-12">
+    <div className="space-y-6 text-slate-800 pb-12 font-sans">
       {/* HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[#141824] to-[#1B2233] p-6 rounded-[24px] border border-[#242C40] shadow-xl">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white p-6 rounded-[24px] border border-slate-200/90 shadow-xs">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 shadow-inner">
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 shadow-2xs">
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-tight font-heading flex items-center gap-2">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight font-heading flex items-center gap-2">
               <span>Database Peserta Didik Multi-Sekolah</span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-teal-500/20 text-teal-300 border border-teal-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
                 Admin Secure
               </span>
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Pusat data siswa terintegrasi untuk berbagai sekolah, sinkron dengan Generator Analisis Soal dan Rapor.
             </p>
           </div>
@@ -840,19 +840,19 @@ const StudentDatabaseView: React.FC<
           <button
             type="button"
             onClick={() => setIsAddSchoolModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1D2538] hover:bg-[#252E45] border border-[#2E3954] px-4 py-2.5 text-xs font-bold text-slate-200 transition-all cursor-pointer shadow-md"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-2xs"
           >
-            <Building2 className="w-4 h-4 text-cyan-400" />
+            <Building2 className="w-4 h-4 text-cyan-600" />
             <span>+ Tambah Sekolah</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleOpenEditSchoolModal(selectedSchool || DEFAULT_SCHOOL_NAME)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1D2538] hover:bg-[#252E45] border border-[#2E3954] px-4 py-2.5 text-xs font-bold text-amber-300 transition-all cursor-pointer shadow-md"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-xs font-bold text-amber-800 transition-all cursor-pointer shadow-2xs"
             title="Ubah nama sekolah terdaftar (contoh: ubah huruf kapital SDIT AL FIKRI)"
           >
-            <Pencil className="w-4 h-4 text-amber-400" />
+            <Pencil className="w-4 h-4 text-amber-600" />
             <span>Ubah Nama Sekolah</span>
           </button>
 
@@ -862,16 +862,16 @@ const StudentDatabaseView: React.FC<
               setImportSchoolTarget(selectedSchool || DEFAULT_SCHOOL_NAME);
               setIsImportModalOpen(true);
             }}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1D2538] hover:bg-[#252E45] border border-[#2E3954] px-4 py-2.5 text-xs font-bold text-slate-200 transition-all cursor-pointer shadow-md"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 transition-all cursor-pointer shadow-2xs"
           >
-            <Upload className="w-4 h-4 text-teal-400" />
+            <Upload className="w-4 h-4 text-teal-600" />
             <span>Import Excel</span>
           </button>
 
           <button
             type="button"
             onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-500 hover:bg-teal-400 px-4 py-2.5 text-xs font-extrabold text-slate-950 transition-all cursor-pointer shadow-lg shadow-teal-500/20"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 px-4 py-2.5 text-xs font-extrabold text-white transition-all cursor-pointer shadow-xs"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Siswa</span>
@@ -883,10 +883,10 @@ const StudentDatabaseView: React.FC<
               setDeleteAllMode('all');
               setIsDeleteAllModalOpen(true);
             }}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-3.5 py-2.5 text-xs font-bold text-rose-300 transition-all cursor-pointer shadow-sm"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3.5 py-2.5 text-xs font-bold text-rose-700 transition-all cursor-pointer shadow-2xs"
             title="Bersihkan halaman / Hapus semua data siswa"
           >
-            <Trash2 className="w-4 h-4 text-rose-400" />
+            <Trash2 className="w-4 h-4 text-rose-600" />
             <span>Hapus Semua Data</span>
           </button>
         </div>
@@ -894,66 +894,65 @@ const StudentDatabaseView: React.FC<
 
       {/* ERROR & SUCCESS ALERTS */}
       {error && (
-        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3.5 text-xs font-semibold text-rose-300 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3.5 text-xs font-semibold text-rose-800 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-600" />
           <span>{error}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3.5 text-xs font-semibold text-emerald-300 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-xs font-semibold text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {/* STATISTICS CARDS */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-[#232B3D] bg-[#141824] p-5 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none" />
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs relative overflow-hidden">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             Total Siswa ({selectedSchool || 'Semua Sekolah'})
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-white">
+          <div className="mt-2 text-3xl font-extrabold text-slate-900 font-heading">
             {filteredStudents.length}
             {selectedSchool && (
-              <span className="text-sm font-normal text-slate-400 ml-2">/ {totalStudents}</span>
+              <span className="text-sm font-normal text-slate-500 ml-2">/ {totalStudents}</span>
             )}
           </div>
-          <div className="mt-1 text-[11px] text-teal-400 font-semibold flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5" />
+          <div className="mt-1 text-[11px] text-teal-700 font-semibold flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
             <span>Terhubung Supabase Cloud</span>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-[#232B3D] bg-[#141824] p-5 shadow-lg relative overflow-hidden">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs relative overflow-hidden">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             Ekosistem Sekolah
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-cyan-400">
+          <div className="mt-2 text-3xl font-extrabold text-cyan-700 font-heading">
             {schoolsList.length}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">
+          <div className="mt-1 text-[11px] text-slate-500">
             sekolah aktif terdaftar
           </div>
         </div>
 
         {/* 3. Total Rombel Aktif */}
-        <div className="rounded-2xl border border-[#232B3D] bg-[#141824] p-5 shadow-lg relative overflow-hidden">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs relative overflow-hidden">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             Total Rombel Aktif
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-amber-400">
+          <div className="mt-2 text-3xl font-extrabold text-amber-700 font-heading">
             {Object.keys(classStatistics).length}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400">
+          <div className="mt-1 text-[11px] text-slate-500">
             rombel kelas terisi data
           </div>
         </div>
 
         {/* 4. Status Sinkronisasi */}
-        <div className="rounded-2xl border border-[#232B3D] bg-[#141824] p-5 shadow-lg relative overflow-hidden">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs relative overflow-hidden">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             Status Sinkronisasi
           </div>
           <div className="mt-2 flex items-center gap-2">
@@ -961,17 +960,17 @@ const StudentDatabaseView: React.FC<
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
             </span>
-            <span className="text-xl font-black text-emerald-400 tracking-tight">Real-Time</span>
+            <span className="text-xl font-black text-emerald-700 tracking-tight">Real-Time</span>
           </div>
-          <div className="mt-1 text-[11px] text-emerald-300/80 font-medium flex items-center gap-1">
-            <Activity className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="mt-1 text-[11px] text-emerald-700 font-medium flex items-center gap-1">
+            <Activity className="w-3.5 h-3.5 text-emerald-600" />
             <span>{isRefreshing ? 'Memperbarui data...' : 'Sinkron Otomatis Cloud'}</span>
           </div>
         </div>
       </div>
 
       {/* FILTER & SEARCH BAR */}
-      <div className="rounded-2xl border border-[#232B3D] bg-[#141824] p-4 shadow-lg space-y-3">
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_200px_220px]">
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
@@ -980,7 +979,7 @@ const StudentDatabaseView: React.FC<
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Cari nama peserta didik atau nama sekolah..."
-              className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] pl-10 pr-4 py-2.5 text-xs text-white outline-none transition focus:border-teal-400"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-xs text-slate-900 outline-none transition focus:bg-white focus:border-teal-500 placeholder:text-slate-400"
             />
           </div>
 
@@ -989,7 +988,7 @@ const StudentDatabaseView: React.FC<
             <select
               value={selectedSchool}
               onChange={(event) => setSelectedSchool(event.target.value)}
-              className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] px-3 py-2.5 text-xs font-bold text-cyan-300 outline-none transition focus:border-cyan-400"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-bold text-cyan-800 outline-none transition focus:bg-white focus:border-cyan-500"
             >
               <option value="">Semua Sekolah ({schoolsList.length})</option>
               {schoolsList.map((sch) => (
@@ -1005,7 +1004,7 @@ const StudentDatabaseView: React.FC<
             <select
               value={selectedClass}
               onChange={(event) => setSelectedClass(event.target.value)}
-              className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] px-3 py-2.5 text-xs font-bold text-white outline-none transition focus:border-teal-400"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-800 outline-none transition focus:bg-white focus:border-teal-500"
             >
               <option value="">Semua Kelas ({classes.length} Rombel)</option>
               {classes.map((classItem) => (
@@ -1019,29 +1018,29 @@ const StudentDatabaseView: React.FC<
 
         {(selectedSchool || selectedClass || search) && (
           <div className="flex items-center gap-2 pt-1">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-              <Filter className="w-3 h-3 text-cyan-400" /> Filter Aktif:
+            <span className="text-[11px] text-slate-500 flex items-center gap-1">
+              <Filter className="w-3 h-3 text-cyan-600" /> Filter Aktif:
             </span>
             {selectedSchool && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200">
                 Sekolah: {selectedSchool}
-                <button onClick={() => setSelectedSchool('')} className="hover:text-white cursor-pointer ml-1">
+                <button onClick={() => setSelectedSchool('')} className="hover:text-cyan-950 cursor-pointer ml-1 font-black">
                   ×
                 </button>
               </span>
             )}
             {selectedClass && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/15 text-teal-300 border border-teal-500/30">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200">
                 Kelas: {getClassName(selectedClass)}
-                <button onClick={() => setSelectedClass('')} className="hover:text-white cursor-pointer ml-1">
+                <button onClick={() => setSelectedClass('')} className="hover:text-teal-950 cursor-pointer ml-1 font-black">
                   ×
                 </button>
               </span>
             )}
             {search && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-700 text-slate-200">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                 Kata kunci: "{search}"
-                <button onClick={() => setSearch('')} className="hover:text-white cursor-pointer ml-1">
+                <button onClick={() => setSearch('')} className="hover:text-slate-900 cursor-pointer ml-1 font-black">
                   ×
                 </button>
               </span>
@@ -1051,7 +1050,7 @@ const StudentDatabaseView: React.FC<
                 <button
                   type="button"
                   onClick={() => handleOpenEditSchoolModal(selectedSchool)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer shadow-sm ml-auto"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold transition-all cursor-pointer shadow-2xs ml-auto"
                   title={`Ubah nama sekolah ${selectedSchool}`}
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -1060,7 +1059,7 @@ const StudentDatabaseView: React.FC<
                 <button
                   type="button"
                   onClick={() => handleOpenDeleteSchoolModal(selectedSchool)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all cursor-pointer shadow-2xs"
                   title={`Hapus seluruh data sekolah ${selectedSchool}`}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -1074,7 +1073,7 @@ const StudentDatabaseView: React.FC<
                 setSelectedClass('');
                 setSearch('');
               }}
-              className={`text-[11px] text-rose-400 hover:text-rose-300 font-bold cursor-pointer ${selectedSchool ? 'ml-2' : 'ml-auto'}`}
+              className={`text-[11px] text-rose-600 hover:text-rose-700 font-bold cursor-pointer ${selectedSchool ? 'ml-2' : 'ml-auto'}`}
             >
               Reset Semua Filter
             </button>
@@ -1083,9 +1082,9 @@ const StudentDatabaseView: React.FC<
       </div>
 
       {/* TABLE */}
-      <div className="rounded-2xl border border-[#232B3D] bg-[#141824] shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#232B3D] flex items-center justify-between">
-          <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+      <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-150 flex items-center justify-between">
+          <div className="text-xs font-bold text-slate-800 uppercase tracking-wider">
             Daftar Peserta Didik ({filteredStudents.length} Ditampilkan)
           </div>
           {(selectedClass || selectedSchool) && (
@@ -1094,7 +1093,7 @@ const StudentDatabaseView: React.FC<
                 setSelectedClass('');
                 setSelectedSchool('');
               }}
-              className="text-[11px] text-teal-400 hover:text-teal-300 font-bold cursor-pointer"
+              className="text-[11px] text-teal-700 hover:text-teal-800 font-bold cursor-pointer"
             >
               Tampilkan Semua
             </button>
@@ -1103,16 +1102,16 @@ const StudentDatabaseView: React.FC<
 
         {isLoading ? (
           <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-            <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
-            <p className="text-xs text-slate-400">Memuat database peserta didik...</p>
+            <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+            <p className="text-xs text-slate-500">Memuat database peserta didik...</p>
           </div>
         ) : filteredStudents.length === 0 ? (
           <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center">
               <Users className="w-6 h-6" />
             </div>
-            <p className="text-sm font-bold text-slate-300">Belum ada peserta didik ditemukan</p>
-            <p className="text-xs text-slate-400 max-w-sm">
+            <p className="text-sm font-bold text-slate-800">Belum ada peserta didik ditemukan</p>
+            <p className="text-xs text-slate-500 max-w-sm">
               {search || selectedClass || selectedSchool
                 ? 'Coba ubah kata kunci pencarian atau filter sekolah/kelas Anda.'
                 : 'Silakan tambah siswa secara manual atau import melalui file Excel.'}
@@ -1122,7 +1121,7 @@ const StudentDatabaseView: React.FC<
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#232B3D] bg-[#10131D]/80 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-extrabold text-slate-600 uppercase tracking-wider">
                   <th className="py-3.5 px-6 w-12">No</th>
                   <th className="py-3.5 px-6">Nama Peserta Didik</th>
                   <th className="py-3.5 px-3 w-28">NIM</th>
@@ -1134,31 +1133,31 @@ const StudentDatabaseView: React.FC<
                   <th className="py-3.5 px-6 w-28 text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#20283A] text-xs">
+              <tbody className="divide-y divide-slate-100 text-xs">
                 {filteredStudents.map((student, index) => {
                   const displayNisn = cleanNisn(student.nisn);
                   return (
                     <tr
                       key={student.id}
-                      className="hover:bg-[#181F30] transition-colors group"
+                      className="hover:bg-slate-50/70 transition-colors group"
                     >
                       <td className="py-3.5 px-6 text-slate-400 font-mono">
                         {index + 1}
                       </td>
-                      <td className="py-3.5 px-6 font-bold text-white group-hover:text-teal-300 transition-colors">
+                      <td className="py-3.5 px-6 font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
                         {student.name}
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-[11px] text-slate-300">
+                      <td className="py-3.5 px-3 font-mono text-[11px] text-slate-600">
                         {student.nim || '-'}
                       </td>
                       <td className="py-3.5 px-3 font-mono text-[11px]">
                         {displayNisn ? (
-                          <span className="text-cyan-300 font-bold tracking-wide">{displayNisn}</span>
+                          <span className="text-cyan-800 font-bold tracking-wide">{displayNisn}</span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => openEditModal(student)}
-                            className="text-[10px] text-amber-400/80 hover:text-amber-300 underline underline-offset-2 italic cursor-pointer"
+                            className="text-[10px] text-amber-700 hover:text-amber-800 underline underline-offset-2 italic cursor-pointer"
                             title="Klik untuk isi NISN"
                           >
                             Isi NISN
@@ -1167,30 +1166,30 @@ const StudentDatabaseView: React.FC<
                       </td>
                     <td className="py-3.5 px-3 text-center">
                       {student.gender ? (
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold ${student.gender === 'L' ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30' : 'bg-pink-500/15 text-pink-300 border border-pink-500/30'}`}>
+                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold ${student.gender === 'L' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-pink-50 text-pink-700 border border-pink-200'}`}>
                           {student.gender}
                         </span>
                       ) : (
-                        <span className="text-slate-600">-</span>
+                        <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-300 text-[11px]">
+                    <td className="py-3.5 px-4 text-slate-600 text-[11px]">
                       {student.tempatLahir || student.tanggalLahir ? (
                         <span>
                           {student.tempatLahir || '-'}{student.tempatLahir && student.tanggalLahir ? ', ' : ''}{formatIndonesianDate(student.tanggalLahir)}
                         </span>
                       ) : (
-                        <span className="text-slate-600">-</span>
+                        <span className="text-slate-400">-</span>
                       )}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-teal-500/10 text-teal-300 border border-teal-500/20">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-teal-50 text-teal-800 border border-teal-200">
                         Kelas {getClassName(student.classId)}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-                        <Building2 className="w-3 h-3 text-cyan-400" />
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-cyan-50 text-cyan-800 border border-cyan-200">
+                        <Building2 className="w-3 h-3 text-cyan-600" />
                         <span>{student.schoolName || DEFAULT_SCHOOL_NAME}</span>
                       </span>
                     </td>
@@ -1199,7 +1198,7 @@ const StudentDatabaseView: React.FC<
                         <button
                           type="button"
                           onClick={() => openEditModal(student)}
-                          className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                          className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200/80"
                           title="Edit"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -1207,7 +1206,7 @@ const StudentDatabaseView: React.FC<
                         <button
                           type="button"
                           onClick={() => handleDelete(student.id, student.name)}
-                          className="p-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 transition-colors cursor-pointer"
+                          className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 border border-rose-200 transition-colors cursor-pointer"
                           title="Hapus"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1226,22 +1225,22 @@ const StudentDatabaseView: React.FC<
       {/* ADD NEW SCHOOL MODAL */}
       {isAddSchoolModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsAddSchoolModalOpen(false);
           }}
         >
-          <div className="w-full max-w-md rounded-[24px] bg-[#141824] border border-[#2A324A] shadow-2xl shadow-black/60 text-slate-100 overflow-hidden">
-            <div className="px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-[#172030] to-[#141824] flex items-center justify-between">
+          <div className="w-full max-w-md rounded-[24px] bg-white border border-slate-200/90 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="px-6 py-5 border-b border-slate-150 bg-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-700">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
                     Tambah Sekolah Baru
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Daftarkan nama sekolah untuk multi-sekolah
                   </p>
                 </div>
@@ -1249,7 +1248,7 @@ const StudentDatabaseView: React.FC<
               <button
                 type="button"
                 onClick={() => setIsAddSchoolModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer border border-slate-200/80"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1258,7 +1257,7 @@ const StudentDatabaseView: React.FC<
             <form onSubmit={handleAddNewSchool}>
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
                     Nama Sekolah / Madrasah
                   </label>
                   <input
@@ -1267,26 +1266,26 @@ const StudentDatabaseView: React.FC<
                     value={newSchoolNameInput}
                     onChange={(e) => setNewSchoolNameInput(e.target.value)}
                     placeholder="Contoh: SD Negeri 01 Pagi / MI Al Hidayah"
-                    className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-4 py-2.5 text-xs font-bold text-white outline-none focus:border-cyan-400 transition-colors"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-cyan-500 transition-colors"
                     required
                   />
-                  <p className="text-[11px] text-slate-400 mt-1.5">
+                  <p className="text-[11px] text-slate-500 mt-1.5">
                     Cukup masukkan nama sekolah tanpa perlu NPSN, alamat, atau data rumit lainnya.
                   </p>
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-[#242C40] bg-[#11141F] flex items-center justify-end gap-3">
+              <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsAddSchoolModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white text-xs font-extrabold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Simpan Sekolah</span>
@@ -1300,22 +1299,22 @@ const StudentDatabaseView: React.FC<
       {/* EDIT / UBAH NAMA SEKOLAH MODAL */}
       {isEditSchoolModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsEditSchoolModalOpen(false);
           }}
         >
-          <div className="w-full max-w-md rounded-[24px] bg-[#141824] border border-[#2A324A] shadow-2xl shadow-black/60 text-slate-100 overflow-hidden">
-            <div className="px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-[#1E2538] to-[#141824] flex items-center justify-between">
+          <div className="w-full max-w-md rounded-[24px] bg-white border border-slate-200/90 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="px-6 py-5 border-b border-slate-150 bg-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
                   <Pencil className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
                     Edit / Ubah Nama Sekolah
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Perbarui nama sekolah pada database siswa
                   </p>
                 </div>
@@ -1323,7 +1322,7 @@ const StudentDatabaseView: React.FC<
               <button
                 type="button"
                 onClick={() => setIsEditSchoolModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer border border-slate-200/80"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1332,7 +1331,7 @@ const StudentDatabaseView: React.FC<
             <form onSubmit={handleConfirmEditSchool}>
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                     Pilih Sekolah yang Ingin Diubah
                   </label>
                   <select
@@ -1341,7 +1340,7 @@ const StudentDatabaseView: React.FC<
                       setSchoolToEdit(e.target.value);
                       setEditSchoolNewName(e.target.value);
                     }}
-                    className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] px-3.5 py-2.5 text-xs font-bold text-cyan-300 outline-none transition focus:border-cyan-400"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-cyan-800 outline-none transition focus:bg-white focus:border-cyan-500"
                   >
                     {schoolsList.map((sch) => (
                       <option key={sch} value={sch}>
@@ -1352,7 +1351,7 @@ const StudentDatabaseView: React.FC<
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
                     Nama Sekolah Baru
                   </label>
                   <input
@@ -1360,7 +1359,7 @@ const StudentDatabaseView: React.FC<
                     value={editSchoolNewName}
                     onChange={(e) => setEditSchoolNewName(e.target.value)}
                     placeholder="Contoh: SDIT AL FIKRI"
-                    className="w-full rounded-xl border border-[#2A324A] bg-[#10131D] px-3.5 py-2.5 text-xs font-bold text-white outline-none transition focus:border-teal-400"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-bold text-slate-900 outline-none transition focus:bg-white focus:border-teal-500"
                     required
                   />
 
@@ -1371,17 +1370,17 @@ const StudentDatabaseView: React.FC<
                       <button
                         type="button"
                         onClick={() => setEditSchoolNewName('SDIT AL FIKRI')}
-                        className="mt-2 text-[11px] font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer flex items-center gap-1.5"
+                        className="mt-2 text-[11px] font-bold text-amber-800 hover:text-amber-900 underline cursor-pointer flex items-center gap-1.5"
                       >
                         <span>⚡ Format Kapital Resmi:</span>
-                        <strong className="text-white bg-amber-950/60 px-2 py-0.5 rounded border border-amber-600/50">
+                        <strong className="text-slate-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
                           SDIT AL FIKRI
                         </strong>
                       </button>
                     )}
                 </div>
 
-                <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 p-3 text-xs text-sky-300">
+                <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-xs text-sky-800">
                   <p>
                     Nama sekolah pada seluruh data peserta didik yang saat ini bernama{' '}
                     <strong>"{schoolToEdit}"</strong> akan otomatis disinkronkan ke nama baru di database.
@@ -1389,18 +1388,18 @@ const StudentDatabaseView: React.FC<
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-[#242C40] bg-[#10131D] flex items-center justify-end gap-3">
+              <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsEditSchoolModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 bg-slate-100 text-xs font-bold text-slate-700 hover:bg-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isEditingSchool}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 text-xs font-extrabold flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
                 >
                   {isEditingSchool ? (
                     <>
@@ -1423,23 +1422,23 @@ const StudentDatabaseView: React.FC<
       {/* IMPORT EXCEL MODAL */}
       {isImportModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setIsImportModalOpen(false);
           }}
         >
-          <div className="w-full max-w-lg rounded-[24px] bg-[#141824] border border-[#2A324A] shadow-2xl shadow-black/60 text-slate-100 overflow-hidden">
-            <div className="relative px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-[#172030] to-[#141824]">
+          <div className="w-full max-w-lg rounded-[24px] bg-white border border-slate-200/90 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="relative px-6 py-5 border-b border-slate-150 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
                     <FileSpreadsheet className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white tracking-tight font-heading">
+                    <h3 className="text-base font-bold text-slate-900 tracking-tight font-heading">
                       Import Database Siswa dari Excel
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Upload file Excel (.xlsx / .xls) berisi daftar nama siswa, kelas, dan sekolah.
                     </p>
                   </div>
@@ -1447,7 +1446,7 @@ const StudentDatabaseView: React.FC<
                 <button
                   type="button"
                   onClick={() => setIsImportModalOpen(false)}
-                  className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer border border-slate-200/80"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1456,14 +1455,14 @@ const StudentDatabaseView: React.FC<
 
             <div className="p-6 space-y-5">
               {/* Target Sekolah untuk Import */}
-              <div className="p-3.5 rounded-xl bg-[#10141F] border border-[#232B3D]">
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
                   Target Sekolah Default (Jika di file Excel kosong):
                 </label>
                 <select
                   value={importSchoolTarget}
                   onChange={(e) => setImportSchoolTarget(e.target.value)}
-                  className="w-full rounded-xl border border-[#2E374E] bg-[#141824] px-3.5 py-2 text-xs font-bold text-cyan-300 outline-none focus:border-cyan-400 transition-colors"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-cyan-800 outline-none focus:border-cyan-500 transition-colors"
                 >
                   {schoolsList.map((sch) => (
                     <option key={sch} value={sch}>
@@ -1473,17 +1472,17 @@ const StudentDatabaseView: React.FC<
                 </select>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#10141F] border border-[#232B3D] flex items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-xs font-bold text-white mb-1">1. Unduh Template Excel</h4>
-                  <p className="text-[11px] text-slate-400">
+                  <h4 className="text-xs font-bold text-slate-900 mb-1">1. Unduh Template Excel</h4>
+                  <p className="text-[11px] text-slate-500">
                     Format 3 kolom sederhana: Nama Siswa, Kelas, dan Sekolah.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
-                  className="px-4 py-2 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 text-teal-300 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer flex-shrink-0"
+                  className="px-4 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 text-teal-800 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer flex-shrink-0"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>Download Template</span>
@@ -1491,10 +1490,10 @@ const StudentDatabaseView: React.FC<
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-300">
+                <label className="block text-xs font-bold text-slate-700">
                   2. Upload File Excel yang Telah Diisi
                 </label>
-                <div className="border-2 border-dashed border-[#2E374E] hover:border-teal-400/60 rounded-2xl p-6 text-center bg-[#10131D] transition-colors relative">
+                <div className="border-2 border-dashed border-slate-300 hover:border-teal-500 rounded-2xl p-6 text-center bg-slate-50/60 transition-colors relative">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -1506,18 +1505,18 @@ const StudentDatabaseView: React.FC<
                   <div className="flex flex-col items-center justify-center gap-2">
                     {isImporting ? (
                       <>
-                        <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
-                        <span className="text-xs font-bold text-teal-300">Mengimport data siswa...</span>
+                        <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+                        <span className="text-xs font-bold text-teal-800">Mengimport data siswa...</span>
                       </>
                     ) : (
                       <>
-                        <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center">
                           <Upload className="w-6 h-6" />
                         </div>
-                        <div className="text-xs font-bold text-white">
+                        <div className="text-xs font-bold text-slate-800">
                           Klik untuk memilih file Excel atau seret ke sini
                         </div>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[11px] text-slate-500">
                           Format yang didukung: .xlsx, .xls
                         </p>
                       </>
@@ -1527,11 +1526,11 @@ const StudentDatabaseView: React.FC<
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[#242C40] bg-[#11141F] flex items-center justify-end">
+            <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end">
               <button
                 type="button"
                 onClick={() => setIsImportModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer border border-slate-200/80"
               >
                 Tutup
               </button>
@@ -1543,26 +1542,26 @@ const StudentDatabaseView: React.FC<
       {/* ADD / EDIT MODAL */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div className="w-full max-w-md rounded-[24px] bg-[#141824] border border-[#2A324A] shadow-2xl shadow-black/60 text-slate-100 overflow-hidden">
-            <div className="relative px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-[#172030] to-[#141824]">
+          <div className="w-full max-w-md rounded-[24px] bg-white border border-slate-200/90 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="relative px-6 py-5 border-b border-slate-150 bg-white">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
+                  <h3 className="text-base font-bold text-slate-900 tracking-tight">
                     {editingStudent ? 'Edit Peserta Didik' : 'Tambah Peserta Didik Baru'}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Lengkapi identitas siswa dan sekolah dengan benar.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer border border-slate-200/80"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1572,8 +1571,8 @@ const StudentDatabaseView: React.FC<
             <form onSubmit={handleSave}>
               <div className="p-6 space-y-3.5 max-h-[75vh] overflow-y-auto">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
-                    Nama Lengkap Peserta Didik <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Nama Lengkap Peserta Didik <span className="text-rose-600">*</span>
                   </label>
                   <input
                     autoFocus
@@ -1581,40 +1580,40 @@ const StudentDatabaseView: React.FC<
                     value={formName}
                     onChange={(event) => setFormName(event.target.value)}
                     placeholder="Contoh: Ahmad Fauzan"
-                    className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-4 py-2 text-xs font-bold text-white outline-none focus:border-teal-400 transition-colors"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">NIM / Nomor Induk</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">NIM / Nomor Induk</label>
                     <input
                       type="text"
                       value={formNim}
                       onChange={(e) => setFormNim(e.target.value)}
                       placeholder="Contoh: 2026001"
-                      className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 transition-colors"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">NISN</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">NISN</label>
                     <input
                       type="text"
                       value={formNisn}
                       onChange={(e) => setFormNisn(e.target.value)}
                       placeholder="Contoh: 0123456789"
-                      className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 transition-colors"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Jenis Kelamin</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Jenis Kelamin</label>
                     <select
                       value={formGender}
                       onChange={(e) => setFormGender(e.target.value as any)}
-                      className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-3 py-2 text-xs font-bold text-white outline-none focus:border-teal-400 transition-colors"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                     >
                       <option value="">-- Pilih L/P --</option>
                       <option value="L">Laki-Laki (L)</option>
@@ -1622,11 +1621,11 @@ const StudentDatabaseView: React.FC<
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Kelas / Rombel <span className="text-rose-400">*</span></label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Kelas / Rombel <span className="text-rose-600">*</span></label>
                     <select
                       value={formClassId}
                       onChange={(event) => setFormClassId(event.target.value)}
-                      className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-3 py-2 text-xs font-bold text-white outline-none focus:border-teal-400 transition-colors"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                     >
                       <option value="">-- Pilih Kelas --</option>
                       {classes.map((classItem) => (
@@ -1640,35 +1639,35 @@ const StudentDatabaseView: React.FC<
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Tempat Lahir</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Tempat Lahir</label>
                     <input
                       type="text"
                       value={formTempatLahir}
                       onChange={(e) => setFormTempatLahir(e.target.value)}
                       placeholder="Contoh: Jakarta"
-                      className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 transition-colors"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">Tanggal Lahir</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Tanggal Lahir</label>
                     <input
                       type="text"
                       value={formTanggalLahir}
                       onChange={(e) => setFormTanggalLahir(e.target.value)}
                       placeholder="Tgl/Bln/Thn (DD/MM/YYYY)"
-                      className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-3 py-2 text-xs font-medium text-white outline-none focus:border-teal-400 transition-colors"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
                     Sekolah / Lembaga
                   </label>
                   <select
                     value={formSchoolName}
                     onChange={(event) => setFormSchoolName(event.target.value)}
-                    className="w-full rounded-xl border border-[#2E374E] bg-[#10131D] px-4 py-2 text-xs font-bold text-cyan-300 outline-none focus:border-cyan-400 transition-colors"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-cyan-800 outline-none focus:bg-white focus:border-cyan-500 transition-colors"
                   >
                     {schoolsList.map((sch) => (
                       <option key={sch} value={sch}>
@@ -1679,12 +1678,12 @@ const StudentDatabaseView: React.FC<
                 </div>
               </div>
 
-              <div className="px-6 py-4 border-t border-[#242C40] bg-[#11141F] flex items-center justify-end gap-3">
+              <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={isSaving}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50 border border-slate-200/80"
                 >
                   Batal
                 </button>
@@ -1692,7 +1691,7 @@ const StudentDatabaseView: React.FC<
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-teal-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>
@@ -1712,49 +1711,47 @@ const StudentDatabaseView: React.FC<
       {/* CONFIRM DELETE ENTIRE SCHOOL MODAL */}
       {isDeleteSchoolModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget && !isDeletingSchool) {
               setIsDeleteSchoolModalOpen(false);
             }
           }}
         >
-          <div className="w-full max-w-md rounded-[24px] bg-[#141824] border border-rose-500/40 shadow-2xl shadow-rose-950/50 text-slate-100 overflow-hidden animate-scale-up">
-            <div className="relative px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-rose-950/40 via-[#181D2A] to-[#141824]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 flex-shrink-0">
-                  <Trash2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
-                    Hapus Seluruh Data Sekolah
-                  </h3>
-                  <p className="text-xs text-rose-300/90 mt-0.5">
-                    Tindakan ini permanen dan tidak dapat dibatalkan.
-                  </p>
-                </div>
+          <div className="w-full max-w-md rounded-[24px] bg-white border border-rose-300 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="relative px-6 py-5 border-b border-rose-100 bg-rose-50/60 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Hapus Seluruh Data Sekolah
+                </h3>
+                <p className="text-xs text-rose-700 mt-0.5">
+                  Tindakan ini permanen dan tidak dapat dibatalkan.
+                </p>
               </div>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-xs text-rose-200 leading-relaxed">
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-900 leading-relaxed">
                 Anda akan menghapus seluruh data peserta didik yang terdaftar pada sekolah:
-                <div className="font-extrabold text-sm text-white mt-1.5 flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4 text-cyan-400" />
+                <div className="font-extrabold text-sm text-slate-900 mt-1.5 flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-cyan-600" />
                   <span>{schoolToDelete}</span>
                 </div>
-                <div className="text-[11px] text-slate-400 mt-2">
+                <div className="text-[11px] text-slate-500 mt-2">
                   Nama sekolah juga akan dihapus dari daftar pilihan ekosistem multi-sekolah.
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[#242C40] bg-[#11141F] flex items-center justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsDeleteSchoolModalOpen(false)}
                 disabled={isDeletingSchool}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50 border border-slate-200/80"
               >
                 Batal
               </button>
@@ -1763,7 +1760,7 @@ const StudentDatabaseView: React.FC<
                 type="button"
                 onClick={handleConfirmDeleteSchool}
                 disabled={isDeletingSchool}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black flex items-center gap-2 shadow-lg shadow-rose-600/30 transition-all cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isDeletingSchool && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>
@@ -1778,32 +1775,30 @@ const StudentDatabaseView: React.FC<
       {/* CONFIRM DELETE ALL / CLEANUP MODAL */}
       {isDeleteAllModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget && !isDeletingAll) {
               setIsDeleteAllModalOpen(false);
             }
           }}
         >
-          <div className="w-full max-w-lg rounded-[24px] bg-[#141824] border border-rose-500/40 shadow-2xl shadow-rose-950/50 text-slate-100 overflow-hidden animate-scale-up">
-            <div className="relative px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-rose-950/50 via-[#181D2A] to-[#141824]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 flex-shrink-0">
-                  <Trash2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white tracking-tight">
-                    Bersihkan / Hapus Data Peserta Didik
-                  </h3>
-                  <p className="text-xs text-rose-300/90 mt-0.5">
-                    Fitur pembersihan cepat untuk mengosongkan atau menghapus sebagian data.
-                  </p>
-                </div>
+          <div className="w-full max-w-lg rounded-[24px] bg-white border border-rose-300 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="relative px-6 py-5 border-b border-rose-100 bg-rose-50/60 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 flex-shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Bersihkan / Hapus Data Peserta Didik
+                </h3>
+                <p className="text-xs text-rose-700 mt-0.5">
+                  Fitur pembersihan cepat untuk mengosongkan atau menghapus sebagian data.
+                </p>
               </div>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="text-xs font-bold text-slate-300 mb-2">
+              <div className="text-xs font-bold text-slate-700 mb-2">
                 Pilih cakupan data yang ingin dihapus:
               </div>
 
@@ -1812,8 +1807,8 @@ const StudentDatabaseView: React.FC<
                   onClick={() => setDeleteAllMode('all')}
                   className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                     deleteAllMode === 'all'
-                      ? 'bg-rose-500/15 border-rose-500/50 text-white'
-                      : 'bg-[#10131D] border-[#2A324A] text-slate-300 hover:border-slate-600'
+                      ? 'bg-rose-50 border-rose-300 text-slate-900'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                   }`}
                 >
                   <input
@@ -1821,13 +1816,13 @@ const StudentDatabaseView: React.FC<
                     name="deleteMode"
                     checked={deleteAllMode === 'all'}
                     onChange={() => setDeleteAllMode('all')}
-                    className="mt-0.5 accent-rose-500"
+                    className="mt-0.5 accent-rose-600"
                   />
                   <div>
-                    <div className="text-xs font-bold text-rose-300">
+                    <div className="text-xs font-bold text-rose-800">
                       Hapus Seluruh Database Siswa ({students.length} Siswa)
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
+                    <div className="text-[11px] text-slate-500 mt-0.5">
                       Menghapus semua peserta didik dari seluruh sekolah dan kelas. Database akan kembali bersih (0 siswa).
                     </div>
                   </div>
@@ -1838,8 +1833,8 @@ const StudentDatabaseView: React.FC<
                     onClick={() => setDeleteAllMode('filtered')}
                     className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
                       deleteAllMode === 'filtered'
-                        ? 'bg-amber-500/15 border-amber-500/50 text-white'
-                        : 'bg-[#10131D] border-[#2A324A] text-slate-300 hover:border-slate-600'
+                        ? 'bg-amber-50 border-amber-300 text-slate-900'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                     }`}
                   >
                     <input
@@ -1847,13 +1842,13 @@ const StudentDatabaseView: React.FC<
                       name="deleteMode"
                       checked={deleteAllMode === 'filtered'}
                       onChange={() => setDeleteAllMode('filtered')}
-                      className="mt-0.5 accent-amber-500"
+                      className="mt-0.5 accent-amber-600"
                     />
                     <div>
-                      <div className="text-xs font-bold text-amber-300">
+                      <div className="text-xs font-bold text-amber-800">
                         Hanya Data Terfilter ({filteredStudents.length} Siswa)
                       </div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">
+                      <div className="text-[11px] text-slate-500 mt-0.5">
                         Menghapus data siswa yang saat ini tampil di tabel
                         {selectedSchool ? ` (${selectedSchool})` : ''}
                         {selectedClass ? ` (Kelas ${getClassName(selectedClass)})` : ''}.
@@ -1863,20 +1858,20 @@ const StudentDatabaseView: React.FC<
                 )}
               </div>
 
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5 text-[11px] text-rose-200 leading-relaxed flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-[11px] text-rose-800 leading-relaxed flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                 <span>
                   <b>Peringatan:</b> Tindakan ini permanen dan langsung tersinkronkan ke cloud Supabase.
                 </span>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[#242C40] bg-[#11141F] flex items-center justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsDeleteAllModalOpen(false)}
                 disabled={isDeletingAll}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50 border border-slate-200/80"
               >
                 Batal
               </button>
@@ -1885,7 +1880,7 @@ const StudentDatabaseView: React.FC<
                 type="button"
                 onClick={handleConfirmDeleteAll}
                 disabled={isDeletingAll}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-black flex items-center gap-2 shadow-lg shadow-rose-600/30 transition-all cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isDeletingAll && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>
@@ -1904,40 +1899,40 @@ const StudentDatabaseView: React.FC<
       {/* CONFIRM DELETE SINGLE STUDENT MODAL */}
       {studentToDelete && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget && !isDeletingSingle) {
               setStudentToDelete(null);
             }
           }}
         >
-          <div className="w-full max-w-md rounded-[24px] bg-[#141824] border border-rose-500/40 shadow-2xl text-slate-100 overflow-hidden animate-scale-up">
-            <div className="px-6 py-5 border-b border-[#242C40] bg-gradient-to-r from-rose-950/50 via-[#181D2A] to-[#141824] flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 flex-shrink-0">
+          <div className="w-full max-w-md rounded-[24px] bg-white border border-rose-300 shadow-2xl text-slate-800 overflow-hidden font-sans">
+            <div className="px-6 py-5 border-b border-rose-100 bg-rose-50/60 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 flex-shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">Hapus Peserta Didik</h3>
-                <p className="text-xs text-rose-300/90 mt-0.5">Konfirmasi penghapusan data siswa</p>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">Hapus Peserta Didik</h3>
+                <p className="text-xs text-rose-700 mt-0.5">Konfirmasi penghapusan data siswa</p>
               </div>
             </div>
 
-            <div className="p-6 space-y-4 text-xs text-slate-300">
+            <div className="p-6 space-y-4 text-xs text-slate-600">
               <p>
                 Apakah Anda yakin ingin menghapus data peserta didik{' '}
-                <strong className="text-white font-bold">{studentToDelete.name}</strong> dari database?
+                <strong className="text-slate-900 font-bold">{studentToDelete.name}</strong> dari database?
               </p>
-              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-[11px] text-rose-200">
+              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] text-rose-800">
                 Tindakan ini permanen dan akan menghapus data siswa dari cloud Supabase.
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[#242C40] bg-[#11141F] flex items-center justify-end gap-3">
+            <div className="px-6 py-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setStudentToDelete(null)}
                 disabled={isDeletingSingle}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50 border border-slate-200/80"
               >
                 Batal
               </button>
@@ -1945,7 +1940,7 @@ const StudentDatabaseView: React.FC<
                 type="button"
                 onClick={handleConfirmDeleteSingle}
                 disabled={isDeletingSingle}
-                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-rose-600/30 transition-all cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {isDeletingSingle && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 <span>{isDeletingSingle ? 'Menghapus...' : 'Ya, Hapus Siswa Ini'}</span>

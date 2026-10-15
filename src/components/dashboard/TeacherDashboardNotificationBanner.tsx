@@ -407,34 +407,34 @@ export const TeacherDashboardNotificationBanner: React.FC<
   const isAnnouncement = topNotification.type === 'announcement';
 
   const cardBorderClass = isRevision
-    ? 'border-rose-500/60 bg-gradient-to-r from-rose-950/50 via-slate-900/95 to-slate-900/95 shadow-rose-950/40'
+    ? 'border-rose-200 bg-rose-50/40 text-slate-800 shadow-xs'
     : isPrint
-    ? 'border-cyan-500/60 bg-gradient-to-r from-cyan-950/50 via-slate-900/95 to-slate-900/95 shadow-cyan-950/40'
+    ? 'border-cyan-200 bg-cyan-50/40 text-slate-800 shadow-xs'
     : isChat
-    ? 'border-indigo-500/60 bg-gradient-to-r from-indigo-950/50 via-slate-900/95 to-slate-900/95 shadow-indigo-950/40'
+    ? 'border-indigo-200 bg-indigo-50/40 text-slate-800 shadow-xs'
     : isApproved
-    ? 'border-emerald-500/60 bg-gradient-to-r from-emerald-950/50 via-slate-900/95 to-slate-900/95 shadow-emerald-950/40'
-    : 'border-amber-500/60 bg-gradient-to-r from-amber-950/50 via-slate-900/95 to-slate-900/95 shadow-amber-950/40';
+    ? 'border-emerald-200 bg-emerald-50/40 text-slate-800 shadow-xs'
+    : 'border-amber-200 bg-amber-50/40 text-slate-800 shadow-xs';
 
   const iconBgClass = isRevision
-    ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+    ? 'bg-rose-100 text-rose-700 border-rose-200'
     : isPrint
-    ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40'
+    ? 'bg-cyan-100 text-cyan-700 border-cyan-200'
     : isChat
-    ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40'
+    ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
     : isApproved
-    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-    : 'bg-amber-500/20 text-amber-400 border-amber-500/40';
+    ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+    : 'bg-amber-100 text-amber-700 border-amber-200';
 
   return (
     <>
       <div
-        className={`mb-6 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border shadow-xl backdrop-blur-md transition-all animate-[fadeIn_200ms_ease-out] relative overflow-hidden group ${cardBorderClass}`}
+        className={`mb-6 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all animate-[fadeIn_200ms_ease-out] relative overflow-hidden group ${cardBorderClass}`}
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
             <div
-              className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 shadow-lg ${iconBgClass}`}
+              className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 shadow-2xs ${iconBgClass}`}
             >
               {isRevision && <AlertCircle className="w-5 h-5 animate-pulse" />}
               {isPrint && <Printer className="w-5 h-5 animate-bounce" />}
@@ -446,16 +446,16 @@ export const TeacherDashboardNotificationBanner: React.FC<
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
                     isRevision
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                      ? 'bg-rose-100 text-rose-800 border-rose-200'
                       : isPrint
-                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                      ? 'bg-cyan-100 text-cyan-800 border-cyan-200'
                       : isChat
-                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                      ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
                       : isApproved
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                      : 'bg-amber-100 text-amber-800 border-amber-200'
                   }`}
                 >
                   {isRevision
@@ -470,12 +470,12 @@ export const TeacherDashboardNotificationBanner: React.FC<
                 </span>
 
                 {unreadNotifications.length > 1 && (
-                  <span className="text-[11px] font-extrabold text-slate-400">
+                  <span className="text-[11px] font-bold text-slate-500">
                     +{unreadNotifications.length - 1} pemberitahuan lainnya
                   </span>
                 )}
 
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[10px] text-slate-400">
                   {new Date(topNotification.createdAt).toLocaleDateString('id-ID', {
                     day: 'numeric',
                     month: 'short',
@@ -485,11 +485,11 @@ export const TeacherDashboardNotificationBanner: React.FC<
                 </span>
               </div>
 
-              <h4 className="text-sm sm:text-base font-bold text-white">
+              <h4 className="text-sm sm:text-base font-bold text-slate-900">
                 {topNotification.title}
               </h4>
 
-              <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
+              <p className="text-xs text-slate-600 max-w-3xl leading-relaxed">
                 {topNotification.message}
               </p>
             </div>
@@ -500,14 +500,14 @@ export const TeacherDashboardNotificationBanner: React.FC<
             <button
               type="button"
               onClick={() => handleActionClick(topNotification)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 shadow-lg transition-all cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
                 isRevision
-                  ? 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20'
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white'
                   : isPrint
-                  ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/20'
+                  ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
                   : isChat
-                  ? 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-indigo-500/20'
-                  : 'bg-teal-500 hover:bg-teal-400 text-slate-950 shadow-teal-500/20'
+                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
               }`}
             >
               <span>
@@ -526,7 +526,7 @@ export const TeacherDashboardNotificationBanner: React.FC<
                 e.stopPropagation();
                 clearNotification(topNotification.id);
               }}
-              className="p-2 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 cursor-pointer transition-all"
+              className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 cursor-pointer transition-all"
               title="Bersihkan Notifikasi Ini dari Dashboard"
             >
               <Trash2 className="w-4 h-4" />
@@ -535,7 +535,7 @@ export const TeacherDashboardNotificationBanner: React.FC<
             <button
               type="button"
               onClick={(e) => handleDismiss(topNotification.id, e)}
-              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 cursor-pointer transition-all"
+              className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-400 hover:text-slate-700 border border-slate-200 cursor-pointer transition-all"
               title="Tutup & Tandai Sudah Dibaca"
             >
               <X className="w-4 h-4" />
@@ -649,23 +649,23 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
           />
 
           {/* Floating Dropdown Drawer Container */}
-          <div className="relative mt-14 sm:mt-16 w-full sm:w-[420px] max-w-full bg-slate-900/98 border border-slate-700/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl text-slate-100 space-y-3.5 backdrop-blur-xl pointer-events-auto flex flex-col max-h-[calc(100vh-4.5rem)] sm:max-h-[82vh] overflow-hidden">
+          <div className="relative mt-14 sm:mt-16 w-full sm:w-[420px] max-w-full bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xl text-slate-800 space-y-3.5 backdrop-blur-xl pointer-events-auto flex flex-col max-h-[calc(100vh-4.5rem)] sm:max-h-[82vh] overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
                   <Bell className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                     Pemberitahuan Guru
                   </h4>
                   {unreadCount > 0 ? (
-                    <span className="text-[10px] font-bold text-rose-400">
+                    <span className="text-[10px] font-bold text-rose-600">
                       {unreadCount} pesan belum dibaca
                     </span>
                   ) : (
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-slate-500">
                       Semua pesan telah dibaca
                     </span>
                   )}
@@ -677,7 +677,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                   <button
                     type="button"
                     onClick={dismissAll}
-                    className="text-[11px] text-teal-400 hover:text-teal-300 font-bold flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-teal-500/10"
+                    className="text-[11px] text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-emerald-50"
                     title="Tandai semua sebagai sudah dibaca"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
@@ -689,7 +689,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                   <button
                     type="button"
                     onClick={clearAll}
-                    className="text-[11px] text-rose-400 hover:text-rose-300 font-bold flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-rose-500/10"
+                    className="text-[11px] text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-rose-50"
                     title="Bersihkan semua notifikasi dari daftar"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -700,7 +700,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-all"
+                  className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-all"
                   title="Tutup"
                 >
                   <X className="w-4 h-4" />
@@ -712,11 +712,11 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
             <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar min-h-0">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-slate-500 space-y-3">
-                  <div className="w-10 h-10 rounded-2xl bg-slate-800/80 border border-white/5 text-slate-400 flex items-center justify-center mx-auto">
-                    <CheckCheck className="w-5 h-5 text-teal-400" />
+                  <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center mx-auto">
+                    <CheckCheck className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-slate-300">Pemberitahuan Bersih</p>
+                    <p className="text-xs font-bold text-slate-800">Pemberitahuan Bersih</p>
                     <p className="text-[11px] text-slate-500 leading-relaxed max-w-xs mx-auto">
                       Tidak ada pemberitahuan aktif. Catatan revisi atau pesan baru dari Pak Zaki akan otomatis tampil di sini.
                     </p>
@@ -725,7 +725,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                     <button
                       type="button"
                       onClick={resetCleared}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-white/10 text-[11px] font-bold text-teal-400 hover:text-teal-300 transition-colors cursor-pointer mt-1"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-[11px] font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer mt-1"
                     >
                       <RotateCcw className="w-3 h-3" />
                       <span>Pulihkan Notifikasi Sebelumnya ({clearedCount})</span>
@@ -740,14 +740,14 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                   const isApproved = n.type === 'approved';
 
                   const badgeBg = isRevision
-                    ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    ? 'bg-rose-50 text-rose-700 border-rose-200'
                     : isPrint
-                    ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+                    ? 'bg-cyan-50 text-cyan-700 border-cyan-200'
                     : isChat
-                    ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30'
+                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
                     : isApproved
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                    : 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : 'bg-amber-50 text-amber-700 border-amber-200';
 
                   const badgeLabel = isRevision
                     ? 'Revisi'
@@ -765,8 +765,8 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                       onClick={() => handleItemClick(n)}
                       className={`p-3.5 rounded-2xl border transition-all cursor-pointer space-y-2 ${
                         !n.isRead
-                          ? 'bg-slate-950/90 border-teal-500/50 hover:border-teal-400 shadow-lg shadow-teal-950/20'
-                          : 'bg-slate-950/40 border-white/10 hover:border-white/20 opacity-80'
+                          ? 'bg-emerald-50/30 border-emerald-300 hover:border-emerald-400 shadow-xs'
+                          : 'bg-slate-50 border-slate-200 hover:border-slate-300 opacity-90'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -774,15 +774,15 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                           <span className="text-sm">
                             {isRevision ? '⚠️' : isPrint ? '🖨️' : isChat ? '💬' : isApproved ? '✓' : '📢'}
                           </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${badgeBg}`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${badgeBg}`}>
                             {badgeLabel}
                           </span>
                           {!n.isRead && (
-                            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                           )}
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[10px] text-slate-400 font-medium">
+                          <span className="text-[10px] text-slate-500 font-medium">
                             {new Date(n.createdAt).toLocaleDateString('id-ID', {
                               day: 'numeric',
                               month: 'short',
@@ -796,7 +796,7 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                               e.stopPropagation();
                               clearNotification(n.id);
                             }}
-                            className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/15 transition-all cursor-pointer"
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
                             title="Bersihkan notifikasi ini dari daftar"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -805,27 +805,27 @@ export const TeacherNotificationBell: React.FC<TeacherNotificationBellProps> = (
                       </div>
 
                       {/* Title: No truncation, full wrapping */}
-                      <h5 className="text-xs font-bold text-white leading-snug break-words">
+                      <h5 className="text-xs font-bold text-slate-900 leading-snug break-words">
                         {n.title}
                       </h5>
 
                       {/* Message Content: Full display, no line-clamp, whitespace preserved */}
-                      <p className="text-[11.5px] text-slate-300 leading-relaxed break-words whitespace-pre-line bg-slate-900/60 p-2.5 rounded-xl border border-white/5">
+                      <p className="text-[11.5px] text-slate-600 leading-relaxed break-words whitespace-pre-line bg-white p-2.5 rounded-xl border border-slate-200">
                         {n.message}
                       </p>
 
                       {/* Action pill / indicator */}
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-[10px] font-bold text-teal-400 flex items-center gap-1 hover:underline">
+                        <span className="text-[10px] font-bold text-emerald-700 flex items-center gap-1 hover:underline">
                           {n.linkAction === 'discussion'
                             ? 'Buka & Balas Diskusi'
                             : n.linkAction === 'rapor'
                             ? 'Buka E-Rapor STS'
                             : 'Buka Analisis Soal'}
-                          <ChevronRight className="w-3 h-3" />
+                          <ChevronRight className="w-3.5 h-3.5" />
                         </span>
                         {!n.isRead && (
-                          <span className="text-[9px] text-slate-400 italic">
+                          <span className="text-[9px] text-slate-500 italic">
                             Klik untuk membuka
                           </span>
                         )}

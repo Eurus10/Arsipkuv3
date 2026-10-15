@@ -450,6 +450,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         classData: targetData,
       });
 
+      if (Object.keys(characterRecords).length > 0) {
+        void handleSaveCharacterRecords();
+      }
+
       if (res.success) {
         setCloudStatus('saved');
         setHasUnsavedChanges(false);
@@ -2271,6 +2275,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   additionalInfo={classData.additionalInfo || {}}
                   onUpdateAdditionalInfo={handleUpdateAdditionalInfo}
                   classData={classData}
+                  onSaveAdditionalInfo={() => handleSaveToCloud()}
+                  isSavingCloud={isSavingCloud}
+                  hasUnsavedChanges={hasUnsavedChanges}
+                  lastSavedTime={lastSavedTime}
                 />
               )}
 

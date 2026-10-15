@@ -224,33 +224,33 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex flex-col bg-slate-950 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+      className="fixed inset-0 z-[70] flex flex-col bg-slate-900/60 sm:items-center sm:justify-center sm:p-4 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) handleCloseWithSave();
       }}
     >
-      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] sm:max-w-4xl flex flex-col bg-slate-900 border-0 sm:border sm:border-white/10 rounded-none sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100">
-        {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
-        <div className="hidden sm:block absolute top-0 left-1/4 w-72 h-20 bg-sky-500/10 blur-3xl pointer-events-none -z-10" />
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] sm:max-w-4xl flex flex-col bg-white border-0 sm:border sm:border-slate-200/90 rounded-none sm:rounded-3xl shadow-2xl overflow-hidden font-sans text-slate-800">
+        {/* Subtle decorative background gradient */}
+        <div className="hidden sm:block absolute -top-10 right-0 w-80 h-32 bg-sky-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
 
         {/* ====================================================
             TOP HEADER BAR (Safe-area protected & Compact on Mobile)
             ==================================================== */}
-        <div className="px-3 sm:px-6 py-2 sm:py-3.5 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-950 sm:bg-slate-950/60 backdrop-blur-none sm:backdrop-blur-md border-b border-white/10 flex items-center justify-between gap-2.5 shrink-0">
+        <div className="px-3 sm:px-6 py-2.5 sm:py-3.5 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-50/90 border-b border-slate-200/80 flex items-center justify-between gap-2.5 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-500/15 border border-sky-400/25 flex items-center justify-center text-sky-400 flex-shrink-0 shadow-[0_0_12px_rgba(56,189,248,0.15)]">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-600 flex-shrink-0 shadow-sm">
               <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-[11px] sm:text-xs uppercase tracking-wider text-sky-400 font-bold truncate">
+                <span className="text-[11px] sm:text-xs uppercase tracking-wider text-sky-700 font-bold truncate">
                   {subject.subjectName}
                 </span>
-                <span className="text-[10px] bg-white/10 text-slate-300 border border-white/10 px-1.5 sm:px-2 py-0.5 rounded-full font-bold shrink-0">
+                <span className="text-[10px] bg-slate-200/70 text-slate-700 border border-slate-300/80 px-1.5 sm:px-2 py-0.5 rounded-full font-bold shrink-0">
                   Kelas {session.className}
                 </span>
               </div>
-              <h3 className="text-xs sm:text-base font-black text-white truncate">
+              <h3 className="text-xs sm:text-base font-black text-slate-900 truncate">
                 Input Nilai ({completedCount}/{sortedStudents.length} Selesai)
               </h3>
             </div>
@@ -259,7 +259,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
           <button
             type="button"
             onClick={handleCloseWithSave}
-            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
+            className="w-8 h-8 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer flex-shrink-0 shadow-xs"
             title="Tutup (Esc / Back)"
           >
             <X className="w-4 h-4" />
@@ -269,21 +269,21 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
         {/* ====================================================
             STUDENT SELECTOR & NAVIGATION (Single-row Compact on Mobile)
             ==================================================== */}
-        <div className="px-3 sm:px-6 py-2 sm:py-2.5 bg-slate-950/40 border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
+        <div className="px-3 sm:px-6 py-2.5 bg-white border-b border-slate-200/80 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-sky-500/20 text-sky-300 border border-sky-400/30 flex items-center justify-center font-black text-xs shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-sky-100 text-sky-700 border border-sky-200 flex items-center justify-center font-black text-xs shrink-0 shadow-xs">
               {currentIdx + 1}
             </div>
             <div className="min-w-0 flex-1">
               <select
                 value={currentIdx}
                 onChange={(e) => handleChangeStudentIndex(Number(e.target.value))}
-                className="w-full bg-slate-900 text-xs sm:text-sm font-bold text-white hover:text-sky-300 outline-none cursor-pointer border-b border-dashed border-slate-600 focus:border-sky-400 py-0.5 truncate"
+                className="w-full bg-slate-50 hover:bg-slate-100/80 border border-slate-200 focus:border-sky-500 rounded-lg text-xs sm:text-sm font-bold text-slate-800 outline-none cursor-pointer py-1 px-2 transition-all truncate"
               >
                 {sortedStudents.map((s, idx) => {
                   const isGraded = (s.id === currentStudent?.id && isDirtyRef.current) || !!getStudentResultSafely(subject.studentResults, s);
                   return (
-                    <option key={s.id} value={idx} className="bg-slate-900 text-white">
+                    <option key={s.id} value={idx} className="bg-white text-slate-800">
                       {idx + 1}. {s.name} {isGraded ? '✓' : ''}
                     </option>
                   );
@@ -298,10 +298,10 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
               type="button"
               onClick={handlePrevStudent}
               disabled={currentIdx === 0}
-              className={`min-h-[32px] sm:min-h-[36px] px-2 sm:px-3 py-1 rounded-lg sm:rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all ${
+              className={`min-h-[32px] sm:min-h-[36px] px-2.5 sm:px-3 py-1 rounded-lg sm:rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition-all ${
                 currentIdx === 0
-                  ? 'bg-white/5 text-slate-600 cursor-not-allowed border border-white/5'
-                  : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 cursor-pointer'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  : 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 cursor-pointer shadow-xs'
               }`}
               title="Siswa Sebelumnya"
             >
@@ -312,7 +312,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
             <button
               type="button"
               onClick={handleNextStudent}
-              className="min-h-[32px] sm:min-h-[36px] px-2.5 sm:px-3.5 py-1 rounded-lg sm:rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/30 text-sky-200 text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-sm"
+              className="min-h-[32px] sm:min-h-[36px] px-2.5 sm:px-3.5 py-1 rounded-lg sm:rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer shadow-xs"
               title="Siswa Berikutnya"
             >
               <span className="hidden xs:inline">Berikutnya</span>
@@ -324,19 +324,19 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
         {/* ====================================================
             SCROLLABLE QUESTION GRADING CANVAS
             ==================================================== */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-4 sm:space-y-6 overscroll-contain">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-4 sm:space-y-6 overscroll-contain bg-slate-50/50">
           {/* 1. BAGIAN A: PILIHAN GANDA (PG) */}
           {config.pgCount > 0 && (
-            <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 pb-2.5 border-b border-white/10">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-3.5 pb-2.5 border-b border-slate-100">
                 <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-sky-500/15 text-sky-300 border border-sky-500/30 rounded-md text-[11px] font-black">
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-sky-100 text-sky-700 border border-sky-200 rounded-md text-[11px] font-black">
                       Bagian A
                     </span>
                     <span>Pilihan Ganda ({config.pgCount} Soal &times; Bobot {config.pgWeight})</span>
                   </h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-slate-500 mt-0.5">
                     Klik nomor soal untuk menandai Benar (Hijau ✓) atau Salah (Merah ✗).
                   </p>
                 </div>
@@ -345,14 +345,14 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                   <button
                     type="button"
                     onClick={() => handleSetAllPg(1)}
-                    className="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[10.5px] font-bold transition-all cursor-pointer"
+                    className="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 text-[10.5px] font-bold transition-all cursor-pointer"
                   >
                     Semua Benar
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSetAllPg(0)}
-                    className="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-[10.5px] font-bold transition-all cursor-pointer"
+                    className="flex-1 sm:flex-none px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[10.5px] font-bold transition-all cursor-pointer"
                   >
                     Semua Salah
                   </button>
@@ -370,18 +370,18 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                       onClick={() => handleTogglePg(i)}
                       className={`relative flex flex-col items-center justify-center min-h-[50px] p-2 rounded-xl border transition-all cursor-pointer ${
                         isCorrect
-                          ? 'bg-emerald-500/15 border-emerald-500/35 text-emerald-300 hover:bg-emerald-500/25 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
-                          : 'bg-rose-500/15 border-rose-500/35 text-rose-300 hover:bg-rose-500/25 shadow-[0_0_10px_rgba(244,63,94,0.1)]'
+                          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-700 hover:bg-emerald-100/90 shadow-xs'
+                          : 'bg-rose-50/80 border-rose-200 text-rose-600 hover:bg-rose-100/90'
                       }`}
                     >
-                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5">
+                      <span className="text-[10px] text-slate-500 font-semibold mb-0.5">
                         #{i + 1}
                       </span>
                       <div className="flex items-center gap-1">
                         {isCorrect ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         ) : (
-                          <XCircle className="w-4 h-4 text-rose-400" />
+                          <XCircle className="w-4 h-4 text-rose-500" />
                         )}
                         <span className="text-xs font-black tabular-nums">
                           {isCorrect ? config.pgWeight : 0}
@@ -396,15 +396,15 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
 
           {/* 2. BAGIAN B: ISIAN SINGKAT */}
           {config.isianCount > 0 && (
-            <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
-              <div className="mb-3.5 pb-2.5 border-b border-white/10">
-                <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-md text-[11px] font-black">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+              <div className="mb-3.5 pb-2.5 border-b border-slate-100">
+                <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 rounded-md text-[11px] font-black">
                     Bagian B
                   </span>
                   <span>Isian Singkat ({config.isianCount} Soal &times; Bobot {config.isianWeight})</span>
                 </h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Klik nomor soal untuk mengubah skor jawaban isian siswa.
                 </p>
               </div>
@@ -416,15 +416,15 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                   return (
                     <div
                       key={`isian-${i}`}
-                      className="p-3 rounded-xl bg-slate-900/80 border border-white/10 flex flex-col justify-between gap-2 shadow-sm"
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-2 shadow-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-300">Isian #{i + 1}</span>
+                        <span className="text-xs font-bold text-slate-700">Isian #{i + 1}</span>
                         <span
                           className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${
                             isCorrect
-                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                              : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                              : 'bg-rose-100 text-rose-800 border-rose-200'
                           }`}
                         >
                           Skor: {currentVal}
@@ -437,8 +437,8 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                           onClick={() => handleToggleIsian(i, 0)}
                           className={`flex-1 min-h-[32px] py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                             currentVal === 0
-                              ? 'bg-rose-500/30 border border-rose-400/40 text-rose-200'
-                              : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white'
+                              ? 'bg-rose-100 border border-rose-300 text-rose-800'
+                              : 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs'
                           }`}
                         >
                           0
@@ -448,8 +448,8 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                           onClick={() => handleToggleIsian(i, config.isianWeight)}
                           className={`flex-1 min-h-[32px] py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                             currentVal >= 1
-                              ? 'bg-emerald-500/30 border border-emerald-400/40 text-emerald-200'
-                              : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white'
+                              ? 'bg-emerald-100 border border-emerald-300 text-emerald-800'
+                              : 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 shadow-xs'
                           }`}
                         >
                           {config.isianWeight}
@@ -464,17 +464,17 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
 
           {/* 3. BAGIAN C: URAIAN / ESSAY / MENJODOHKAN */}
           {config.cCount > 0 && (
-            <div className="bg-slate-950/70 border border-white/10 rounded-2xl p-4 sm:p-5 shadow-sm">
-              <div className="mb-3.5 pb-2.5 border-b border-white/10">
-                <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                  <span className="px-2 py-0.5 bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-md text-[11px] font-black">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
+              <div className="mb-3.5 pb-2.5 border-b border-slate-100">
+                <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 border border-purple-200 rounded-md text-[11px] font-black">
                     Bagian C
                   </span>
                   <span>
                     {config.cType || 'Uraian'} ({config.cCount} Soal &times; Maks. Bobot {config.cWeight})
                   </span>
                 </h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Pilih perolehan skor siswa untuk setiap butir soal bagian C.
                 </p>
               </div>
@@ -485,13 +485,13 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                   return (
                     <div
                       key={`c-${i}`}
-                      className="p-3.5 rounded-xl bg-slate-900/60 border border-white/10 space-y-2.5 shadow-sm"
+                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5 shadow-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-200">
+                        <span className="text-xs font-bold text-slate-700">
                           {config.cType || 'Soal'} #{i + 1}
                         </span>
-                        <span className="text-xs font-black text-purple-300 tabular-nums">
+                        <span className="text-xs font-black text-purple-700 tabular-nums">
                           {currentScore} / {config.cWeight} Poin
                         </span>
                       </div>
@@ -507,8 +507,8 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
                               onClick={() => handleSetScoreC(i, scoreVal)}
                               className={`min-h-[34px] py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                 isSelected
-                                  ? 'bg-purple-500/35 border border-purple-400/40 text-purple-200 shadow-sm'
-                                  : 'bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white'
+                              ? 'bg-purple-600 text-white shadow-xs'
+                              : 'bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 shadow-xs'
                               }`}
                             >
                               {scoreVal}
@@ -527,39 +527,39 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
         {/* ====================================================
             FOOTER SUMMARY BAR & NEXT ACTION (SAFE-AREA & MOBILE OPTIMIZED)
             ==================================================== */}
-        <div className="flex-shrink-0 px-3 sm:px-6 py-2.5 sm:py-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-slate-950 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
-          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 bg-slate-900/60 sm:bg-transparent px-3 py-1.5 sm:p-0 rounded-xl border border-white/5 sm:border-0">
+        <div className="flex-shrink-0 px-3 sm:px-6 py-2.5 sm:py-3.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-white border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 bg-slate-50 sm:bg-transparent px-3 py-1.5 sm:p-0 rounded-xl border border-slate-200 sm:border-0">
             <div>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 block font-semibold uppercase tracking-wider">
                 Total Skor
               </span>
-              <span className="text-xs sm:text-base font-black text-white tabular-nums">
-                {totalScore} <span className="text-[10px] sm:text-xs text-slate-500 font-normal">/ {maxScore}</span>
+              <span className="text-xs sm:text-base font-black text-slate-800 tabular-nums">
+                {totalScore} <span className="text-[10px] sm:text-xs text-slate-400 font-normal">/ {maxScore}</span>
               </span>
             </div>
 
-            <div className="h-5 sm:h-6 w-px bg-white/10" />
+            <div className="h-5 sm:h-6 w-px bg-slate-200" />
 
             <div>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 block font-semibold uppercase tracking-wider">
                 Nilai Akhir
               </span>
-              <span className="text-sm sm:text-xl font-black text-sky-300 tabular-nums">
+              <span className="text-sm sm:text-xl font-black text-sky-700 tabular-nums">
                 {finalGrade}
               </span>
             </div>
 
-            <div className="h-5 sm:h-6 w-px bg-white/10" />
+            <div className="h-5 sm:h-6 w-px bg-slate-200" />
 
             <div>
-              <span className="text-[9px] sm:text-[10px] text-slate-400 block font-semibold uppercase tracking-wider">
+              <span className="text-[9px] sm:text-[10px] text-slate-500 block font-semibold uppercase tracking-wider">
                 Keterangan
               </span>
               <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase border ${
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-black uppercase border ${
                   isPassed
-                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                    : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                    : 'bg-rose-100 text-rose-800 border-rose-200'
                 }`}
               >
                 {isPassed ? 'Lulus (L)' : 'Remidi (TL)'}
@@ -571,7 +571,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
             <button
               type="button"
               onClick={handleCloseWithSave}
-              className="w-full sm:w-auto min-h-[42px] sm:min-h-[38px] px-3 sm:px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer flex items-center justify-center text-center"
+              className="w-full sm:w-auto min-h-[42px] sm:min-h-[38px] px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer flex items-center justify-center text-center shadow-xs"
               title="Tutup lembar input (Kembali ke modul analisis)"
             >
               Selesai & Tutup
@@ -580,7 +580,7 @@ export const StudentAnswerInputModal: React.FC<StudentAnswerInputModalProps> = (
             <button
               type="button"
               onClick={handleNextStudent}
-              className="w-full sm:w-auto min-h-[42px] sm:min-h-[38px] px-3.5 sm:px-5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs tracking-wide flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all cursor-pointer text-center"
+              className="w-full sm:w-auto min-h-[42px] sm:min-h-[38px] px-4 sm:px-5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs tracking-wide flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-all cursor-pointer text-center"
               title="Simpan nilai dan lanjutkan ke siswa berikutnya"
             >
               <span className="truncate">

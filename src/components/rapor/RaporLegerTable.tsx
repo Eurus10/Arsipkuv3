@@ -165,8 +165,12 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-950 text-slate-300 border-b border-slate-800 sticky top-0 z-20">
-                <th className="py-3 px-2 text-center w-8 font-bold">No</th>
-                <th className="py-3 px-3 min-w-[150px] font-bold">Nama Siswa</th>
+                <th className="py-3 px-2 text-center w-9 font-bold sticky left-0 z-30 bg-slate-950">
+                  No
+                </th>
+                <th className="py-3 px-3 min-w-[170px] font-bold sticky left-9 z-30 bg-slate-950 border-r border-slate-800 shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                  Nama Siswa
+                </th>
                 <th className="py-3 px-2 text-center w-12 font-bold">L/P</th>
                 {subjects.map((s) => (
                   <th
@@ -190,11 +194,11 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {filteredList.map((item, idx) => (
-                <tr key={item.student.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-2.5 px-2 text-center text-slate-400 font-medium">
+                <tr key={item.student.id} className="hover:bg-slate-800/40 transition-colors group">
+                  <td className="py-2.5 px-2 text-center text-slate-400 font-medium sticky left-0 z-10 bg-slate-900 group-hover:bg-slate-850">
                     {idx + 1}
                   </td>
-                  <td className="py-2.5 px-3 font-bold text-white">
+                  <td className="py-2.5 px-3 font-bold text-white sticky left-9 z-10 bg-slate-900 group-hover:bg-slate-850 border-r border-slate-800 shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
                     {item.student.name}
                   </td>
                   <td className="py-2.5 px-2 text-center text-slate-400">

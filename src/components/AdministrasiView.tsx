@@ -162,17 +162,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Susun Modul Ajar',
       icon: <BookOpen className="w-4 h-4" />,
       theme: {
-        border: 'border-emerald-500/40',
-        hoverBorder: 'hover:border-emerald-400 hover:shadow-emerald-950/60',
-        bgGradient: 'from-emerald-950/60 via-[#0D1C1A] to-slate-900/90',
-        iconBg: 'bg-emerald-500/15',
-        iconBorder: 'border-emerald-500/30',
-        iconColor: 'text-emerald-400',
-        tagBg: 'bg-emerald-500/15',
-        tagText: 'text-emerald-300',
-        tagBorder: 'border-emerald-500/30',
-        actionColor: 'text-emerald-400',
-        topBadgeBg: 'bg-emerald-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-emerald-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-emerald-50/25',
+        iconBg: 'bg-emerald-50',
+        iconBorder: 'border-emerald-200',
+        iconColor: 'text-emerald-700',
+        tagBg: 'bg-emerald-50',
+        tagText: 'text-emerald-800',
+        tagBorder: 'border-emerald-200',
+        actionColor: 'text-emerald-700',
+        topBadgeBg: 'bg-emerald-700',
         topBadgeText: 'text-white',
       },
     },
@@ -186,17 +186,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buat LKPD Siswa',
       icon: <FileSpreadsheet className="w-4 h-4" />,
       theme: {
-        border: 'border-teal-500/40',
-        hoverBorder: 'hover:border-teal-400 hover:shadow-teal-950/60',
-        bgGradient: 'from-teal-950/60 via-[#0B1E21] to-slate-900/90',
-        iconBg: 'bg-teal-500/15',
-        iconBorder: 'border-teal-500/30',
-        iconColor: 'text-teal-400',
-        tagBg: 'bg-teal-500/15',
-        tagText: 'text-teal-300',
-        tagBorder: 'border-teal-500/30',
-        actionColor: 'text-teal-400',
-        topBadgeBg: 'bg-teal-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-teal-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-teal-50/25',
+        iconBg: 'bg-teal-50',
+        iconBorder: 'border-teal-200',
+        iconColor: 'text-teal-700',
+        tagBg: 'bg-teal-50',
+        tagText: 'text-teal-800',
+        tagBorder: 'border-teal-200',
+        actionColor: 'text-teal-700',
+        topBadgeBg: 'bg-teal-700',
         topBadgeText: 'text-white',
       },
     },
@@ -210,17 +210,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Susun PROTA',
       icon: <Calendar className="w-4 h-4" />,
       theme: {
-        border: 'border-emerald-500/40',
-        hoverBorder: 'hover:border-emerald-400 hover:shadow-emerald-950/60',
-        bgGradient: 'from-emerald-950/60 via-[#0D1E1B] to-slate-900/90',
-        iconBg: 'bg-emerald-500/15',
-        iconBorder: 'border-emerald-500/30',
-        iconColor: 'text-emerald-400',
-        tagBg: 'bg-emerald-500/15',
-        tagText: 'text-emerald-300',
-        tagBorder: 'border-emerald-500/30',
-        actionColor: 'text-emerald-400',
-        topBadgeBg: 'bg-emerald-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-emerald-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-emerald-50/25',
+        iconBg: 'bg-emerald-50',
+        iconBorder: 'border-emerald-200',
+        iconColor: 'text-emerald-700',
+        tagBg: 'bg-emerald-50',
+        tagText: 'text-emerald-800',
+        tagBorder: 'border-emerald-200',
+        actionColor: 'text-emerald-700',
+        topBadgeBg: 'bg-emerald-700',
         topBadgeText: 'text-white',
       },
     },
@@ -234,17 +234,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Susun PROMES',
       icon: <FileSpreadsheet className="w-4 h-4" />,
       theme: {
-        border: 'border-teal-500/40',
-        hoverBorder: 'hover:border-teal-400 hover:shadow-teal-950/60',
-        bgGradient: 'from-teal-950/60 via-[#0B1E22] to-slate-900/90',
-        iconBg: 'bg-teal-500/15',
-        iconBorder: 'border-teal-500/30',
-        iconColor: 'text-teal-400',
-        tagBg: 'bg-teal-500/15',
-        tagText: 'text-teal-300',
-        tagBorder: 'border-teal-500/30',
-        actionColor: 'text-teal-400',
-        topBadgeBg: 'bg-teal-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-teal-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-teal-50/25',
+        iconBg: 'bg-teal-50',
+        iconBorder: 'border-teal-200',
+        iconColor: 'text-teal-700',
+        tagBg: 'bg-teal-50',
+        tagText: 'text-teal-800',
+        tagBorder: 'border-teal-200',
+        actionColor: 'text-teal-700',
+        topBadgeBg: 'bg-teal-700',
         topBadgeText: 'text-white',
       },
     },
@@ -258,17 +258,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Mulai Buat Soal',
       icon: <FileText className="w-4 h-4" />,
       theme: {
-        border: 'border-cyan-500/40',
-        hoverBorder: 'hover:border-cyan-400 hover:shadow-cyan-950/60',
-        bgGradient: 'from-cyan-950/60 via-[#0B1C26] to-slate-900/90',
-        iconBg: 'bg-cyan-500/15',
-        iconBorder: 'border-cyan-500/30',
-        iconColor: 'text-cyan-400',
-        tagBg: 'bg-cyan-500/15',
-        tagText: 'text-cyan-300',
-        tagBorder: 'border-cyan-500/30',
-        actionColor: 'text-cyan-400',
-        topBadgeBg: 'bg-cyan-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-cyan-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-cyan-50/25',
+        iconBg: 'bg-cyan-50',
+        iconBorder: 'border-cyan-200',
+        iconColor: 'text-cyan-700',
+        tagBg: 'bg-cyan-50',
+        tagText: 'text-cyan-800',
+        tagBorder: 'border-cyan-200',
+        actionColor: 'text-cyan-700',
+        topBadgeBg: 'bg-cyan-700',
         topBadgeText: 'text-white',
       },
     },
@@ -282,17 +282,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buka Absensi',
       icon: <UserCheck className="w-4 h-4" />,
       theme: {
-        border: 'border-rose-500/40',
-        hoverBorder: 'hover:border-rose-400 hover:shadow-rose-950/60',
-        bgGradient: 'from-rose-950/50 via-[#1D101A] to-slate-900/90',
-        iconBg: 'bg-rose-500/15',
-        iconBorder: 'border-rose-500/30',
-        iconColor: 'text-rose-400',
-        tagBg: 'bg-rose-500/15',
-        tagText: 'text-rose-300',
-        tagBorder: 'border-rose-500/30',
-        actionColor: 'text-rose-400',
-        topBadgeBg: 'bg-rose-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-rose-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-rose-50/25',
+        iconBg: 'bg-rose-50',
+        iconBorder: 'border-rose-200',
+        iconColor: 'text-rose-700',
+        tagBg: 'bg-rose-50',
+        tagText: 'text-rose-800',
+        tagBorder: 'border-rose-200',
+        actionColor: 'text-rose-700',
+        topBadgeBg: 'bg-rose-700',
         topBadgeText: 'text-white',
       },
     },
@@ -306,17 +306,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buka Jadwal',
       icon: <Calendar className="w-4 h-4" />,
       theme: {
-        border: 'border-amber-500/40',
-        hoverBorder: 'hover:border-amber-400 hover:shadow-amber-950/60',
-        bgGradient: 'from-amber-950/50 via-[#1C160F] to-slate-900/90',
-        iconBg: 'bg-amber-500/15',
-        iconBorder: 'border-amber-500/30',
-        iconColor: 'text-amber-400',
-        tagBg: 'bg-amber-500/15',
-        tagText: 'text-amber-300',
-        tagBorder: 'border-amber-500/30',
-        actionColor: 'text-amber-400',
-        topBadgeBg: 'bg-amber-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-amber-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-amber-50/25',
+        iconBg: 'bg-amber-50',
+        iconBorder: 'border-amber-200',
+        iconColor: 'text-amber-700',
+        tagBg: 'bg-amber-50',
+        tagText: 'text-amber-800',
+        tagBorder: 'border-amber-200',
+        actionColor: 'text-amber-700',
+        topBadgeBg: 'bg-amber-700',
         topBadgeText: 'text-white',
       },
     },
@@ -330,17 +330,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buka Legger',
       icon: <Calculator className="w-4 h-4" />,
       theme: {
-        border: 'border-lime-500/40',
-        hoverBorder: 'hover:border-lime-400 hover:shadow-lime-950/60',
-        bgGradient: 'from-lime-950/50 via-[#141B0E] to-slate-900/90',
-        iconBg: 'bg-lime-500/15',
-        iconBorder: 'border-lime-500/30',
-        iconColor: 'text-lime-400',
-        tagBg: 'bg-lime-500/15',
-        tagText: 'text-lime-300',
-        tagBorder: 'border-lime-500/30',
-        actionColor: 'text-lime-400',
-        topBadgeBg: 'bg-lime-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-lime-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-lime-50/25',
+        iconBg: 'bg-lime-50',
+        iconBorder: 'border-lime-200',
+        iconColor: 'text-lime-700',
+        tagBg: 'bg-lime-50',
+        tagText: 'text-lime-800',
+        tagBorder: 'border-lime-200',
+        actionColor: 'text-lime-700',
+        topBadgeBg: 'bg-lime-700',
         topBadgeText: 'text-white',
       },
     },
@@ -354,17 +354,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buka Data Usia',
       icon: <Users className="w-4 h-4" />,
       theme: {
-        border: 'border-purple-500/40',
-        hoverBorder: 'hover:border-purple-400 hover:shadow-purple-950/60',
-        bgGradient: 'from-purple-950/50 via-[#181126] to-slate-900/90',
-        iconBg: 'bg-purple-500/15',
-        iconBorder: 'border-purple-500/30',
-        iconColor: 'text-purple-400',
-        tagBg: 'bg-purple-500/15',
-        tagText: 'text-purple-300',
-        tagBorder: 'border-purple-500/30',
-        actionColor: 'text-purple-400',
-        topBadgeBg: 'bg-purple-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-purple-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-purple-50/25',
+        iconBg: 'bg-purple-50',
+        iconBorder: 'border-purple-200',
+        iconColor: 'text-purple-700',
+        tagBg: 'bg-purple-50',
+        tagText: 'text-purple-800',
+        tagBorder: 'border-purple-200',
+        actionColor: 'text-purple-700',
+        topBadgeBg: 'bg-purple-700',
         topBadgeText: 'text-white',
       },
     },
@@ -378,17 +378,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buka Pembuat Surat',
       icon: <FileText className="w-4 h-4" />,
       theme: {
-        border: 'border-blue-500/40',
-        hoverBorder: 'hover:border-blue-400 hover:shadow-blue-950/60',
-        bgGradient: 'from-blue-950/50 via-[#10192E] to-slate-900/90',
-        iconBg: 'bg-blue-500/15',
-        iconBorder: 'border-blue-500/30',
-        iconColor: 'text-blue-400',
-        tagBg: 'bg-blue-500/15',
-        tagText: 'text-blue-300',
-        tagBorder: 'border-blue-500/30',
-        actionColor: 'text-blue-400',
-        topBadgeBg: 'bg-blue-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-blue-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-blue-50/25',
+        iconBg: 'bg-blue-50',
+        iconBorder: 'border-blue-200',
+        iconColor: 'text-blue-700',
+        tagBg: 'bg-blue-50',
+        tagText: 'text-blue-800',
+        tagBorder: 'border-blue-200',
+        actionColor: 'text-blue-700',
+        topBadgeBg: 'bg-blue-700',
         topBadgeText: 'text-white',
       },
     },
@@ -402,17 +402,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       actionText: 'Buka Workspace',
       icon: <Shuffle className="w-4 h-4" />,
       theme: {
-        border: 'border-indigo-500/40',
-        hoverBorder: 'hover:border-indigo-400 hover:shadow-indigo-950/60',
-        bgGradient: 'from-indigo-950/50 via-[#16142E] to-slate-900/90',
-        iconBg: 'bg-indigo-500/15',
-        iconBorder: 'border-indigo-500/30',
-        iconColor: 'text-indigo-400',
-        tagBg: 'bg-indigo-500/15',
-        tagText: 'text-indigo-300',
-        tagBorder: 'border-indigo-500/30',
-        actionColor: 'text-indigo-400',
-        topBadgeBg: 'bg-indigo-600',
+        border: 'border-slate-200',
+        hoverBorder: 'hover:border-indigo-300 hover:shadow-md',
+        bgGradient: 'bg-white hover:bg-indigo-50/25',
+        iconBg: 'bg-indigo-50',
+        iconBorder: 'border-indigo-200',
+        iconColor: 'text-indigo-700',
+        tagBg: 'bg-indigo-50',
+        tagText: 'text-indigo-800',
+        tagBorder: 'border-indigo-200',
+        actionColor: 'text-indigo-700',
+        topBadgeBg: 'bg-indigo-700',
         topBadgeText: 'text-white',
       },
     },
@@ -455,11 +455,11 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-3 sm:px-6 py-4 sm:py-5 pb-24 md:pb-8 text-slate-100 font-sans space-y-4">
+    <div className="max-w-[1400px] mx-auto px-3 sm:px-6 py-4 sm:py-5 pb-24 md:pb-8 text-slate-900 font-sans space-y-4">
       {/* Top Banner Ramping: Akses Evaluasi Pembelajaran */}
-      <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950/90 via-[#13192B] to-purple-950/80 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-indigo-950/30">
+      <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-900 border border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shrink-0 shadow-inner">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300 shrink-0 shadow-inner">
             <GraduationCap className="w-4 h-4" />
           </div>
           <div className="min-w-0">
@@ -467,11 +467,11 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
               <h2 className="text-xs sm:text-sm font-black text-white truncate">
                 Evaluasi Pembelajaran (AI Ujian Formal)
               </h2>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 Kisi-Kisi & Naskah Soal KOP
               </span>
             </div>
-            <p className="hidden md:block text-[11px] text-slate-300 truncate mt-0.5">
+            <p className="hidden md:block text-[11px] text-emerald-100/70 truncate mt-0.5">
               Penyusunan naskah ujian resmi, kartu soal, dan rubrik berstandar Kurikulum Merdeka.
             </p>
           </div>
@@ -480,7 +480,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
         <button
           type="button"
           onClick={() => setShowEvaluationModule(true)}
-          className="w-full sm:w-auto px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-[11px] rounded-xl shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5 cursor-pointer transition-all shrink-0 active:scale-[0.98]"
+          className="w-full sm:w-auto px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shrink-0 active:scale-[0.98]"
         >
           <Sparkles className="w-3.5 h-3.5" />
           <span>Buka Evaluasi Pembelajaran</span>
@@ -489,75 +489,71 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
       </div>
 
       {/* Main Container Studio Generator Simetris */}
-      <div className="relative rounded-3xl bg-gradient-to-b from-[#111625] via-[#13192B] to-[#0D111E] border border-slate-700/80 shadow-2xl p-4 sm:p-5 overflow-hidden">
-        {/* Ambient Glow Lights */}
-        <div className="absolute -top-20 -right-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
+      <div className="relative rounded-3xl bg-white border border-slate-200 shadow-xs p-4 sm:p-5 overflow-hidden">
         {/* Section Header Ringkas & Filter Kategori Sejajar */}
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-800">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 mb-3 border-b border-slate-100">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-400">
-                <Sparkles className="w-3 h-3" /> Studio Generator KBM & Administrasi
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold text-emerald-800">
+                <Sparkles className="w-3 h-3 text-emerald-600" /> Studio Generator KBM & Administrasi
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                 11 Alat Aktif
               </span>
             </div>
-            <h1 className="text-sm sm:text-base font-black text-white tracking-tight">
+            <h1 className="text-sm sm:text-base font-black text-slate-900 tracking-tight">
               Pusat Generator Cerdas Administrasi & KBM
             </h1>
           </div>
 
-          {/* Quick Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {/* Quick Category Filter Segmented Tabs */}
+          <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl border border-slate-200/80 overflow-x-auto pb-1 md:pb-1 scrollbar-none">
             <button
               type="button"
               onClick={() => setSelectedCategory('all')}
-              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === 'all'
-                  ? 'bg-slate-700 text-white shadow-sm border border-slate-600'
-                  : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5 text-slate-500" />
               <span>Semua (11)</span>
             </button>
             <button
               type="button"
               onClick={() => setSelectedCategory('ai_kbm')}
-              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === 'ai_kbm'
-                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 border border-emerald-500'
-                  : 'bg-slate-900/80 text-slate-400 hover:text-emerald-300 border border-slate-800'
+                  ? 'bg-white text-emerald-800 shadow-xs'
+                  : 'text-slate-600 hover:text-emerald-700'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>AI KBM & Kurikulum (5)</span>
             </button>
             <button
               type="button"
               onClick={() => setSelectedCategory('administrasi')}
-              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === 'administrasi'
-                  ? 'bg-amber-600 text-white shadow-sm shadow-amber-600/30 border border-amber-500'
-                  : 'bg-slate-900/80 text-slate-400 hover:text-amber-300 border border-slate-800'
+                  ? 'bg-white text-amber-800 shadow-xs'
+                  : 'text-slate-600 hover:text-amber-700'
               }`}
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5 text-amber-600" />
               <span>Administrasi (4)</span>
             </button>
             <button
               type="button"
               onClick={() => setSelectedCategory('dokumen')}
-              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 selectedCategory === 'dokumen'
-                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30 border border-blue-500'
-                  : 'bg-slate-900/80 text-slate-400 hover:text-blue-300 border border-slate-800'
+                  ? 'bg-white text-blue-800 shadow-xs'
+                  : 'text-slate-600 hover:text-blue-700'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5 text-blue-600" />
               <span>Dokumen (2)</span>
             </button>
           </div>
@@ -571,11 +567,11 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
               <div
                 key={card.id}
                 onClick={() => handleCardClick(card.id)}
-                className={`group relative p-3 sm:p-3.5 rounded-2xl bg-gradient-to-br ${theme.bgGradient} border ${theme.border} ${theme.hoverBorder} shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between hover:-translate-y-0.5 overflow-hidden min-h-[142px] sm:min-h-[148px]`}
+                className={`group relative p-3 sm:p-3.5 rounded-2xl bg-white border ${theme.border} ${theme.hoverBorder} shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between hover:-translate-y-0.5 overflow-hidden min-h-[142px] sm:min-h-[148px]`}
               >
                 {/* Top Corner Badge */}
                 <div
-                  className={`absolute top-0 right-0 px-2 py-0.5 rounded-bl-xl ${theme.topBadgeBg} ${theme.topBadgeText} text-[8px] font-black uppercase tracking-wider flex items-center gap-0.5 shadow-sm`}
+                  className={`absolute top-0 right-0 px-2 py-0.5 rounded-bl-xl ${theme.topBadgeBg} ${theme.topBadgeText} text-[8px] font-black uppercase tracking-wider flex items-center gap-0.5 shadow-xs`}
                 >
                   <Sparkles className="w-2.5 h-2.5" />
                   <span>{card.badge}</span>
@@ -585,12 +581,12 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <div
-                      className={`w-8 h-8 rounded-lg ${theme.iconBg} border ${theme.iconBorder} flex items-center justify-center ${theme.iconColor} group-hover:scale-105 transition-transform shadow-inner shrink-0`}
+                      className={`w-8 h-8 rounded-lg ${theme.iconBg} border ${theme.iconBorder} flex items-center justify-center ${theme.iconColor} group-hover:scale-105 transition-transform shadow-xs shrink-0`}
                     >
                       {card.icon}
                     </div>
                     <div className="min-w-0 pr-10">
-                      <h3 className="text-xs sm:text-[13px] font-black text-white group-hover:text-white transition-colors truncate">
+                      <h3 className="text-xs sm:text-[13px] font-black text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
                         {card.title}
                       </h3>
                       <span
@@ -602,14 +598,14 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = () => {
                   </div>
 
                   {/* Card Description Padat & Ramping */}
-                  <p className="text-[11px] text-slate-300/85 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
                     {card.description}
                   </p>
                 </div>
 
                 {/* Card Footer / Action Button */}
                 <div
-                  className={`mt-2 pt-1.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-bold ${theme.actionColor}`}
+                  className={`mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold ${theme.actionColor}`}
                 >
                   <span>{card.actionText}</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

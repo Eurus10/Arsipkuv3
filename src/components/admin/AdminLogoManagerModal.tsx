@@ -260,9 +260,15 @@ export const AdminLogoManagerModal: React.FC<AdminLogoManagerModalProps> = ({
               {/* Desktop Sidebar Preview */}
               <div className="flex flex-col items-center p-3 rounded-xl bg-[#161822] border border-[#23283A]">
                 <span className="text-[10px] text-slate-400 mb-2">Tampilan Sidebar (Desktop)</span>
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 overflow-hidden p-1">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden ${
+                    logoType === 'image' && logoImageUrl
+                      ? 'bg-transparent shadow-none p-0'
+                      : 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 p-1'
+                  }`}
+                >
                   {logoType === 'image' && logoImageUrl ? (
-                    <img src={logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
+                    <img src={logoImageUrl} alt="Logo" className="w-full h-full object-contain filter drop-shadow-md" />
                   ) : (
                     <span>{logoText || 'AF'}</span>
                   )}
@@ -273,9 +279,15 @@ export const AdminLogoManagerModal: React.FC<AdminLogoManagerModalProps> = ({
               <div className="flex flex-col items-center p-3 rounded-xl bg-[#161822] border border-[#23283A]">
                 <span className="text-[10px] text-slate-400 mb-2">Tampilan Header (Mobile)</span>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-md overflow-hidden p-0.5">
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center overflow-hidden ${
+                      logoType === 'image' && logoImageUrl
+                        ? 'bg-transparent shadow-none p-0'
+                        : 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-xs shadow-md p-0.5'
+                    }`}
+                  >
                     {logoType === 'image' && logoImageUrl ? (
-                      <img src={logoImageUrl} alt="Logo" className="w-full h-full object-contain" />
+                      <img src={logoImageUrl} alt="Logo" className="w-full h-full object-contain filter drop-shadow-sm" />
                     ) : (
                       <span>{logoText || 'AF'}</span>
                     )}

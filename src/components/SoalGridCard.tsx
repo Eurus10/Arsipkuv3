@@ -53,151 +53,83 @@ export interface YearColorStyle {
 export const YEAR_COLOR_STYLES: YearColorStyle[] = [
   {
     name: 'blue',
-    cardBg:
-      'bg-[linear-gradient(145deg,rgba(16,37,78,0.72)_0%,rgba(9,20,43,0.84)_48%,rgba(5,12,27,0.96)_100%)]',
-    cardBorder:
-      'border-blue-300/20 hover:border-blue-300/45',
-    glowOverlay:
-      'from-blue-400/18 via-cyan-400/7 to-transparent',
-    iconBg:
-      'bg-blue-400/10',
-    iconBorder:
-      'border-blue-300/25',
-    iconColor:
-      'text-blue-200',
-    badgeBg:
-      'bg-blue-300/[0.07]',
-    badgeBorder:
-      'border-blue-200/20',
-    badgeText:
-      'text-blue-100',
-    examBtnBg:
-      'bg-blue-300/[0.045] hover:bg-blue-300/[0.10]',
-    examBtnBorder:
-      'border-blue-200/[0.12] hover:border-blue-200/35',
-    examBtnHover:
-      'hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(59,130,246,0.16)]',
-    examBtnText:
-      'text-white',
-    examSubText:
-      'text-blue-100/55',
-    accentText:
-      'text-blue-200',
-    accentGlow:
-      'bg-blue-400/20',
-    accentSoft:
-      'bg-blue-400/[0.08]',
+    cardBg: 'bg-white hover:bg-blue-50/20',
+    cardBorder: 'border-slate-200 hover:border-blue-300 shadow-xs hover:shadow-md',
+    glowOverlay: 'from-blue-50/40 via-transparent to-transparent',
+    iconBg: 'bg-blue-50',
+    iconBorder: 'border-blue-200',
+    iconColor: 'text-blue-700',
+    badgeBg: 'bg-blue-50',
+    badgeBorder: 'border-blue-200',
+    badgeText: 'text-blue-800',
+    examBtnBg: 'bg-blue-50/50 hover:bg-blue-50',
+    examBtnBorder: 'border-blue-200 hover:border-blue-300',
+    examBtnHover: 'hover:-translate-y-0.5 hover:shadow-xs',
+    examBtnText: 'text-slate-900',
+    examSubText: 'text-blue-700',
+    accentText: 'text-blue-700',
+    accentGlow: 'bg-blue-100/50',
+    accentSoft: 'bg-blue-50',
   },
   {
     name: 'teal',
-    cardBg:
-      'bg-[linear-gradient(145deg,rgba(7,49,49,0.72)_0%,rgba(5,29,31,0.84)_48%,rgba(3,15,17,0.96)_100%)]',
-    cardBorder:
-      'border-teal-300/20 hover:border-teal-300/45',
-    glowOverlay:
-      'from-teal-400/18 via-emerald-400/7 to-transparent',
-    iconBg:
-      'bg-teal-400/10',
-    iconBorder:
-      'border-teal-300/25',
-    iconColor:
-      'text-teal-200',
-    badgeBg:
-      'bg-teal-300/[0.07]',
-    badgeBorder:
-      'border-teal-200/20',
-    badgeText:
-      'text-teal-100',
-    examBtnBg:
-      'bg-teal-300/[0.045] hover:bg-teal-300/[0.10]',
-    examBtnBorder:
-      'border-teal-200/[0.12] hover:border-teal-200/35',
-    examBtnHover:
-      'hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(20,184,166,0.16)]',
-    examBtnText:
-      'text-white',
-    examSubText:
-      'text-teal-100/55',
-    accentText:
-      'text-teal-200',
-    accentGlow:
-      'bg-teal-400/20',
-    accentSoft:
-      'bg-teal-400/[0.08]',
+    cardBg: 'bg-white hover:bg-teal-50/20',
+    cardBorder: 'border-slate-200 hover:border-teal-300 shadow-xs hover:shadow-md',
+    glowOverlay: 'from-teal-50/40 via-transparent to-transparent',
+    iconBg: 'bg-teal-50',
+    iconBorder: 'border-teal-200',
+    iconColor: 'text-teal-700',
+    badgeBg: 'bg-teal-50',
+    badgeBorder: 'border-teal-200',
+    badgeText: 'text-teal-800',
+    examBtnBg: 'bg-teal-50/50 hover:bg-teal-50',
+    examBtnBorder: 'border-teal-200 hover:border-teal-300',
+    examBtnHover: 'hover:-translate-y-0.5 hover:shadow-xs',
+    examBtnText: 'text-slate-900',
+    examSubText: 'text-teal-700',
+    accentText: 'text-teal-700',
+    accentGlow: 'bg-teal-100/50',
+    accentSoft: 'bg-teal-50',
   },
   {
     name: 'purple',
-    cardBg:
-      'bg-[linear-gradient(145deg,rgba(39,20,69,0.74)_0%,rgba(23,11,42,0.86)_48%,rgba(12,6,23,0.96)_100%)]',
-    cardBorder:
-      'border-purple-300/20 hover:border-purple-300/45',
-    glowOverlay:
-      'from-purple-400/18 via-violet-400/7 to-transparent',
-    iconBg:
-      'bg-purple-400/10',
-    iconBorder:
-      'border-purple-300/25',
-    iconColor:
-      'text-purple-200',
-    badgeBg:
-      'bg-purple-300/[0.07]',
-    badgeBorder:
-      'border-purple-200/20',
-    badgeText:
-      'text-purple-100',
-    examBtnBg:
-      'bg-purple-300/[0.045] hover:bg-purple-300/[0.10]',
-    examBtnBorder:
-      'border-purple-200/[0.12] hover:border-purple-200/35',
-    examBtnHover:
-      'hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(168,85,247,0.18)]',
-    examBtnText:
-      'text-white',
-    examSubText:
-      'text-purple-100/55',
-    accentText:
-      'text-purple-200',
-    accentGlow:
-      'bg-purple-400/20',
-    accentSoft:
-      'bg-purple-400/[0.08]',
+    cardBg: 'bg-white hover:bg-purple-50/20',
+    cardBorder: 'border-slate-200 hover:border-purple-300 shadow-xs hover:shadow-md',
+    glowOverlay: 'from-purple-50/40 via-transparent to-transparent',
+    iconBg: 'bg-purple-50',
+    iconBorder: 'border-purple-200',
+    iconColor: 'text-purple-700',
+    badgeBg: 'bg-purple-50',
+    badgeBorder: 'border-purple-200',
+    badgeText: 'text-purple-800',
+    examBtnBg: 'bg-purple-50/50 hover:bg-purple-50',
+    examBtnBorder: 'border-purple-200 hover:border-purple-300',
+    examBtnHover: 'hover:-translate-y-0.5 hover:shadow-xs',
+    examBtnText: 'text-slate-900',
+    examSubText: 'text-purple-700',
+    accentText: 'text-purple-700',
+    accentGlow: 'bg-purple-100/50',
+    accentSoft: 'bg-purple-50',
   },
   {
     name: 'amber',
-    cardBg:
-      'bg-[linear-gradient(145deg,rgba(67,37,9,0.72)_0%,rgba(36,20,6,0.86)_48%,rgba(19,10,3,0.96)_100%)]',
-    cardBorder:
-      'border-amber-300/20 hover:border-amber-300/45',
-    glowOverlay:
-      'from-amber-400/18 via-orange-400/7 to-transparent',
-    iconBg:
-      'bg-amber-400/10',
-    iconBorder:
-      'border-amber-300/25',
-    iconColor:
-      'text-amber-200',
-    badgeBg:
-      'bg-amber-300/[0.07]',
-    badgeBorder:
-      'border-amber-200/20',
-    badgeText:
-      'text-amber-100',
-    examBtnBg:
-      'bg-amber-300/[0.045] hover:bg-amber-300/[0.10]',
-    examBtnBorder:
-      'border-amber-200/[0.12] hover:border-amber-200/35',
-    examBtnHover:
-      'hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(245,158,11,0.16)]',
-    examBtnText:
-      'text-white',
-    examSubText:
-      'text-amber-100/55',
-    accentText:
-      'text-amber-200',
-    accentGlow:
-      'bg-amber-400/20',
-    accentSoft:
-      'bg-amber-400/[0.08]',
+    cardBg: 'bg-white hover:bg-amber-50/20',
+    cardBorder: 'border-slate-200 hover:border-amber-300 shadow-xs hover:shadow-md',
+    glowOverlay: 'from-amber-50/40 via-transparent to-transparent',
+    iconBg: 'bg-amber-50',
+    iconBorder: 'border-amber-200',
+    iconColor: 'text-amber-700',
+    badgeBg: 'bg-amber-50',
+    badgeBorder: 'border-amber-200',
+    badgeText: 'text-amber-800',
+    examBtnBg: 'bg-amber-50/50 hover:bg-amber-50',
+    examBtnBorder: 'border-amber-200 hover:border-amber-300',
+    examBtnHover: 'hover:-translate-y-0.5 hover:shadow-xs',
+    examBtnText: 'text-slate-900',
+    examSubText: 'text-amber-700',
+    accentText: 'text-amber-700',
+    accentGlow: 'bg-amber-100/50',
+    accentSoft: 'bg-amber-50',
   },
 ];
 
@@ -437,9 +369,8 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                 border
                 ${theme.badgeBorder}
                 ${theme.badgeBg}
-                px-2.5 py-1.5
-                backdrop-blur-xl
-                shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
+                px-2.5 py-1
+                shadow-xs
               `}
             >
               <Layers
@@ -464,14 +395,12 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                 className="
                   flex h-8 w-8 items-center justify-center
                   rounded-xl
-                  border border-white/[0.09]
-                  bg-white/[0.045]
-                  text-slate-400
-                  backdrop-blur-xl
+                  border border-slate-200
+                  bg-slate-100
+                  text-slate-600
                   transition-all
-                  hover:border-white/[0.16]
-                  hover:bg-white/[0.09]
-                  hover:text-white
+                  hover:bg-slate-200
+                  hover:text-slate-900
                   cursor-pointer
                 "
                 title="Opsi Tahun Pelajaran"
@@ -493,11 +422,10 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                     className="
                       absolute right-0 top-full z-40 mt-2 w-52
                       overflow-hidden rounded-2xl
-                      border border-white/[0.10]
-                      bg-slate-950/90
+                      border border-slate-200
+                      bg-white
                       p-1.5
-                      shadow-2xl
-                      backdrop-blur-2xl
+                      shadow-xl
                     "
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -515,14 +443,14 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                             flex w-full items-center gap-2.5
                             rounded-xl px-3 py-2.5
                             text-left text-xs font-semibold
-                            text-slate-200
+                            text-slate-700
                             transition-all
-                            hover:bg-white/[0.07]
-                            hover:text-white
+                            hover:bg-slate-100
+                            hover:text-slate-900
                             cursor-pointer
                           "
                         >
-                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-400/10 text-amber-300">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
                             <Edit2 className="h-3.5 w-3.5" />
                           </span>
 
@@ -541,14 +469,14 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                           flex w-full items-center gap-2.5
                           rounded-xl px-3 py-2.5
                           text-left text-xs font-semibold
-                          text-slate-200
+                          text-slate-700
                           transition-all
-                          hover:bg-white/[0.07]
-                          hover:text-white
+                          hover:bg-slate-100
+                          hover:text-slate-900
                           cursor-pointer
                         "
                       >
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-700 border border-blue-200">
                           <ExternalLink className="h-3.5 w-3.5" />
                         </span>
 
@@ -567,14 +495,14 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
             ==================================================== */}
 
         <div className="mt-4">
-          <h3 className="font-heading text-xl font-black tracking-tight text-white">
+          <h3 className="font-heading text-xl font-black tracking-tight text-slate-900">
             T.P. {yearGroup.schoolYear}
           </h3>
 
-          <div className="mt-1.5 flex items-center gap-2 text-[11px] font-medium text-slate-400">
+          <div className="mt-1 flex items-center gap-2 text-[11px] font-medium text-slate-500">
             <span>Kelas 1 – 6</span>
 
-            <span className="h-1 w-1 rounded-full bg-slate-600" />
+            <span className="h-1 w-1 rounded-full bg-slate-300" />
 
             <span>Semua Mata Pelajaran</span>
           </div>
@@ -590,13 +518,13 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
           </span>
 
           {configuredCount === 4 ? (
-            <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-emerald-300/80">
-              <CircleCheck className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-emerald-700">
+              <CircleCheck className="h-3.5 w-3.5 text-emerald-600" />
               Semua tersedia
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-amber-300/70">
-              <CircleAlert className="h-3.5 w-3.5" />
+            <span className="inline-flex items-center gap-1.5 text-[9px] font-bold text-amber-700">
+              <CircleAlert className="h-3.5 w-3.5 text-amber-600" />
               {configuredCount}/4 tersedia
             </span>
           )}
@@ -648,36 +576,21 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                         opacity-100
                       `
                       : `
-                        border-white/[0.055]
-                        bg-white/[0.012]
-                        opacity-45
+                        border-slate-200
+                        bg-slate-50/70
+                        opacity-70
                         hover:-translate-y-0.5
-                        hover:border-white/[0.12]
-                        hover:bg-white/[0.035]
-                        hover:opacity-75
-                        hover:shadow-[0_8px_25px_rgba(255,255,255,0.035)]
+                        hover:border-slate-300
+                        hover:bg-slate-100
+                        hover:opacity-100
+                        hover:shadow-xs
                       `
                   }
                 `}
               >
                 {/* Shine only active */}
                 {hasDriveLink && (
-                  <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                )}
-
-                {/* Ambient glow only active */}
-                {hasDriveLink && (
-                  <div
-                    className={`
-                      pointer-events-none absolute -right-5 -top-5
-                      h-16 w-16 rounded-full
-                      ${theme.accentGlow}
-                      blur-2xl
-                      opacity-0
-                      transition-opacity duration-300
-                      group-hover/exam:opacity-100
-                    `}
-                  />
+                  <div className="pointer-events-none absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
                 )}
 
                 <div className="relative z-10 flex h-full flex-col justify-between">
@@ -688,12 +601,11 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                         flex h-7 w-7 items-center justify-center
                         rounded-[10px]
                         border
-                        backdrop-blur-md
                         transition-all duration-300
                         ${
                           hasDriveLink
-                            ? 'border-white/[0.08] bg-white/[0.055] group-hover/exam:bg-white/[0.10]'
-                            : 'border-white/[0.045] bg-white/[0.02]'
+                            ? 'border-white/40 bg-white/60 shadow-xs'
+                            : 'border-slate-200 bg-slate-100'
                         }
                       `}
                     >
@@ -704,7 +616,7 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                           className={`h-4 w-4 ${
                             hasDriveLink
                               ? theme.accentText
-                              : 'text-slate-600'
+                              : 'text-slate-400'
                           }`}
                           strokeWidth={1.8}
                         />
@@ -719,8 +631,8 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                         border
                         ${
                           hasDriveLink
-                            ? 'border-white/[0.07] bg-white/[0.035] text-slate-500 group-hover/exam:border-white/[0.14] group-hover/exam:bg-white/[0.08] group-hover/exam:text-white'
-                            : 'border-white/[0.04] bg-white/[0.015] text-slate-700'
+                            ? 'border-slate-200 bg-white text-slate-600 shadow-xs group-hover/exam:border-slate-300 group-hover/exam:text-slate-900'
+                            : 'border-slate-200 bg-slate-100 text-slate-400'
                         }
                         transition-all duration-300
                       `}
@@ -759,7 +671,7 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                         ${
                           hasDriveLink
                             ? theme.examSubText
-                            : 'text-slate-700'
+                            : 'text-slate-400'
                         }
                       `}
                     >
@@ -782,7 +694,7 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
           className={`
             mt-3 flex min-h-[58px] flex-1 flex-col
             justify-end
-            border-t border-white/[0.055]
+            border-t border-slate-100
             pt-3
           `}
         >
@@ -790,7 +702,7 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
             <>
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <Sparkles className="h-3 w-3 text-amber-400/80" />
+                  <Sparkles className="h-3 w-3 text-amber-500" />
 
                   <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-slate-500">
                     Ujian Lainnya
@@ -834,21 +746,20 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
                         border
                         px-2.5 py-1.5
                         text-[9px] font-bold
-                        backdrop-blur-xl
                         transition-all
                         cursor-pointer
 
                         ${
                           hasDriveLink
-                            ? 'border-white/[0.08] bg-white/[0.035] text-slate-400 hover:border-white/[0.15] hover:bg-white/[0.07] hover:text-white'
-                            : 'border-white/[0.045] bg-white/[0.012] text-slate-700 hover:border-white/[0.10] hover:bg-white/[0.03] hover:text-slate-500'
+                            ? 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 shadow-xs'
+                            : 'border-slate-200 bg-slate-50/50 text-slate-400 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-600'
                         }
                       `}
                     >
                       {hasDriveLink ? (
                         <GoogleDriveIcon className="h-3 w-3" />
                       ) : (
-                        <FileText className="h-3 w-3" />
+                        <FileText className="h-3 w-3 text-slate-400" />
                       )}
 
                       <span className="max-w-[100px] truncate">
@@ -861,7 +772,7 @@ export const SoalGridCard: React.FC<SoalGridCardProps> = ({
             </>
           ) : (
             <div className="flex min-h-[38px] items-end">
-              <span className="text-[8px] font-medium text-slate-700">
+              <span className="text-[9px] font-medium text-slate-400">
                 Tidak ada ujian tambahan
               </span>
             </div>

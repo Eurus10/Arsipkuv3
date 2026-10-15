@@ -446,37 +446,33 @@ const handleSaveStudentResult = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-slate-950 sm:items-center sm:justify-center sm:p-4 sm:bg-slate-950/80 backdrop-blur-none sm:backdrop-blur-md animate-[fadeIn_200ms_ease-out]"
+      className="fixed inset-0 z-50 flex flex-col bg-slate-900/60 sm:items-center sm:justify-center sm:p-4 backdrop-blur-sm animate-[fadeIn_200ms_ease-out] font-sans"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[94vh] sm:max-w-6xl flex flex-col bg-slate-900 border-0 sm:border sm:border-white/10 rounded-none sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] overflow-hidden text-slate-100">
-        {/* Ambient Top Glow (Hidden on Mobile for 60fps GPU performance) */}
-        <div className="hidden sm:block absolute top-0 left-1/4 w-80 h-24 bg-sky-500/10 blur-3xl pointer-events-none -z-10" />
-        <div className="hidden sm:block absolute top-0 right-1/4 w-80 h-24 bg-indigo-500/10 blur-3xl pointer-events-none -z-10" />
-
+      <div className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[94vh] sm:max-w-6xl flex flex-col bg-white border-0 sm:border sm:border-slate-200/90 rounded-none sm:rounded-3xl shadow-2xl overflow-hidden text-slate-800">
         {/* ====================================================
             TOP MODAL HEADER (Responsive 2-Row on Mobile, Safe-Area Protected)
             ==================================================== */}
-        <div className="px-4 sm:px-7 py-3 sm:py-4 pt-[max(0.625rem,env(safe-area-inset-top))] bg-slate-950 sm:bg-slate-950/50 backdrop-blur-none sm:backdrop-blur-md border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div className="px-4 sm:px-7 py-3 sm:py-4 pt-[max(0.625rem,env(safe-area-inset-top))] bg-white border-b border-slate-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
           {/* Top Line on Mobile / Left Column on Desktop */}
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-500/15 border border-sky-400/25 flex items-center justify-center text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.15)] shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shadow-xs shrink-0">
                 <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm sm:text-base md:text-lg font-black text-white tracking-tight leading-tight">
-                    Generator & Workspace Analisis Soal
+                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">
+                    Generator &amp; Workspace Analisis Soal
                   </h2>
-                  <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-sky-500/15 text-sky-300 border border-sky-400/25">
+                  <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-sky-50 text-sky-700 border border-sky-200">
                     SDIT AL FIKRI
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">
-                  Dual Mode: Wali Kelas (Per-Kelas) & Guru Bidang (Multi-Kelas)
+                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 line-clamp-1">
+                  Dual Mode: Wali Kelas (Per-Kelas) &amp; Guru Bidang (Multi-Kelas)
                 </p>
               </div>
             </div>
@@ -485,7 +481,7 @@ const handleSaveStudentResult = (
             <button
               type="button"
               onClick={onClose}
-              className="sm:hidden w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
+              className="sm:hidden w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer shrink-0"
               title="Tutup Modal"
             >
               <X className="w-4 h-4" />
@@ -494,15 +490,15 @@ const handleSaveStudentResult = (
 
           {/* Bottom Line on Mobile / Right Column on Desktop */}
           <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
-            {/* Dual Mode Persona Switcher (Glass Capsule) */}
-            <div className="flex items-center p-1 rounded-xl bg-slate-950/60 border border-white/10 gap-1 w-full sm:w-auto justify-between sm:justify-start">
+            {/* Dual Mode Persona Switcher (Capsule) */}
+            <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200/80 gap-1 w-full sm:w-auto justify-between sm:justify-start">
               <button
                 type="button"
                 onClick={() => setPersonaMode('WALI_KELAS')}
                 className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   personaMode === 'WALI_KELAS'
-                    ? 'bg-sky-500/25 text-sky-200 border border-sky-400/35 shadow-[0_0_12px_rgba(56,189,248,0.2)]'
-                    : 'text-slate-400 hover:text-white border border-transparent'
+                    ? 'bg-white text-sky-700 shadow-xs border border-slate-200/60'
+                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
                 }`}
                 title="Kelola seluruh mata pelajaran untuk satu kelas"
               >
@@ -515,8 +511,8 @@ const handleSaveStudentResult = (
                 onClick={() => setPersonaMode('GURU_BIDANG')}
                 className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   personaMode === 'GURU_BIDANG'
-                    ? 'bg-indigo-500/25 text-indigo-200 border border-indigo-400/35 shadow-[0_0_12px_rgba(99,102,241,0.2)]'
-                    : 'text-slate-400 hover:text-white border border-transparent'
+                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/60'
+                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
                 }`}
                 title="Kelola 1 mata pelajaran untuk banyak kelas sekaligus"
               >
@@ -529,8 +525,8 @@ const handleSaveStudentResult = (
                 onClick={() => setPersonaMode('LEGACY_BLANK')}
                 className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
                   personaMode === 'LEGACY_BLANK'
-                    ? 'bg-white/15 text-white border border-white/20 shadow-md'
-                    : 'text-slate-400 hover:text-white border border-transparent'
+                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
+                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
                 }`}
                 title="Download template kosong Excel"
               >
@@ -543,7 +539,7 @@ const handleSaveStudentResult = (
             <button
               type="button"
               onClick={onClose}
-              className="hidden sm:flex w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white items-center justify-center transition-all cursor-pointer shrink-0"
+              className="hidden sm:flex w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 items-center justify-center transition-all cursor-pointer shrink-0"
               title="Tutup Modal"
             >
               <X className="w-5 h-5" />
@@ -554,7 +550,7 @@ const handleSaveStudentResult = (
         {/* ====================================================
             MODAL BODY
             ==================================================== */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-7 overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-7 overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))] bg-slate-50/50">
           {personaMode === 'WALI_KELAS' ? (
             /* 1. MODE WALI KELAS (PER-KELAS) */
             activeSession ? (
@@ -630,23 +626,23 @@ const handleSaveStudentResult = (
             />
           ) : (
             /* 3. GENERATOR TEMPLATE KOSONG (KLASIK) */
-            <div className="max-w-xl mx-auto bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-5 sm:p-8 space-y-6 shadow-2xl">
-              <div className="pb-4 border-b border-white/10">
-                <h3 className="text-base sm:text-lg font-bold text-white">Generator Template Excel Kosong</h3>
-                <p className="text-xs text-slate-400 mt-1">
+            <div className="max-w-xl mx-auto bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-8 space-y-6 shadow-sm">
+              <div className="pb-4 border-b border-slate-150">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">Generator Template Excel Kosong</h3>
+                <p className="text-xs text-slate-500 mt-1">
                   Unduh format lembar analisis butir soal kosong dengan daftar nama siswa yang terisi otomatis.
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                     Pilih Kelas
                   </label>
                   <select
                     value={blankClassId}
                     onChange={(e) => setBlankClassId(e.target.value)}
-                    className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium outline-none focus:border-sky-400 transition-colors"
+                    className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-medium outline-none focus:border-sky-500 transition-colors"
                   >
                     {masterClasses.map((cls) => (
                       <option key={cls.id} value={cls.id}>
@@ -658,7 +654,7 @@ const handleSaveStudentResult = (
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                       Jumlah Soal PG
                     </label>
                     <PillStepper
@@ -670,7 +666,7 @@ const handleSaveStudentResult = (
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                       Jumlah Soal Isian
                     </label>
                     <PillStepper
@@ -685,20 +681,20 @@ const handleSaveStudentResult = (
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                       Jenis Bagian C
                     </label>
                     <select
                       value={blankTypeC}
                       onChange={(e) => setBlankTypeC(e.target.value as any)}
-                      className="w-full bg-slate-950/60 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white font-medium outline-none focus:border-sky-400 cursor-pointer transition-colors"
+                      className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-medium outline-none focus:border-sky-500 cursor-pointer transition-colors"
                     >
                       <option value="Essay/Uraian">Essay / Uraian</option>
                       <option value="Menjodohkan">Menjodohkan</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
                       Jumlah Bagian C
                     </label>
                     <PillStepper
@@ -715,16 +711,16 @@ const handleSaveStudentResult = (
                   <div
                     className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
                       blankStatus.type === 'error'
-                        ? 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+                        ? 'bg-rose-50 border border-rose-200 text-rose-700'
                         : blankStatus.type === 'success'
-                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                        : 'bg-sky-500/15 border border-sky-500/30 text-sky-300'
+                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                        : 'bg-sky-50 border border-sky-200 text-sky-700'
                     }`}
                   >
                     {blankStatus.type === 'error' && <AlertCircle className="w-4 h-4" />}
                     {blankStatus.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
                     {blankStatus.type === 'loading' && (
-                      <span className="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="w-3.5 h-3.5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                     )}
                     <span>{blankStatus.message}</span>
                   </div>
@@ -733,7 +729,7 @@ const handleSaveStudentResult = (
                 <button
                   type="button"
                   onClick={handleGenerateBlankExcel}
-                  className="w-full py-3 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/35 text-sky-200 font-black text-xs tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(56,189,248,0.2)] cursor-pointer transition-all"
+                  className="w-full py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs tracking-wide flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
                 >
                   <Download className="w-4 h-4" />
                   <span>Unduh File Excel Kosong (.xlsx)</span>

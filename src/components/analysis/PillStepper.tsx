@@ -51,11 +51,11 @@ export const PillStepper: React.FC<PillStepperProps> = ({
 
   return (
     <div
-      className={`relative inline-flex items-center justify-between bg-slate-950/60 border border-white/10 rounded-full p-1 select-none transition-colors focus-within:border-indigo-400/70 focus-within:ring-1 focus-within:ring-indigo-500/30 ${
+      className={`relative inline-flex items-center justify-between bg-slate-50 border border-slate-200 rounded-full p-1 select-none transition-colors focus-within:border-sky-500 focus-within:bg-white focus-within:ring-1 focus-within:ring-sky-500/20 ${
         isSmall ? 'h-8 px-1' : 'h-10 px-1'
       } ${className}`}
     >
-      {/* Minus Button (Circular Dark Slate) */}
+      {/* Minus Button */}
       <button
         type="button"
         onClick={handleDecrement}
@@ -63,9 +63,9 @@ export const PillStepper: React.FC<PillStepperProps> = ({
         aria-label="Kurangi nilai"
         className={`${
           isSmall ? 'w-6 h-6' : 'w-8 h-8'
-        } rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-slate-200 flex items-center justify-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white/10 shrink-0`}
+        } rounded-full bg-slate-200/80 hover:bg-slate-300 active:scale-95 text-slate-700 flex items-center justify-center transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-slate-200/80 shrink-0`}
       >
-        <Minus className={`${isSmall ? 'w-3 h-3' : 'w-3.5 h-3.5'} stroke-[3] text-slate-200`} />
+        <Minus className={`${isSmall ? 'w-3 h-3' : 'w-3.5 h-3.5'} stroke-[3] text-slate-700`} />
       </button>
 
       {/* Center Value Input / Display */}
@@ -74,10 +74,10 @@ export const PillStepper: React.FC<PillStepperProps> = ({
         inputMode="numeric"
         value={value}
         onChange={handleInputChange}
-        className="w-full min-w-0 text-center font-extrabold text-white text-sm bg-transparent outline-none px-1 tabular-nums cursor-text"
+        className="w-full min-w-0 text-center font-extrabold text-slate-900 text-sm bg-transparent outline-none px-1 tabular-nums cursor-text"
       />
 
-      {/* Plus Button (Circular Blue/Indigo Accent) */}
+      {/* Plus Button */}
       <button
         type="button"
         onClick={handleIncrement}
@@ -85,7 +85,7 @@ export const PillStepper: React.FC<PillStepperProps> = ({
         aria-label="Tambah nilai"
         className={`${
           isSmall ? 'w-6 h-6' : 'w-8 h-8'
-        } rounded-full bg-indigo-500/80 hover:bg-indigo-500 active:scale-95 text-white flex items-center justify-center shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-indigo-500/80 shrink-0`}
+        } rounded-full bg-sky-600 hover:bg-sky-700 active:scale-95 text-white flex items-center justify-center shadow-xs transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-sky-600 shrink-0`}
       >
         <Plus className={`${isSmall ? 'w-3.5 h-3.5' : 'w-4 h-4'} stroke-[3] text-white`} />
       </button>

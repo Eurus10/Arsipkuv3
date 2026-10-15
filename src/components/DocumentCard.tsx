@@ -47,8 +47,8 @@ export const DocumentCard: React.FC<
   const getBadge = () => {
     if (doc.type === 'sertifikat') {
       return (
-        <div className="w-10 h-10 rounded-2xl bg-purple-500/15 text-purple-300 border border-purple-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
-          <Award className="w-5 h-5 text-purple-400" />
+        <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <Award className="w-5 h-5 text-purple-600" />
         </div>
       );
     }
@@ -56,10 +56,10 @@ export const DocumentCard: React.FC<
     if (doc.type === 'soal') {
       return (
         <div
-          className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0"
+          className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0"
           title="Folder Induk Bank Soal"
         >
-          <BookOpenCheck className="w-5 h-5 text-rose-400" />
+          <BookOpenCheck className="w-5 h-5 text-rose-600" />
         </div>
       );
     }
@@ -67,10 +67,10 @@ export const DocumentCard: React.FC<
     if (doc.type === 'rapor') {
       return (
         <div
-          className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0"
+          className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0"
           title="Arsip Rapor & Penilaian"
         >
-          <GraduationCap className="w-5 h-5 text-rose-400" />
+          <GraduationCap className="w-5 h-5 text-rose-600" />
         </div>
       );
     }
@@ -78,49 +78,49 @@ export const DocumentCard: React.FC<
     switch (fileMeta.type) {
       case 'pdf':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-rose-500/15 text-rose-400 border border-rose-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             PDF
           </div>
         );
 
       case 'doc':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-blue-500/15 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-700 border border-blue-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             DOC
           </div>
         );
 
       case 'sheet':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             XLS
           </div>
         );
 
       case 'slide':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             PPT
           </div>
         );
 
       case 'form':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             FRM
           </div>
         );
 
       case 'folder':
         return (
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             DIR
           </div>
         );
 
       default:
         return (
-          <div className="w-10 h-10 rounded-2xl bg-teal-500/15 text-teal-400 border border-teal-500/30 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-700 border border-teal-200 flex items-center justify-center font-bold text-xs uppercase flex-shrink-0">
             DRV
           </div>
         );
@@ -215,7 +215,7 @@ export const DocumentCard: React.FC<
   return (
     <div
       id={`doc-card-${doc.id}`}
-      className="group flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 bg-[#14161F] hover:bg-[#1A1E2B] border border-[#232838] hover:border-[#353C52] rounded-2xl transition-all duration-150 gap-3"
+      className="group flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-2xl transition-all duration-150 gap-3 shadow-2xs"
     >
       {/* Left side: Badge & Title & Info */}
       <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
@@ -223,13 +223,13 @@ export const DocumentCard: React.FC<
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-sm font-semibold text-slate-100 truncate leading-snug group-hover:text-amber-400 transition-colors">
+            <h4 className="text-sm font-bold text-slate-800 truncate leading-snug group-hover:text-emerald-700 transition-colors">
               {doc.title}
             </h4>
 
             {showCategoryBadge &&
               doc.type === 'soal' && (
-                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/25 flex-shrink-0">
+                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 flex-shrink-0">
                   {doc.examType
                     ? `Soal ${doc.examType}`
                     : 'Folder Induk'}
@@ -239,13 +239,13 @@ export const DocumentCard: React.FC<
             {showCategoryBadge &&
               doc.type === 'sertifikat' &&
               doc.recipient && (
-                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-[#1F2433] text-purple-300 border border-purple-500/25 flex-shrink-0">
+                <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 flex-shrink-0">
                   {doc.recipient}
                 </span>
               )}
           </div>
 
-          <p className="text-xs text-slate-400 mt-0.5 truncate font-medium">
+          <p className="text-xs text-slate-500 mt-0.5 truncate font-medium">
             {metaString}
           </p>
 
@@ -258,7 +258,7 @@ export const DocumentCard: React.FC<
       </div>
 
       {/* Right side: Actions */}
-      <div className="flex items-center justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#1E2333]">
+      <div className="flex items-center justify-end gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
         {onEdit && (
           <button
             id={`btn-edit-${doc.id}`}
@@ -268,7 +268,7 @@ export const DocumentCard: React.FC<
               e.stopPropagation();
               onEdit(doc);
             }}
-            className="p-2 text-slate-400 hover:text-slate-100 hover:bg-[#202535] rounded-xl transition-colors cursor-pointer"
+            className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
             title="Edit Dokumen"
           >
             <Edit2 className="w-4 h-4" />
@@ -281,7 +281,7 @@ export const DocumentCard: React.FC<
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleOpenDrive}
-          className="px-3.5 py-1.5 bg-[#1F2433] hover:bg-emerald-500 hover:text-slate-950 border border-[#2D3449] hover:border-emerald-400 rounded-xl text-xs font-bold text-slate-200 transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+          className="px-3.5 py-1.5 bg-slate-50 hover:bg-emerald-600 hover:text-white border border-slate-200 hover:border-emerald-600 rounded-xl text-xs font-bold text-slate-700 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
           title={
             doc.type === 'soal'
               ? 'Buka Folder Induk di Google Drive'

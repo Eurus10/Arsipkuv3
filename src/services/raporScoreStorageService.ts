@@ -1,4 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from './firebase';
+import { recordQuotaUsage } from './quotaTracker';
 import {
   RaporStsClassData,
   RaporStsConfig,
@@ -857,16 +860,20 @@ export async function loadRaporWorkspaceFromSupabase(
     classTeachers: globalAdminConfig.classTeachers,
   };
 
-  // 5. Additional Info (Kehadiran & Catatan)
-  const additionalInfo: Record<string, StudentAdditionalInfo> = {};
-  for (const student of students) {
-    additionalInfo[student.id] = {
-      studentId: student.id,
-      attendance: { sakit: 0, izin: 0, alpha: 0 },
-      extracurriculars: [],
-      teacherNotes: '',
-    };
+  // 5. Additional Info (Kehadiran & Catatan) - Dimuat dari Cloud Supabase & Firestore & Cache Lokal
+  const subjectScoreNotes = new Map<string, string>();
+  for (const score of subjectScores) {
+    if (score.teacher_note && score.teacher_note.trim()) {
+      subjectScoreNotes.set(score.student_id, score.teacher_note.trim());
+    }
   }
+
+  const additionalInfo = await fetchClassAdditionalInfo({
+    academicPeriodId,
+    classId,
+    students,
+    subjectScoreNotes,
+  });
 
   const safeYear = schoolYear.replace('/', '-');
   const classKey = `${className.toUpperCase()}_${safeYear}_sem${semester}`;
@@ -879,6 +886,225 @@ export async function loadRaporWorkspaceFromSupabase(
     additionalInfo,
     lastModified: new Date().toISOString(),
   };
+}
+
+export const LOCAL_ADDITIONAL_INFO_PREFIX = 'sdit_rapor_additional_info_';
+
+/**
+ * Mengambil data Additional Info (Catatan Guru/Wali Kelas, Absensi, Ekstrakurikuler)
+ * dari Cloud Supabase dengan fallback multi-level:
+ * 1. Supabase table `student_additional_info`
+ * 2. Cloud Firestore collection `rapor_sts_additional_info`
+ * 3. LocalStorage cache laptop guru
+ * 4. Catatan dari subScore teacher_note di student_subject_scores
+ */
+export async function fetchClassAdditionalInfo(params: {
+  academicPeriodId: string;
+  classId: string;
+  students: Student[];
+  subjectScoreNotes?: Map<string, string>;
+}): Promise<Record<string, StudentAdditionalInfo>> {
+  const { academicPeriodId, classId, students, subjectScoreNotes } = params;
+  const result: Record<string, StudentAdditionalInfo> = {};
+
+  // 0. Siapkan default per siswa
+  for (const student of students) {
+    const fallbackSubjectNote = subjectScoreNotes?.get(student.id) || '';
+    result[student.id] = {
+      studentId: student.id,
+      attendance: { sakit: 0, izin: 0, alpha: 0 },
+      extracurriculars: [],
+      teacherNotes: fallbackSubjectNote,
+    };
+  }
+
+  const cacheKey = `${academicPeriodId}_${classId}`.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+
+  // 1. Baca dari LocalStorage cache laptop guru jika ada
+  try {
+    const localRaw = localStorage.getItem(LOCAL_ADDITIONAL_INFO_PREFIX + cacheKey);
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      if (parsed && typeof parsed === 'object') {
+        for (const [stId, info] of Object.entries(parsed as Record<string, StudentAdditionalInfo>)) {
+          if (result[stId] && info) {
+            result[stId] = {
+              ...result[stId],
+              ...info,
+              teacherNotes: (info.teacherNotes && info.teacherNotes.trim()) || result[stId].teacherNotes,
+            };
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Gagal membaca cache lokal additionalInfo:', err);
+  }
+
+  // 2. Baca dari Supabase table `student_additional_info`
+  let loadedFromSupabase = false;
+  if (isSupabaseConfigured()) {
+    try {
+      const resolvedClassId = await resolveClassIdToUuid(classId);
+      const { data, error } = await supabase
+        .from('student_additional_info')
+        .select('*')
+        .eq('academic_period_id', academicPeriodId)
+        .eq('class_id', resolvedClassId);
+
+      if (!error && data && data.length > 0) {
+        loadedFromSupabase = true;
+        for (const row of data) {
+          const stId = row.student_id;
+          if (result[stId]) {
+            result[stId] = {
+              studentId: stId,
+              attendance: {
+                sakit: Number(row.sakit) || 0,
+                izin: Number(row.izin) || 0,
+                alpha: Number(row.alpha) || 0,
+              },
+              extracurriculars: Array.isArray(row.extracurriculars) ? row.extracurriculars : [],
+              teacherNotes: (row.teacher_notes || '').trim() || result[stId].teacherNotes,
+            };
+          }
+        }
+      }
+    } catch (sbErr) {
+      console.warn('Query student_additional_info Supabase skipped:', sbErr);
+    }
+  }
+
+  // 3. Jika belum lengkap dari Supabase, baca dari Cloud Firestore (rapor_sts_additional_info)
+  if (!loadedFromSupabase) {
+    try {
+      const docRef = doc(db, 'rapor_sts_additional_info', cacheKey);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        recordQuotaUsage('reads', 1);
+        const data = snap.data();
+        if (data?.additionalInfo && typeof data.additionalInfo === 'object') {
+          for (const [stId, info] of Object.entries(data.additionalInfo as Record<string, StudentAdditionalInfo>)) {
+            if (result[stId] && info) {
+              result[stId] = {
+                ...result[stId],
+                ...info,
+                teacherNotes: (info.teacherNotes && info.teacherNotes.trim()) || result[stId].teacherNotes,
+              };
+            }
+          }
+        }
+      }
+    } catch (fsErr) {
+      console.warn('Gagal membaca additionalInfo dari Cloud Firestore:', fsErr);
+    }
+  }
+
+  // Simpan hasil gabungan ke local storage agar instan saat navigasi
+  try {
+    localStorage.setItem(LOCAL_ADDITIONAL_INFO_PREFIX + cacheKey, JSON.stringify(result));
+  } catch (e) {
+    // ignore
+  }
+
+  return result;
+}
+
+/**
+ * Menyimpan data Additional Info (Catatan Guru/Wali Kelas, Absensi, Ekstrakurikuler)
+ * ke Cloud Supabase & Cloud Firestore & LocalStorage secara serempak.
+ */
+export async function saveClassAdditionalInfo(params: {
+  academicPeriodId: string;
+  classId: string;
+  teacherId?: string | null;
+  additionalInfo: Record<string, StudentAdditionalInfo>;
+}): Promise<{ success: boolean; savedCount: number; error?: string }> {
+  const { academicPeriodId, classId, teacherId, additionalInfo } = params;
+  if (!academicPeriodId || !classId) {
+    return { success: false, savedCount: 0, error: 'academicPeriodId dan classId wajib diisi.' };
+  }
+
+  const cacheKey = `${academicPeriodId}_${classId}`.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+
+  // 1. Simpan segera ke LocalStorage laptop guru (instan offline cache)
+  try {
+    localStorage.setItem(LOCAL_ADDITIONAL_INFO_PREFIX + cacheKey, JSON.stringify(additionalInfo));
+  } catch (e) {
+    console.warn('Gagal simpan additionalInfo ke localStorage:', e);
+  }
+
+  // 2. Simpan ke Cloud Firestore (Jaminan 100% instan multi-device antar guru & admin)
+  try {
+    const docRef = doc(db, 'rapor_sts_additional_info', cacheKey);
+    await setDoc(
+      docRef,
+      {
+        academicPeriodId,
+        classId,
+        teacherId: teacherId || null,
+        additionalInfo,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+    recordQuotaUsage('writes', 1);
+  } catch (fsErr) {
+    console.warn('Gagal simpan additionalInfo ke Cloud Firestore:', fsErr);
+  }
+
+  // 3. Simpan ke Cloud Supabase (student_additional_info)
+  let savedCount = 0;
+  if (isSupabaseConfigured()) {
+    try {
+      const resolvedClassId = await resolveClassIdToUuid(classId);
+      const items = Object.values(additionalInfo).map((info) => ({
+        academic_period_id: academicPeriodId,
+        class_id: resolvedClassId,
+        student_id: info.studentId,
+        teacher_id: teacherId || null,
+        teacher_notes: (info.teacherNotes || '').trim() || null,
+        sakit: info.attendance?.sakit || 0,
+        izin: info.attendance?.izin || 0,
+        alpha: info.attendance?.alpha || 0,
+        extracurriculars: info.extracurriculars || [],
+      }));
+
+      // Coba lewat RPC erapor_save_additional_info
+      let rpcSucceeded = false;
+      try {
+        const { data: rpcData, error: rpcErr } = await supabase.rpc('erapor_save_additional_info', {
+          p_academic_period_id: academicPeriodId,
+          p_class_id: resolvedClassId,
+          p_teacher_id: teacherId || null,
+          p_items: items,
+        });
+        if (!rpcErr) {
+          rpcSucceeded = true;
+          savedCount = rpcData?.saved_count || items.length;
+        }
+      } catch (e) {
+        // RPC belum terpasang
+      }
+
+      // Jika RPC belum ada, lakukan direct upsert
+      if (!rpcSucceeded && items.length > 0) {
+        const { error: upsertErr } = await supabase
+          .from('student_additional_info')
+          .upsert(items, { onConflict: 'academic_period_id,class_id,student_id' });
+
+        if (!upsertErr) {
+          savedCount = items.length;
+        } else {
+          console.warn('Supabase upsert student_additional_info:', upsertErr.message);
+        }
+      }
+    } catch (sbErr) {
+      console.warn('Gagal simpan additionalInfo ke Supabase (terselamatkan oleh Firestore):', sbErr);
+    }
+  }
+
+  return { success: true, savedCount: Object.keys(additionalInfo).length };
 }
 
 export interface SaveRaporWorkspaceParams {
@@ -1069,6 +1295,20 @@ export async function saveRaporWorkspaceToSupabase(
       allSubjectScoreInputs.length > 0 ? upsertSubjectScores(allSubjectScoreInputs) : Promise.resolve(),
       allLoScoreInputs.length > 0 ? upsertLearningObjectiveScores(allLoScoreInputs) : Promise.resolve(),
     ]);
+  }
+
+  // Simpan data additionalInfo (Catatan Guru/Wali Kelas, Absensi, Ekstrakurikuler) ke Cloud Supabase & Firestore
+  if (classData.additionalInfo && Object.keys(classData.additionalInfo).length > 0) {
+    try {
+      await saveClassAdditionalInfo({
+        academicPeriodId,
+        classId,
+        teacherId,
+        additionalInfo: classData.additionalInfo,
+      });
+    } catch (addErr) {
+      console.warn('Gagal menyimpan additionalInfo dalam saveRaporWorkspaceToSupabase:', addErr);
+    }
   }
 
   return {

@@ -12,6 +12,10 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  Database,
+  Copy,
+  CheckCheck,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   RaporStsConfig,
@@ -28,7 +32,7 @@ interface RaporSettingsModalProps {
   activeClass: string;
   gradeLevel: string;
   onSaveConfig: (newConfig: Partial<RaporStsConfig>) => void;
-  initialTab?: 'general' | 'teachers' | 'characters';
+  initialTab?: 'general' | 'teachers' | 'characters' | 'database';
   isAdmin?: boolean;
   descriptors?: CharacterDescriptor[];
   onSaveDescriptors?: (descriptors: CharacterDescriptor[]) => Promise<void> | void;
@@ -45,11 +49,13 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
   config,
   activeClass,
   onSaveConfig,
+  initialTab = 'general',
   isAdmin,
   descriptors,
   onSaveDescriptors,
 }) => {
-  const [activeTab, setActiveTab] = useState<'general' | 'teachers' | 'characters'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'teachers' | 'characters' | 'database'>(initialTab);
+  const [copiedSql, setCopiedSql] = useState(false);
 
   // Form State for General Config
   const [localConfig, setLocalConfig] = useState<RaporStsConfig>(config);
@@ -263,6 +269,19 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
           >
             <HeartHandshake className="w-3.5 h-3.5" />
             <span>Master 18 Karakter & Indikator</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('database')}
+            className={`px-3.5 py-2 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+              activeTab === 'database'
+                ? 'border-teal-400 text-teal-300 bg-teal-500/10'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Database className="w-3.5 h-3.5" />
+            <span>Database Cloud & SQL</span>
           </button>
         </div>
 
@@ -650,6 +669,128 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSavingChar ? 'Menyimpan...' : 'Simpan Master 18 Karakter'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: DATABASE CLOUD & SQL */}
+          {activeTab === 'database' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-teal-950/20 border border-teal-500/30 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-white">Sinkronisasi Cloud Aktif (Dual Cloud Engine)</h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Setiap catatan guru, absensi, dan ekstrakurikuler kini disimpan secara terpusat dan otomatis tersinkronisasi ke <strong>Cloud Supabase</strong> dan <strong>Cloud Firestore</strong>. Guru dapat mengerjakan rapor di laptop masing-masing tanpa khawatir catatan hilang saat reload atau ganti perangkat, dan Admin dapat langsung menarik data catatan ini saat cetak rapor dan leger.
+                  </p>
+                </div>
+              </div>
+
+              {/* Migration 012 Box */}
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-400">
+                      Skema Database Supabase
+                    </span>
+                    <h5 className="text-xs font-bold text-white">
+                      Migration 012: Tabel Catatan Guru, Absensi & Ekstrakurikuler
+                    </h5>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Tabel <code className="bg-slate-800 px-1 py-0.5 rounded text-teal-300">student_additional_info</code> untuk persistensi data catatan rapor.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sql = `-- MIGRATION 012: CATATAN GURU, ABSENSI & EKSTRAKURIKULER
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS public.student_additional_info (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    academic_period_id UUID NOT NULL REFERENCES public.academic_periods(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    class_id TEXT NOT NULL REFERENCES public.school_classes(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES public.students(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    teacher_id TEXT NULL REFERENCES public.teachers(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    teacher_notes TEXT NULL,
+    sakit INTEGER NOT NULL DEFAULT 0,
+    izin INTEGER NOT NULL DEFAULT 0,
+    alpha INTEGER NOT NULL DEFAULT 0,
+    extracurriculars JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_additional_info UNIQUE (academic_period_id, class_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_student_additional_info_lookup ON public.student_additional_info (academic_period_id, class_id);
+CREATE INDEX IF NOT EXISTS idx_student_additional_info_student ON public.student_additional_info (student_id);
+
+ALTER TABLE public.student_additional_info ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow all read on student_additional_info" ON public.student_additional_info;
+CREATE POLICY "Allow all read on student_additional_info" ON public.student_additional_info FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow all write on student_additional_info" ON public.student_additional_info;
+CREATE POLICY "Allow all write on student_additional_info" ON public.student_additional_info FOR ALL USING (true) WITH CHECK (true);`;
+
+                      navigator.clipboard.writeText(sql);
+                      setCopiedSql(true);
+                      setNotification('Script SQL Migration 012 berhasil disalin ke clipboard!');
+                      setTimeout(() => setCopiedSql(false), 3000);
+                      setTimeout(() => setNotification(null), 3000);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-auto"
+                  >
+                    {copiedSql ? (
+                      <>
+                        <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Salin Script SQL Supabase</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300 max-h-48 overflow-y-auto custom-scrollbar">
+                  <pre className="whitespace-pre-wrap leading-relaxed">
+{`-- MIGRATION 012: CATATAN GURU, ABSENSI & EKSTRAKURIKULER
+CREATE TABLE IF NOT EXISTS public.student_additional_info (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    academic_period_id UUID NOT NULL REFERENCES public.academic_periods(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    class_id TEXT NOT NULL REFERENCES public.school_classes(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES public.students(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    teacher_id TEXT NULL REFERENCES public.teachers(id) ON UPDATE CASCADE ON DELETE SET NULL,
+    teacher_notes TEXT NULL,
+    sakit INTEGER NOT NULL DEFAULT 0,
+    izin INTEGER NOT NULL DEFAULT 0,
+    alpha INTEGER NOT NULL DEFAULT 0,
+    extracurriculars JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_student_additional_info UNIQUE (academic_period_id, class_id, student_id)
+);`}
+                  </pre>
+                </div>
+
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  💡 <em>Petunjuk Admin:</em> Salin script di atas lalu jalankan di menu <strong>SQL Editor</strong> di dashboard Supabase Anda. Selama tabel dipersiapkan, aplikasi secara otomatis mencadangkan seluruh data catatan ke Cloud Firestore & Local Cache sehingga guru dapat langsung bekerja tanpa hambatan.
+                </p>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="flex items-center justify-end pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                >
+                  Tutup
                 </button>
               </div>
             </div>

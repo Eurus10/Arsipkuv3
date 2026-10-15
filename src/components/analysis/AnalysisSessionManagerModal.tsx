@@ -56,23 +56,23 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl text-slate-100 flex flex-col max-h-[90vh] overflow-hidden">
+      <div className="w-full max-w-2xl bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-2xl text-slate-800 flex flex-col max-h-[90vh] overflow-hidden font-sans">
         {/* Header Modal Formal */}
-        <div className="px-5 sm:px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div className="px-5 sm:px-6 py-4 bg-slate-50/90 border-b border-slate-200/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-600 shadow-xs">
               <RotateCcw className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black text-white tracking-tight">
+              <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
                 Pilih &amp; Beralih Sesi Analisis
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 Beralih antar kelas yang pernah dibuat tanpa risiko kehilangan data
               </p>
             </div>
@@ -80,7 +80,7 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+            className="w-8 h-8 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer shadow-xs"
             title="Tutup dialog"
           >
             <X className="w-4 h-4" />
@@ -88,30 +88,30 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto space-y-4">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 bg-white">
           {/* Info Banner Keamanan Data */}
-          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-emerald-300/90 leading-relaxed">
-              <strong className="text-emerald-200">Data Progres Tersimpan Aman:</strong> Seluruh nilai, mata pelajaran, dan konfigurasi butir soal yang telah Anda isi tersimpan otomatis di perangkat dan tidak akan hilang saat beralih sesi.
+          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <p className="text-xs text-emerald-900 leading-relaxed">
+              <strong className="text-emerald-950 font-bold">Data Progres Tersimpan Aman:</strong> Seluruh nilai, mata pelajaran, dan konfigurasi butir soal yang telah Anda isi tersimpan otomatis di perangkat dan tidak akan hilang saat beralih sesi.
             </p>
           </div>
 
           {/* Daftar Riwayat Sesi */}
           <div>
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-300">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-700">
                 Sesi Kelas Tersimpan ({savedSessionsList.length})
               </span>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-500">
                 Klik &quot;Buka Sesi Ini&quot; untuk beralih
               </span>
             </div>
 
             {savedSessionsList.length === 0 ? (
-              <div className="p-8 rounded-2xl bg-slate-950/60 border border-slate-800 text-center space-y-2">
-                <FolderOpen className="w-8 h-8 text-slate-500 mx-auto" />
-                <p className="text-xs font-bold text-slate-300">Belum Ada Sesi Tersimpan</p>
+              <div className="p-8 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                <FolderOpen className="w-8 h-8 text-slate-400 mx-auto" />
+                <p className="text-xs font-bold text-slate-700">Belum Ada Sesi Tersimpan</p>
                 <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
                   Silakan buat sesi analisis pertama Anda dengan menekan tombol buat sesi baru di bawah.
                 </p>
@@ -134,44 +134,44 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
                       key={item.sessionId || item.classId}
                       className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                         isCurrent
-                          ? 'bg-sky-500/15 border-sky-400/40 ring-1 ring-sky-400/30'
-                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-950/90'
+                          ? 'bg-sky-50/80 border-sky-300 ring-1 ring-sky-300/50 shadow-xs'
+                          : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs'
                       }`}
                     >
                       <div className="space-y-1.5 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-black text-white">
+                          <span className="text-sm font-black text-slate-900">
                             Kelas {item.className || item.classId}
                           </span>
-                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-purple-100 text-purple-700 border border-purple-200">
                             {item.examType || 'STS'}
                           </span>
                           {isCurrent && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/25 text-sky-300 border border-sky-400/30 flex items-center gap-1">
-                              <CheckCircle2 className="w-2.5 h-2.5" />
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200 flex items-center gap-1">
+                              <CheckCircle2 className="w-2.5 h-2.5 text-sky-600" />
                               Sedang Aktif
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center gap-3 flex-wrap text-xs text-slate-400">
+                        <div className="flex items-center gap-3 flex-wrap text-xs text-slate-500">
                           {item.teacherName && (
-                            <span className="flex items-center gap-1 text-slate-300">
-                              <UserCheck className="w-3.5 h-3.5 text-amber-400" />
+                            <span className="flex items-center gap-1 text-slate-700">
+                              <UserCheck className="w-3.5 h-3.5 text-amber-600" />
                               <span>{item.teacherName}</span>
                             </span>
                           )}
-                          <span className="flex items-center gap-1 text-slate-300">
-                            <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                          <span className="flex items-center gap-1 text-slate-700">
+                            <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
                             <span>{item.subjects.length} Mapel</span>
                           </span>
-                          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+                          <span className="flex items-center gap-1 text-emerald-700 font-semibold">
                             <span>{totalCompletedScores} Nilai Terisi</span>
                           </span>
                         </div>
 
                         {item.subjects.length > 0 && (
-                          <div className="text-[11px] text-slate-400 truncate max-w-md">
+                          <div className="text-[11px] text-slate-500 truncate max-w-md">
                             Mapel: {item.subjects.map((s) => s.subjectName).join(', ')}
                           </div>
                         )}
@@ -185,13 +185,13 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
                               onSelectSession(item);
                               onClose();
                             }}
-                            className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 active:scale-95 border border-sky-400/35 text-sky-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                            className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
                           >
                             <span>Buka Sesi Ini</span>
                             <ArrowRight className="w-3.5 h-3.5" />
                           </button>
                         ) : (
-                          <span className="px-3 py-1.5 text-xs font-bold text-sky-300 bg-sky-500/10 rounded-lg">
+                          <span className="px-3 py-1.5 text-xs font-bold text-sky-700 bg-sky-100 rounded-lg">
                             Sesi Terpilih
                           </span>
                         )}
@@ -204,10 +204,10 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
           </div>
 
           {/* Opsi Buat Sesi Baru */}
-          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
-              <h4 className="text-xs font-black text-white">Ingin Menganalisis Kelas Baru?</h4>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <h4 className="text-xs font-black text-slate-900">Ingin Menganalisis Kelas Baru?</h4>
+              <p className="text-[11px] text-slate-500 mt-0.5">
                 Sesi kelas aktif saat ini tetap tersimpan aman di riwayat dan dapat dibuka kembali.
               </p>
             </div>
@@ -217,20 +217,20 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
                 onCreateNewSession();
                 onClose();
               }}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 border border-white/15 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shrink-0"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white hover:bg-slate-100 active:scale-95 border border-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shrink-0 shadow-xs"
             >
-              <Plus className="w-3.5 h-3.5 text-sky-300" />
+              <Plus className="w-3.5 h-3.5 text-sky-600" />
               <span>+ Konfigurasi Sesi Baru</span>
             </button>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3.5 bg-slate-950 border-t border-slate-800 flex items-center justify-end shrink-0">
+        <div className="px-5 py-3.5 bg-slate-50/90 border-t border-slate-200/80 flex items-center justify-end shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-xs cursor-pointer transition-all"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-xs"
           >
             Tutup (Tetap di Sesi Saat Ini)
           </button>

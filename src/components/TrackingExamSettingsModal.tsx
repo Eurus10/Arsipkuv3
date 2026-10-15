@@ -390,40 +390,40 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
   ).length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-[#181B26] border border-[#272D3E] rounded-3xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto font-sans">
+      <div className="bg-white border border-slate-200/90 rounded-3xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden my-3 text-slate-800">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#272D3E] flex items-center justify-between bg-[#151722]">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/75">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400 flex items-center justify-center text-lg font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center text-lg font-bold shadow-xs">
               ⚙️
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                 Pusat Pengaturan Ujian & Master Data
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Kelola mapel aktif ujian, master wali kelas, guru pengampu, dan tahun pelajaran
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer transition-colors"
           >
             ✕
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="px-5 pt-3 border-b border-[#272D3E] bg-[#12141D] flex flex-wrap items-center gap-2">
+        <div className="px-5 pt-3 border-b border-slate-200 bg-slate-100/60 flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setActiveMainTab('session')}
             className={`px-3.5 py-2 rounded-t-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeMainTab === 'session'
-                ? 'bg-[#181B26] text-amber-400 border-t-2 border-amber-400 shadow-xs'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-amber-800 border-t-2 border-amber-500 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -435,8 +435,8 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             onClick={() => setActiveMainTab('master')}
             className={`px-3.5 py-2 rounded-t-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeMainTab === 'master'
-                ? 'bg-[#181B26] text-amber-400 border-t-2 border-amber-400 shadow-xs'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-amber-800 border-t-2 border-amber-500 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <GraduationCap className="w-3.5 h-3.5" />
@@ -448,8 +448,8 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             onClick={() => setActiveMainTab('years')}
             className={`px-3.5 py-2 rounded-t-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
               activeMainTab === 'years'
-                ? 'bg-[#181B26] text-amber-400 border-t-2 border-amber-400 shadow-xs'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-amber-800 border-t-2 border-amber-500 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -469,19 +469,19 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
         {activeMainTab === 'session' && (
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
             {/* Live Calculation Banner */}
-            <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="p-3.5 bg-amber-50 border border-amber-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                <span className="text-slate-300">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span className="text-slate-700">
                   Target Naskah Terhitung:{' '}
-                  <strong className="text-amber-400 text-sm font-black">{calculatedTarget}</strong>{' '}
+                  <strong className="text-amber-800 text-sm font-black">{calculatedTarget}</strong>{' '}
                   Naskah ({totalActiveClasses} dari {currentMasterClasses.length} Kelas Aktif)
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleResetSessionToDefault}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-[11px] font-medium transition-colors cursor-pointer shadow-xs"
               >
                 Reset Semua Aktif
               </button>
@@ -490,7 +490,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             {/* Exam Name & Year */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                   Nama / Jenis Ujian
                 </label>
                 <input
@@ -498,20 +498,20 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                   value={sessionName}
                   onChange={(e) => setSessionName(e.target.value)}
                   placeholder="Contoh: STS Ganjil, SAS Ganjil, US Kelas 6"
-                  className="w-full px-3 py-2 bg-[#12141D] border border-[#272D3E] focus:border-amber-400 rounded-xl text-xs text-white focus:outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs text-slate-900 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                   Tahun Pelajaran
                 </label>
                 <select
                   value={schoolYear}
                   onChange={(e) => setSchoolYear(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#12141D] border border-[#272D3E] focus:border-amber-400 rounded-xl text-xs text-white focus:outline-none cursor-pointer"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs text-slate-900 focus:outline-none cursor-pointer"
                 >
                   {currentSchoolYears.map((yr) => (
-                    <option key={yr} value={yr} className="bg-[#181B26] text-white">
+                    <option key={yr} value={yr} className="bg-white text-slate-900">
                       {yr}
                     </option>
                   ))}
@@ -522,22 +522,22 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             {/* Quick Class Activation Overview */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                   Kelas Peserta Ujian:
                 </label>
                 <div className="flex items-center gap-2 text-[11px]">
                   <button
                     type="button"
                     onClick={() => handleSetAllClasses(true)}
-                    className="text-amber-400 hover:underline cursor-pointer"
+                    className="text-amber-700 hover:underline font-bold cursor-pointer"
                   >
                     Aktifkan Semua
                   </button>
-                  <span className="text-slate-600">•</span>
+                  <span className="text-slate-300">•</span>
                   <button
                     type="button"
                     onClick={() => handleSetAllClasses(false)}
-                    className="text-slate-400 hover:text-rose-400 hover:underline cursor-pointer"
+                    className="text-slate-500 hover:text-rose-600 hover:underline cursor-pointer"
                   >
                     Nonaktifkan Semua
                   </button>
@@ -557,22 +557,22 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                       onClick={() => handleToggleClass(c.id)}
                       className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-amber-500/10 border-amber-400/50 text-white shadow-xs'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-500 opacity-60'
+                          ? 'bg-amber-50/70 border-amber-300 text-slate-900 shadow-xs'
+                          : 'bg-slate-50 border-slate-200 text-slate-400 opacity-70'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="font-bold text-xs">{c.name}</span>
                         <span
                           className={`w-2 h-2 rounded-full ${
-                            isActive ? 'bg-emerald-400' : 'bg-slate-600'
+                            isActive ? 'bg-emerald-500' : 'bg-slate-300'
                           }`}
                         ></span>
                       </div>
-                      <div className="text-[10px] text-slate-400 truncate">
+                      <div className="text-[10px] text-slate-500 truncate">
                         {c.waliKelas}
                       </div>
-                      <div className="text-[9px] mt-1 text-amber-400 font-semibold">
+                      <div className="text-[9px] mt-1 text-amber-700 font-bold">
                         {isActive ? `${activeCount}/${c.subjects.length} Mapel` : 'Nonaktif'}
                       </div>
                     </button>
@@ -582,13 +582,13 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             </div>
 
             {/* Detailed Subject Configuration per Class */}
-            <div className="bg-[#12141D] border border-[#272D3E] rounded-2xl p-4 sm:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[#272D3E]">
+            <div className="bg-slate-50/60 border border-slate-200 rounded-2xl p-4 sm:p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200">
                 <div>
-                  <h3 className="text-xs font-bold text-white">
+                  <h3 className="text-xs font-bold text-slate-900">
                     Pilih Mapel Diujikan per Rombel
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Klik tab kelas untuk mencentang mapel apa saja yang diujikan
                   </p>
                 </div>
@@ -604,8 +604,8 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                         selectedClassTab === c.id
                           ? 'bg-amber-400 text-slate-950 font-bold shadow-xs'
                           : activeClasses[c.id]
-                          ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                          : 'bg-slate-900/80 text-slate-600 hover:text-slate-400'
+                          ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                          : 'bg-slate-100 text-slate-400 hover:text-slate-600'
                       }`}
                     >
                       {c.name}
@@ -615,23 +615,23 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
               </div>
 
               {/* Selected Class Header Info & Quick Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-3 bg-[#181B26] p-3 rounded-xl border border-[#272D3E]">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-3 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/40 text-amber-300 font-black flex items-center justify-center text-xs">
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 font-black flex items-center justify-center text-xs shadow-xs">
                     {currentSelectedClass.name}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white">
+                      <span className="text-xs font-bold text-slate-900">
                         Kelas {currentSelectedClass.name}
                       </span>
-                      <span className="text-[11px] text-slate-400">
-                        (Wali: <strong className="text-amber-400">{currentSelectedClass.waliKelas}</strong>)
+                      <span className="text-[11px] text-slate-500">
+                        (Wali: <strong className="text-amber-700 font-semibold">{currentSelectedClass.waliKelas}</strong>)
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-slate-500">
                       Status:{' '}
-                      <strong className={isSelectedClassActive ? 'text-emerald-400' : 'text-rose-400'}>
+                      <strong className={isSelectedClassActive ? 'text-emerald-700 font-bold' : 'text-rose-600 font-bold'}>
                         {isSelectedClassActive ? 'Aktif Ujian' : 'Tidak Mengikuti'}
                       </strong>{' '}
                       • {activeSubCountForSelected} dari {currentSelectedClass.subjects.length} Mapel Aktif
@@ -643,10 +643,10 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                   <button
                     type="button"
                     onClick={() => handleToggleClass(currentSelectedClass.id)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       isSelectedClassActive
-                        ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30'
-                        : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'
+                        ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
                     }`}
                   >
                     {isSelectedClassActive ? 'Nonaktifkan Kelas' : 'Aktifkan Kelas'}
@@ -654,14 +654,14 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                   <button
                     type="button"
                     onClick={() => handleSetAllSubjectsForClass(currentSelectedClass.id, true)}
-                    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
+                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer border border-slate-200/80"
                   >
                     Pilih Semua
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSetAllSubjectsForClass(currentSelectedClass.id, false)}
-                    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
+                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer border border-slate-200/80"
                   >
                     Hapus Centang
                   </button>
@@ -678,22 +678,22 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                     <div
                       key={sub.id}
                       onClick={() => handleToggleSubject(currentSelectedClass.id, sub.id)}
-                      className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${
                         isSubActive
-                          ? 'bg-[#181B26] border-emerald-500/30 text-white hover:border-emerald-500/60'
-                          : 'bg-[#151722]/60 border-slate-800 text-slate-500 hover:border-slate-700'
+                          ? 'bg-emerald-50/40 border-emerald-300 text-slate-900 shadow-xs hover:border-emerald-400'
+                          : 'bg-slate-50/70 border-slate-200 text-slate-400 hover:border-slate-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2 min-w-0 pr-2">
-                        <span className="text-[10px] font-bold text-slate-500 w-4">
+                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                        <span className="text-[10px] font-bold text-slate-400 w-4">
                           {idx + 1}.
                         </span>
                         <div className="truncate">
-                          <p className={`text-xs font-semibold truncate ${isSubActive ? 'text-slate-100' : 'text-slate-500 line-through'}`}>
+                          <p className={`text-xs font-semibold truncate ${isSubActive ? 'text-slate-800' : 'text-slate-400 line-through'}`}>
                             {sub.name}
                           </p>
                           {sub.teacher && (
-                            <p className="text-[10px] text-amber-400/90 truncate">
+                            <p className="text-[10px] text-amber-700 truncate font-medium">
                               Guru: {sub.teacher}
                             </p>
                           )}
@@ -702,19 +702,19 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
 
                       <div className="flex-shrink-0 flex items-center gap-2">
                         <span
-                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                          className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${
                             isSubActive
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-slate-800 text-slate-500'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              : 'bg-slate-200 text-slate-500'
                           }`}
                         >
                           {isSubActive ? 'Diujikan' : 'Off'}
                         </span>
                         <div
-                          className={`w-4 h-4 rounded-md border flex items-center justify-center text-[10px] font-black ${
+                          className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center text-[11px] font-black transition-colors ${
                             isSubActive
-                              ? 'bg-emerald-500 text-slate-950 border-emerald-400'
-                              : 'bg-slate-900 border-slate-700 text-transparent'
+                              ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                              : 'bg-white border-slate-300 text-transparent'
                           }`}
                         >
                           ✓
@@ -731,17 +731,17 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
         {/* Tab 2: MASTER DATA KELAS, WALAS & MAPEL */}
         {activeMainTab === 'master' && (
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
-            <div className="p-3.5 bg-blue-500/10 border border-blue-500/25 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <GraduationCap className="w-4 h-4 text-blue-400" />
-                <span className="text-slate-300">
+                <GraduationCap className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span className="text-blue-900 font-medium">
                   Perubahan Master Data akan otomatis tersinkronisasi ke seluruh sistem & database Firestore.
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleResetMasterData}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-rose-300 hover:text-rose-200 rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
+                className="px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-[11px] font-bold transition-colors cursor-pointer shadow-xs"
               >
                 Reset ke Standar SDIT AL FIKRI
               </button>
@@ -749,7 +749,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
 
             {/* Class Selection Buttons */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
                 Pilih Kelas untuk Diedit:
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -765,8 +765,8 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       masterSelectedClassId === c.id
-                        ? 'bg-amber-400 text-slate-950 shadow-md'
-                        : 'bg-[#12141D] hover:bg-slate-800 text-slate-300 border border-[#272D3E]'
+                        ? 'bg-amber-400 text-slate-950 shadow-sm'
+                        : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
                     }`}
                   >
                     Kelas {c.name}
@@ -776,18 +776,18 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             </div>
 
             {/* Edit Wali Kelas Box */}
-            <div className="bg-[#12141D] border border-[#272D3E] rounded-2xl p-4 sm:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#272D3E]">
+            <div className="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 sm:p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-300 font-black flex items-center justify-center text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-700 font-black flex items-center justify-center text-sm shadow-xs">
                     {selectedMasterClass.name}
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white">
+                    <h3 className="text-sm font-bold text-slate-900">
                       Data Rombel Kelas {selectedMasterClass.name}
                     </h3>
-                    <p className="text-xs text-slate-400">
-                      Wali Kelas Saat Ini: <strong className="text-amber-400">{selectedMasterClass.waliKelas}</strong>
+                    <p className="text-xs text-slate-600">
+                      Wali Kelas Saat Ini: <strong className="text-amber-700 font-bold">{selectedMasterClass.waliKelas}</strong>
                     </p>
                   </div>
                 </div>
@@ -799,7 +799,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                       setEditingWaliKelas(selectedMasterClass.waliKelas);
                       setIsEditingWali(true);
                     }}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="px-3 py-1.5 bg-white hover:bg-amber-50 text-amber-800 border border-amber-300 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     <span>Ubah Nama Wali Kelas</span>
@@ -811,19 +811,19 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                       value={editingWaliKelas}
                       onChange={(e) => setEditingWaliKelas(e.target.value)}
                       placeholder="Nama Wali Kelas baru..."
-                      className="px-3 py-1.5 bg-[#181B26] border border-amber-400 rounded-xl text-xs text-white focus:outline-none"
+                      className="px-3 py-1.5 bg-white border border-amber-400 rounded-xl text-xs text-slate-900 focus:outline-none shadow-xs"
                     />
                     <button
                       type="button"
                       onClick={handleSaveWaliKelas}
-                      className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-bold cursor-pointer shadow-xs"
                     >
                       Simpan
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsEditingWali(false)}
-                      className="px-2.5 py-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs cursor-pointer"
+                      className="px-2.5 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-xs cursor-pointer border border-slate-200"
                     >
                       Batal
                     </button>
@@ -834,10 +834,10 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
               {/* Master Subjects Header & Add Button */}
               <div className="mt-4 flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                     Daftar Mata Pelajaran ({selectedMasterClass.subjects.length} Mapel)
                   </h4>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Ubah nama mapel, edit guru pengampu, atau tambahkan mapel baru
                   </p>
                 </div>
@@ -846,7 +846,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                   <button
                     type="button"
                     onClick={() => setIsAddingSubject(true)}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Tambah Mapel Baru</span>
@@ -858,15 +858,15 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
               {isAddingSubject && (
                 <form
                   onSubmit={handleAddNewSubject}
-                  className="mt-3 p-3.5 bg-[#181B26] border border-emerald-500/40 rounded-xl space-y-3"
+                  className="mt-3 p-4 bg-white border border-emerald-200 rounded-xl space-y-3 shadow-xs"
                 >
-                  <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
                     <Plus className="w-3.5 h-3.5" />
                     <span>Tambah Mata Pelajaran Baru ke Kelas {selectedMasterClass.name}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
                         Nama Mata Pelajaran *
                       </label>
                       <input
@@ -875,11 +875,11 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                         value={newSubjectName}
                         onChange={(e) => setNewSubjectName(e.target.value)}
                         placeholder="Contoh: BAHASA SUNDA, TIK, ROBOTIK"
-                        className="w-full px-3 py-2 bg-[#12141D] border border-[#272D3E] focus:border-amber-400 rounded-xl text-xs text-white focus:outline-none"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs text-slate-800 focus:outline-none transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">
                         Nama Guru Pengampu (Opsional)
                       </label>
                       <input
@@ -887,7 +887,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                         value={newSubjectTeacher}
                         onChange={(e) => setNewSubjectTeacher(e.target.value)}
                         placeholder="Contoh: Bu Hj. Nedya, Pak Ikhlas"
-                        className="w-full px-3 py-2 bg-[#12141D] border border-[#272D3E] focus:border-amber-400 rounded-xl text-xs text-white focus:outline-none"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-amber-400 focus:bg-white rounded-xl text-xs text-slate-800 focus:outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -895,13 +895,13 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                     <button
                       type="button"
                       onClick={() => setIsAddingSubject(false)}
-                      className="px-3 py-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs cursor-pointer"
+                      className="px-3 py-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl text-xs cursor-pointer border border-slate-200"
                     >
                       Batal
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-bold cursor-pointer"
+                      className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold cursor-pointer shadow-xs"
                     >
                       Tambahkan Mapel
                     </button>
@@ -910,23 +910,23 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
               )}
 
               {/* Master Subject List Table */}
-              <div className="mt-3 overflow-x-auto">
+              <div className="mt-3 overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-xs">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-[#181B26] text-[10px] font-bold text-slate-400 border-b border-[#272D3E]">
-                      <th className="py-2 px-3 w-8 text-center">No</th>
-                      <th className="py-2 px-3">Nama Mata Pelajaran</th>
-                      <th className="py-2 px-3">Guru Pengampu</th>
-                      <th className="py-2 px-3 w-28 text-center">Aksi</th>
+                    <tr className="bg-slate-50 text-[10px] font-bold text-slate-500 border-b border-slate-200">
+                      <th className="py-2.5 px-3 w-8 text-center">No</th>
+                      <th className="py-2.5 px-3">Nama Mata Pelajaran</th>
+                      <th className="py-2.5 px-3">Guru Pengampu</th>
+                      <th className="py-2.5 px-3 w-28 text-center">Aksi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#272D3E]/50">
+                  <tbody className="divide-y divide-slate-100">
                     {selectedMasterClass.subjects.map((sub, idx) => {
                       const isEditingThis = editingSubjectId === sub.id;
 
                       return (
-                        <tr key={sub.id} className="hover:bg-slate-800/20">
-                          <td className="py-2 px-3 text-center text-slate-500 font-bold">
+                        <tr key={sub.id} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-2 px-3 text-center text-slate-400 font-bold">
                             {idx + 1}
                           </td>
 
@@ -937,10 +937,10 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                                 type="text"
                                 value={editSubjectName}
                                 onChange={(e) => setEditSubjectName(e.target.value)}
-                                className="w-full px-2 py-1 bg-[#12141D] border border-amber-400 rounded-lg text-xs text-white focus:outline-none"
+                                className="w-full px-2.5 py-1 bg-white border border-amber-400 rounded-lg text-xs text-slate-900 focus:outline-none"
                               />
                             ) : (
-                              <span className="font-semibold text-white">
+                              <span className="font-semibold text-slate-800">
                                 {sub.name}
                               </span>
                             )}
@@ -954,11 +954,11 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                                 value={editSubjectTeacher}
                                 onChange={(e) => setEditSubjectTeacher(e.target.value)}
                                 placeholder="Nama guru..."
-                                className="w-full px-2 py-1 bg-[#12141D] border border-amber-400 rounded-lg text-xs text-white focus:outline-none"
+                                className="w-full px-2.5 py-1 bg-white border border-amber-400 rounded-lg text-xs text-slate-900 focus:outline-none"
                               />
                             ) : (
-                              <span className="text-amber-400/90 font-medium">
-                                {sub.teacher ? sub.teacher : <em className="text-slate-500 font-normal">Sesuai Wali Kelas / Belum diatur</em>}
+                              <span className="text-amber-800 font-medium">
+                                {sub.teacher ? sub.teacher : <em className="text-slate-400 font-normal">Sesuai Wali Kelas / Belum diatur</em>}
                               </span>
                             )}
                           </td>
@@ -970,7 +970,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                                 <button
                                   type="button"
                                   onClick={() => handleSaveEditSubject(sub.id)}
-                                  className="p-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg cursor-pointer"
+                                  className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg cursor-pointer shadow-xs"
                                   title="Simpan"
                                 >
                                   <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -978,7 +978,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                                 <button
                                   type="button"
                                   onClick={() => setEditingSubjectId(null)}
-                                  className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-lg cursor-pointer"
+                                  className="p-1.5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg cursor-pointer border border-slate-200"
                                   title="Batal"
                                 >
                                   <X className="w-3.5 h-3.5" />
@@ -989,7 +989,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                                 <button
                                   type="button"
                                   onClick={() => handleStartEditSubject(sub)}
-                                  className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                                  className="p-1.5 text-slate-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors cursor-pointer"
                                   title="Edit Mapel & Guru"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
@@ -997,7 +997,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteSubject(sub.id, sub.name)}
-                                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                                   title="Hapus Mapel"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1018,16 +1018,16 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
         {/* Tab 3: KELOLA TAHUN PELAJARAN */}
         {activeMainTab === 'years' && (
           <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
-            <div className="p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl flex items-center gap-3 text-xs text-slate-300">
-              <Calendar className="w-4 h-4 text-amber-400 flex-shrink-0" />
-              <span>
+            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-xs text-amber-900">
+              <Calendar className="w-4 h-4 text-amber-600 flex-shrink-0" />
+              <span className="font-medium">
                 Tahun pelajaran yang ditambahkan di sini akan langsung terhubung ke seluruh filter pencarian, form upload, dan monitoring tracking.
               </span>
             </div>
 
             {/* Add New School Year Form */}
-            <form onSubmit={handleAddSchoolYear} className="bg-[#12141D] border border-[#272D3E] rounded-2xl p-4 sm:p-5">
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+            <form onSubmit={handleAddSchoolYear} className="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
                 Tambah Tahun Pelajaran Baru
               </h3>
               <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
@@ -1038,7 +1038,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                     value={newYearInput}
                     onChange={(e) => setNewYearInput(e.target.value)}
                     placeholder="Contoh: 2026/2027 atau 2027/2028"
-                    className="w-full px-3.5 py-2.5 bg-[#181B26] border border-[#272D3E] focus:border-amber-400 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-200 focus:border-amber-400 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none shadow-xs"
                   />
                 </div>
                 <button
@@ -1050,7 +1050,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
                 </button>
               </div>
               {yearError && (
-                <p className="text-xs text-rose-400 mt-2 flex items-center gap-1">
+                <p className="text-xs text-rose-600 mt-2 flex items-center gap-1 font-medium">
                   <AlertCircle className="w-3.5 h-3.5" />
                   <span>{yearError}</span>
                 </p>
@@ -1058,26 +1058,26 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             </form>
 
             {/* List of Active School Years */}
-            <div className="bg-[#12141D] border border-[#272D3E] rounded-2xl p-4 sm:p-5">
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
+            <div className="bg-slate-50/70 border border-slate-200 rounded-2xl p-4 sm:p-5">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
                 Daftar Tahun Pelajaran Tersedia ({currentSchoolYears.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
                 {currentSchoolYears.map((yr) => (
                   <div
                     key={yr}
-                    className="p-3 bg-[#181B26] border border-[#272D3E] rounded-xl flex items-center justify-between"
+                    className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-xs"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-amber-400/15 text-amber-400 font-bold flex items-center justify-center text-xs">
+                      <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-xs">
                         📅
                       </div>
-                      <span className="text-xs font-bold text-white">{yr}</span>
+                      <span className="text-xs font-bold text-slate-800">{yr}</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleDeleteSchoolYear(yr)}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                       title="Hapus Tahun Pelajaran"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1090,10 +1090,10 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
         )}
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 border-t border-[#272D3E] bg-[#151722] flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-slate-400">
+        <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/80 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs text-slate-500 font-medium">
             {activeMainTab === 'session' ? (
-              <span>Target: <strong className="text-white">{calculatedTarget} naskah</strong> ({totalActiveClasses} kelas)</span>
+              <span>Target: <strong className="text-slate-900 font-bold">{calculatedTarget} naskah</strong> ({totalActiveClasses} kelas)</span>
             ) : (
               <span>Master Data SDIT AL FIKRI</span>
             )}
@@ -1102,7 +1102,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-200/80"
             >
               Tutup
             </button>
@@ -1110,7 +1110,7 @@ export const TrackingExamSettingsModal: React.FC<TrackingExamSettingsModalProps>
               type="button"
               onClick={handleSaveAll}
               disabled={isSaving}
-              className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 disabled:bg-amber-400/50 text-slate-950 text-xs font-bold rounded-xl shadow-lg transition-all cursor-pointer flex items-center gap-2"
+              className="px-6 py-2.5 bg-amber-400 hover:bg-amber-300 disabled:bg-amber-200 text-slate-950 text-xs font-bold rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-2"
             >
               {isSaving ? 'Menyimpan...' : 'Simpan & Terapkan'}
             </button>

@@ -132,40 +132,40 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in pb-16">
+    <div className="space-y-6 animate-fade-in pb-16 font-sans text-slate-800">
       {/* Top Hero Box: Google Drive Upload Portal */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#1A2033] via-[#161B2B] to-[#121624] border border-[#2B354F] rounded-3xl p-6 sm:p-8 shadow-2xl">
-        {/* Glow Accent */}
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/60 border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
+        {/* Subtle Decorative Gradient */}
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-100/50 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-emerald-100/40 rounded-full blur-2xl pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
                 <FolderUp className="w-3.5 h-3.5" />
                 <span>Portal Pengumpulan Soal Ujian Guru</span>
               </span>
               {config.activePeriod && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   {config.activePeriod}
                 </span>
               )}
             </div>
 
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight font-heading">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight font-heading">
               {config.title || 'Folder Google Drive Pengumpulan Soal Ujian'}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {config.description ||
                 'Bapak/Ibu guru dipersilakan mengunggah berkas soal langsung ke Google Drive bersama atau mencantumkan tautan file pada formulir setor soal di bawah.'}
             </p>
 
             {config.instructions && (
-              <div className="pt-2 text-xs text-amber-300/90 flex items-center gap-2">
-                <Info className="w-4 h-4 flex-shrink-0 text-amber-400" />
-                <span className="font-mono text-[11px] bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-500/20">
+              <div className="pt-2 text-xs text-amber-900 flex items-center gap-2">
+                <Info className="w-4 h-4 flex-shrink-0 text-amber-600" />
+                <span className="font-mono text-[11px] bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
                   {config.instructions}
                 </span>
               </div>
@@ -178,7 +178,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
             <button
               type="button"
               onClick={() => openExternalDriveUrl(config.driveFolderUrl)}
-              className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-blue-500/30 hover:shadow-blue-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer group"
+              className="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs sm:text-sm shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer group"
             >
               <span>Buka Folder Google Drive Soal</span>
               <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -189,7 +189,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsSubmitModalOpen(true)}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Isi Form Setor Soal</span>
@@ -200,9 +200,9 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
                 type="button"
                 onClick={handleCopyLink}
                 title="Salin Tautan Folder Google Drive"
-                className="p-2.5 rounded-xl bg-[#12141D] hover:bg-[#202534] border border-[#2B354F] text-slate-300 hover:text-white transition-colors cursor-pointer"
+                className="p-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs"
               >
-                {copiedLink ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               </button>
 
               {/* Admin Edit Link */}
@@ -211,7 +211,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
                   type="button"
                   onClick={() => setIsConfigModalOpen(true)}
                   title="Edit Pengaturan Folder & Periode Soal"
-                  className="p-2.5 rounded-xl bg-[#1C2130] hover:bg-[#283044] border border-amber-400/40 text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-amber-300 text-amber-700 hover:text-amber-800 transition-colors cursor-pointer shadow-2xs"
                 >
                   <Edit2 className="w-4 h-4" />
                 </button>
@@ -223,57 +223,57 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
 
       {/* Summary KPI Badges */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-[#181B26] border border-[#252A3B] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center flex-shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200/60 text-blue-600 flex items-center justify-center flex-shrink-0">
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-lg sm:text-xl font-bold text-white leading-none font-heading">
+            <span className="text-lg sm:text-xl font-bold text-slate-900 leading-none font-heading">
               {stats.total}
             </span>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Total Soal Masuk</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Total Soal Masuk</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#181B26] border border-[#252A3B] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center flex-shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/60 text-amber-600 flex items-center justify-center flex-shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-lg sm:text-xl font-bold text-amber-400 leading-none font-heading">
+            <span className="text-lg sm:text-xl font-bold text-amber-600 leading-none font-heading">
               {stats.pending}
             </span>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Menunggu Review</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Menunggu Review</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#181B26] border border-[#252A3B] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center flex-shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/60 text-emerald-600 flex items-center justify-center flex-shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-lg sm:text-xl font-bold text-emerald-400 leading-none font-heading">
+            <span className="text-lg sm:text-xl font-bold text-emerald-600 leading-none font-heading">
               {stats.accepted}
             </span>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Diterima / Siap Cetak</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Diterima / Siap Cetak</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#181B26] border border-[#252A3B] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center flex-shrink-0">
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200/60 text-rose-600 flex items-center justify-center flex-shrink-0">
             <AlertCircle className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-lg sm:text-xl font-bold text-rose-400 leading-none font-heading">
+            <span className="text-lg sm:text-xl font-bold text-rose-600 leading-none font-heading">
               {stats.revision}
             </span>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">Perlu Revisi</p>
+            <p className="text-[11px] text-slate-500 font-medium mt-0.5">Perlu Revisi</p>
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#181B26] border border-[#262B3C] rounded-2xl p-4 space-y-3">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-3 shadow-xs">
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -283,14 +283,14 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari nama guru, mata pelajaran, jenis ujian, atau catatan..."
-              className="w-full pl-10 pr-4 py-2.5 bg-[#12141D] border border-[#282E40] rounded-xl text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-blue-400 transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
 
           <button
             type="button"
             onClick={() => setIsSubmitModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Setor Soal Baru</span>
@@ -298,11 +298,11 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
         </div>
 
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-[#222738]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100">
           <select
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
-            className="px-3 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-400"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500"
           >
             {CLASS_LEVELS.map((c) => (
               <option key={c} value={c}>
@@ -314,7 +314,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
           <select
             value={selectedSubject}
             onChange={(e) => setSelectedSubject(e.target.value)}
-            className="px-3 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-400"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500"
           >
             {SUBJECTS_SOAL.map((s) => (
               <option key={s} value={s}>
@@ -326,7 +326,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-400"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500"
           >
             <option value="Semua Status">Semua Status</option>
             <option value="menunggu">Menunggu Review</option>
@@ -337,7 +337,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="px-3 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-400"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-500"
           >
             {safeYears.map((y) => (
               <option key={y} value={y}>
@@ -351,20 +351,20 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
       {/* Submissions List / Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2 font-heading">
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-heading">
             <span>Daftar Setoran Soal Guru Masuk</span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
               {filteredSubmissions.length} Berkas
             </span>
           </h3>
         </div>
 
         {filteredSubmissions.length === 0 ? (
-          <div className="p-12 text-center bg-[#181B26] border border-[#272D3E] rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-500 flex items-center justify-center mx-auto">
+          <div className="p-12 text-center bg-white border border-slate-200 rounded-3xl space-y-3 shadow-xs">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
               <FolderUp className="w-6 h-6" />
             </div>
-            <h4 className="text-sm font-bold text-slate-300">Belum ada setoran naskah soal yang cocok</h4>
+            <h4 className="text-sm font-bold text-slate-700">Belum ada setoran naskah soal yang cocok</h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               Silakan gunakan tombol "Setor Soal Baru" di atas atau sesuaikan kata kunci pencarian Anda.
             </p>
@@ -381,35 +381,35 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
               return (
                 <div
                   key={sub.id}
-                  className="bg-[#181B26] border border-[#262C3E] hover:border-[#384260] rounded-3xl p-5 sm:p-6 shadow-xl transition-all flex flex-col justify-between group relative overflow-hidden"
+                  className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-md transition-all flex flex-col justify-between group relative overflow-hidden"
                 >
                   {/* Top Status & Class Pill */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
                           {sub.classLevel}
                         </span>
-                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-[#12141D] text-slate-300 border border-[#272D3E]">
+                        <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200">
                           {sub.schoolYear}
                         </span>
                       </div>
 
                       {/* Status Badge */}
                       {sub.status === 'diterima' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           <CheckCircle2 className="w-3 h-3" />
                           <span>Diterima / Siap</span>
                         </span>
                       )}
                       {sub.status === 'menunggu' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                           <Clock className="w-3 h-3" />
                           <span>Menunggu Review</span>
                         </span>
                       )}
                       {sub.status === 'revisi' && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                           <AlertCircle className="w-3 h-3" />
                           <span>Perlu Revisi</span>
                         </span>
@@ -418,53 +418,53 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
 
                     {/* Subject & Exam Title */}
                     <div>
-                      <h4 className="text-base font-extrabold text-white tracking-tight group-hover:text-blue-300 transition-colors">
+                      <h4 className="text-base font-extrabold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
                         {sub.subject}
                       </h4>
-                      <p className="text-xs text-slate-400 font-semibold mt-0.5">
+                      <p className="text-xs text-slate-500 font-semibold mt-0.5">
                         {sub.examType} {sub.semester ? `• ${sub.semester}` : ''}
                       </p>
                     </div>
 
                     {/* Teacher Details & Submitter */}
-                    <div className="p-3 bg-[#12141D] border border-[#222738] rounded-2xl text-xs space-y-1.5">
+                    <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-400">Guru Pengampu:</span>
-                        <span className="font-bold text-white">{sub.teacherName}</span>
+                        <span className="text-slate-500">Guru Pengampu:</span>
+                        <span className="font-bold text-slate-900">{sub.teacherName}</span>
                       </div>
 
                       {sub.fileName && (
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-slate-400">Nama Berkas:</span>
-                          <span className="font-mono text-[11px] text-blue-400 truncate max-w-[180px]">
+                          <span className="text-slate-500">Nama Berkas:</span>
+                          <span className="font-mono text-[11px] text-blue-600 truncate max-w-[180px]">
                             {sub.fileName}
                           </span>
                         </div>
                       )}
 
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-400">Waktu Kirim:</span>
-                        <span className="text-slate-300 text-[11px]">{dateStr}</span>
+                        <span className="text-slate-500">Waktu Kirim:</span>
+                        <span className="text-slate-600 text-[11px]">{dateStr}</span>
                       </div>
 
                       {/* Completeness tags */}
-                      <div className="flex flex-wrap gap-1.5 pt-1 border-t border-[#1C2130]">
+                      <div className="flex flex-wrap gap-1.5 pt-1.5 border-t border-slate-200/70">
                         {sub.hasAnswerKey ? (
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                             ✓ Kunci Jawaban
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-md">
+                          <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
                             - Tanpa Kunci
                           </span>
                         )}
 
                         {sub.hasGridAnalysis ? (
-                          <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-md border border-cyan-500/20">
+                          <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
                             ✓ Kisi-kisi / Analisis
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded-md">
+                          <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
                             - Tanpa Kisi-kisi
                           </span>
                         )}
@@ -473,30 +473,30 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
 
                     {/* Teacher's Note */}
                     {sub.note && (
-                      <p className="text-xs text-slate-400 bg-[#141722] p-2.5 rounded-xl border border-[#222838] italic">
+                      <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 italic">
                         "{sub.note}"
                       </p>
                     )}
 
                     {/* Admin Review Feedback note */}
                     {sub.adminFeedback && (
-                      <div className="p-2.5 bg-blue-950/30 border border-blue-500/25 rounded-xl text-xs space-y-0.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400 block">
+                      <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-xl text-xs space-y-0.5">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">
                           Catatan Panitia / Admin:
                         </span>
-                        <p className="text-slate-200">{sub.adminFeedback}</p>
+                        <p className="text-slate-800">{sub.adminFeedback}</p>
                       </div>
                     )}
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="pt-4 mt-4 border-t border-[#222738] flex flex-col gap-2.5">
+                  <div className="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-2.5">
                     <div className="flex items-center justify-between gap-2">
                       {/* Open File in Drive button */}
                       <button
                         type="button"
                         onClick={() => openExternalDriveUrl(sub.driveUrl)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         <span>Buka / Unduh Soal</span>
@@ -510,7 +510,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
                               type="button"
                               onClick={() => onUpdateSubmission(sub.id, { status: 'diterima' })}
                               title="Tandai Diterima"
-                              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200 transition-colors cursor-pointer"
                             >
                               Terima
                             </button>
@@ -520,7 +520,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
                               type="button"
                               onClick={() => onUpdateSubmission(sub.id, { status: 'revisi' })}
                               title="Minta Revisi"
-                              className="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-xs font-bold border border-rose-500/30 transition-colors cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition-colors cursor-pointer"
                             >
                               Revisi
                             </button>
@@ -531,15 +531,15 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
 
                     {/* Admin Archive and Feedback Tools */}
                     {isAdmin && (
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#1F2435]">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
                         <button
                           type="button"
                           disabled={archivingId === sub.id}
                           onClick={() => handleArchive(sub)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 text-xs font-bold border border-amber-400/30 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold border border-amber-300 transition-colors cursor-pointer shadow-2xs"
                         >
                           {archivingId === sub.id ? (
-                            <span className="w-3 h-3 border-2 border-amber-300 border-t-transparent rounded-full animate-spin"></span>
+                            <span className="w-3 h-3 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></span>
                           ) : (
                             <Archive className="w-3.5 h-3.5" />
                           )}
@@ -553,7 +553,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
                               setEditingFeedbackId(sub.id);
                               setFeedbackText(sub.adminFeedback || '');
                             }}
-                            className="p-1.5 rounded-lg bg-[#12141D] hover:bg-[#202534] text-slate-300 hover:text-white border border-[#272D3E] text-xs transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 border border-slate-200 text-xs transition-colors cursor-pointer"
                             title="Tulis Catatan Panitia"
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
@@ -566,7 +566,7 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
                                 onDeleteSubmission(sub.id);
                               }
                             }}
-                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs transition-colors cursor-pointer"
                             title="Hapus Setoran"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -605,12 +605,12 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
 
       {/* Quick Feedback Note Modal */}
       {editingFeedbackId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md bg-[#181B26] border border-[#2B3245] rounded-3xl p-6 shadow-2xl text-slate-100">
-            <h3 className="text-base font-bold text-white mb-2 font-heading">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in font-sans">
+          <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-6 shadow-2xl text-slate-800">
+            <h3 className="text-base font-bold text-slate-900 mb-1 font-heading">
               Catatan / Tanggapan Panitia Soal
             </h3>
-            <p className="text-xs text-slate-400 mb-3">
+            <p className="text-xs text-slate-500 mb-3">
               Tulis catatan perbaikan atau konfirmasi untuk guru pembuat soal
             </p>
             <textarea
@@ -618,20 +618,20 @@ export const UploadSoalView: React.FC<UploadSoalViewProps> = ({
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               placeholder="Contoh: Format naskah sudah oke, siap dicetak..."
-              className="w-full px-3.5 py-2.5 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs text-slate-100 focus:outline-none focus:border-blue-400 transition-all resize-none mb-4"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 transition-all resize-none mb-4"
             />
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setEditingFeedbackId(null)}
-                className="px-3.5 py-2 text-xs font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl cursor-pointer"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={() => handleSaveFeedback(editingFeedbackId)}
-                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl shadow cursor-pointer"
+                className="px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-xs cursor-pointer"
               >
                 Simpan Catatan
               </button>

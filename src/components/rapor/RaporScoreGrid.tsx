@@ -185,7 +185,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [generatingStudentId, setGeneratingStudentId] = useState<string | null>(null);
   const [showTpColumns, setShowTpColumns] = useState<boolean>(false);
-  const [mobileViewMode, setMobileViewMode] = useState<'table' | 'cards'>('table');
+  const [mobileViewMode, setMobileViewMode] = useState<'table' | 'cards'>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      return 'cards';
+    }
+    return 'table';
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

@@ -157,6 +157,30 @@
         }
       },
       "required": ["id", "teacherName", "subject", "classLevel", "examType", "schoolYear", "driveUrl"]
+    },
+    "RaporAdditionalInfo": {
+      "title": "RaporAdditionalInfo",
+      "description": "Data pelengkap rapor per kelas: catatan wali kelas, absensi, dan ekstrakurikuler",
+      "type": "object",
+      "properties": {
+        "academicPeriodId": {
+          "type": "string",
+          "description": "ID periode akademik aktif"
+        },
+        "classId": {
+          "type": "string",
+          "description": "ID rombel / kelas"
+        },
+        "teacherId": {
+          "type": "string",
+          "description": "ID guru/wali kelas yang mengisi"
+        },
+        "additionalInfo": {
+          "type": "object",
+          "description": "Peta data per siswa (studentId -> catatan, absensi, ekstrakurikuler)"
+        }
+      },
+      "required": ["academicPeriodId", "classId", "additionalInfo"]
     }
   },
   "firestore": {
@@ -171,6 +195,10 @@
     "/settings/{settingId}": {
       "schema": "SchoolYearsSetting",
       "description": "Dokumen konfigurasi dan pengaturan arsip (school_years, download_templates, exam_upload_config)"
+    },
+    "/rapor_sts_additional_info/{classKey}": {
+      "schema": "RaporAdditionalInfo",
+      "description": "Koleksi sinkronisasi catatan guru, absensi, dan ekstrakurikuler siswa per kelas"
     }
   }
 }

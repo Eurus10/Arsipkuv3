@@ -205,26 +205,26 @@ export const EraporAuthModal: React.FC<EraporAuthModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-md bg-[#171A24] border border-slate-800 rounded-[28px] shadow-2xl overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-emerald-400 to-amber-400" />
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn font-sans">
+      <div className="relative w-full max-w-md bg-white border border-slate-200/90 rounded-[28px] shadow-2xl overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-emerald-500 to-amber-400" />
 
         <div className="p-6 sm:p-7">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-xs">
                 <LockKeyhole className="w-6 h-6" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-400">
+                  <span className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-700">
                     e-Rapor
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-300">
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[9px] font-bold text-emerald-700">
                     Guru
                   </span>
                 </div>
-                <h2 className="text-lg font-black text-white mt-0.5">Akses e-Rapor</h2>
+                <h2 className="text-lg font-black text-slate-900 mt-0.5">Akses e-Rapor</h2>
               </div>
             </div>
 
@@ -232,40 +232,40 @@ export const EraporAuthModal: React.FC<EraporAuthModalProps> = ({
               type="button"
               onClick={handleClose}
               disabled={isLoading}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors disabled:opacity-40"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-40"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="mt-6 rounded-2xl bg-slate-950/45 border border-slate-800 p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+          <div className="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-xs">
               <UserRound className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Guru aktif</p>
-              <p className="text-sm font-bold text-white truncate">{teacher.name}</p>
+              <p className="text-sm font-bold text-slate-900 truncate">{teacher.name}</p>
               {teacher.roleTitle && (
-                <p className="text-[11px] text-slate-400 truncate">{teacher.roleTitle}</p>
+                <p className="text-[11px] text-slate-500 truncate">{teacher.roleTitle}</p>
               )}
             </div>
           </div>
 
           {mode === 'loading' && (
-            <div className="py-10 flex flex-col items-center justify-center gap-3 text-slate-400">
-              <RefreshCw className="w-6 h-6 animate-spin text-amber-400" />
+            <div className="py-10 flex flex-col items-center justify-center gap-3 text-slate-500">
+              <RefreshCw className="w-6 h-6 animate-spin text-amber-600" />
               <p className="text-xs">Memeriksa akses e-Rapor...</p>
             </div>
           )}
 
           {mode === 'create' && (
             <form onSubmit={handleCreatePin} className="mt-6 space-y-4">
-              <div className="rounded-2xl bg-amber-500/5 border border-amber-500/15 p-4">
+              <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
                 <div className="flex items-start gap-3">
-                  <KeyRound className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                  <KeyRound className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-bold text-white">Buat PIN e-Rapor</p>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-sm font-bold text-slate-900">Buat PIN e-Rapor</p>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
                       PIN ini khusus untuk membuka e-Rapor dan mengamankan input nilai siswa.
                     </p>
                   </div>
@@ -278,7 +278,7 @@ export const EraporAuthModal: React.FC<EraporAuthModalProps> = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                className="w-full h-12 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-md shadow-amber-500/20"
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><span>Simpan PIN & Masuk</span><ArrowRight className="w-4 h-4" /></>}
               </button>
@@ -292,13 +292,13 @@ export const EraporAuthModal: React.FC<EraporAuthModalProps> = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                className="w-full h-12 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shadow-md shadow-amber-500/20"
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <><span>Masuk ke e-Rapor</span><ArrowRight className="w-4 h-4" /></>}
               </button>
 
               <div className="flex items-start gap-2 pt-1">
-                <ShieldCheck className="w-4 h-4 text-slate-500 mt-0.5 shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                 <p className="text-[11px] text-slate-500 leading-relaxed">
                   Lupa PIN? Silakan hubungi Administrator/TU untuk reset PIN e-Rapor.
                 </p>
@@ -307,18 +307,18 @@ export const EraporAuthModal: React.FC<EraporAuthModalProps> = ({
           )}
 
           {errorMessage && (
-            <div className="mt-4 rounded-2xl bg-red-500/10 border border-red-500/20 px-4 py-3">
-              <p className="text-xs text-red-300 leading-relaxed">{errorMessage}</p>
+            <div className="mt-4 rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3">
+              <p className="text-xs text-rose-700 leading-relaxed">{errorMessage}</p>
             </div>
           )}
 
           {infoMessage && (
-            <div className="mt-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-3">
-              <p className="text-xs text-emerald-300 leading-relaxed">{infoMessage}</p>
+            <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3">
+              <p className="text-xs text-emerald-700 leading-relaxed">{infoMessage}</p>
             </div>
           )}
 
-          <p className="text-[10px] text-slate-600 text-center mt-5">
+          <p className="text-[10px] text-slate-400 text-center mt-5">
             PIN e-Rapor terpisah dari login utama aplikasi.
           </p>
         </div>

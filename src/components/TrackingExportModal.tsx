@@ -899,23 +899,23 @@ export const TrackingExportModal: React.FC<
    */
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-[#181B26] border border-[#272D3E] rounded-3xl w-full max-w-6xl max-h-[94vh] flex flex-col shadow-2xl overflow-hidden my-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto font-sans">
+      <div className="bg-white border border-slate-200/90 rounded-3xl w-full max-w-6xl max-h-[94vh] flex flex-col shadow-2xl overflow-hidden my-2">
 
         {/* HEADER */}
-        <div className="p-4 sm:p-5 border-b border-[#272D3E] flex items-center justify-between bg-[#151722]">
+        <div className="p-4 sm:p-5 border-b border-slate-150 flex items-center justify-between bg-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400 flex items-center justify-center text-lg font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-700 flex items-center justify-center text-lg font-bold shadow-xs">
               📥
             </div>
 
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                Export & Salin Laporan Tracking Soal
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                Export &amp; Salin Laporan Tracking Soal
               </h2>
 
-              <p className="text-xs text-slate-400">
-                Tata letak ringkas 2 baris (Baris 1: Kelas 1-3 • Baris 2: Kelas 4-6) untuk PDF, Gambar, & WhatsApp
+              <p className="text-xs text-slate-500">
+                Tata letak ringkas 2 baris (Baris 1: Kelas 1-3 • Baris 2: Kelas 4-6) untuk PDF, Gambar, &amp; WhatsApp
               </p>
             </div>
           </div>
@@ -923,14 +923,14 @@ export const TrackingExportModal: React.FC<
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-colors border border-slate-200/80"
           >
             ✕
           </button>
         </div>
 
         {/* TABS */}
-        <div className="px-6 pt-3 border-b border-[#272D3E] bg-[#12141D] flex items-center gap-3">
+        <div className="px-6 pt-3 border-b border-slate-200 bg-slate-50/70 flex items-center gap-3">
           <button
             type="button"
             onClick={() => {
@@ -939,11 +939,11 @@ export const TrackingExportModal: React.FC<
             }}
             className={`pb-3 text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === 'preview'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-500 text-amber-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            📄 Format Dokumen 2 Baris (PDF & Cetak)
+            📄 Format Dokumen 2 Baris (PDF &amp; Cetak)
           </button>
 
           <button
@@ -954,8 +954,8 @@ export const TrackingExportModal: React.FC<
             }}
             className={`pb-3 text-xs font-bold transition-all border-b-2 cursor-pointer ${
               activeTab === 'whatsapp'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-emerald-600 text-emerald-700'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             💬 Format Ringkas WhatsApp
@@ -963,18 +963,18 @@ export const TrackingExportModal: React.FC<
         </div>
 
         {/* TOOLBAR */}
-        <div className="px-5 py-3 bg-[#151722] border-b border-[#272D3E] flex flex-wrap items-center justify-between gap-3">
+        <div className="px-5 py-3 bg-slate-50/90 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
           {activeTab === 'preview' ? (
             <>
-              <div className="flex items-center gap-2 text-xs text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <div className="flex items-center gap-2 text-xs text-slate-700">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
 
                 <span>
                   Tata Letak 2 Baris:{' '}
                   <strong>
                     Baris 1 (Kelas 1-3)
                   </strong>{' '}
-                  &{' '}
+                  &amp;{' '}
                   <strong>
                     Baris 2 (Kelas 4-6)
                   </strong>
@@ -986,7 +986,7 @@ export const TrackingExportModal: React.FC<
                   type="button"
                   onClick={handleDownloadPDF}
                   disabled={isGenerating}
-                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+                  className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
                   {isGenerating
                     ? 'Memproses...'
@@ -997,7 +997,7 @@ export const TrackingExportModal: React.FC<
                   type="button"
                   onClick={handleDownloadPNG}
                   disabled={isGenerating}
-                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+                  className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
                   {isGenerating
                     ? 'Memproses...'
@@ -1008,7 +1008,7 @@ export const TrackingExportModal: React.FC<
                   type="button"
                   onClick={handleNativePrint}
                   disabled={isGenerating}
-                  className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 disabled:opacity-50 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                 >
                   🖨️ Cetak Langsung
                 </button>
@@ -1016,14 +1016,14 @@ export const TrackingExportModal: React.FC<
             </>
           ) : (
             <>
-              <span className="text-xs text-slate-400">
-                Format teks siap disalin ke WhatsApp dewan guru & panitia ujian
+              <span className="text-xs text-slate-600">
+                Format teks siap disalin ke WhatsApp dewan guru &amp; panitia ujian
               </span>
 
               <button
                 type="button"
                 onClick={handleCopyWhatsApp}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-lg"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
               >
                 {copySuccess
                   ? '✅ Berhasil Disalin!'
@@ -1035,18 +1035,18 @@ export const TrackingExportModal: React.FC<
 
         {/* ERROR MESSAGE */}
         {errorMessage && (
-          <div className="px-5 py-3 bg-rose-500/10 border-b border-rose-500/20">
+          <div className="px-5 py-3 bg-rose-50 border-b border-rose-200">
             <div className="flex items-start gap-2">
-              <span className="text-rose-400">
+              <span className="text-rose-600">
                 ⚠️
               </span>
 
               <div className="flex-1">
-                <p className="text-xs font-bold text-rose-300">
+                <p className="text-xs font-bold text-rose-800">
                   Proses gagal
                 </p>
 
-                <p className="text-xs text-rose-200/80 mt-0.5">
+                <p className="text-xs text-rose-700 mt-0.5">
                   {errorMessage}
                 </p>
               </div>
@@ -1054,7 +1054,7 @@ export const TrackingExportModal: React.FC<
               <button
                 type="button"
                 onClick={clearError}
-                className="text-xs text-rose-300 hover:text-white"
+                className="text-xs text-rose-600 hover:text-rose-800"
               >
                 ✕
               </button>
@@ -1063,11 +1063,11 @@ export const TrackingExportModal: React.FC<
         )}
 
         {/* CONTENT */}
-        <div className="flex-1 overflow-y-auto overflow-x-auto p-4 sm:p-6 bg-[#0E1017]">
+        <div className="flex-1 overflow-y-auto overflow-x-auto p-4 sm:p-6 bg-slate-100/70">
           {activeTab === 'preview' && (
             <div
               ref={printAreaRef}
-              className="mx-auto bg-white text-slate-900 rounded-xl p-5 sm:p-6 shadow-2xl border border-slate-200 select-none"
+              className="mx-auto bg-white text-slate-900 rounded-xl p-5 sm:p-6 shadow-md border border-slate-200 select-none"
               style={{
                 minWidth: '1350px',
               }}
@@ -1162,16 +1162,16 @@ export const TrackingExportModal: React.FC<
           {/* WHATSAPP */}
           {activeTab === 'whatsapp' && (
             <div className="max-w-2xl mx-auto space-y-4">
-              <div className="bg-[#181B26] border border-[#272D3E] rounded-2xl p-4">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-300">
+                  <span className="text-xs font-bold text-slate-700">
                     Pratinjau Pesan WhatsApp:
                   </span>
 
                   <button
                     type="button"
                     onClick={handleCopyWhatsApp}
-                    className="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs"
                   >
                     {copySuccess
                       ? '✅ Tersalin!'
@@ -1179,7 +1179,7 @@ export const TrackingExportModal: React.FC<
                   </button>
                 </div>
 
-                <pre className="p-4 bg-[#12141D] border border-slate-800 rounded-xl text-xs text-slate-200 font-mono whitespace-pre-wrap leading-relaxed select-all">
+                <pre className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-mono whitespace-pre-wrap leading-relaxed select-all">
                   {generateWhatsAppText()}
                 </pre>
               </div>
@@ -1188,11 +1188,11 @@ export const TrackingExportModal: React.FC<
         </div>
 
         {/* FOOTER */}
-        <div className="p-4 border-t border-[#272D3E] bg-[#151722] flex items-center justify-end">
+        <div className="p-4 border-t border-slate-150 bg-slate-50/80 flex items-center justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer border border-slate-200/80"
           >
             Tutup
           </button>

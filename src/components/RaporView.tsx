@@ -95,55 +95,55 @@ export const RaporView: React.FC<RaporViewProps> = ({
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-8 pb-28 md:pb-12 text-slate-100 font-sans">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-8 py-6 sm:py-8 pb-28 md:pb-12 text-slate-900 font-sans">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-rose-400">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-rose-700">
               Arsip Rapor
             </span>
           </div>
-          <h1 className="text-xl sm:text-3xl font-extrabold text-white font-heading tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-bold text-slate-900 font-heading tracking-tight">
             Arsip Rapor & Leger Nilai
           </h1>
-          <p className="hidden sm:block text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl font-medium">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl font-medium">
             Koleksi buku rapor semester ganjil/genap, rapor P5 Kurikulum Merdeka, leger nilai, dan dokumen kelulusan siswa SDIT AL FIKRI.
           </p>
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center justify-between sm:justify-start gap-2 self-stretch md:self-auto bg-[#181B26] p-1 rounded-xl sm:rounded-2xl border border-[#272D3E]">
+        <div className="flex items-center justify-between sm:justify-start gap-2 self-stretch md:self-auto bg-slate-100 p-1 rounded-xl sm:rounded-2xl border border-slate-200">
           <button
             type="button"
             onClick={() => setViewMode('grid')}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl text-xs font-bold transition-all cursor-pointer ${
               viewMode === 'grid'
-                ? 'bg-rose-500 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <LayoutGrid className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Grid Card</span>
+            <span className="hidden sm:inline">Galeri Grid</span>
           </button>
           <button
             type="button"
             onClick={() => setViewMode('list')}
             className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg sm:rounded-xl text-xs font-bold transition-all cursor-pointer ${
               viewMode === 'list'
-                ? 'bg-rose-500 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <List className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">List Daftar</span>
+            <span className="hidden sm:inline">Daftar</span>
           </button>
         </div>
       </div>
 
       {/* Streamlined Filter Toolbar (Dropdowns) */}
-      <div className="bg-[#181B26] border border-[#272D3E] rounded-2xl sm:rounded-3xl p-3 sm:p-5 mb-5 sm:mb-6 shadow-lg">
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3 sm:p-5 mb-5 sm:mb-6 shadow-xs">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 items-center">
           {/* Search Input */}
           <div className="relative lg:col-span-3 col-span-1 sm:col-span-2">
@@ -155,13 +155,13 @@ export const RaporView: React.FC<RaporViewProps> = ({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari rapor, leger nilai..."
-              className="w-full bg-[#13151E] border border-[#2B3245] py-2 sm:py-2.5 pl-10 pr-9 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-rose-400 transition-all font-medium"
+              className="w-full bg-slate-50 border border-slate-200 py-2 sm:py-2.5 pl-10 pr-9 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-rose-400 transition-all font-medium"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-white"
+                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -173,10 +173,10 @@ export const RaporView: React.FC<RaporViewProps> = ({
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full bg-[#13151E] border border-[#2B3245] py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium cursor-pointer"
+              className="w-full bg-slate-50 border border-slate-200 py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:bg-white focus:border-rose-400 transition-all font-medium cursor-pointer"
             >
               {CLASS_LEVELS.map((cls) => (
-                <option key={cls} value={cls} className="bg-[#181B26] text-white">
+                <option key={cls} value={cls}>
                   {cls}
                 </option>
               ))}
@@ -188,10 +188,10 @@ export const RaporView: React.FC<RaporViewProps> = ({
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="w-full bg-[#13151E] border border-[#2B3245] py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium cursor-pointer"
+              className="w-full bg-slate-50 border border-slate-200 py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:bg-white focus:border-rose-400 transition-all font-medium cursor-pointer"
             >
               {availableYears.map((yr) => (
-                <option key={yr} value={yr} className="bg-[#181B26] text-white">
+                <option key={yr} value={yr}>
                   {yr === 'Semua Tahun' ? 'Semua Tahun' : `T.P. ${yr}`}
                 </option>
               ))}
@@ -203,11 +203,11 @@ export const RaporView: React.FC<RaporViewProps> = ({
             <select
               value={selectedSemester}
               onChange={(e) => setSelectedSemester(e.target.value)}
-              className="w-full bg-[#13151E] border border-[#2B3245] py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium cursor-pointer"
+              className="w-full bg-slate-50 border border-slate-200 py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:bg-white focus:border-rose-400 transition-all font-medium cursor-pointer"
             >
-              <option value="Semua Semester" className="bg-[#181B26] text-white">Semua Semester</option>
+              <option value="Semua Semester">Semua Semester</option>
               {SEMESTER_TYPES.map((sem) => (
-                <option key={sem} value={sem} className="bg-[#181B26] text-white">
+                <option key={sem} value={sem}>
                   {sem}
                 </option>
               ))}
@@ -219,11 +219,11 @@ export const RaporView: React.FC<RaporViewProps> = ({
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full bg-[#13151E] border border-[#2B3245] py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium cursor-pointer"
+              className="w-full bg-slate-50 border border-slate-200 py-2 sm:py-2.5 px-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-slate-700 focus:outline-none focus:bg-white focus:border-rose-400 transition-all font-medium cursor-pointer"
             >
-              <option value="Semua Kategori Rapor" className="bg-[#181B26] text-white">Semua Kategori</option>
+              <option value="Semua Kategori Rapor">Semua Kategori</option>
               {CATEGORIES_RAPOR.map((cat) => (
-                <option key={cat} value={cat} className="bg-[#181B26] text-white">
+                <option key={cat} value={cat}>
                   {cat}
                 </option>
               ))}
@@ -236,7 +236,7 @@ export const RaporView: React.FC<RaporViewProps> = ({
               <button
                 type="button"
                 onClick={resetFilters}
-                className="w-full sm:w-auto px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl sm:rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full sm:w-auto px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl sm:rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 title="Reset Filter"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -249,19 +249,19 @@ export const RaporView: React.FC<RaporViewProps> = ({
 
       {/* Main Content */}
       {filteredDocs.length === 0 ? (
-        <div className="text-center py-16 bg-[#181B26] rounded-3xl border border-[#272D3E] p-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#13151E] border border-[#2B3245] flex items-center justify-center mx-auto mb-4 text-slate-500">
+        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+          <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-4 text-slate-400">
             <GraduationCap className="w-8 h-8" />
           </div>
-          <h3 className="text-base font-bold text-white">Tidak Ada Dokumen Rapor Ditemukan</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+          <h3 className="text-base font-bold text-slate-900">Tidak Ada Dokumen Rapor Ditemukan</h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             Coba ubah kata kunci pencarian atau filter di atas.
           </p>
           {hasActiveFilters && (
             <button
               type="button"
               onClick={resetFilters}
-              className="mt-4 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              className="mt-4 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Filter</span>
