@@ -1020,176 +1020,156 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
           style={sidebarHeight ? { height: `${sidebarHeight}px` } : undefined}
           className="flex flex-col gap-4 min-w-0"
         >
-          {/* 1. TOP HEADER BANNER OF SELECTED SUBJECT */}
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
-            <div className="flex items-start gap-3.5 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0 shadow-xs">
-                <CurrentIcon className="w-6 h-6" />
-              </div>
+          
+{/* 2. ACTION & SEARCH TOOLBAR */}
+<div className="flex w-full shrink-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug font-heading">
-                    {currentSubject.name}
-                  </h2>
-                  <span
-                    className={`px-2 py-0.5 rounded-md border text-[10px] font-medium tracking-normal ${currentMeta?.categoryClass}`}
-                  >
-                    {currentMeta?.categoryLabel}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-slate-500 font-normal leading-relaxed">
-                  Input nilai STS, capaian tujuan pembelajaran (TP), dan nilai akhir peserta didik.
-                </p>
-              </div>
-            </div>
+  {/* LEFT: SEARCH & ACTIONS */}
+  <div className="grid w-full grid-cols-2 gap-2 lg:flex lg:min-w-0 lg:flex-1 lg:items-center">
 
-            {/* Right Quick Summary Widget: KKTP Passing Grade Info */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-left flex items-center gap-3 self-start sm:self-auto shrink-0 shadow-xs">
-              <div>
-                <p className="text-xs sm:text-sm font-bold text-amber-800 leading-tight">
-                  KKTP: {config.passingGrade || 75}
-                </p>
-                <p className="text-[11px] text-slate-500 font-normal mt-0.5">
-                  Kriteria Ketuntasan Minimal
-                </p>
-              </div>
-            </div>
-          </div>
+    {/* Search Student Input */}
+    <div className="relative col-span-2 min-w-0 lg:col-span-1 lg:w-full lg:max-w-xs lg:flex-1">
+      <input
+        type="text"
+        placeholder="Cari nama siswa..."
+        value={studentSearchQuery}
+        onChange={(e) => setStudentSearchQuery(e.target.value)}
+        className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-8 text-sm font-normal text-slate-700 placeholder:text-slate-400 shadow-sm transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 lg:h-9 lg:text-xs"
+      />
 
-          {/* 2. ACTION & SEARCH TOOLBAR */}
-          <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
-            {/* Left: Search + Excel Buttons + Reset */}
-            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[260px]">
-              {/* Search Student Input */}
-              <div className="relative flex-1 min-w-[170px] max-w-xs">
-                <input
-                  type="text"
-                  placeholder="Cari nama siswa..."
-                  value={studentSearchQuery}
-                  onChange={(e) => setStudentSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-9 pr-7 rounded-xl border border-slate-200 bg-white text-xs font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all shadow-xs"
-                />
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                {studentSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setStudentSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
-              {/* Download Template Excel */}
-              <button
-                type="button"
-                onClick={handleDownloadTemplate}
-                className="h-9 px-3.5 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-xs"
-                title="Unduh template Excel"
-              >
-                <Download className="w-3.5 h-3.5 text-cyan-700" />
-                <span>Unduh Template</span>
-              </button>
+      {studentSearchQuery && (
+        <button
+          type="button"
+          onClick={() => setStudentSearchQuery('')}
+          aria-label="Hapus pencarian"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 transition-colors hover:text-slate-700"
+        >
+          ✕
+        </button>
+      )}
+    </div>
 
-              {/* Import Template Excel */}
-              <button
-                type="button"
-                onClick={handleTriggerUpload}
-                disabled={isImporting}
-                className="h-9 px-3.5 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50 shadow-xs"
-                title="Impor nilai dari Excel"
-              >
-                <Upload className="w-3.5 h-3.5 text-cyan-700" />
-                <span>{isImporting ? 'Mengimpor...' : 'Impor Template'}</span>
-              </button>
+    {/* Download Template Excel */}
+    <button
+      type="button"
+      onClick={handleDownloadTemplate}
+      title="Unduh template Excel"
+      className="flex h-10 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-200 bg-cyan-50 px-2.5 text-xs font-semibold text-cyan-800 shadow-sm transition-colors hover:bg-cyan-100 active:scale-[0.98] lg:h-9 lg:px-3"
+    >
+      <Download className="h-4 w-4 shrink-0 text-cyan-700" />
+      <span>Unduh Template</span>
+    </button>
 
-              {/* Tarik dari Analisis Soal */}
-              {onOpenAnalysisSync && (
-                <button
-                  type="button"
-                  onClick={onOpenAnalysisSync}
-                  className="h-9 px-3.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-xs"
-                  title="Tarik & Impor Nilai dari Analisis Soal (Otomatis)"
-                >
-                  <Zap className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>⚡ Tarik dari Analisis</span>
-                </button>
-              )}
+    {/* Import Template Excel */}
+    <button
+      type="button"
+      onClick={handleTriggerUpload}
+      disabled={isImporting}
+      title="Impor nilai dari Excel"
+      className="flex h-10 min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-cyan-200 bg-cyan-50 px-2.5 text-xs font-semibold text-cyan-800 shadow-sm transition-colors hover:bg-cyan-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 lg:h-9 lg:px-3"
+    >
+      <Upload className="h-4 w-4 shrink-0 text-cyan-700" />
+      <span>{isImporting ? 'Mengimpor...' : 'Impor Template'}</span>
+    </button>
 
-              {/* Reset Nilai Button */}
-              <button
-                type="button"
-                onClick={handleOpenResetModal}
-                className="h-9 px-3.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-xs"
-                title="Kosongkan nilai mata pelajaran ini"
-              >
-                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                <span>Kosongkan Nilai</span>
-              </button>
-            </div>
+    {/* Tarik dari Analisis Soal */}
+    {onOpenAnalysisSync && (
+      <button
+        type="button"
+        onClick={onOpenAnalysisSync}
+        title="Tarik dan impor nilai dari analisis soal"
+        className="flex h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-emerald-200 bg-emerald-50 px-2 text-xs font-semibold text-emerald-800 shadow-sm transition-colors hover:bg-emerald-100 active:scale-[0.98] lg:h-9 lg:gap-2 lg:px-3"
+      >
+        <Zap className="h-4 w-4 shrink-0 text-emerald-700" />
+        <span>Tarik dari Analisis</span>
+      </button>
+    )}
 
-            {/* Right: Info count + Sort + Mobile Mode Toggle + Fullscreen Toggle */}
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Mobile View Toggle */}
-              <div className="flex items-center gap-0.5 bg-slate-100 border border-slate-200 p-0.5 rounded-xl text-xs lg:hidden">
-                <button
-                  type="button"
-                  onClick={() => setMobileViewMode('table')}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    mobileViewMode === 'table'
-                      ? 'bg-white text-emerald-800 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  Tabel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMobileViewMode('cards')}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
-                    mobileViewMode === 'cards'
-                      ? 'bg-white text-emerald-800 shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  Kartu Siswa
-                </button>
-              </div>
+    {/* Reset Nilai */}
+    <button
+      type="button"
+      onClick={handleOpenResetModal}
+      title="Kosongkan nilai mata pelajaran ini"
+      className="flex h-10 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 px-2 text-xs font-semibold text-rose-700 shadow-sm transition-colors hover:bg-rose-100 active:scale-[0.98] lg:h-9 lg:gap-2 lg:px-3"
+    >
+      <Trash2 className="h-4 w-4 shrink-0 text-rose-600" />
+      <span>Kosongkan Nilai</span>
+    </button>
 
-              <span className="text-xs font-normal text-slate-500 px-1 hidden sm:inline">
-                Menampilkan {displayedStudents.length} siswa
-              </span>
+  </div>
 
-              <button
-                type="button"
-                onClick={handleToggleSort}
-                className={`h-9 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  sortOrder !== 'default'
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                }`}
-                title="Urutkan siswa"
-              >
-                <ArrowUpDown className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Urutkan</span>
-              </button>
+  {/* RIGHT: VIEW CONTROLS */}
+  <div className="flex w-full shrink-0 items-center justify-between gap-2 lg:w-auto lg:justify-end">
 
-              <button
-                type="button"
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="h-9 w-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-xs"
-                title={isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen Grid'}
-              >
-                {isFullscreen ? (
-                  <Minimize2 className="w-3.5 h-3.5" />
-                ) : (
-                  <Maximize2 className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-          </div>
+    {/* Mobile View Toggle */}
+    <div className="flex h-10 items-center gap-0.5 rounded-xl border border-slate-200 bg-slate-100 p-1 text-xs lg:hidden">
+      <button
+        type="button"
+        onClick={() => setMobileViewMode('table')}
+        aria-pressed={mobileViewMode === 'table'}
+        className={`h-full rounded-lg px-3 text-[11px] font-semibold transition-colors ${
+          mobileViewMode === 'table'
+            ? 'bg-white text-emerald-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-800'
+        }`}
+      >
+        Tabel
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setMobileViewMode('cards')}
+        aria-pressed={mobileViewMode === 'cards'}
+        className={`h-full rounded-lg px-3 text-[11px] font-semibold transition-colors ${
+          mobileViewMode === 'cards'
+            ? 'bg-white text-emerald-800 shadow-sm'
+            : 'text-slate-500 hover:text-slate-800'
+        }`}
+      >
+        Kartu Siswa
+      </button>
+    </div>
+
+    {/* Student Count */}
+    <span className="hidden whitespace-nowrap px-1 text-xs text-slate-500 md:inline">
+      Menampilkan {displayedStudents.length} siswa
+    </span>
+
+    {/* Sort */}
+    <button
+      type="button"
+      onClick={handleToggleSort}
+      aria-label="Urutkan siswa"
+      title="Urutkan siswa"
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors lg:h-9 lg:w-auto lg:gap-1.5 lg:px-3 ${
+        sortOrder !== 'default'
+          ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+      }`}
+    >
+      <ArrowUpDown className="h-4 w-4" />
+      <span className="hidden text-xs font-semibold lg:inline">Urutkan</span>
+    </button>
+
+    {/* Fullscreen Toggle */}
+    <button
+      type="button"
+      onClick={() => setIsFullscreen(!isFullscreen)}
+      aria-label={isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen Grid'}
+      title={isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen Grid'}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 lg:h-9 lg:w-9"
+    >
+      {isFullscreen ? (
+        <Minimize2 className="h-4 w-4" />
+      ) : (
+        <Maximize2 className="h-4 w-4" />
+      )}
+    </button>
+
+  </div>
+</div>
 
           {/* 3. MAIN SPREADSHEET TABLE GRID / MOBILE CARD VIEW */}
           {mobileViewMode === 'cards' ? (

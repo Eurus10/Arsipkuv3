@@ -10,7 +10,6 @@ import {
   RotateCcw,
   CheckCircle2,
   ListOrdered,
-  BookOpen,
   Layers,
   FolderTree,
 } from 'lucide-react';
@@ -1449,92 +1448,53 @@ export const EvaluationKisiKisiView: React.FC<
   // RENDER
   // ============================================================
   return (
-    <div className="space-y-6">
-      {/* ====================================================== */}
-      {/* HEADER INFO */}
-      {/* ====================================================== */}
-      <div className="relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#0C101D] via-[#101627] to-[#16122C] border border-indigo-500/25 shadow-xl shadow-black/20">
-        <div className="absolute top-0 right-0 w-64 h-32 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="space-y-4 sm:space-y-5">
+      {/* Action toolbar ditampilkan hanya pada tahap ekspor; header submenu tidak diulang. */}
+      {activeBlueprint && currentStep === 2 && (
+        <div className="flex flex-wrap items-center justify-end gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setCurrentStep(1)}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Ubah Parameter
+          </button>
 
-        <div className="relative">
-          <div className="flex items-center flex-wrap gap-2.5 mb-2">
-            <span className="text-[11px] font-black px-2.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/35 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-              Sub Menu 1
-            </span>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-800"
+          >
+            <Save className="h-3.5 w-3.5" />
+            Simpan
+          </button>
 
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
-                <ListOrdered className="w-4 h-4" />
-              </div>
-              <h2 className="text-base sm:text-lg font-black text-white tracking-wide">
-                Penyusunan Kisi-Kisi Soal Evaluasi (AI Assistant)
-              </h2>
-            </div>
-          </div>
+          <button
+            type="button"
+            onClick={handleExportWord}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Export Word (.docx)
+          </button>
 
-          <p className="text-xs text-slate-400 max-w-3xl leading-relaxed">
-            Kombinasi <strong className="text-slate-200">Kurikulum Nasional Terpusat (CP/TP)</strong> +{' '}
-            <strong className="text-slate-200">Materi Pokok & Bahan Ajar Guru</strong> +{' '}
-            <strong className="text-slate-200">Distribusi Bentuk Soal</strong> menjadi draft kisi-kisi terstruktur yang siap diedit dan diekspor.
-          </p>
+          <button
+            type="button"
+            onClick={handleExport}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-800"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Excel (.xlsx)
+          </button>
         </div>
-
-        {activeBlueprint &&
-          currentStep === 2 && (
-            <div className="relative flex flex-wrap items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() =>
-                  setCurrentStep(1)
-                }
-                className="px-3 py-2 bg-slate-800/90 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-slate-700/80 transition-all"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Ubah Parameter
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleSave
-                }
-                className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md shadow-indigo-600/30 cursor-pointer transition-all"
-              >
-                <Save className="w-3.5 h-3.5" />
-                Simpan
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleExportWord
-                }
-                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md shadow-blue-600/30 cursor-pointer transition-all"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                Export Word (.docx)
-              </button>
-
-              <button
-                type="button"
-                onClick={
-                  handleExport
-                }
-                className="px-3.5 py-2 bg-[#00a859] hover:bg-[#00944e] text-white rounded-xl text-xs font-black flex items-center gap-1.5 shadow-md shadow-emerald-600/30 cursor-pointer transition-all"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Excel (.xlsx)
-              </button>
-            </div>
-          )}
-      </div>
+      )}
 
       {/* ====================================================== */}
       {/* SAVE MESSAGE */}
       {/* ====================================================== */}
       {saveSuccessMessage && (
-        <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs font-bold text-emerald-300 flex items-center gap-2">
+        <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs font-bold text-emerald-700 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4" />
 
           <span>
@@ -1551,18 +1511,11 @@ export const EvaluationKisiKisiView: React.FC<
           {/* ================================================== */}
           {/* BLOK 1: IDENTITAS & PARAMETER ASESMEN */}
           {/* ================================================== */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#121622] border border-[#232C3F] space-y-3.5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-black text-indigo-300 uppercase tracking-wider flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                1. Identitas & Parameter Asesmen
-              </h3>
-            </div>
-
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-3.5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Nama Guru Pengampu */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Nama Guru Pengampu
                 </label>
 
@@ -1571,20 +1524,20 @@ export const EvaluationKisiKisiView: React.FC<
                   value={teacherName}
                   onChange={(e) => setTeacherName(e.target.value)}
                   placeholder="Nama Lengkap & Gelar Guru"
-                  className="w-full bg-[#090D16] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none"
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-3 py-2 text-xs sm:text-[13px] text-slate-800 font-medium outline-none transition-colors duration-150"
                 />
               </div>
 
               {/* Mata Pelajaran */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Mata Pelajaran
                 </label>
 
                 <select
                   value={subjectSelect}
                   onChange={(e) => setSubjectSelect(e.target.value)}
-                  className="w-full bg-[#090D16] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-3 py-2 text-xs sm:text-[13px] text-slate-800 font-medium outline-none cursor-pointer transition-colors duration-150"
                 >
                   {PRESET_SUBJECTS.map((s) => (
                     <option key={s} value={s}>
@@ -1600,7 +1553,7 @@ export const EvaluationKisiKisiView: React.FC<
                       value={customSubject}
                       onChange={(e) => setCustomSubject(e.target.value)}
                       placeholder="Ketik mata pelajaran custom..."
-                      className="w-full bg-[#070A12] border border-indigo-500/50 rounded-xl px-3 py-1.5 text-xs text-indigo-200 font-bold outline-none placeholder:text-slate-500"
+                      className="w-full bg-white border border-emerald-200 rounded-xl px-3 py-1.5 text-xs sm:text-[13px] text-emerald-800 font-medium outline-none placeholder:text-slate-500 transition-colors duration-150"
                     />
                   </div>
                 )}
@@ -1608,14 +1561,14 @@ export const EvaluationKisiKisiView: React.FC<
 
               {/* Jenis Asesmen / Ujian */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Jenis Asesmen / Ujian
                 </label>
 
                 <select
                   value={examType}
                   onChange={(e) => setExamType(e.target.value)}
-                  className="w-full bg-[#090D16] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-3 py-2 text-xs sm:text-[13px] text-slate-800 font-medium outline-none cursor-pointer transition-colors duration-150"
                 >
                   <option value="STS 1 (Sumatif Tengah Semester 1)">
                     STS 1 (Sumatif Tengah Semester 1)
@@ -1642,7 +1595,7 @@ export const EvaluationKisiKisiView: React.FC<
               {/* Tahun Pelajaran & Semester */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Tahun Pelajaran
                   </label>
 
@@ -1651,19 +1604,19 @@ export const EvaluationKisiKisiView: React.FC<
                     value={schoolYear}
                     onChange={(e) => setSchoolYear(e.target.value)}
                     placeholder="2026/2027"
-                    className="w-full bg-[#090D16] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-2.5 py-2 text-xs text-white font-bold outline-none"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-2.5 py-2 text-xs sm:text-[13px] text-slate-800 font-medium outline-none transition-colors duration-150"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Semester
                   </label>
 
                   <select
                     value={semester}
                     onChange={(e) => setSemester(e.target.value)}
-                    className="w-full bg-[#090D16] border border-[#222B3D] rounded-xl px-2 py-2 text-xs text-white font-bold outline-none cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs sm:text-[13px] text-slate-800 font-medium outline-none cursor-pointer transition-colors duration-150"
                   >
                     <option value="1 (Ganjil)">1 (Ganjil)</option>
 
@@ -1677,30 +1630,30 @@ export const EvaluationKisiKisiView: React.FC<
           {/* ================================================== */}
           {/* BLOK 2: KELAS, DISTRIBUSI SOAL & GAYA PENULISAN AI */}
           {/* ================================================== */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#121622] border border-[#232C3F] space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#222B3D] pb-3">
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
               <div>
-                <h3 className="text-xs font-black text-indigo-300 uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-xs font-black text-emerald-700 uppercase tracking-wider flex items-center gap-2">
                   <Layers className="w-4 h-4" />
                   2. Pengaturan Kelas, Distribusi Soal & Mode AI
                 </h3>
 
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Atur kelas target, spesifikasi jumlah soal per bagian, serta kedalaman hasil AI secara compact.
                 </p>
               </div>
 
               {/* TOTAL SOAL BADGE */}
-              <div className="px-3.5 py-1.5 bg-indigo-600 border border-indigo-400 rounded-xl flex items-center gap-2 shadow-md shadow-indigo-600/30">
-                <span className="text-[10px] text-white/90 font-bold uppercase">
+              <div className="px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2.5 shadow-sm shadow-emerald-900/5">
+                <span className="text-[10px] text-emerald-800 font-bold uppercase tracking-wide">
                   Total Target:
                 </span>
 
-                <span className="text-lg font-black text-white leading-none">
+                <span className="text-lg font-black text-emerald-800 leading-none">
                   {totalCalculatedItems}
                 </span>
 
-                <span className="text-[10px] text-white/80 font-bold uppercase tracking-wide">
+                <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wide">
                   SOAL
                 </span>
               </div>
@@ -1708,12 +1661,12 @@ export const EvaluationKisiKisiView: React.FC<
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
               {/* Sub-block 1: Kelas & Fase (3 cols) */}
-              <div className="lg:col-span-3 p-3.5 rounded-xl bg-[#090D16] border border-[#222B3D] space-y-3 flex flex-col justify-between">
+              <div className="lg:col-span-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3 flex flex-col justify-between">
                 <div>
-                  <div className="text-xs font-bold text-white mb-2 flex items-center justify-between">
+                  <div className="text-xs font-bold text-slate-800 mb-2 flex items-center justify-between">
                     <span>🏫 Kelas & Fase</span>
 
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {selectedGrade.includes('1') || selectedGrade.includes('2')
                         ? 'Fase A (Kls 1-2)'
                         : selectedGrade.includes('3') || selectedGrade.includes('4')
@@ -1724,14 +1677,14 @@ export const EvaluationKisiKisiView: React.FC<
 
                   <div className="space-y-2.5">
                     <div>
-                      <label className="block text-[11px] text-slate-400 mb-1">
+                      <label className="block text-[11px] text-slate-500 mb-1">
                         Jenjang Kelas
                       </label>
 
                       <select
                         value={selectedGrade}
                         onChange={(e) => setSelectedGrade(e.target.value)}
-                        className="w-full bg-[#121622] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none cursor-pointer"
+                        className="w-full bg-white border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none cursor-pointer"
                       >
                         {PRESET_GRADES.map((g) => (
                           <option key={g} value={g}>
@@ -1742,7 +1695,7 @@ export const EvaluationKisiKisiView: React.FC<
                     </div>
 
                     <div>
-                      <label className="block text-[11px] text-slate-400 mb-1">
+                      <label className="block text-[11px] text-slate-500 mb-1">
                         Rombel / Paralel (Opsional)
                       </label>
 
@@ -1751,32 +1704,32 @@ export const EvaluationKisiKisiView: React.FC<
                         value={rombel}
                         onChange={(e) => setRombel(e.target.value)}
                         placeholder="Contoh: 1A, 1B, Bilal..."
-                        className="w-full bg-[#121622] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none placeholder:text-slate-600"
+                        className="w-full bg-white border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none placeholder:text-slate-400"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-[#1E2638] text-[10px] text-slate-400">
+                <div className="pt-2 border-t border-slate-200 text-[10px] text-slate-500">
                   Acuan CP otomatis disesuaikan dengan Fase Kurikulum Merdeka.
                 </div>
               </div>
 
               {/* Sub-block 2: Distribusi Butir Soal (5 cols) */}
-              <div className="lg:col-span-5 p-3.5 rounded-xl bg-[#090D16] border border-[#222B3D] space-y-3">
-                <div className="text-xs font-bold text-white flex items-center justify-between mb-1">
+              <div className="lg:col-span-5 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="text-xs font-bold text-slate-800 flex items-center justify-between mb-1">
                   <span>📝 Distribusi Form Soal</span>
 
-                  <span className="text-[10px] text-slate-400 font-normal">
+                  <span className="text-[10px] text-slate-500 font-normal">
                     (PG, Isian, Menjodohkan, Uraian)
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   {/* PG */}
-                  <div className="p-2.5 rounded-lg bg-[#121622] border border-[#222B3D] space-y-1.5">
+                  <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-white">1. PG (A)</span>
+                      <span className="text-[11px] font-bold text-slate-800">1. PG (A)</span>
 
                       <div className="flex gap-1">
                         <button
@@ -1784,8 +1737,8 @@ export const EvaluationKisiKisiView: React.FC<
                           onClick={() => setPgOptions('A-C')}
                           className={`px-1.5 py-0.5 rounded text-[9px] font-bold cursor-pointer transition-all ${
                             pgOptions === 'A-C'
-                              ? 'bg-indigo-500 text-white'
-                              : 'bg-[#090D16] text-slate-400 hover:text-white'
+                              ? 'bg-emerald-700 text-white'
+                              : 'bg-slate-50 text-slate-500 hover:text-slate-800'
                           }`}
                         >
                           A-C
@@ -1796,8 +1749,8 @@ export const EvaluationKisiKisiView: React.FC<
                           onClick={() => setPgOptions('A-D')}
                           className={`px-1.5 py-0.5 rounded text-[9px] font-bold cursor-pointer transition-all ${
                             pgOptions === 'A-D'
-                              ? 'bg-indigo-500 text-white'
-                              : 'bg-[#090D16] text-slate-400 hover:text-white'
+                              ? 'bg-emerald-700 text-white'
+                              : 'bg-slate-50 text-slate-500 hover:text-slate-800'
                           }`}
                         >
                           A-D
@@ -1816,9 +1769,9 @@ export const EvaluationKisiKisiView: React.FC<
                   </div>
 
                   {/* ISIAN */}
-                  <div className="p-2.5 rounded-lg bg-[#121622] border border-[#222B3D] space-y-1.5">
+                  <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-purple-300">2. Isian (B)</span>
+                      <span className="text-[11px] font-bold text-slate-700">2. Isian (B)</span>
                     </div>
 
                     <PillStepper
@@ -1832,9 +1785,9 @@ export const EvaluationKisiKisiView: React.FC<
                   </div>
 
                   {/* MENJODOHKAN */}
-                  <div className="p-2.5 rounded-lg bg-[#121622] border border-[#222B3D] space-y-1.5">
+                  <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-amber-300">3. Menjodohkan (C)</span>
+                      <span className="text-[11px] font-bold text-slate-700">3. Menjodohkan (C)</span>
                     </div>
 
                     <PillStepper
@@ -1848,9 +1801,9 @@ export const EvaluationKisiKisiView: React.FC<
                   </div>
 
                   {/* URAIAN */}
-                  <div className="p-2.5 rounded-lg bg-[#121622] border border-[#222B3D] space-y-1.5">
+                  <div className="p-2.5 rounded-lg bg-white border border-slate-200 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-emerald-300">4. Uraian (D)</span>
+                      <span className="text-[11px] font-bold text-emerald-700">4. Uraian (D)</span>
                     </div>
 
                     <PillStepper
@@ -1866,11 +1819,11 @@ export const EvaluationKisiKisiView: React.FC<
               </div>
 
               {/* Sub-block 3: Gaya Penulisan AI (4 cols) */}
-              <div className="lg:col-span-4 p-3.5 rounded-xl bg-[#090D16] border border-[#222B3D] space-y-2.5 flex flex-col justify-between">
+              <div className="lg:col-span-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 flex flex-col justify-between">
                 <div>
-                  <div className="text-xs font-bold text-white flex items-center justify-between mb-1">
-                    <span className="flex items-center gap-1.5 text-indigo-300">
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className="text-xs font-bold text-slate-800 flex items-center justify-between mb-1">
+                    <span className="flex items-center gap-1.5 text-emerald-700">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
                       3. Gaya Penulisan AI
                     </span>
                   </div>
@@ -1881,14 +1834,14 @@ export const EvaluationKisiKisiView: React.FC<
                       onClick={() => setOutputStyle('concise')}
                       className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                         outputStyle === 'concise'
-                          ? 'bg-indigo-500/15 border-indigo-500/60 ring-1 ring-indigo-500/30'
-                          : 'bg-[#121622] border-[#222B3D] hover:border-slate-700'
+                          ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-100'
+                          : 'bg-white border-slate-200 hover:border-slate-200'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-extrabold text-white flex items-center gap-1.5">
+                        <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
                           ⚡ Ringkas & Padat
-                          <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded font-semibold">
+                          <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-700 border border-emerald-500/30 rounded font-semibold">
                             Default
                           </span>
                         </span>
@@ -1898,11 +1851,11 @@ export const EvaluationKisiKisiView: React.FC<
                           name="outputStyle"
                           checked={outputStyle === 'concise'}
                           onChange={() => setOutputStyle('concise')}
-                          className="accent-indigo-500 cursor-pointer"
+                          className="accent-emerald-600 cursor-pointer"
                         />
                       </div>
 
-                      <p className="text-[10px] text-slate-400 mt-1 leading-tight">
+                      <p className="text-[10px] text-slate-500 mt-1 leading-tight">
                         Indikator & soal lugas pada inti (10-15 kata), hemat kertas cetak.
                       </p>
                     </div>
@@ -1912,12 +1865,12 @@ export const EvaluationKisiKisiView: React.FC<
                       onClick={() => setOutputStyle('detailed')}
                       className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
                         outputStyle === 'detailed'
-                          ? 'bg-indigo-500/15 border-indigo-500/60 ring-1 ring-indigo-500/30'
-                          : 'bg-[#121622] border-[#222B3D] hover:border-slate-700'
+                          ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-100'
+                          : 'bg-white border-slate-200 hover:border-slate-200'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-extrabold text-white">
+                        <span className="text-xs font-extrabold text-slate-800">
                           📄 Detail & Lengkap
                         </span>
 
@@ -1926,11 +1879,11 @@ export const EvaluationKisiKisiView: React.FC<
                           name="outputStyle"
                           checked={outputStyle === 'detailed'}
                           onChange={() => setOutputStyle('detailed')}
-                          className="accent-indigo-500 cursor-pointer"
+                          className="accent-emerald-600 cursor-pointer"
                         />
                       </div>
 
-                      <p className="text-[10px] text-slate-400 mt-1 leading-tight">
+                      <p className="text-[10px] text-slate-500 mt-1 leading-tight">
                         Indikator formal CP lengkap, soal naratif/cerita stimulus HOTS mendalam.
                       </p>
                     </div>
@@ -1943,20 +1896,20 @@ export const EvaluationKisiKisiView: React.FC<
           {/* ================================================== */}
           {/* 2. MATERI */}
           {/* ================================================== */}
-          <div className="p-5 rounded-2xl bg-[#121622] border border-[#232C3F] space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#222B3D] pb-3">
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4 sm:space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
               <div>
-                <h3 className="text-xs font-black text-indigo-300 uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-xs font-black text-emerald-700 uppercase tracking-wider flex items-center gap-2">
                   <FolderTree className="w-4 h-4" />
                   2. Struktur Bab / Materi Pokok & Bahan Ajar Guru
                 </h3>
 
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 mt-0.5">
                   Tentukan daftar Bab/Topik pokok yang diujikan beserta catatan teks, foto halaman buku, atau dokumen bahan ajar.
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={
@@ -1965,7 +1918,7 @@ export const EvaluationKisiKisiView: React.FC<
                   disabled={
                     isLoadingCurriculumRecommendation
                   }
-                  className="px-3 py-2 bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-2 bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoadingCurriculumRecommendation ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1983,7 +1936,7 @@ export const EvaluationKisiKisiView: React.FC<
                   onClick={
                     handleAddTopic
                   }
-                  className="px-3 py-2 bg-indigo-600/15 hover:bg-indigo-600/25 border border-indigo-500/30 text-indigo-300 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-xl text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Tambah Bab / Topik
@@ -1993,14 +1946,14 @@ export const EvaluationKisiKisiView: React.FC<
 
             {curriculumRecommendations.length >
               0 && (
-              <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 space-y-3">
+              <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-100 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-xs font-black text-emerald-300">
+                    <div className="text-xs font-black text-emerald-700">
                       Rekomendasi dari Acuan Kurikulum Nasional
                     </div>
 
-                    <div className="text-[10px] text-slate-400 mt-1">
+                    <div className="text-[10px] text-slate-500 mt-1">
                       Berdasarkan CP, fase, dan elemen yang relevan dengan mata pelajaran dan kelas yang dipilih.
                     </div>
                   </div>
@@ -2010,7 +1963,7 @@ export const EvaluationKisiKisiView: React.FC<
   onClick={() =>
     setCurriculumRecommendations([])
   }
-  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 cursor-pointer transition-all"
+  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 hover:border-rose-300 cursor-pointer transition-all"
 >
   Tutup
 </button>
@@ -2023,11 +1976,11 @@ export const EvaluationKisiKisiView: React.FC<
                   ) => (
                     <div
                       key={`${recommendation.title}-${index}`}
-                      className="p-4 rounded-xl bg-[#090D16] border border-[#263344] hover:border-emerald-500/40 transition-all"
+                      className="p-4 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 transition-all"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="text-xs font-bold text-white">
+                          <div className="text-xs font-bold text-slate-800">
                             {
                               recommendation.title
                             }
@@ -2035,7 +1988,7 @@ export const EvaluationKisiKisiView: React.FC<
 
                           <div className="flex flex-wrap gap-1.5 mt-2">
                             {recommendation.phase && (
-                              <span className="text-[9px] px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                              <span className="text-[9px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100">
                                 {
                                   recommendation.phase
                                 }
@@ -2043,7 +1996,7 @@ export const EvaluationKisiKisiView: React.FC<
                             )}
 
                             {recommendation.element && (
-                              <span className="text-[9px] px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-300 border border-sky-500/20">
+                              <span className="text-[9px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
                                 {
                                   recommendation.element
                                 }
@@ -2059,7 +2012,7 @@ export const EvaluationKisiKisiView: React.FC<
                               recommendation
                             )
                           }
-                          className="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/20 cursor-pointer"
+                          className="shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-200 cursor-pointer"
                         >
                           + Gunakan
                         </button>
@@ -2071,7 +2024,7 @@ export const EvaluationKisiKisiView: React.FC<
                             Capaian Pembelajaran
                           </div>
 
-                          <div className="text-[10px] text-slate-300 mt-1 leading-relaxed">
+                          <div className="text-[10px] text-slate-600 mt-1 leading-relaxed">
                             {
                               recommendation.curriculumGoal
                             }
@@ -2096,7 +2049,7 @@ export const EvaluationKisiKisiView: React.FC<
                                   key={
                                     subIndex
                                   }
-                                  className="text-[10px] px-2 py-1 rounded-lg bg-slate-800/70 text-slate-300"
+                                  className="text-[10px] px-2 py-1 rounded-lg bg-slate-100 text-slate-600"
                                 >
                                   {
                                     subTopic
@@ -2125,17 +2078,17 @@ export const EvaluationKisiKisiView: React.FC<
                   return (
                     <div
                       key={t.id}
-                      className="p-4 sm:p-5 rounded-2xl bg-[#090D16] border border-[#222B3D] space-y-4"
+                      className="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4"
                     >
                       {/* Header Bab */}
-                      <div className="flex items-center justify-between gap-3 border-b border-[#1E2638] pb-3">
+                      <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
                         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-black text-xs flex items-center justify-center shrink-0">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-black text-xs flex items-center justify-center shrink-0">
                             {idx + 1}
                           </div>
 
                           <div className="flex-1">
-                            <label className="block text-[10px] font-extrabold text-indigo-300 uppercase tracking-wider mb-1">
+                            <label className="block text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider mb-1">
                               Judul Bab / Lingkup Materi {idx + 1}
                             </label>
 
@@ -2156,7 +2109,7 @@ export const EvaluationKisiKisiView: React.FC<
                                 )
                               }
                               placeholder={`Contoh: Bab ${idx + 1} Asmaul Husna & Akhlak`}
-                              className="w-full bg-[#121622] border border-[#222B3D] focus:border-indigo-500 rounded-xl px-3 py-2 text-xs text-white font-bold outline-none"
+                              className="w-full bg-white border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none transition-colors duration-150"
                             />
                           </div>
                         </div>
@@ -2170,7 +2123,7 @@ export const EvaluationKisiKisiView: React.FC<
                                 t.id
                               )
                             }
-                            className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer shrink-0"
+                            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer shrink-0"
                             title="Hapus Bab ini"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -2181,7 +2134,7 @@ export const EvaluationKisiKisiView: React.FC<
                       {/* Tabel Custom Sub-Materi */}
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <label className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+                          <label className="text-[11px] font-bold text-slate-600 flex items-center gap-1.5">
                             <span>
                               Sub-Materi / Poin Pembelajaran Pokok
                             </span>
@@ -2200,7 +2153,7 @@ export const EvaluationKisiKisiView: React.FC<
                                   1
                               )
                             }
-                            className="px-2.5 py-1 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
                           >
                             <Plus className="w-3 h-3" />
                             <span>
@@ -2217,7 +2170,7 @@ export const EvaluationKisiKisiView: React.FC<
                             ) => (
                               <div
                                 key={`${t.id}_sub_${subIdx}`}
-                                className="flex items-center gap-2 bg-[#121622] border border-[#222B3D] focus-within:border-indigo-500/60 rounded-xl px-3 py-1.5 transition-all"
+                                className="flex items-center gap-2 bg-white border border-slate-200 focus-within:border-emerald-300 rounded-xl px-3 py-1.5 transition-all"
                               >
                                 <span className="text-[10px] font-bold text-slate-500 w-5 text-center shrink-0">
                                   {subIdx +
@@ -2242,7 +2195,7 @@ export const EvaluationKisiKisiView: React.FC<
                                     )
                                   }
                                   placeholder="Ketik poin sub-materi (contoh: Membaca arti, menghafal ayat, makna pokok...)"
-                                  className="flex-1 bg-transparent text-xs text-slate-200 outline-none placeholder:text-slate-600 font-medium"
+                                  className="flex-1 bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400 font-medium"
                                 />
 
                                 <button
@@ -2253,7 +2206,7 @@ export const EvaluationKisiKisiView: React.FC<
                                       subIdx
                                     )
                                   }
-                                  className="p-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 hover:text-white border border-indigo-500/30 transition-all cursor-pointer shrink-0"
+                                  className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-slate-800 border border-emerald-200 transition-all cursor-pointer shrink-0"
                                   title="Tambah kotak sub-materi di bawahnya"
                                 >
                                   <Plus className="w-3.5 h-3.5" />
@@ -2269,7 +2222,7 @@ export const EvaluationKisiKisiView: React.FC<
                                         subIdx
                                       )
                                     }
-                                    className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-all cursor-pointer shrink-0"
+                                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 transition-all cursor-pointer shrink-0"
                                     title="Hapus baris sub-materi ini"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
@@ -2287,7 +2240,7 @@ export const EvaluationKisiKisiView: React.FC<
             </div>
 
             {/* MATERIAL INPUT */}
-            <div className="pt-2 border-t border-[#1E2638]">
+            <div className="pt-2 border-t border-slate-200">
               <EvaluationMaterialInput
                 materials={
                   materials
@@ -2314,7 +2267,7 @@ export const EvaluationKisiKisiView: React.FC<
               onClick={
                 handleGenerate
               }
-              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center gap-2 cursor-pointer transition-all"
+              className="px-6 py-3 bg-gradient-to-r from-emerald-700 to-emerald-700 hover:from-emerald-800 hover:to-emerald-800 disabled:opacity-50 text-white font-black text-xs rounded-xl shadow-lg shadow-emerald-700/10 flex items-center gap-2 cursor-pointer transition-all"
             >
               <Sparkles className="w-4 h-4 animate-spin-slow" />
 
@@ -2334,22 +2287,22 @@ export const EvaluationKisiKisiView: React.FC<
       {currentStep === 2 &&
         activeBlueprint && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#222B3D] flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3">
-                <span className="font-bold text-white">
+                <span className="font-bold text-slate-800">
                   Mata Pelajaran:{' '}
-                  <b className="text-indigo-400">
+                  <b className="text-emerald-700">
                     {
                       activeBlueprint.subjectName
                     }
                   </b>
                 </span>
 
-                <span className="text-slate-400">
+                <span className="text-slate-500">
                   |
                 </span>
 
-                <span className="text-slate-300">
+                <span className="text-slate-600">
                   Kelas:{' '}
                   <b>
                     {
@@ -2358,11 +2311,11 @@ export const EvaluationKisiKisiView: React.FC<
                   </b>
                 </span>
 
-                <span className="text-slate-400">
+                <span className="text-slate-500">
                   |
                 </span>
 
-                <span className="text-slate-300">
+                <span className="text-slate-600">
                   Ujian:{' '}
                   <b>
                     {
@@ -2372,7 +2325,7 @@ export const EvaluationKisiKisiView: React.FC<
                 </span>
               </div>
 
-              <div className="text-[11px] text-slate-400 italic">
+              <div className="text-[11px] text-slate-500 italic">
                 * Guru dapat mengedit teks indikator, level kognitif, atau bentuk soal secara langsung pada tabel.
               </div>
             </div>
@@ -2380,10 +2333,10 @@ export const EvaluationKisiKisiView: React.FC<
             {/* ================================================= */}
             {/* TABEL */}
             {/* ================================================= */}
-            <div className="rounded-2xl border border-[#242E42] bg-[#0E131F] overflow-x-auto">
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#151C2C] text-slate-300 font-bold border-b border-[#242E42]">
+                  <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                     <th className="p-3 w-12 text-center">
                       No
                     </th>
@@ -2414,7 +2367,7 @@ export const EvaluationKisiKisiView: React.FC<
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#1D2536] text-slate-200">
+                <tbody className="divide-y divide-slate-200 text-slate-700">
                   {activeBlueprint.items.map(
                     (
                       item,
@@ -2424,9 +2377,9 @@ export const EvaluationKisiKisiView: React.FC<
                         key={
                           item.id
                         }
-                        className="hover:bg-[#121827] transition-all"
+                        className="hover:bg-slate-100 transition-all"
                       >
-                        <td className="p-3 text-center font-bold text-slate-400">
+                        <td className="p-3 text-center font-bold text-slate-500">
                           {idx + 1}
                         </td>
 
@@ -2447,7 +2400,7 @@ export const EvaluationKisiKisiView: React.FC<
                                   .value
                               )
                             }
-                            className="w-full bg-[#080C14] border border-[#222B3D] rounded-lg px-2.5 py-1.5 text-xs text-white font-medium outline-none"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-medium outline-none transition-colors duration-150"
                           />
                         </td>
 
@@ -2468,7 +2421,7 @@ export const EvaluationKisiKisiView: React.FC<
                               )
                             }
                             rows={2}
-                            className="w-full bg-[#080C14] border border-[#222B3D] rounded-lg px-2.5 py-1.5 text-xs text-white outline-none resize-y"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 outline-none resize-y"
                           />
                         </td>
 
@@ -2488,7 +2441,7 @@ export const EvaluationKisiKisiView: React.FC<
                                   .value as CognitiveLevel
                               )
                             }
-                            className="bg-[#080C14] border border-[#222B3D] rounded-lg px-2 py-1.5 text-xs text-indigo-300 font-bold outline-none cursor-pointer"
+                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-emerald-700 font-bold outline-none cursor-pointer"
                           >
                             <option value="C1">
                               C1 (Mengingat)
@@ -2532,7 +2485,7 @@ export const EvaluationKisiKisiView: React.FC<
                                   .value as QuestionForm
                               )
                             }
-                            className="bg-[#080C14] border border-[#222B3D] rounded-lg px-2 py-1.5 text-xs text-cyan-300 font-bold outline-none cursor-pointer"
+                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-cyan-300 font-bold outline-none cursor-pointer"
                           >
                             <option value="PG">
                               Pilihan Ganda
@@ -2573,7 +2526,7 @@ export const EvaluationKisiKisiView: React.FC<
                                   .value
                               )
                             }
-                            className="w-16 mx-auto text-center bg-[#080C14] border border-[#222B3D] rounded-lg px-2 py-1 text-xs text-amber-300 font-bold outline-none"
+                            className="w-16 mx-auto text-center bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-amber-700 font-bold outline-none transition-colors duration-150"
                           />
                         </td>
 
@@ -2607,7 +2560,7 @@ export const EvaluationKisiKisiView: React.FC<
                 onClick={
                   handleAddItem
                 }
-                className="px-3.5 py-2 bg-[#172033] hover:bg-[#202c46] text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
                 + Tambah Baris Kisi-Kisi
@@ -2623,7 +2576,7 @@ export const EvaluationKisiKisiView: React.FC<
                       activeBlueprint
                     );
                   }}
-                  className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-black text-xs rounded-xl shadow-lg shadow-cyan-600/30 flex items-center gap-2 cursor-pointer transition-all"
+                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-700 to-emerald-700 hover:from-emerald-800 hover:to-emerald-800 text-white font-black text-xs rounded-xl shadow-lg shadow-cyan-600/30 flex items-center gap-2 cursor-pointer transition-all"
                 >
                   <span>
                     Lanjut Buat Naskah Soal dari Kisi-Kisi Ini →

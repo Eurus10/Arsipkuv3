@@ -464,110 +464,184 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
           </div>
         </div>
 
-        {/* Kiri: Student Selector Sidebar (Desktop ONLY >= LG) */}
-        <div className="hidden lg:block lg:col-span-3 space-y-2">
-          <div className="flex items-center justify-between mb-1.5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Daftar Siswa ({students.length})
-            </h3>
-          </div>
+        
+{/* Kiri: Student Selector Sidebar (Desktop ONLY >= LG) */}
+<div className="hidden lg:block lg:col-span-3 min-w-0">
+  <div className="sticky top-4 space-y-2">
 
-          <div className="relative mb-2">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Cari siswa..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all"
-            />
-          </div>
+    {/* Header daftar siswa */}
+    <div className="flex items-center justify-between gap-2">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+        Daftar Siswa
+      </h3>
+      <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">
+        {filteredStudents.length} siswa
+      </span>
+    </div>
 
-          <div className="space-y-1.5 max-h-[600px] overflow-y-auto pr-1 custom-scrollbar">
-            {filteredStudents.map((st) => {
-              const isSelected = st.id === currentStudent?.id;
-              const info = additionalInfo[st.id];
-              const totalAbsen = (info?.attendance?.sakit || 0) + (info?.attendance?.izin || 0) + (info?.attendance?.alpha || 0);
-              const { averageScore, remedialCount } = getStudentMetrics(st.id);
+    {/* Sticky Student Navigation */}
+    <div className="rounded-xl border border-emerald-200 bg-white p-2.5 shadow-sm">
+      <div className="flex items-center gap-2">
 
-              return (
-                <button
-                  key={st.id}
-                  type="button"
-                  onClick={() => setSelectedStudentId(st.id)}
-                  className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
-                    isSelected
-                      ? 'bg-amber-50 border-amber-300 text-slate-900 shadow-xs'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
-                        isSelected
-                          ? 'bg-amber-500 text-white'
-                          : 'bg-slate-100 text-slate-500'
+        {/* Siswa Sebelumnya */}
+        <button
+          type="button"
+          disabled={
+            !currentStudent ||
+            filteredStudents.findIndex((s) => s.id === currentStudent.id) <= 0
+          }
+          onClick={() => {
+            const currIdx = filteredStudents.findIndex(
+              (s) => s.id === currentStudent?.id
+            );
+            if (currIdx > 0) {
+              setSelectedStudentId(filteredStudents[currIdx - 1].id);
+            }
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30"
+          title="Siswa sebelumnya"
+          aria-label="Siswa sebelumnya"
+        >
+          <ChevronRight className="h-4 w-4 rotate-180" />
+        </button>
+
+        {/* Nama Siswa Terpilih */}
+        <div className="min-w-0 flex-1">
+          <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+            Siswa terpilih
+          </p>
+          <p className="truncate text-xs font-bold text-slate-900">
+            {currentStudent?.name || 'Belum ada siswa'}
+          </p>
+          <p className="truncate text-[10px] text-slate-500">
+            NIS: {currentStudent?.nim || '-'}
+          </p>
+        </div>
+
+        {/* Siswa Selanjutnya */}
+        <button
+          type="button"
+          disabled={
+            !currentStudent ||
+            filteredStudents.findIndex((s) => s.id === currentStudent.id) >=
+              filteredStudents.length - 1
+          }
+          onClick={() => {
+            const currIdx = filteredStudents.findIndex(
+              (s) => s.id === currentStudent?.id
+            );
+            if (currIdx >= 0 && currIdx < filteredStudents.length - 1) {
+              setSelectedStudentId(filteredStudents[currIdx + 1].id);
+            }
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-30"
+          title="Siswa selanjutnya"
+          aria-label="Siswa selanjutnya"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+
+    {/* Pencarian siswa */}
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+      <input
+        type="text"
+        placeholder="Cari siswa..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-xs text-slate-900 placeholder:text-slate-400 transition-all focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
+      />
+    </div>
+
+    {/* Daftar siswa: scroll terpisah */}
+    <div className="space-y-1.5 max-h-[min(48vh,520px)] overflow-y-auto overscroll-contain pr-1 custom-scrollbar">
+      {filteredStudents.map((st) => {
+        const isSelected = st.id === currentStudent?.id;
+        const info = additionalInfo[st.id];
+        const totalAbsen =
+          (info?.attendance?.sakit || 0) +
+          (info?.attendance?.izin || 0) +
+          (info?.attendance?.alpha || 0);
+        const { averageScore, remedialCount } = getStudentMetrics(st.id);
+
+        return (
+          <button
+            key={st.id}
+            type="button"
+            onClick={() => setSelectedStudentId(st.id)}
+            aria-pressed={isSelected}
+            className={`flex w-full items-center justify-between gap-2 rounded-xl border p-2.5 text-left transition-colors ${
+              isSelected
+                ? 'border-emerald-300 bg-emerald-50 text-slate-900 shadow-sm'
+                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <div
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                  isSelected
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                <User className="h-3.5 w-3.5" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold text-slate-900">
+                  {st.name}
+                </p>
+
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                  <span className="truncate text-[10px] text-slate-500">
+                    NIS: {st.nim || '-'}
+                  </span>
+
+                  <span className="text-[9px] text-slate-300">•</span>
+
+                  {remedialCount > 0 ? (
+                    <span className="text-[10px] font-bold text-rose-600">
+                      Remedial: {remedialCount}
+                    </span>
+                  ) : (
+                    <span
+                      className={`text-[10px] font-bold ${
+                        averageScore >= 88
+                          ? 'text-emerald-700'
+                          : averageScore >= 75
+                            ? 'text-amber-700'
+                            : averageScore > 0
+                              ? 'text-rose-600'
+                              : 'text-slate-400'
                       }`}
                     >
-                      <User className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="truncate min-w-0 pr-1">
-                      <p className="text-xs font-bold truncate text-slate-900">{st.name}</p>
-                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        <span className="text-[10px] text-slate-500 truncate">NIS: {st.nim || '-'}</span>
-                        <span className="text-slate-300 text-[9px]">•</span>
-                        {remedialCount > 0 ? (
-                          <span className="text-[10px] font-bold text-rose-600">
-                            Remedial: {remedialCount}
-                          </span>
-                        ) : (
-                          <span className={`text-[10px] font-bold ${
-                            averageScore >= 88 
-                              ? 'text-emerald-700' 
-                              : averageScore >= 75 
-                                ? 'text-amber-700' 
-                                : averageScore > 0 
-                                  ? 'text-rose-600' 
-                                  : 'text-slate-400'
-                          }`}>
-                            Rata-rata: {averageScore > 0 ? averageScore : '-'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {totalAbsen > 0 && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-rose-50 text-rose-700 border border-rose-200 flex-shrink-0">
-                      Absen: {totalAbsen}
+                      Rata-rata: {averageScore > 0 ? averageScore : '-'}
                     </span>
                   )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                </div>
+              </div>
+            </div>
+
+            {totalAbsen > 0 && (
+              <span className="shrink-0 rounded-full border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[9px] font-bold text-rose-700">
+                {totalAbsen} absen
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
 
         {/* Tengah & Kanan Editor for Selected Student */}
         {currentStudent ? (
           <>
             {/* Tengah: Form untuk guru menulis catatan */}
             <div className="lg:col-span-5 space-y-4">
-              {/* Header info */}
-              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-between">
-                <div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-wider text-amber-600">
-                    Data Pelengkap Rapor Siswa
-                  </span>
-                  <h2 className="text-sm sm:text-base font-black text-slate-900 truncate max-w-[250px]">
-                    {currentStudent.name}
-                  </h2>
-                  <p className="text-[11px] text-slate-500">
-                    NIS: {currentStudent.nim || '-'} | NISN: {currentStudent.nisn || '-'}
-                  </p>
-                </div>
-              </div>
-
               {/* Teacher Notes / Motivasi Section */}
               <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3.5">
                 <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
@@ -576,38 +650,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                     <span>Catatan Wali Kelas / Motivasi Guru</span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      disabled={isGeneratingAi}
-                      onClick={handleAutoGenerateNoteForCurrent}
-                      className="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Buat catatan otomatis menggunakan Gemini AI untuk siswa ini"
-                    >
-                      {isGeneratingAi ? (
-                        <Loader2 className="w-3 h-3 text-amber-600 animate-spin" />
-                      ) : (
-                        <Sparkles className="w-3 h-3 text-amber-600" />
-                      )}
-                      <span>AI Catatan</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={isGeneratingAi}
-                      onClick={handleAutoGenerateNotesForAll}
-                      className="px-2 py-1 rounded-lg bg-amber-500 text-white hover:bg-amber-600 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
-                      title="Isi otomatis catatan seluruh siswa dengan Gemini AI"
-                    >
-                      {isGeneratingAi ? (
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <Sparkles className="w-3 h-3" />
-                      )}
-                      <span>AI Semua</span>
-                    </button>
-                  </div>
-                </div>
+               </div>
 
                 <textarea
                   rows={4}

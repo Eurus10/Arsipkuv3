@@ -128,24 +128,40 @@ export const Navbar: React.FC<NavbarProps> = ({
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs print:hidden">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
           
-          {/* Logo & School Branding */}
-          <div className="flex items-center gap-3 cursor-pointer select-none" onClick={() => onSelectTab('dashboard')}>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#176B45] to-[#125335] text-white flex items-center justify-center font-bold shadow-sm ring-2 ring-emerald-500/20">
-              {branding.logoImageUrl ? (
-                <img src={branding.logoImageUrl} alt="Logo" className="w-full h-full object-cover rounded-2xl" />
-              ) : (
-                <span className="text-sm font-bold text-white">{branding.logoText || 'AF'}</span>
-              )}
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-sm font-bold text-slate-900 tracking-tight leading-none mb-0.5">
-                Arsip Digital SDIT
-              </h1>
-              <p className="text-[11px] text-slate-500 font-medium truncate max-w-[200px] lg:max-w-xs">
-                {branding.personalName ? `${branding.personalName} (${branding.personalRole})` : 'Sistem Administrasi & Akademik Terpadu'}
-              </p>
-            </div>
-          </div>
+          
+{/* Logo & School Branding */}
+<div
+  className="flex items-center gap-3 cursor-pointer select-none"
+  onClick={() => onSelectTab('dashboard')}
+>
+  {/* Ikon aplikasi tetap dipertahankan */}
+  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#176B45] to-[#125335] text-white flex items-center justify-center font-bold shadow-sm ring-2 ring-emerald-500/20">
+    {branding.logoImageUrl ? (
+      <img
+        src={branding.logoImageUrl}
+        alt="Logo"
+        className="w-full h-full object-cover rounded-2xl"
+      />
+    ) : (
+      <span className="text-sm font-bold text-white">
+        {branding.logoText || 'AF'}
+      </span>
+    )}
+  </div>
+
+  {/* Identitas Arsipku */}
+  <div className="flex min-w-0 flex-col justify-center">
+    <img
+      src="assets/Asetlogo/Arsipku Logo Exploration Grid.png"
+      alt="arsipku"
+      className="h-7 w-auto max-w-[150px] object-contain object-left"
+    />
+    <p className="mt-0.5 text-[8px] leading-tight text-slate-500 font-medium tracking-wide">
+      Made with care by Muzaki
+    </p>
+  </div>
+</div>
+
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/60">

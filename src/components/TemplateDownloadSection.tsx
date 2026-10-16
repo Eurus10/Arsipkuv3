@@ -118,6 +118,13 @@ type TemplateMenuConfig = {
   buttonLabel: string;
 };
 
+/**
+ * Shortcut Salin Data (PBS) sengaja disembunyikan sementara.
+ * Ubah menjadi true jika suatu saat shortcut ini ingin ditampilkan kembali.
+ * Fitur/modal aslinya tetap dipertahankan.
+ */
+const SHOW_PBS_COPY_SHORTCUT = false;
+
 const TEMPLATE_MENU_CONFIG: Record<
   SchoolTemplateItem['category'],
   TemplateMenuConfig
@@ -1022,187 +1029,145 @@ export const TemplateDownloadSection: React.FC<
 
   return (
     <section className="mb-8">
-
       {/* ======================================================
-          HEADER
+          QUICK ACCESS HEADER — PREMIUM MINIMAL
+          Fokus UI: fungsi handler dan modal tetap menggunakan
+          logika yang sudah ada.
           ====================================================== */}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3.5 sm:mb-4">
+      <div className="mb-4 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm sm:p-4 lg:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-5">
+          {/* Identitas bagian */}
+          <div className="flex min-w-0 items-center gap-3 lg:w-[34%] lg:shrink-0">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 shadow-sm">
+              <FileDown className="h-5 w-5" aria-hidden="true" />
+            </div>
 
-        {/* ====================================================
-            JUDUL AKSES CEPAT
-            ==================================================== */}
-
-        <div className="flex items-center gap-2.5 min-w-0">
-
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 flex-shrink-0 shadow-xs">
-            <FileDown className="w-4 h-4" />
+            <div className="min-w-0">
+              <h2 className="font-heading text-base font-bold tracking-tight text-slate-800 sm:text-lg">
+                Akses Cepat Ujian &amp; Template
+              </h2>
+              <p className="mt-0.5 text-xs leading-relaxed text-slate-500 sm:text-[13px]">
+                Akses cepat ke template, folder pengumpulan, dan tracking soal.
+              </p>
+            </div>
           </div>
 
-          <div className="min-w-0">
+          {/* Shortcut actions — desain kartu horizontal konsep nomor 1 */}
+          <div className="grid min-w-0 flex-1 grid-cols-4 gap-1.5 sm:grid-cols-2 sm:gap-2 xl:grid-cols-[repeat(auto-fit,minmax(170px,1fr))]">
+            {/* 1. INFO BUTIR SOAL */}
+            <button
+              type="button"
+              onClick={openBreakdownModal}
+              className="group flex min-h-[94px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-1.5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:translate-y-0 sm:min-h-[76px] sm:flex-row sm:justify-start sm:gap-3 sm:px-3 sm:py-3 sm:text-left"
+              title="Informasi Butir Soal & Kisi-Kisi Ujian"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 transition-colors duration-200 group-hover:border-emerald-200 group-hover:bg-emerald-100 sm:h-11 sm:w-11">
+                <FileText className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 w-full flex-1 sm:w-auto">
+                <span className="block truncate text-[11px] font-bold tracking-tight text-slate-800 transition-colors group-hover:text-emerald-800 sm:text-[13px]">
+                  Info Soal
+                </span>
+                <span className="mt-0.5 hidden text-[11px] leading-snug text-slate-500 sm:block">
+                  Ketentuan dan kisi-kisi ujian
+                </span>
+              </span>
+              <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-700 sm:block" aria-hidden="true" />
+            </button>
 
-            <h2 className="text-sm sm:text-lg font-bold text-slate-800 font-heading tracking-tight">
-              Akses Cepat Ujian & Template
-            </h2>
+            {/* 2. JADWAL UJIAN */}
+            <button
+              type="button"
+              onClick={openScheduleModal}
+              className="group flex min-h-[94px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-1.5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-50/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 active:translate-y-0 sm:min-h-[76px] sm:flex-row sm:justify-start sm:gap-3 sm:px-3 sm:py-3 sm:text-left"
+              title="Jadwal Pelaksanaan Ujian"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-800 transition-colors duration-200 group-hover:border-emerald-200 group-hover:bg-emerald-100 sm:h-11 sm:w-11">
+                <Calendar className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 w-full flex-1 sm:w-auto">
+                <span className="block truncate text-[11px] font-bold tracking-tight text-slate-800 transition-colors group-hover:text-emerald-800 sm:text-[13px]">
+                  Jadwal
+                </span>
+                <span className="mt-0.5 hidden text-[11px] leading-snug text-slate-500 sm:block">
+                  Jadwal pelaksanaan ujian
+                </span>
+              </span>
+              <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-emerald-700 sm:block" aria-hidden="true" />
+            </button>
 
-            <p className="hidden sm:block text-[11px] sm:text-xs text-slate-500 mt-0.5">
-              Akses cepat ke template, folder pengumpulan, dan tracking soal.
-            </p>
+            {/* 3. TRACKING SOAL */}
+            <button
+              type="button"
+              onClick={() => onNavigateToTracking?.()}
+              className="group flex min-h-[94px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-1.5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-200 hover:bg-purple-50/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 active:translate-y-0 sm:min-h-[76px] sm:flex-row sm:justify-start sm:gap-3 sm:px-3 sm:py-3 sm:text-left"
+              title="Tracking Pengumpulan Soal"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-purple-100 bg-purple-50 text-purple-800 transition-colors duration-200 group-hover:border-purple-200 group-hover:bg-purple-100 sm:h-11 sm:w-11">
+                <ClipboardList className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 w-full flex-1 sm:w-auto">
+                <span className="block truncate text-[11px] font-bold tracking-tight text-slate-800 transition-colors group-hover:text-purple-800 sm:text-[13px]">
+                  Tracking Soal
+                </span>
+                <span className="mt-0.5 hidden text-[11px] leading-snug text-slate-500 sm:block">
+                  Pantau pengumpulan soal
+                </span>
+              </span>
+              <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-purple-700 sm:block" aria-hidden="true" />
+            </button>
 
+            {/* 4. KALKULATOR SKOR NILAI */}
+            <button
+              type="button"
+              onClick={() => setShowScoreCalculator(true)}
+              className="group flex min-h-[94px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-1.5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200 hover:bg-amber-50/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:translate-y-0 sm:min-h-[76px] sm:flex-row sm:justify-start sm:gap-3 sm:px-3 sm:py-3 sm:text-left"
+              title="Kalkulator Skor Nilai Ujian"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-100 bg-amber-50 text-amber-700 transition-colors duration-200 group-hover:border-amber-200 group-hover:bg-amber-100 sm:h-11 sm:w-11">
+                <Calculator className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <span className="min-w-0 w-full flex-1 sm:w-auto">
+                <span className="block truncate text-[11px] font-bold tracking-tight text-slate-800 transition-colors group-hover:text-amber-800 sm:text-[13px]">
+                  Skor Nilai
+                </span>
+                <span className="mt-0.5 hidden text-[11px] leading-snug text-slate-500 sm:block">
+                  Input dan rekap nilai
+                </span>
+              </span>
+              <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-amber-700 sm:block" aria-hidden="true" />
+            </button>
+
+            {/*
+              SHORTCUT SALIN DATA (PBS) DINONAKTIFKAN SEMENTARA.
+              Untuk menampilkannya kembali, ubah SHOW_PBS_COPY_SHORTCUT
+              di bagian konfigurasi menjadi true. State, import, dan modal
+              PbsCopyModal sengaja tetap dipertahankan.
+            */}
+            {SHOW_PBS_COPY_SHORTCUT && (
+              <button
+                type="button"
+                onClick={() => setIsPbsModalOpen(true)}
+                className="group flex min-h-[76px] min-w-0 items-center gap-3 rounded-xl border border-slate-200/80 bg-white px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 active:translate-y-0"
+                title="Salin Data Nama Siswa, NISN, atau Nama Guru untuk Aplikasi PBS"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-violet-700 transition-colors duration-200 group-hover:border-violet-200 group-hover:bg-violet-100">
+                  <Copy className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13px] font-bold tracking-tight text-slate-800 transition-colors group-hover:text-violet-800">
+                    Salin Data
+                  </span>
+                  <span className="mt-0.5 block text-[11px] leading-snug text-slate-500">
+                    Duplikasi data untuk PBS
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-violet-700" aria-hidden="true" />
+              </button>
+            )}
           </div>
-
         </div>
-
-
-        {/* ====================================================
-            AKSI HEADER DESKTOP (CLEAN MODERN CIRCULAR SHORTCUT BUTTONS)
-            Urutan: 1. Info Butir Soal, 2. Jadwal, 3. Skor Nilai, 4. Salin Data
-            ==================================================== */}
-
-        <div className="hidden sm:flex items-start gap-2.5 md:gap-3 flex-shrink-0 select-none">
-
-          {/* 1. INFO BUTIR SOAL */}
-          <button
-            type="button"
-            onClick={openBreakdownModal}
-            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-xl"
-            title="Informasi Butir Soal & Kisi-Kisi Ujian"
-          >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 shadow-xs flex items-center justify-center text-cyan-700 transform-gpu will-change-transform transition-all duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-cyan-300">
-              <FileText className="w-5 h-5 text-cyan-700" />
-            </div>
-
-            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-600 mt-1.5 tracking-tight group-hover:text-cyan-700 transition-colors whitespace-nowrap">
-              Info Soal
-            </span>
-          </button>
-
-
-          {/* 2. JADWAL */}
-          <button
-            type="button"
-            onClick={openScheduleModal}
-            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl"
-            title="Jadwal Pelaksanaan Ujian"
-          >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-xs flex items-center justify-center text-emerald-700 transform-gpu will-change-transform transition-all duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-emerald-300">
-              <Calendar className="w-5 h-5 text-emerald-700" />
-            </div>
-
-            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-600 mt-1.5 tracking-tight group-hover:text-emerald-700 transition-colors whitespace-nowrap">
-              Jadwal
-            </span>
-          </button>
-
-
-          {/* 3. SKOR NILAI */}
-          <button
-            type="button"
-            onClick={() => setShowScoreCalculator(true)}
-            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
-            title="Kalkulator Skor Nilai Ujian"
-          >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 shadow-xs flex items-center justify-center text-amber-700 transform-gpu will-change-transform transition-all duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-amber-300">
-              <Calculator className="w-5 h-5 text-amber-700" />
-            </div>
-
-            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-600 mt-1.5 tracking-tight group-hover:text-amber-700 transition-colors whitespace-nowrap">
-              Skor Nilai
-            </span>
-          </button>
-
-
-          {/* 4. SALIN DATA (PBS) */}
-          <button
-            type="button"
-            onClick={() => setIsPbsModalOpen(true)}
-            className="w-[82px] shrink-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
-            title="Salin Data Nama Siswa, NISN, atau Nama Guru untuk Aplikasi PBS"
-          >
-            <div className="relative w-11 h-11 md:w-12 md:h-12 rounded-full bg-purple-50 hover:bg-purple-100 border border-purple-200 shadow-xs flex items-center justify-center text-purple-700 transform-gpu will-change-transform transition-all duration-200 ease-out group-hover:scale-105 group-active:scale-95 group-hover:border-purple-300">
-              <Copy className="w-5 h-5 text-purple-700" />
-            </div>
-
-            <span className="h-4 flex items-center justify-center text-[11px] font-bold text-slate-600 mt-1.5 tracking-tight group-hover:text-purple-700 transition-colors whitespace-nowrap">
-              Salin Data
-            </span>
-          </button>
-
-        </div>
-
-      </div>
-
-      {/* ====================================================
-          AKSI HEADER MOBILE (CLEAN SHORTCUTS)
-          4 Shortcut Icon Besar Berwarna + Label Ringkas di Bawahnya
-          ==================================================== */}
-
-      <div className="grid sm:hidden grid-cols-4 gap-1.5 pt-1 pb-2 mb-2 select-none">
-
-        {/* 1. INFO SOAL */}
-        <button
-          type="button"
-          onClick={openBreakdownModal}
-          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded-xl"
-        >
-          <div className="relative w-12 h-12 rounded-full bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 shadow-xs flex items-center justify-center text-cyan-700 transform-gpu transition-all duration-200 ease-out group-active:scale-95">
-            <FileText className="w-5 h-5 text-cyan-700" />
-          </div>
-
-          <span className="h-7 flex items-start justify-center text-[11px] font-bold text-slate-700 mt-1.5 tracking-tight group-hover:text-cyan-700 transition-colors leading-tight text-center">
-            Info Soal
-          </span>
-        </button>
-
-
-        {/* 2. JADWAL */}
-        <button
-          type="button"
-          onClick={openScheduleModal}
-          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl"
-        >
-          <div className="relative w-12 h-12 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 shadow-xs flex items-center justify-center text-emerald-700 transform-gpu transition-all duration-200 ease-out group-active:scale-95">
-            <Calendar className="w-5 h-5 text-emerald-700" />
-          </div>
-
-          <span className="h-7 flex items-start justify-center text-[11px] font-bold text-slate-700 mt-1.5 tracking-tight group-hover:text-emerald-700 transition-colors leading-tight text-center">
-            Jadwal
-          </span>
-        </button>
-
-
-        {/* 3. SKOR NILAI */}
-        <button
-          type="button"
-          onClick={() => setShowScoreCalculator(true)}
-          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded-xl"
-        >
-          <div className="relative w-12 h-12 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200 shadow-xs flex items-center justify-center text-amber-700 transform-gpu transition-all duration-200 ease-out group-active:scale-95">
-            <Calculator className="w-5 h-5 text-amber-700" />
-          </div>
-
-          <span className="h-7 flex items-start justify-center text-[11px] font-bold text-slate-700 mt-1.5 tracking-tight group-hover:text-amber-700 transition-colors leading-tight text-center">
-            Skor Nilai
-          </span>
-        </button>
-
-
-        {/* 4. SALIN DATA */}
-        <button
-          type="button"
-          onClick={() => setIsPbsModalOpen(true)}
-          className="w-full min-w-0 flex flex-col items-center justify-start group cursor-pointer select-none caret-transparent touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
-          title="Salin Data Nama Siswa, NISN, atau Nama Guru untuk Aplikasi PBS"
-        >
-          <div className="relative w-12 h-12 rounded-full bg-purple-50 hover:bg-purple-100 border border-purple-200 shadow-xs flex items-center justify-center text-purple-700 transform-gpu transition-all duration-200 ease-out group-active:scale-95">
-            <Copy className="w-5 h-5 text-purple-700" />
-          </div>
-
-          <span className="h-7 flex items-start justify-center text-[11px] font-bold text-slate-700 mt-1.5 tracking-tight group-hover:text-purple-700 transition-colors leading-tight text-center">
-            Salin Data
-          </span>
-        </button>
-
       </div>
 
       {/* ======================================================
@@ -1213,7 +1178,7 @@ export const TemplateDownloadSection: React.FC<
           MENU AKSES CEPAT UJIAN & TEMPLATE (5 FUTURISTIC 3D CARDS)
           ====================================================== */}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
 
         {/* ====================================================
             CARD 1 — EVALUASI PEMBELAJARAN (AI ASSISTANT)
@@ -1228,13 +1193,13 @@ export const TemplateDownloadSection: React.FC<
               handleOpenEvaluationFeature();
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-slate-200/90 hover:border-indigo-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none text-left"
+          className="group relative flex flex-col justify-between p-2 sm:p-4 rounded-2xl sm:rounded-[24px] border border-slate-200/90 hover:border-indigo-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[205px] sm:min-h-[320px] select-none text-left"
         >
           {/* Card Content Top */}
           <div className="relative z-10 flex flex-col flex-1">
             {/* Badges Row + Top Right Circle Arrow */}
             <div className="flex items-center justify-between w-full mb-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase border bg-indigo-50 text-indigo-700 border-indigo-200">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] sm:px-3 sm:text-[11px] font-bold tracking-wider uppercase border bg-indigo-50 text-indigo-700 border-indigo-200">
                 <Sparkles className="w-3 h-3 text-indigo-600" />
                 <span>AI</span>
               </span>
@@ -1245,8 +1210,8 @@ export const TemplateDownloadSection: React.FC<
             </div>
 
             {/* Centered Hero 3D Illustration */}
-            <div className="my-2 flex-1 flex items-center justify-center relative min-h-[105px] sm:min-h-[120px]">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-indigo-50/60 border border-indigo-100 flex items-center justify-center p-2.5">
+            <div className="my-1 sm:my-2 flex-1 flex items-center justify-center relative min-h-[58px] sm:min-h-[120px]">
+              <div className="w-14 h-14 sm:w-28 sm:h-28 rounded-xl sm:rounded-2xl bg-indigo-50/60 border border-indigo-100 flex items-center justify-center p-1.5 sm:p-2.5">
                 <img
                   src="/assets/Asetlogo/icon-evaluasi-ai.webp"
                   alt="Evaluasi Pembelajaran"
@@ -1268,8 +1233,8 @@ export const TemplateDownloadSection: React.FC<
           </div>
 
           {/* Action Button */}
-          <div className="pt-3 relative z-10 w-full">
-            <span className="w-full py-2.5 px-3 rounded-2xl text-[11px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 hover:border-indigo-600 shadow-2xs">
+          <div className="pt-2 sm:pt-3 relative z-10 w-full">
+            <span className="w-full py-2 px-1.5 sm:py-2.5 sm:px-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white border border-indigo-200 hover:border-indigo-600 shadow-2xs">
               <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">Modul Evaluasi</span>
               <ArrowRight className="w-3.5 h-3.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
@@ -1290,13 +1255,13 @@ export const TemplateDownloadSection: React.FC<
               handleOpenAnalisisGenerator();
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-slate-200/90 hover:border-cyan-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none text-left"
+          className="group relative flex flex-col justify-between p-2 sm:p-4 rounded-2xl sm:rounded-[24px] border border-slate-200/90 hover:border-cyan-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[205px] sm:min-h-[320px] select-none text-left"
         >
           {/* Card Content Top */}
           <div className="relative z-10 flex flex-col flex-1">
             {/* Badges Row + Top Right Circle Arrow / Admin Edit */}
             <div className="flex items-center justify-between w-full mb-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase border bg-cyan-50 text-cyan-800 border-cyan-200">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] sm:px-3 sm:text-[11px] font-bold tracking-wider uppercase border bg-cyan-50 text-cyan-800 border-cyan-200">
                 <FileSpreadsheet className="w-3 h-3 text-cyan-600" />
                 <span>EXCEL & WORD</span>
               </span>
@@ -1324,8 +1289,8 @@ export const TemplateDownloadSection: React.FC<
             </div>
 
             {/* Centered Hero 3D Illustration */}
-            <div className="my-2 flex-1 flex items-center justify-center relative min-h-[105px] sm:min-h-[120px]">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-cyan-50/60 border border-cyan-100 flex items-center justify-center p-2.5">
+            <div className="my-1 sm:my-2 flex-1 flex items-center justify-center relative min-h-[58px] sm:min-h-[120px]">
+              <div className="w-14 h-14 sm:w-28 sm:h-28 rounded-xl sm:rounded-2xl bg-cyan-50/60 border border-cyan-100 flex items-center justify-center p-1.5 sm:p-2.5">
                 <img
                   src="/assets/Asetlogo/icon-analysis-word-excel.webp"
                   alt="Template Analisis Soal"
@@ -1347,8 +1312,8 @@ export const TemplateDownloadSection: React.FC<
           </div>
 
           {/* Action Button */}
-          <div className="pt-3 relative z-10 w-full">
-            <span className="w-full py-2.5 px-3 rounded-2xl text-[11px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-cyan-50 hover:bg-cyan-600 text-cyan-800 hover:text-white border border-cyan-200 hover:border-cyan-600 shadow-2xs">
+          <div className="pt-2 sm:pt-3 relative z-10 w-full">
+            <span className="w-full py-2 px-1.5 sm:py-2.5 sm:px-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-cyan-50 hover:bg-cyan-600 text-cyan-800 hover:text-white border border-cyan-200 hover:border-cyan-600 shadow-2xs">
               <Download className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">Generator</span>
               <ArrowRight className="w-3.5 h-3.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
@@ -1381,13 +1346,13 @@ export const TemplateDownloadSection: React.FC<
               }
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-amber-200/90 hover:border-amber-400 bg-amber-50/20 hover:bg-amber-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none text-left"
+          className="group relative flex flex-col justify-between p-2 sm:p-4 rounded-2xl sm:rounded-[24px] border border-amber-200/90 hover:border-amber-400 bg-amber-50/20 hover:bg-amber-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[205px] sm:min-h-[320px] select-none text-left"
         >
           {/* Card Content Top */}
           <div className="relative z-10 flex flex-col flex-1">
             {/* Badges Row + Top Right Circle Arrow / Admin Edit */}
             <div className="flex items-center justify-between w-full mb-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase border bg-amber-100 text-amber-900 border-amber-300">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] sm:px-3 sm:text-[11px] font-bold tracking-wider uppercase border bg-amber-100 text-amber-900 border-amber-300">
                 <Sparkles className="w-3 h-3 text-amber-600" />
                 <span>E-RAPOR RESMI</span>
               </span>
@@ -1415,8 +1380,8 @@ export const TemplateDownloadSection: React.FC<
             </div>
 
             {/* Centered Hero 3D Illustration */}
-            <div className="my-2 flex-1 flex items-center justify-center relative min-h-[105px] sm:min-h-[120px]">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-amber-100/70 border border-amber-200 flex items-center justify-center p-2.5">
+            <div className="my-1 sm:my-2 flex-1 flex items-center justify-center relative min-h-[58px] sm:min-h-[120px]">
+              <div className="w-14 h-14 sm:w-28 sm:h-28 rounded-xl sm:rounded-2xl bg-amber-100/70 border border-amber-200 flex items-center justify-center p-1.5 sm:p-2.5">
                 <img
                   src="/assets/Asetlogo/icon-template-rapor.webp"
                   alt="E-Rapor STS"
@@ -1437,14 +1402,16 @@ export const TemplateDownloadSection: React.FC<
             </div>
           </div>
 
-          {/* Action Button */}
-          <div className="pt-3 relative z-10 w-full">
-            <span className="w-full py-2.5 px-3 rounded-2xl text-[11px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold shadow-xs">
-              <BookOpen className="w-3.5 h-3.5 flex-shrink-0 text-slate-950" />
-              <span className="truncate">Buka E-Rapor STS</span>
-              <ArrowRight className="w-3.5 h-3.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform flex-shrink-0 text-slate-950" />
-            </span>
-          </div>
+          
+{/* Action Button */}
+<div className="pt-2 sm:pt-3 relative z-10 w-full">
+  <span className="w-full py-2 px-1.5 sm:py-2.5 sm:px-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 shadow-sm">
+    <BookOpen className="w-3.5 h-3.5 flex-shrink-0 text-amber-700" />
+    <span className="truncate">Buka E-Rapor STS</span>
+    <ArrowRight className="w-3.5 h-3.5 opacity-75 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform flex-shrink-0 text-amber-700" />
+  </span>
+</div>
+
         </div>
 
         {/* ====================================================
@@ -1464,13 +1431,13 @@ export const TemplateDownloadSection: React.FC<
               handleOpenDriveTemplate(tplFolder);
             }
           }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-slate-200/90 hover:border-emerald-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none text-left"
+          className="group relative flex flex-col justify-between p-2 sm:p-4 rounded-2xl sm:rounded-[24px] border border-slate-200/90 hover:border-emerald-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[205px] sm:min-h-[320px] select-none text-left"
         >
           {/* Card Content Top */}
           <div className="relative z-10 flex flex-col flex-1">
             {/* Badges Row + Top Right Circle Arrow / Admin Edit */}
             <div className="flex items-center justify-between w-full mb-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase border bg-emerald-50 text-emerald-800 border-emerald-200">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] sm:px-3 sm:text-[11px] font-bold tracking-wider uppercase border bg-emerald-50 text-emerald-800 border-emerald-200">
                 <FolderUp className="w-3 h-3 text-emerald-600" />
                 <span>FOLDER DRIVE</span>
               </span>
@@ -1498,8 +1465,8 @@ export const TemplateDownloadSection: React.FC<
             </div>
 
             {/* Centered Hero 3D Illustration */}
-            <div className="my-2 flex-1 flex items-center justify-center relative min-h-[105px] sm:min-h-[120px]">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-center p-2.5">
+            <div className="my-1 sm:my-2 flex-1 flex items-center justify-center relative min-h-[58px] sm:min-h-[120px]">
+              <div className="w-14 h-14 sm:w-28 sm:h-28 rounded-xl sm:rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center justify-center p-1.5 sm:p-2.5">
                 <img
                   src="/assets/Asetlogo/icon-folder-drive.webp"
                   alt="Folder Kosong Soal"
@@ -1521,72 +1488,10 @@ export const TemplateDownloadSection: React.FC<
           </div>
 
           {/* Action Button */}
-          <div className="pt-3 relative z-10 w-full">
-            <span className="w-full py-2.5 px-3 rounded-2xl text-[11px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-200 hover:border-emerald-600 shadow-2xs">
+          <div className="pt-2 sm:pt-3 relative z-10 w-full">
+            <span className="w-full py-2 px-1.5 sm:py-2.5 sm:px-3 rounded-xl sm:rounded-2xl text-[10px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-emerald-50 hover:bg-emerald-600 text-emerald-800 hover:text-white border border-emerald-200 hover:border-emerald-600 shadow-2xs">
               <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">Buka Folder Drive</span>
-              <ArrowRight className="w-3.5 h-3.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-            </span>
-          </div>
-        </div>
-
-        {/* ====================================================
-            CARD 5 — TRACKING PENGUMPULAN SOAL
-            ==================================================== */}
-        <div
-          id="card-template-tracking_soal"
-          role="button"
-          tabIndex={0}
-          onClick={() => onNavigateToTracking?.()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              onNavigateToTracking?.();
-            }
-          }}
-          className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-[24px] border border-slate-200/90 hover:border-purple-300 bg-white hover:bg-slate-50/50 transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-md cursor-pointer overflow-hidden min-h-[300px] sm:min-h-[320px] select-none text-left"
-        >
-          {/* Card Content Top */}
-          <div className="relative z-10 flex flex-col flex-1">
-            {/* Badges Row + Top Right Circle Arrow */}
-            <div className="flex items-center justify-between w-full mb-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase border bg-purple-50 text-purple-800 border-purple-200">
-                <ClipboardList className="w-3 h-3 text-purple-600" />
-                <span>TRACKING</span>
-              </span>
-
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-50 group-hover:bg-purple-50 border border-slate-200 group-hover:border-purple-200 flex items-center justify-center text-slate-500 group-hover:text-purple-700 transition-all flex-shrink-0">
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </div>
-            </div>
-
-            {/* Centered Hero 3D Illustration */}
-            <div className="my-2 flex-1 flex items-center justify-center relative min-h-[105px] sm:min-h-[120px]">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-purple-50/60 border border-purple-100 flex items-center justify-center p-2.5">
-                <img
-                  src="/assets/Asetlogo/icon-tracking-soal.webp"
-                  alt="Tracking Soal"
-                  className="w-full h-full object-contain transition-transform duration-300 ease-out group-hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-
-            {/* Title & Description (Left Aligned) */}
-            <div className="mt-auto pt-1">
-              <h3 className="text-[13px] sm:text-[15px] font-bold text-slate-800 font-heading tracking-tight leading-snug transition-colors group-hover:text-purple-700">
-                Tracking Soal
-              </h3>
-              <p className="text-[10.5px] sm:text-[11.5px] text-slate-500 mt-1 leading-relaxed line-clamp-2 font-normal">
-                Pantau status pengumpulan dan cetak naskah soal per kelas.
-              </p>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="pt-3 relative z-10 w-full">
-            <span className="w-full py-2.5 px-3 rounded-2xl text-[11px] sm:text-[12px] font-bold tracking-wide flex items-center justify-center gap-1.5 transition-all bg-purple-50 hover:bg-purple-600 text-purple-800 hover:text-white border border-purple-200 hover:border-purple-600 shadow-2xs">
-              <ClipboardList className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="truncate">Buka Tracking</span>
               <ArrowRight className="w-3.5 h-3.5 opacity-90 group-hover:opacity-100 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
             </span>
           </div>

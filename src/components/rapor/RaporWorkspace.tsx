@@ -1655,9 +1655,9 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
               <section className="relative overflow-hidden rounded-2xl border border-emerald-100/90 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white shadow-xs">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_35%,rgba(16,185,129,0.06),transparent_40%),radial-gradient(circle_at_15%_80%,rgba(14,165,233,0.04),transparent_35%)] pointer-events-none" />
 
-                <div className="relative p-4 sm:p-5 lg:px-6 lg:py-4.5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="relative flex flex-col gap-2.5 p-2.5 sm:gap-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between lg:px-6 lg:py-4.5">
                   {/* Left Side: Greeting & Inline Quote */}
-                  <div className="min-w-0 max-w-2xl">
+                  <div className="min-w-0 w-full max-w-2xl">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100/70 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
                         <Sparkles className="h-2.5 w-2.5 text-emerald-600" />
@@ -1667,14 +1667,14 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       <span className="text-[11px] text-slate-500 hidden sm:inline font-medium">Kurikulum Merdeka</span>
                     </div>
 
-                    <h2 className="mt-1.5 text-xl sm:text-2xl lg:text-[25px] font-bold leading-tight tracking-tight text-slate-900 font-heading">
+                    <h2 className="mt-1 text-base sm:mt-1.5 sm:text-2xl lg:text-[25px] font-bold leading-tight tracking-tight text-slate-900 font-heading">
                       Halo, {teacherName} <span className="inline-block">👋</span>
                     </h2>
 
                     {/* Inline Compact Inspiration Quote */}
-                    <div className="mt-2 flex items-center gap-2 rounded-xl border border-emerald-100/90 bg-white/80 px-3 py-1.5 backdrop-blur-xs">
+                    <div className="mt-1.5 flex min-w-0 items-center gap-1.5 rounded-xl border border-emerald-100/90 bg-white/80 px-2 py-1.5 sm:mt-2 sm:gap-2 sm:px-3 sm:py-1.5 backdrop-blur-xs">
                       <Quote className="h-3 w-3 text-emerald-600 shrink-0" />
-                      <p className="text-xs italic text-slate-600 truncate font-normal">
+                      <p className="min-w-0 truncate text-[11px] italic font-normal text-slate-600 sm:text-xs">
                         “Setiap anak memiliki potensi, tugas kita adalah membantu mereka menemukannya.”
                       </p>
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 hidden md:inline">
@@ -1683,35 +1683,35 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                     </div>
                   </div>
 
-                  {/* Right Side: 3 Compact Feature Pills */}
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-xs">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <BarChart2 className="h-3.5 w-3.5" />
+                  {/* Quick menu: 3 kolom ringkas di mobile, tetap horizontal di desktop */}
+                  <div className="grid w-full grid-cols-3 gap-1.5 sm:flex sm:w-auto sm:flex-nowrap sm:items-center sm:gap-2 lg:shrink-0">
+                    <div className="flex h-11 min-w-0 flex-row items-center justify-center gap-1.5 rounded-xl border border-slate-200/90 bg-white/90 px-1.5 py-1.5 text-center shadow-xs transition-colors sm:h-auto sm:justify-start sm:gap-2 sm:px-3 sm:py-2 sm:text-left">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 sm:h-7 sm:w-7">
+                        <BarChart2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                       </div>
-                      <div className="leading-tight text-left">
-                        <p className="text-xs font-bold text-slate-900">Kelola Nilai</p>
-                        <p className="text-[10px] text-slate-500 font-normal">Lebih terstruktur</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-xs">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-700 border border-sky-200">
-                        <Users className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="leading-tight text-left">
-                        <p className="text-xs font-bold text-slate-900">Pantau Siswa</p>
-                        <p className="text-[10px] text-slate-500 font-normal">Capaian belajar</p>
+                      <div className="min-w-0 leading-tight">
+                        <p className="whitespace-nowrap text-[9px] font-bold leading-tight text-slate-900 sm:text-xs">Kelola Nilai</p>
+                        <p className="hidden text-[10px] font-normal text-slate-500 sm:block">Lebih terstruktur</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-xs">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
-                        <FileText className="h-3.5 w-3.5" />
+                    <div className="flex h-11 min-w-0 flex-row items-center justify-center gap-1.5 rounded-xl border border-slate-200/90 bg-white/90 px-1.5 py-1.5 text-center shadow-xs transition-colors sm:h-auto sm:justify-start sm:gap-2 sm:px-3 sm:py-2 sm:text-left">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700 sm:h-7 sm:w-7">
+                        <Users className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                       </div>
-                      <div className="leading-tight text-left">
-                        <p className="text-xs font-bold text-slate-900">Rapor Siap</p>
-                        <p className="text-[10px] text-slate-500 font-normal">Cetak & ekspor</p>
+                      <div className="min-w-0 leading-tight">
+                        <p className="whitespace-nowrap text-[9px] font-bold leading-tight text-slate-900 sm:text-xs">Pantau Siswa</p>
+                        <p className="hidden text-[10px] font-normal text-slate-500 sm:block">Capaian belajar</p>
+                      </div>
+                    </div>
+
+                    <div className="flex h-11 min-w-0 flex-row items-center justify-center gap-1.5 rounded-xl border border-slate-200/90 bg-white/90 px-1.5 py-1.5 text-center shadow-xs transition-colors sm:h-auto sm:justify-start sm:gap-2 sm:px-3 sm:py-2 sm:text-left">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-amber-700 sm:h-7 sm:w-7">
+                        <FileText className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                      </div>
+                      <div className="min-w-0 leading-tight">
+                        <p className="whitespace-nowrap text-[9px] font-bold leading-tight text-slate-900 sm:text-xs">Rapor Siap</p>
+                        <p className="hidden text-[10px] font-normal text-slate-500 sm:block">Cetak & ekspor</p>
                       </div>
                     </div>
                   </div>
@@ -1740,37 +1740,46 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Tombol 1 Global: Tarik Analisis (Semua Kelas) */}
-                    <button
-                      type="button"
-                      onClick={handleBatchSyncAllClasses}
-                      disabled={isBatchSyncing || isExportingAllRekap}
-                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-xs"
-                      title="Tarik nilai dari Analisis Soal otomatis untuk seluruh kelas yang Anda ampu sekaligus"
-                    >
-                      {isBatchSyncing ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-700 shrink-0" />
-                      ) : (
-                        <Zap className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                      )}
-                      <span>{isBatchSyncing ? (batchSyncStatusText || 'Menarik Nilai...') : '⚡ Tarik Analisis (Semua Kelas)'}</span>
-                    </button>
+                    {/* Aksi global: dua kartu ringkas sejajar pada mobile */}
+                    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
+                      {/* Tombol 1 Global: Tarik Analisis (Semua Kelas) */}
+                      <button
+                        type="button"
+                        onClick={handleBatchSyncAllClasses}
+                        disabled={isBatchSyncing || isExportingAllRekap}
+                        className="flex min-h-[58px] min-w-0 items-center justify-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-left text-xs font-bold text-emerald-800 shadow-sm transition-all hover:bg-emerald-100 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:min-h-9 sm:w-auto sm:justify-center sm:px-3 sm:py-1.5"
+                        title="Tarik nilai dari Analisis Soal otomatis untuk seluruh kelas yang Anda ampu sekaligus"
+                      >
+                        {isBatchSyncing ? (
+                          <RefreshCw className="h-4 w-4 shrink-0 animate-spin text-emerald-700" />
+                        ) : (
+                          <Zap className="h-4 w-4 shrink-0 text-emerald-700" />
+                        )}
+                        <span className="flex min-w-0 flex-col items-start gap-0.5 leading-tight">
+                          <span className="truncate">{isBatchSyncing ? (batchSyncStatusText || 'Menarik nilai...') : 'Tarik Analisis'}</span>
+                          <span className="text-[10px] font-medium text-emerald-700/80">Semua kelas</span>
+                        </span>
+                      </button>
 
-                    {/* Tombol 2 Global: Rekap Nilai Semua Kelas (.xlsx) */}
-                    <button
-                      type="button"
-                      onClick={handleExportAllClassesRekap}
-                      disabled={isExportingAllRekap || isBatchSyncing}
-                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-xs"
-                      title="Download rekap nilai Excel seluruh kelas yang Anda ampu dalam 1 berkas multi-sheet (.xlsx)"
-                    >
-                      {isExportingAllRekap ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
-                      ) : (
-                        <FileSpreadsheet className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      )}
-                      <span>{isExportingAllRekap ? 'Menyiapkan Excel...' : '📊 Rekap Nilai Semua Kelas (.xlsx)'}</span>
-                    </button>
+                      {/* Tombol 2 Global: Rekap Nilai Semua Kelas (.xlsx) */}
+                      <button
+                        type="button"
+                        onClick={handleExportAllClassesRekap}
+                        disabled={isExportingAllRekap || isBatchSyncing}
+                        className="flex min-h-[58px] min-w-0 items-center justify-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-2 text-left text-xs font-bold text-amber-800 shadow-sm transition-all hover:bg-amber-100 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:min-h-9 sm:w-auto sm:justify-center sm:px-3 sm:py-1.5"
+                        title="Download rekap nilai Excel seluruh kelas yang Anda ampu dalam 1 berkas multi-sheet (.xlsx)"
+                      >
+                        {isExportingAllRekap ? (
+                          <RefreshCw className="h-4 w-4 shrink-0 animate-spin text-amber-600" />
+                        ) : (
+                          <FileSpreadsheet className="h-4 w-4 shrink-0 text-amber-600" />
+                        )}
+                        <span className="flex min-w-0 flex-col items-start gap-0.5 leading-tight">
+                          <span className="truncate">{isExportingAllRekap ? 'Menyiapkan Excel...' : 'Rekap Nilai'}</span>
+                          <span className="text-[10px] font-medium text-amber-700/80">Excel · XLSX</span>
+                        </span>
+                      </button>
+                    </div>
 
                     {/* Class Search input */}
                     <div className="relative">

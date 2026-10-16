@@ -10,7 +10,7 @@ import {
   ListOrdered,
   FileQuestion,
   Brain,
-  ArrowLeft,
+  X,
   GraduationCap,
   Sparkles,
   ClipboardCheck,
@@ -18,8 +18,6 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
-  ChevronRight,
-  CheckCircle2,
 } from 'lucide-react';
 
 import { EvaluationBlueprint } from '../../types/evaluationTypes';
@@ -110,10 +108,10 @@ const EVALUATION_STEPS: Array<{
     title: 'Penyusunan Kisi',
     subtitle: 'Matriks & Indikator CP',
     icon: ListOrdered,
-    activeBg: 'bg-gradient-to-br from-indigo-950/70 via-indigo-900/40 to-slate-900',
-    activeBorder: 'border-indigo-500/60 ring-1 ring-indigo-500/30',
-    activeText: 'text-indigo-300',
-    glowColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
+    activeBg: 'bg-emerald-50',
+    activeBorder: 'border-emerald-300 ring-1 ring-emerald-100',
+    activeText: 'text-emerald-700',
+    glowColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
   {
     id: 'review_kisi_kisi',
@@ -121,10 +119,10 @@ const EVALUATION_STEPS: Array<{
     title: 'Review Kisi-Kisi',
     subtitle: 'Verifikasi & Bank Kisi',
     icon: BookOpenCheck,
-    activeBg: 'bg-gradient-to-br from-cyan-950/70 via-cyan-900/40 to-slate-900',
-    activeBorder: 'border-cyan-500/60 ring-1 ring-cyan-500/30',
-    activeText: 'text-cyan-300',
-    glowColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    activeBg: 'bg-emerald-50',
+    activeBorder: 'border-emerald-300 ring-1 ring-emerald-100',
+    activeText: 'text-emerald-700',
+    glowColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
   {
     id: 'soal',
@@ -132,10 +130,10 @@ const EVALUATION_STEPS: Array<{
     title: 'Penyusunan Soal',
     subtitle: 'AI Generator & Editor',
     icon: FileQuestion,
-    activeBg: 'bg-gradient-to-br from-purple-950/70 via-purple-900/40 to-slate-900',
-    activeBorder: 'border-purple-500/60 ring-1 ring-purple-500/30',
-    activeText: 'text-purple-300',
-    glowColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+    activeBg: 'bg-emerald-50',
+    activeBorder: 'border-emerald-300 ring-1 ring-emerald-100',
+    activeText: 'text-emerald-700',
+    glowColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
   {
     id: 'review_soal',
@@ -143,10 +141,10 @@ const EVALUATION_STEPS: Array<{
     title: 'Review Naskah',
     subtitle: 'Cetak F4 (Word & PDF)',
     icon: ClipboardCheck,
-    activeBg: 'bg-gradient-to-br from-amber-950/70 via-amber-900/40 to-slate-900',
-    activeBorder: 'border-amber-500/60 ring-1 ring-amber-500/30',
-    activeText: 'text-amber-300',
-    glowColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    activeBg: 'bg-emerald-50',
+    activeBorder: 'border-emerald-300 ring-1 ring-emerald-100',
+    activeText: 'text-emerald-700',
+    glowColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
   {
     id: 'review',
@@ -154,10 +152,10 @@ const EVALUATION_STEPS: Array<{
     title: 'Hasil & Diagnosa',
     subtitle: 'Analisis Nilai & Remedial',
     icon: Brain,
-    activeBg: 'bg-gradient-to-br from-rose-950/70 via-rose-900/40 to-slate-900',
-    activeBorder: 'border-rose-500/60 ring-1 ring-rose-500/30',
-    activeText: 'text-rose-300',
-    glowColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+    activeBg: 'bg-emerald-50',
+    activeBorder: 'border-emerald-300 ring-1 ring-emerald-100',
+    activeText: 'text-emerald-700',
+    glowColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
 ];
 
@@ -168,17 +166,17 @@ const EVALUATION_STEPS: Array<{
 const EvaluationSoalLoading: React.FC = () => {
   return (
     <div className="min-h-[360px] flex items-center justify-center">
-      <div className="w-full max-w-md p-6 rounded-2xl bg-[#0F1420] border border-[#252E42] shadow-xl text-center">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
 
-        <div className="w-12 h-12 mx-auto rounded-2xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50">
+          <Loader2 className="h-6 w-6 animate-spin text-emerald-700" />
         </div>
 
-        <h3 className="mt-4 text-sm font-black text-white">
+        <h3 className="mt-4 text-sm font-bold text-slate-800">
           Memuat Penyusunan Soal
         </h3>
 
-        <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
+        <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
           Modul penyusunan soal sedang dimuat.
           Mohon tunggu sebentar...
         </p>
@@ -202,21 +200,21 @@ const EvaluationSoalErrorFallback: React.FC<
 > = ({ onRetry }) => {
   return (
     <div className="min-h-[360px] flex items-center justify-center">
-      <div className="w-full max-w-lg p-6 rounded-2xl bg-[#0F1420] border border-rose-500/30 shadow-xl">
+      <div className="w-full max-w-lg rounded-2xl border border-rose-200 bg-white p-6 shadow-sm">
 
         <div className="flex items-start gap-4">
 
-          <div className="w-11 h-11 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-5 h-5 text-rose-400" />
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-rose-100 bg-rose-50">
+            <AlertTriangle className="h-5 w-5 text-rose-600" />
           </div>
 
           <div className="min-w-0">
 
-            <h3 className="text-sm font-black text-white">
+            <h3 className="text-sm font-bold text-slate-800">
               Modul Penyusunan Soal Tidak Dapat Dimuat
             </h3>
 
-            <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
+            <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
               Modul penyusunan soal gagal dimuat.
               Menu Evaluasi lainnya tetap tersedia.
             </p>
@@ -224,7 +222,7 @@ const EvaluationSoalErrorFallback: React.FC<
             <button
               type="button"
               onClick={onRetry}
-              className="mt-4 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-2 cursor-pointer transition-all"
+              className="mt-4 flex cursor-pointer items-center gap-2 rounded-xl bg-emerald-700 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-800"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Muat Ulang Modul Soal
@@ -458,150 +456,138 @@ export const EvaluationLearningView: React.FC<
      RENDER
   ========================================================== */
 
+  // Indeks ini hanya digunakan untuk menampilkan progres visual.
+  const activeStepIndex = EVALUATION_STEPS.findIndex(
+    (step) => step.id === activeSubMenu
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
 
       {/* ======================================================
-          TOP HEADER & 5-STEP INTERACTIVE PIPELINE
+          HEADER RINGKAS + PROGRESS STEPPER
+          Tampilan saja; handler dan alur navigasi tetap sama.
       ====================================================== */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#090D16] via-[#0E1424] to-[#15122B] border border-indigo-500/20 shadow-2xl p-5 sm:p-6 transition-all">
-        {/* Glow ambient background accents */}
-        <div className="absolute top-0 right-1/4 w-80 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-10 w-60 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 px-4 py-4 sm:px-5 sm:py-4">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-700 sm:h-11 sm:w-11">
+              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
 
-        {/* --- HEADER TITLE BAR --- */}
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="flex items-start sm:items-center gap-4">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                className="group p-3 rounded-2xl bg-[#141A29]/90 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-indigo-500 text-slate-300 hover:text-white transition-all duration-200 cursor-pointer border border-slate-700/80 hover:border-indigo-400/50 shadow-lg shadow-black/30 hover:shadow-indigo-500/25 shrink-0 flex items-center justify-center"
-                title="Kembali ke Galeri Administrasi"
-              >
-                <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-              </button>
-            )}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h1 className="font-heading text-base font-bold tracking-tight text-slate-800 sm:text-lg">
+                  Evaluasi Pembelajaran
+                </h1>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center flex-wrap gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-purple-600/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-md shadow-indigo-500/10 shrink-0">
-                  <GraduationCap className="w-5 h-5" />
-                </div>
+                <span className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50 px-2 py-1 text-[10px] font-semibold text-violet-700 sm:text-[11px]">
+                  <Sparkles className="h-3 w-3" />
+                  Alur AI
+                </span>
 
-                <div>
-                  <div className="flex items-center flex-wrap gap-2">
-                    <h1 className="text-lg sm:text-xl font-black text-white tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-300">
-                      Evaluasi Pembelajaran
-                    </h1>
-
-                    <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-indigo-500/25 to-purple-500/25 text-indigo-300 border border-indigo-400/30 flex items-center gap-1.5 shadow-sm shadow-indigo-500/10">
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-                      Alur Terpadu AI
-                    </span>
-                  </div>
-                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[10px] font-semibold text-emerald-700 sm:text-[11px]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                  Kurikulum Merdeka
+                </span>
               </div>
 
-              <p className="text-xs text-slate-400 max-w-3xl leading-relaxed">
-                Alur administrasi evaluasi terpadu Penyusunan kisi-kisi CP/TP, bank verifikasi kisi, generator naskah soal AI, preview & cetak F4, serta interpretasi pedagogis hasil asesmen.
+              <p className="mt-1 text-xs leading-relaxed text-slate-500 sm:text-[13px]">
+                Kelola kisi-kisi, naskah soal, dan hasil evaluasi.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 self-start md:self-center shrink-0">
-            <span className="text-xs font-bold text-slate-200 bg-[#121827]/90 border border-slate-700/80 px-3.5 py-2 rounded-2xl flex items-center gap-2.5 shadow-md shadow-black/20">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-4 ring-emerald-400/20 animate-pulse" />
-              Kurikulum Merdeka
-            </span>
-          </div>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Tutup Evaluasi Pembelajaran"
+              title="Tutup"
+              className="group flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors duration-150 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:h-10 sm:w-10"
+            >
+              <X className="h-4 w-4 transition-transform duration-150 group-hover:rotate-90 sm:h-[18px] sm:w-[18px]" />
+            </button>
+          )}
         </div>
 
-        {/* --- 5-STEP CONTINUOUS PIPELINE --- */}
-        <div className="relative mt-6 pt-5 border-t border-slate-800/80">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-            {EVALUATION_STEPS.map((step, idx) => {
-              const Icon = step.icon;
-              const isActive = activeSubMenu === step.id;
+        {/* Five-step progress stepper */}
+        <div className="border-t border-slate-100 px-3 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5">
+          <div className="relative">
+            {/* Track */}
+            <div className="absolute left-[10%] right-[10%] top-4 h-0.5 rounded-full bg-slate-200" />
+            <div
+              className="absolute left-[10%] top-4 h-0.5 rounded-full bg-emerald-600 transition-all duration-200"
+              style={{
+                width: `${Math.max(0, Math.min(100, (activeStepIndex / (EVALUATION_STEPS.length - 1)) * 80))}%`,
+              }}
+            />
 
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  onClick={() => {
-                    switch (step.id) {
-                      case 'kisi_kisi':
-                        handleOpenKisiKisi();
-                        break;
-                      case 'review_kisi_kisi':
-                        handleOpenReviewKisiKisi();
-                        break;
-                      case 'soal':
-                        handleOpenSoal();
-                        break;
-                      case 'review_soal':
-                        handleOpenReviewSoal();
-                        break;
-                      case 'review':
-                        handleOpenReviewHasil();
-                        break;
-                    }
-                  }}
-                  className={`group relative text-left p-3 rounded-xl border transition-all duration-200 cursor-pointer overflow-hidden flex flex-col justify-between ${
-                    isActive
-                      ? `${step.activeBg} ${step.activeBorder} shadow-lg shadow-black/40`
-                      : 'bg-slate-900/50 hover:bg-slate-800/60 border-slate-800/80 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {/* Top row: step number + icon */}
-                  <div className="flex items-center justify-between mb-2">
+            <div className="relative grid grid-cols-5 gap-1 sm:gap-2">
+              {EVALUATION_STEPS.map((step, idx) => {
+                const Icon = step.icon;
+                const isActive = activeSubMenu === step.id;
+                const isCompleted = idx < activeStepIndex;
+
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => {
+                      switch (step.id) {
+                        case 'kisi_kisi':
+                          handleOpenKisiKisi();
+                          break;
+                        case 'review_kisi_kisi':
+                          handleOpenReviewKisiKisi();
+                          break;
+                        case 'soal':
+                          handleOpenSoal();
+                          break;
+                        case 'review_soal':
+                          handleOpenReviewSoal();
+                          break;
+                        case 'review':
+                          handleOpenReviewHasil();
+                          break;
+                      }
+                    }}
+                    aria-current={isActive ? 'step' : undefined}
+                    className="group flex min-w-0 flex-col items-center rounded-lg px-0.5 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 sm:px-1"
+                  >
                     <span
-                      className={`text-[10px] font-black tracking-wider px-1.5 py-0.5 rounded-md border ${
+                      className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full border text-[11px] font-bold transition-colors duration-150 sm:h-9 sm:w-9 sm:text-xs ${
                         isActive
-                          ? step.glowColor
-                          : 'bg-slate-800/80 text-slate-400 border-slate-700/60'
+                          ? 'border-emerald-700 bg-emerald-700 text-white shadow-sm shadow-emerald-700/15'
+                          : isCompleted
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : 'border-slate-200 bg-white text-slate-500 group-hover:border-emerald-200 group-hover:text-emerald-700'
                       }`}
                     >
-                      STEP {step.stepNumber}
+                      {step.stepNumber}
                     </span>
 
-                    <div
-                      className={`p-1.5 rounded-lg transition-transform group-hover:scale-105 ${
+                    <span
+                      className={`mt-2 line-clamp-2 text-[10px] font-semibold leading-tight sm:text-xs ${
                         isActive
-                          ? `${step.glowColor}`
-                          : 'bg-slate-800/60 text-slate-400'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-
-                  {/* Title & subtitle */}
-                  <div className="min-w-0">
-                    <div
-                      className={`text-xs font-bold truncate leading-tight ${
-                        isActive ? 'text-white' : 'text-slate-200 group-hover:text-white'
+                          ? 'text-emerald-800'
+                          : 'text-slate-600 group-hover:text-emerald-700'
                       }`}
                     >
                       {step.title}
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                      {step.subtitle}
-                    </div>
-                  </div>
+                    </span>
 
-                  {/* Active highlight bar on bottom */}
-                  {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-white/80 to-transparent" />
-                  )}
-                </button>
-              );
-            })}
+                    <span className="mt-1 hidden max-w-full truncate text-[10px] leading-tight text-slate-400 sm:block">
+                      {step.subtitle}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-
-      </div>
-
+      </section>
 
       {/* ======================================================
           ACTIVE SUB-MENU CONTENT
