@@ -648,7 +648,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
 
   if (students.length === 0) {
     return (
-      <div className="p-12 text-center text-slate-400 text-xs bg-slate-900/60 rounded-2xl border border-slate-800">
+      <div className="p-12 text-center text-slate-500 text-xs bg-white rounded-2xl border border-slate-200 shadow-xs">
         Belum ada data siswa untuk dicetak di kelas ini.
       </div>
     );
@@ -1213,7 +1213,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           <>
             {/* PEMBATAS VISUAL HALAMAN / PAGE BREAK PRINT */}
             <div className="page-break-after my-6 print:hidden border-b border-dashed border-gray-400 text-center relative">
-              <span className="bg-slate-900 text-slate-400 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider relative -top-3">
+              <span className="bg-white text-slate-600 border border-slate-300 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider relative -top-3 shadow-xs">
                 Batas Halaman Cetak (Lembar 1 Selesai • Lanjut Lembar 2)
               </span>
             </div>
@@ -1503,21 +1503,21 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
   return (
     <div className="space-y-6">
       {/* Control Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800 print:hidden shadow-lg">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200/90 print:hidden shadow-xs">
         {/* Student Selector Pagination */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={handlePrevStudent}
             disabled={selectedStudentIndex === 0 || isBatchMode || isGeneratingPdf}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white cursor-pointer transition-colors"
+            className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 disabled:opacity-30 disabled:cursor-not-allowed text-slate-700 cursor-pointer transition-colors"
             title="Siswa Sebelumnya"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-amber-400 shrink-0" />
+            <User className="w-4 h-4 text-emerald-600 shrink-0" />
             <select
               value={selectedStudentIndex}
               disabled={isBatchMode || isGeneratingPdf}
@@ -1525,10 +1525,10 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
                 setSelectedStudentIndex(parseInt(e.target.value, 10));
                 setIsBatchMode(false);
               }}
-              className="bg-slate-950 text-amber-300 font-bold text-xs px-3 py-1.5 border border-amber-500/40 rounded-xl focus:outline-none cursor-pointer disabled:opacity-50"
+              className="bg-slate-50 text-slate-900 font-bold text-xs px-3 py-1.5 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-emerald-500 cursor-pointer disabled:opacity-50"
             >
               {students.map((st, i) => (
-                <option key={st.id} value={i} className="bg-slate-900 text-white">
+                <option key={st.id} value={i} className="bg-white text-slate-900">
                   {i + 1}. {st.name} ({st.nim || st.nisn || '-'})
                 </option>
               ))}
@@ -1539,7 +1539,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             type="button"
             onClick={handleNextStudent}
             disabled={selectedStudentIndex === students.length - 1 || isBatchMode || isGeneratingPdf}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white cursor-pointer transition-colors"
+            className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 disabled:opacity-30 disabled:cursor-not-allowed text-slate-700 cursor-pointer transition-colors"
             title="Siswa Berikutnya"
           >
             <ChevronRight className="w-4 h-4" />
@@ -1552,8 +1552,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             disabled={isGeneratingPdf}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ml-1 ${
               isBatchMode
-                ? 'bg-amber-500/20 border-amber-400 text-amber-300'
-                : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
             }`}
             title="Ganti tampilan pratinjau di layar (1 siswa atau seluruh kelas)"
           >
@@ -1564,15 +1564,15 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
         {/* Action Controls: Export Scope + Paper Size + Kop Toggle + 3 Symbol Export Buttons + Print */}
         <div className="flex items-center gap-2 flex-wrap">
           {/* Pilihan Kertas: A4 vs F4 / Folio */}
-          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800" title="Pilih Ukuran Kertas Cetak">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200" title="Pilih Ukuran Kertas Cetak">
             <button
               type="button"
               onClick={() => setPaperSize('a4')}
               disabled={isGeneratingPdf}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 paperSize === 'a4'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
               title="Kertas A4 (210 × 297 mm)"
             >
@@ -1584,8 +1584,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               disabled={isGeneratingPdf}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 paperSize === 'f4'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
               title="Kertas F4 / Folio (215 × 330 mm) - Sangat cocok untuk deskripsi capaian pembelajaran yang panjang"
             >
@@ -1600,8 +1600,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             disabled={isGeneratingPdf}
             className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
               includeKopSekolah
-                ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300'
-                : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800 font-bold'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
             }`}
             title="Tampilkan Kop Resmi Sekolah (Nama Sekolah, NPSN, & Alamat)"
           >
@@ -1609,15 +1609,15 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           </button>
 
           {/* Scope Selector: Siswa Ini vs Seluruh Kelas */}
-          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
               type="button"
               onClick={() => setExportScope('single')}
               disabled={isGeneratingPdf}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 exportScope === 'single'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
               title="Unduh untuk 1 siswa yang sedang dipilih saat ini"
             >
@@ -1630,8 +1630,8 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               disabled={isGeneratingPdf}
               className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 exportScope === 'class'
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-slate-900 font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
               title={`Unduh untuk seluruh siswa dalam satu kelas (${students.length} siswa)`}
             >
@@ -1641,13 +1641,13 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
           </div>
 
           {/* Symbol Export Group */}
-          <div className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
             {/* Symbol 1: Word (.docx) */}
             <button
               type="button"
               onClick={handleExportWord}
               disabled={isGeneratingPdf || isExportingWord || isExportingExcel}
-              className="p-2 rounded-lg bg-blue-600 hover:bg-blue-500 active:scale-95 disabled:opacity-50 text-white font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+              className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:opacity-50 text-white font-bold flex items-center gap-1 shadow-xs transition-all cursor-pointer"
               title={`Unduh Word (.docx) - ${exportScope === 'single' ? currentStudent.name : 'Seluruh Kelas (' + students.length + ' Siswa)'}`}
             >
               {isExportingWord ? (
@@ -1665,7 +1665,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               type="button"
               onClick={handleExportExcel}
               disabled={isGeneratingPdf || isExportingWord || isExportingExcel}
-              className="p-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:opacity-50 text-white font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+              className="p-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-bold flex items-center gap-1 shadow-xs transition-all cursor-pointer"
               title={`Unduh Excel (.xlsx) - ${exportScope === 'single' ? currentStudent.name : 'Seluruh Kelas (' + students.length + ' Siswa)'}`}
             >
               {isExportingExcel ? (
@@ -1683,7 +1683,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               type="button"
               onClick={handleExportPdf}
               disabled={isGeneratingPdf || isExportingWord || isExportingExcel}
-              className="p-2 rounded-lg bg-rose-600 hover:bg-rose-500 active:scale-95 disabled:opacity-50 text-white font-bold flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+              className="p-2 rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 disabled:opacity-50 text-white font-bold flex items-center gap-1 shadow-xs transition-all cursor-pointer"
               title={`Unduh PDF (.pdf) - ${exportScope === 'single' ? currentStudent.name : 'Seluruh Kelas (' + students.length + ' Siswa)'}`}
             >
               {isGeneratingPdf ? (
@@ -1696,14 +1696,14 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
               )}
             </button>
 
-            <div className="h-5 w-px bg-slate-800 mx-0.5" />
+            <div className="h-5 w-px bg-slate-300 mx-0.5" />
 
             {/* Symbol 4: Cetak / Print */}
             <button
               type="button"
               onClick={handlePrint}
               disabled={isGeneratingPdf || isExportingWord || isExportingExcel}
-              className="p-2 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 disabled:opacity-50 text-slate-950 font-black flex items-center shadow-sm transition-all cursor-pointer"
+              className="p-2 rounded-lg bg-amber-500 hover:bg-amber-600 active:scale-95 disabled:opacity-50 text-white font-black flex items-center shadow-xs transition-all cursor-pointer"
               title={`Cetak Langsung (Printer / Dialog Print) - ${exportScope === 'single' ? currentStudent.name : 'Seluruh Kelas'}`}
             >
               <Printer className="w-4 h-4" />

@@ -106,19 +106,19 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
   // Security Guard: Hanya Admin yang berhak mengakses pengaturan rapor
   if (!isAdmin) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 mx-auto flex items-center justify-center mb-3">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-sm w-full text-center shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 mx-auto flex items-center justify-center mb-3">
             <Lock className="w-6 h-6" />
           </div>
-          <h3 className="text-sm font-bold text-white mb-1">Akses Khusus Admin</h3>
-          <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+          <h3 className="text-sm font-bold text-slate-900 mb-1">Akses Khusus Admin</h3>
+          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
             Pengaturan kop sekolah, titimangsa, wali kelas, dan master 18 karakter hanya dapat dikelola oleh Administrator.
           </p>
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer"
+            className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
           >
             Tutup
           </button>
@@ -205,17 +205,17 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden text-slate-800">
         {/* Modal Header */}
-        <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/80">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/25 text-amber-400 flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center font-bold">
               <School className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">Pengaturan Format & Administrasi Rapor</h3>
-              <p className="text-[11px] text-slate-400">
+              <h3 className="text-sm font-bold text-slate-900">Pengaturan Format & Administrasi Rapor</h3>
+              <p className="text-[11px] text-slate-500">
                 Konfigurasi kop sekolah, titimangsa rapor, wali kelas, dan master 18 karakter siswa
               </p>
             </div>
@@ -224,21 +224,21 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Tab Navigator */}
-        <div className="px-5 pt-3 border-b border-slate-800/80 bg-slate-950/40 flex items-center gap-2 overflow-x-auto custom-scrollbar">
+        <div className="px-5 pt-3 border-b border-slate-200 bg-slate-50/50 flex items-center gap-2 overflow-x-auto custom-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab('general')}
             className={`px-3.5 py-2 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'general'
-                ? 'border-amber-400 text-amber-300 bg-amber-500/10'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-500 text-amber-700 bg-white shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <School className="w-3.5 h-3.5" />
@@ -250,8 +250,8 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
             onClick={() => setActiveTab('teachers')}
             className={`px-3.5 py-2 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'teachers'
-                ? 'border-emerald-400 text-emerald-300 bg-emerald-500/10'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-emerald-500 text-emerald-700 bg-white shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <UserCheck className="w-3.5 h-3.5" />
@@ -263,8 +263,8 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
             onClick={() => setActiveTab('characters')}
             className={`px-3.5 py-2 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'characters'
-                ? 'border-sky-400 text-sky-300 bg-sky-500/10'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-sky-500 text-sky-700 bg-white shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <HeartHandshake className="w-3.5 h-3.5" />
@@ -276,8 +276,8 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
             onClick={() => setActiveTab('database')}
             className={`px-3.5 py-2 text-xs font-bold rounded-t-xl transition-all border-b-2 cursor-pointer flex items-center gap-2 whitespace-nowrap ${
               activeTab === 'database'
-                ? 'border-teal-400 text-teal-300 bg-teal-500/10'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-teal-500 text-teal-700 bg-white shadow-xs'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
             <Database className="w-3.5 h-3.5" />
@@ -297,96 +297,96 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
           {/* TAB 1: IDENTITAS SEKOLAH & TITIMANGSA */}
           {activeTab === 'general' && (
             <form id="general-config-form" onSubmit={handleSaveGeneral} className="space-y-4">
-              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 space-y-3">
+                <h4 className="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
                   <School className="w-3.5 h-3.5" />
                   <span>Identitas Sekolah & Titimangsa</span>
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Nama Sekolah</label>
+                    <label className="font-semibold text-slate-700">Nama Sekolah</label>
                     <input
                       type="text"
                       value={localConfig.schoolName}
                       onChange={(e) => setLocalConfig({ ...localConfig, schoolName: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">NPSN</label>
+                    <label className="font-semibold text-slate-700">NPSN</label>
                     <input
                       type="text"
                       value={localConfig.npsn}
                       onChange={(e) => setLocalConfig({ ...localConfig, npsn: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
 
                   <div className="sm:col-span-2 space-y-1">
-                    <label className="font-semibold text-slate-300">Alamat Sekolah</label>
+                    <label className="font-semibold text-slate-700">Alamat Sekolah</label>
                     <input
                       type="text"
                       value={localConfig.schoolAddress}
                       onChange={(e) => setLocalConfig({ ...localConfig, schoolAddress: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Nama Kepala Sekolah</label>
+                    <label className="font-semibold text-slate-700">Nama Kepala Sekolah</label>
                     <input
                       type="text"
                       value={localConfig.headmasterName}
                       onChange={(e) => setLocalConfig({ ...localConfig, headmasterName: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">NIP Kepala Sekolah</label>
+                    <label className="font-semibold text-slate-700">NIP Kepala Sekolah</label>
                     <input
                       type="text"
                       value={localConfig.headmasterNip}
                       onChange={(e) => setLocalConfig({ ...localConfig, headmasterNip: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">Tempat & Tanggal Titimangsa Rapor</label>
+                    <label className="font-semibold text-slate-700">Tempat & Tanggal Titimangsa Rapor</label>
                     <input
                       type="text"
                       value={localConfig.reportDatePlace}
                       placeholder="Depok, 20 Maret 2025"
                       onChange={(e) => setLocalConfig({ ...localConfig, reportDatePlace: e.target.value })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold text-slate-300">KKTP / Passing Grade Minimal</label>
+                    <label className="font-semibold text-slate-700">KKTP / Passing Grade Minimal</label>
                     <input
                       type="number"
                       value={localConfig.passingGrade}
                       onChange={(e) => setLocalConfig({ ...localConfig, passingGrade: parseInt(e.target.value, 10) || 75 })}
-                      className="w-full bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-white focus:outline-none focus:border-amber-400"
+                      className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 focus:outline-none focus:border-amber-500 shadow-xs"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
                 >
                   Tutup
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Simpan Identitas</span>
@@ -398,28 +398,28 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
           {/* TAB 2: DAFTAR WALI KELAS ROMBEL */}
           {activeTab === 'teachers' && (
             <form onSubmit={handleSaveGeneral} className="space-y-4">
-              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
+              <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
                     <UserCheck className="w-3.5 h-3.5" />
                     <span>Daftar Wali Kelas & NIP per Rombel</span>
                   </h4>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500">
                     Otomatis tercetak di rapor sesuai kelas siswa
                   </span>
                 </div>
 
-                <div className="border border-slate-800 rounded-xl overflow-hidden">
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
                   <div className="max-h-80 overflow-y-auto custom-scrollbar">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 sticky top-0">
+                      <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 sticky top-0">
                         <tr>
-                          <th className="py-2 px-3 font-bold w-16 text-center">Kelas</th>
-                          <th className="py-2 px-3 font-bold">Nama Wali Kelas (Beserta Gelar)</th>
-                          <th className="py-2 px-3 font-bold">NIP / NUPTK</th>
+                          <th className="py-2.5 px-3 font-bold w-16 text-center">Kelas</th>
+                          <th className="py-2.5 px-3 font-bold">Nama Wali Kelas (Beserta Gelar)</th>
+                          <th className="py-2.5 px-3 font-bold">NIP / NUPTK</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800/60">
+                      <tbody className="divide-y divide-slate-100">
                         {CLASS_LIST.map((cls) => {
                           const isActiveClass = cls === activeClass;
                           const teacher = classTeachers[cls] || { name: '', nip: '' };
@@ -427,36 +427,36 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                             <tr
                               key={cls}
                               className={`transition-colors ${
-                                isActiveClass ? 'bg-amber-500/10' : 'hover:bg-slate-900/40'
+                                isActiveClass ? 'bg-emerald-50/60' : 'hover:bg-slate-50/80'
                               }`}
                             >
-                              <td className="py-1.5 px-3 text-center font-black">
+                              <td className="py-2 px-3 text-center font-black">
                                 <span
-                                  className={`inline-block px-2 py-0.5 rounded text-[11px] ${
+                                  className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                                     isActiveClass
-                                      ? 'bg-amber-500 text-slate-950 font-bold'
-                                      : 'bg-slate-800 text-slate-300'
+                                      ? 'bg-emerald-600 text-white shadow-xs'
+                                      : 'bg-slate-100 text-slate-700'
                                   }`}
                                 >
                                   {cls}
                                 </span>
                               </td>
-                              <td className="py-1.5 px-3">
+                              <td className="py-2 px-3">
                                 <input
                                   type="text"
                                   placeholder={`Nama Walas ${cls}`}
                                   value={teacher.name}
                                   onChange={(e) => handleUpdateWalas(cls, 'name', e.target.value)}
-                                  className="w-full bg-slate-900/80 border border-slate-700/80 px-2 py-1 rounded text-white text-xs focus:outline-none focus:border-amber-400"
+                                  className="w-full bg-white border border-slate-300 px-2.5 py-1.5 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-emerald-500 shadow-xs"
                                 />
                               </td>
-                              <td className="py-1.5 px-3">
+                              <td className="py-2 px-3">
                                 <input
                                   type="text"
                                   placeholder="NIP / - "
                                   value={teacher.nip}
                                   onChange={(e) => handleUpdateWalas(cls, 'nip', e.target.value)}
-                                  className="w-full bg-slate-900/80 border border-slate-700/80 px-2 py-1 rounded text-white text-xs focus:outline-none focus:border-amber-400"
+                                  className="w-full bg-white border border-slate-300 px-2.5 py-1.5 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-emerald-500 shadow-xs"
                                 />
                               </td>
                             </tr>
@@ -468,17 +468,17 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
                 >
                   Tutup
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Simpan Wali Kelas</span>
@@ -490,13 +490,13 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
           {/* TAB 3: MASTER 18 KARAKTER & INDIKATOR */}
           {activeTab === 'characters' && (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200">
                 <div>
-                  <h4 className="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">
                     <HeartHandshake className="w-3.5 h-3.5" />
                     <span>Konfigurasi Master 18 Karakter Peserta Didik</span>
                   </h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-slate-500 mt-0.5">
                     Admin dapat merumuskan kalimat indikator per predikat (A, B, C, D) yang otomatis dipakai guru saat memilih predikat.
                   </p>
                 </div>
@@ -505,10 +505,10 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={handleResetCharactersToDefault}
-                    className="px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs"
                     title="Reset seluruh karakter ke format standar kurikulum"
                   >
-                    <RotateCcw className="w-3 h-3 text-slate-400" />
+                    <RotateCcw className="w-3 h-3 text-slate-500" />
                     <span>Reset Default</span>
                   </button>
 
@@ -516,7 +516,7 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                     type="button"
                     onClick={handleSaveCharacters}
                     disabled={isSavingChar}
-                    className="px-4 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+                    className="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
                   >
                     <Save className="w-3.5 h-3.5" />
                     <span>{isSavingChar ? 'Menyimpan...' : 'Simpan Karakter'}</span>
@@ -532,7 +532,7 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                   placeholder="Cari aspek karakter atau narasi indikator..."
                   value={characterSearch}
                   onChange={(e) => setCharacterSearch(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-400"
+                  className="w-full bg-white border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-500 shadow-xs"
                 />
               </div>
 
@@ -543,18 +543,18 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                   return (
                     <div
                       key={desc.id}
-                      className="border border-slate-800 rounded-xl bg-slate-950/70 overflow-hidden transition-all"
+                      className="border border-slate-200 rounded-xl bg-white shadow-xs overflow-hidden transition-all"
                     >
                       {/* Character Card Header */}
                       <div
                         onClick={() => setExpandedCharId(isExpanded ? null : desc.id)}
-                        className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-900/70 select-none"
+                        className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-slate-50/80 select-none"
                       >
                         <div className="flex items-center gap-2.5">
-                          <span className="w-6 h-6 rounded-lg bg-sky-500/15 text-sky-400 text-xs font-bold flex items-center justify-center border border-sky-500/25">
+                          <span className="w-6 h-6 rounded-lg bg-sky-50 text-sky-700 text-xs font-bold flex items-center justify-center border border-sky-200">
                             {idx + 1}
                           </span>
-                          <span className="text-xs font-bold text-white tracking-wide">
+                          <span className="text-xs font-bold text-slate-800 tracking-wide">
                             {desc.name}
                           </span>
                         </div>
@@ -564,84 +564,84 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                             A, B, C, D terdefinisi
                           </span>
                           {isExpanded ? (
-                            <ChevronUp className="w-4 h-4 text-slate-400" />
+                            <ChevronUp className="w-4 h-4 text-slate-500" />
                           ) : (
-                            <ChevronDown className="w-4 h-4 text-slate-400" />
+                            <ChevronDown className="w-4 h-4 text-slate-500" />
                           )}
                         </div>
                       </div>
 
                       {/* Character Card Body (Editable indicators) */}
                       {isExpanded && (
-                        <div className="px-4 pb-4 pt-2 border-t border-slate-800/80 bg-slate-900/30 space-y-3 text-xs">
+                        <div className="px-4 pb-4 pt-2 border-t border-slate-100 bg-slate-50/40 space-y-3 text-xs">
                           {/* Nama Karakter Field */}
                           <div>
-                            <label className="text-[11px] font-semibold text-slate-400 mb-1 block">
+                            <label className="text-[11px] font-semibold text-slate-600 mb-1 block">
                               Nama Aspek Karakter
                             </label>
                             <input
                               type="text"
                               value={desc.name}
                               onChange={(e) => handleUpdateDescriptorName(desc.id, e.target.value)}
-                              className="w-full bg-slate-950 border border-slate-700/80 px-3 py-1.5 rounded-lg text-white font-medium focus:outline-none focus:border-sky-400"
+                              className="w-full bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-slate-900 font-medium focus:outline-none focus:border-sky-500 shadow-xs"
                             />
                           </div>
 
                           {/* 4 Predicates Grid */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                             {/* [A] Sangat Baik */}
-                            <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-2.5 space-y-1">
-                              <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
-                                <span className="w-4 h-4 rounded bg-emerald-500/20 text-emerald-300 inline-flex items-center justify-center text-[10px]">A</span>
+                            <div className="bg-emerald-50/40 border border-emerald-200 rounded-lg p-2.5 space-y-1">
+                              <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+                                <span className="w-4 h-4 rounded bg-emerald-100 text-emerald-800 inline-flex items-center justify-center text-[10px] font-bold">A</span>
                                 <span>Predikat A — Sangat Baik</span>
                               </span>
                               <textarea
                                 rows={3}
                                 value={desc.indicators.A}
                                 onChange={(e) => handleUpdateIndicator(desc.id, 'A', e.target.value)}
-                                className="w-full bg-slate-950 border border-emerald-500/20 px-2.5 py-1.5 rounded text-white text-[11px] leading-relaxed focus:outline-none focus:border-emerald-400 custom-scrollbar resize-none"
+                                className="w-full bg-white border border-emerald-300 px-2.5 py-1.5 rounded-lg text-slate-900 text-[11px] leading-relaxed focus:outline-none focus:border-emerald-500 custom-scrollbar resize-none shadow-xs"
                               />
                             </div>
 
                             {/* [B] Baik */}
-                            <div className="bg-sky-950/20 border border-sky-500/30 rounded-lg p-2.5 space-y-1">
-                              <span className="text-[11px] font-bold text-sky-400 flex items-center gap-1">
-                                <span className="w-4 h-4 rounded bg-sky-500/20 text-sky-300 inline-flex items-center justify-center text-[10px]">B</span>
+                            <div className="bg-sky-50/40 border border-sky-200 rounded-lg p-2.5 space-y-1">
+                              <span className="text-[11px] font-bold text-sky-700 flex items-center gap-1">
+                                <span className="w-4 h-4 rounded bg-sky-100 text-sky-800 inline-flex items-center justify-center text-[10px] font-bold">B</span>
                                 <span>Predikat B — Baik</span>
                               </span>
                               <textarea
                                 rows={3}
                                 value={desc.indicators.B}
                                 onChange={(e) => handleUpdateIndicator(desc.id, 'B', e.target.value)}
-                                className="w-full bg-slate-950 border border-sky-500/20 px-2.5 py-1.5 rounded text-white text-[11px] leading-relaxed focus:outline-none focus:border-sky-400 custom-scrollbar resize-none"
+                                className="w-full bg-white border border-sky-300 px-2.5 py-1.5 rounded-lg text-slate-900 text-[11px] leading-relaxed focus:outline-none focus:border-sky-500 custom-scrollbar resize-none shadow-xs"
                               />
                             </div>
 
                             {/* [C] Cukup */}
-                            <div className="bg-amber-950/20 border border-amber-500/30 rounded-lg p-2.5 space-y-1">
-                              <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1">
-                                <span className="w-4 h-4 rounded bg-amber-500/20 text-amber-300 inline-flex items-center justify-center text-[10px]">C</span>
+                            <div className="bg-amber-50/40 border border-amber-200 rounded-lg p-2.5 space-y-1">
+                              <span className="text-[11px] font-bold text-amber-700 flex items-center gap-1">
+                                <span className="w-4 h-4 rounded bg-amber-100 text-amber-800 inline-flex items-center justify-center text-[10px] font-bold">C</span>
                                 <span>Predikat C — Cukup</span>
                               </span>
                               <textarea
                                 rows={3}
                                 value={desc.indicators.C}
                                 onChange={(e) => handleUpdateIndicator(desc.id, 'C', e.target.value)}
-                                className="w-full bg-slate-950 border border-amber-500/20 px-2.5 py-1.5 rounded text-white text-[11px] leading-relaxed focus:outline-none focus:border-amber-400 custom-scrollbar resize-none"
+                                className="w-full bg-white border border-amber-300 px-2.5 py-1.5 rounded-lg text-slate-900 text-[11px] leading-relaxed focus:outline-none focus:border-amber-500 custom-scrollbar resize-none shadow-xs"
                               />
                             </div>
 
                             {/* [D] Perlu Bimbingan */}
-                            <div className="bg-rose-950/20 border border-rose-500/30 rounded-lg p-2.5 space-y-1">
-                              <span className="text-[11px] font-bold text-rose-400 flex items-center gap-1">
-                                <span className="w-4 h-4 rounded bg-rose-500/20 text-rose-300 inline-flex items-center justify-center text-[10px]">D</span>
+                            <div className="bg-rose-50/40 border border-rose-200 rounded-lg p-2.5 space-y-1">
+                              <span className="text-[11px] font-bold text-rose-700 flex items-center gap-1">
+                                <span className="w-4 h-4 rounded bg-rose-100 text-rose-800 inline-flex items-center justify-center text-[10px] font-bold">D</span>
                                 <span>Predikat D — Perlu Bimbingan</span>
                               </span>
                               <textarea
                                 rows={3}
                                 value={desc.indicators.D}
                                 onChange={(e) => handleUpdateIndicator(desc.id, 'D', e.target.value)}
-                                className="w-full bg-slate-950 border border-rose-500/20 px-2.5 py-1.5 rounded text-white text-[11px] leading-relaxed focus:outline-none focus:border-rose-400 custom-scrollbar resize-none"
+                                className="w-full bg-white border border-rose-300 px-2.5 py-1.5 rounded-lg text-slate-900 text-[11px] leading-relaxed focus:outline-none focus:border-rose-500 custom-scrollbar resize-none shadow-xs"
                               />
                             </div>
                           </div>
@@ -653,11 +653,11 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
               </div>
 
               {/* Bottom Actions for Characters Tab */}
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
                 >
                   Tutup
                 </button>
@@ -665,7 +665,7 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
                   type="button"
                   onClick={handleSaveCharacters}
                   disabled={isSavingChar}
-                  className="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSavingChar ? 'Menyimpan...' : 'Simpan Master 18 Karakter'}</span>
@@ -677,28 +677,28 @@ export const RaporSettingsModal: React.FC<RaporSettingsModalProps> = ({
           {/* TAB 4: DATABASE CLOUD & SQL */}
           {activeTab === 'database' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-teal-950/20 border border-teal-500/30 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-teal-400 shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-white">Sinkronisasi Cloud Aktif (Dual Cloud Engine)</h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <h4 className="text-xs font-bold text-teal-900">Sinkronisasi Cloud Aktif (Dual Cloud Engine)</h4>
+                  <p className="text-[11px] text-teal-800 leading-relaxed">
                     Setiap catatan guru, absensi, dan ekstrakurikuler kini disimpan secara terpusat dan otomatis tersinkronisasi ke <strong>Cloud Supabase</strong> dan <strong>Cloud Firestore</strong>. Guru dapat mengerjakan rapor di laptop masing-masing tanpa khawatir catatan hilang saat reload atau ganti perangkat, dan Admin dapat langsung menarik data catatan ini saat cetak rapor dan leger.
                   </p>
                 </div>
               </div>
 
               {/* Migration 012 Box */}
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-400">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-700">
                       Skema Database Supabase
                     </span>
-                    <h5 className="text-xs font-bold text-white">
+                    <h5 className="text-xs font-bold text-slate-900">
                       Migration 012: Tabel Catatan Guru, Absensi & Ekstrakurikuler
                     </h5>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Tabel <code className="bg-slate-800 px-1 py-0.5 rounded text-teal-300">student_additional_info</code> untuk persistensi data catatan rapor.
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Tabel <code className="bg-slate-200 px-1 py-0.5 rounded text-teal-800 font-mono">student_additional_info</code> untuk persistensi data catatan rapor.
                     </p>
                   </div>
 
@@ -741,11 +741,11 @@ CREATE POLICY "Allow all write on student_additional_info" ON public.student_add
                       setTimeout(() => setCopiedSql(false), 3000);
                       setTimeout(() => setNotification(null), 3000);
                     }}
-                    className="px-3.5 py-2 rounded-xl bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 border border-teal-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-auto"
+                    className="px-3.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 self-start sm:self-auto shadow-xs"
                   >
                     {copiedSql ? (
                       <>
-                        <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        <CheckCheck className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Tersalin!</span>
                       </>
                     ) : (
@@ -757,7 +757,7 @@ CREATE POLICY "Allow all write on student_additional_info" ON public.student_add
                   </button>
                 </div>
 
-                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300 max-h-48 overflow-y-auto custom-scrollbar">
+                <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-200 max-h-48 overflow-y-auto custom-scrollbar shadow-inner">
                   <pre className="whitespace-pre-wrap leading-relaxed">
 {`-- MIGRATION 012: CATATAN GURU, ABSENSI & EKSTRAKURIKULER
 CREATE TABLE IF NOT EXISTS public.student_additional_info (
@@ -784,11 +784,11 @@ CREATE TABLE IF NOT EXISTS public.student_additional_info (
               </div>
 
               {/* Bottom Actions */}
-              <div className="flex items-center justify-end pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end pt-2 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer"
                 >
                   Tutup
                 </button>

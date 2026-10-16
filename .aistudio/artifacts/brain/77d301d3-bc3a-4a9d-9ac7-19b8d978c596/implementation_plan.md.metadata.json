@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan to move search bar to the top navbar next to QRIS and clean up duplicate controls (search, date, profile/QRIS pill, notification bell, logout) from the dashboard banner.",
+  "updatedAt": "2026-10-16T07:45:02.437560362Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

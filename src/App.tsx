@@ -51,8 +51,7 @@ import {
 } from './services/teacherStorage';
 import { AppBranding, getLocalBranding, subscribeToBranding, updateStoredBranding } from './services/brandingStorage';
 import { subscribeToAnalysisSubmissions } from './services/analysisSubmissionService';
-import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
+import { Navbar } from './components/Navbar';
 import { DashboardView } from './components/DashboardView';
 import { LazyViewLoader } from './components/common/LazyViewLoader';
 
@@ -153,6 +152,7 @@ export default function App() {
   const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
   const [pendingAnalysisCount, setPendingAnalysisCount] = useState<number>(0);
+  const [globalSearch, setGlobalSearch] = useState<string>('');
 
   // Admin Authentication State
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -871,9 +871,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col md:flex-row antialiased selection:bg-emerald-500/20 selection:text-emerald-900">
-      {/* Sidebar for Desktop & Mobile Bottom Nav */}
-      <Sidebar
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col antialiased selection:bg-emerald-500/20 selection:text-emerald-900">
+      {/* Top Navbar for Desktop & Bottom Nav for Mobile */}
+      <Navbar
         currentTab={currentTab}
         onSelectTab={handleSelectTab}
         isAdmin={isAdmin}
@@ -887,23 +887,12 @@ export default function App() {
         branding={branding}
         onOpenQris={() => setIsAppQrisModalOpen(true)}
         documentCounts={documentCounts}
+        globalSearch={globalSearch}
+        onGlobalSearchChange={setGlobalSearch}
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-[#F8FAFC]">
-        {/* Mobile Header */}
-        <Header
-          currentTab={currentTab}
-          onSelectTab={handleSelectTab}
-          isAdmin={isAdmin}
-          onLogout={handleLogout}
-          onRequestLogin={() => setIsLoginModalOpen(true)}
-          activeTeacher={activeTeacher}
-          onLogoutTeacher={handleTeacherLogout}
-          branding={branding}
-          onOpenQris={() => setIsAppQrisModalOpen(true)}
-        />
-
+      <div className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
         {/* Global Notification Banner */}
         {authNotification && (
           <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 max-w-sm p-4 bg-white border border-amber-300 text-slate-800 rounded-2xl shadow-xl flex items-start gap-3 animate-slide-in print:hidden">
@@ -974,6 +963,8 @@ export default function App() {
                 onOpenUploadModal={() => setIsUploadModalOpen(true)}
                 onOpenRaporSts={() => handleSelectTab('rapor_sts')}
                 branding={branding}
+                globalSearch={globalSearch}
+                onGlobalSearchChange={setGlobalSearch}
                 onUpdateBranding={async (newBranding) => {
                   setBranding(newBranding);
                   await updateStoredBranding(newBranding);

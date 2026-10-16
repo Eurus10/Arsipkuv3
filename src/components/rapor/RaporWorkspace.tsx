@@ -1433,45 +1433,45 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-2rem)] text-slate-100 font-sans selection:bg-emerald-400/30 selection:text-emerald-100">
-      {/* Ambient background glow */}
+    <div className="relative min-h-[calc(100vh-2rem)] text-slate-800 font-sans selection:bg-emerald-500/20 selection:text-emerald-900">
+      {/* Ambient background glow - soft clean tints */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-48 left-[8%] h-[30rem] w-[30rem] rounded-full bg-emerald-500/[0.04] blur-[120px]" />
-        <div className="absolute top-[35%] right-[4%] h-[26rem] w-[26rem] rounded-full bg-cyan-500/[0.03] blur-[130px]" />
+        <div className="absolute -top-48 left-[8%] h-[30rem] w-[30rem] rounded-full bg-emerald-500/[0.03] blur-[120px]" />
+        <div className="absolute top-[35%] right-[4%] h-[26rem] w-[26rem] rounded-full bg-teal-500/[0.02] blur-[130px]" />
         <div className="absolute -bottom-24 left-[42%] h-[24rem] w-[24rem] rounded-full bg-amber-500/[0.02] blur-[120px]" />
       </div>
 
       <div className="mx-auto w-full max-w-[1680px] px-2.5 sm:px-4 lg:px-5 xl:px-6 py-2.5 sm:py-3 pb-20 md:pb-6">
         {/* ============================================================
-            GLOBAL HEADER (Dark Executive Academic Top Bar)
+            GLOBAL HEADER (Clean White Executive Academic Top Bar)
         ============================================================ */}
-        <header className="sticky top-0 z-40 mb-4 rounded-2xl border border-white/[0.09] bg-[#070F1E]/95 backdrop-blur-xl shadow-lg shadow-black/20">
+        <header className="sticky top-0 z-40 mb-4 rounded-2xl border border-slate-200/90 bg-white/95 backdrop-blur-xl shadow-xs">
           <div className="h-16 px-3 sm:px-4 flex items-center justify-between gap-3">
             {/* Left: Back & Academic Period Indicators */}
             <div className="flex items-center gap-3 min-w-0">
               <button
                 type="button"
                 onClick={handleRequestBack}
-                className="group shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-white/[0.08] bg-white/[0.035] hover:bg-white/[0.08] hover:border-white/[0.16] text-slate-300 hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
+                className="group shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 text-slate-700 hover:text-slate-900 flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
                 title="Kembali ke Dashboard"
               >
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               </button>
 
               <div className="flex items-center gap-2 min-w-0">
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/[0.08] bg-slate-900/70">
-                  <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50/80">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <div className="text-[11px] leading-tight">
-                    <span className="text-slate-400">Tahun Pelajaran </span>
-                    <span className="font-semibold text-white">{academicAccess?.academicPeriod?.schoolYear || '2026/2027'}</span>
+                    <span className="text-slate-500">Tahun Pelajaran </span>
+                    <span className="font-semibold text-slate-900">{academicAccess?.academicPeriod?.schoolYear || '2026/2027'}</span>
                   </div>
                 </div>
 
-                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-white/[0.08] bg-slate-900/70">
-                  <Layers className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50/80">
+                  <Layers className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                   <div className="text-[11px] leading-tight">
-                    <span className="text-slate-400">Semester </span>
-                    <span className="font-semibold text-emerald-400">{academicAccess?.academicPeriod?.semester || 'Ganjil'}</span>
+                    <span className="text-slate-500">Semester </span>
+                    <span className="font-semibold text-emerald-700">{academicAccess?.academicPeriod?.semester || 'Ganjil'}</span>
                   </div>
                 </div>
               </div>
@@ -1486,9 +1486,9 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   value={landingSearchQuery}
                   onChange={(e) => setLandingSearchQuery(e.target.value)}
                   placeholder="Cari fitur, kelas, atau bantuan..."
-                  className="w-full h-9 pl-9 pr-14 rounded-xl border border-white/[0.08] bg-slate-900/70 text-xs font-normal text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400/40 focus:ring-1 focus:ring-emerald-400/30 transition-all"
+                  className="w-full h-9 pl-9 pr-14 rounded-xl border border-slate-200 bg-slate-50 text-xs font-normal text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all"
                 />
-                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-white/[0.10] bg-white/[0.04] text-[9px] font-medium text-slate-400 tracking-wider">
+                <div className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded border border-slate-200 bg-white text-[9px] font-medium text-slate-500 tracking-wider">
                   Ctrl K
                 </div>
               </div>
@@ -1500,10 +1500,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                 <div
                   className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-[10px] sm:text-[11px] font-medium transition-all ${
                     cloudStatus === 'error'
-                      ? 'border-rose-400/25 bg-rose-500/[0.10] text-rose-300'
+                      ? 'border-rose-200 bg-rose-50 text-rose-700'
                       : hasUnsavedChanges
-                      ? 'border-amber-400/25 bg-amber-400/[0.10] text-amber-200'
-                      : 'border-emerald-400/25 bg-emerald-500/[0.09] text-emerald-300'
+                      ? 'border-amber-200 bg-amber-50 text-amber-800'
+                      : 'border-emerald-200 bg-emerald-50 text-emerald-800'
                   }`}
                 >
                   {renderCloudStatus()}
@@ -1514,10 +1514,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={handleRequestChangeClass}
-                  className="h-9 px-2.5 sm:px-3 rounded-xl border border-white/[0.09] bg-white/[0.035] hover:bg-white/[0.08] hover:border-white/[0.16] text-slate-200 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                  className="h-9 px-2.5 sm:px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 text-slate-700 text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                   title="Ganti atau lihat daftar kelas"
                 >
-                  <School className="w-3.5 h-3.5 text-amber-400" />
+                  <School className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="hidden sm:inline">Kelas Saya</span>
                 </button>
               )}
@@ -1532,14 +1532,14 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   }}
                   className={`relative w-9 h-9 sm:w-10 sm:h-10 rounded-xl border transition-all cursor-pointer active:scale-95 flex items-center justify-center ${
                     isNotificationOpen
-                      ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
-                      : 'border-white/[0.08] bg-white/[0.035] hover:bg-white/[0.08] text-slate-300 hover:text-white'
+                      ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900'
                   }`}
                   title="Notifikasi"
                 >
                   <Bell className="w-4 h-4" />
                   {pendingNotificationCount > 0 && (
-                    <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-[9px] font-bold text-white flex items-center justify-center border-2 border-slate-950 shadow-sm">
+                    <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-[9px] font-bold text-white flex items-center justify-center shadow-xs">
                       {pendingNotificationCount}
                     </span>
                   )}
@@ -1563,21 +1563,21 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   }}
                   className={`flex items-center gap-2.5 pl-1.5 pr-2.5 py-1 rounded-xl border transition-all cursor-pointer active:scale-95 text-left ${
                     isProfileOpen
-                      ? 'border-emerald-400/40 bg-slate-900 shadow-md shadow-emerald-500/10'
-                      : 'border-white/[0.08] bg-slate-900/70 hover:bg-slate-900 hover:border-white/[0.14]'
+                      ? 'border-emerald-300 bg-emerald-50/60 shadow-xs'
+                      : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                   title="Profil Guru & Ringkasan Akademik"
                 >
-                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/30">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
                     {teacherInitials}
                   </div>
                   <div className="hidden sm:block text-left min-w-0 max-w-[140px]">
-                    <p className="text-xs font-semibold text-white truncate">{teacherName}</p>
-                    <p className="text-[10px] text-slate-400 font-normal truncate">{teacherRoleSubtitle}</p>
+                    <p className="text-xs font-semibold text-slate-900 truncate">{teacherName}</p>
+                    <p className="text-[10px] text-slate-500 font-normal truncate">{teacherRoleSubtitle}</p>
                   </div>
                   <ChevronDown
                     className={`w-3.5 h-3.5 text-slate-400 shrink-0 hidden sm:block transition-transform duration-200 ${
-                      isProfileOpen ? 'rotate-180 text-emerald-400' : ''
+                      isProfileOpen ? 'rotate-180 text-emerald-600' : ''
                     }`}
                   />
                 </button>
@@ -1598,10 +1598,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsAnalysisSyncModalOpen(true)}
-                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+                  className="h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
                   title="Tarik & Impor Nilai dari Analisis Soal"
                 >
-                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                  <Zap className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="hidden md:inline">Tarik Nilai Analisis</span>
                   <span className="md:hidden">Analisis</span>
                 </button>
@@ -1614,16 +1614,16 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   disabled={isSavingCloud || !classData}
                   className={`h-9 sm:h-10 px-3 sm:px-3.5 rounded-xl border text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
                     hasUnsavedChanges
-                      ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md shadow-amber-400/15 hover:bg-amber-300'
-                      : 'bg-white/[0.055] text-slate-200 border-white/[0.10] hover:bg-white/[0.09] hover:border-white/[0.18]'
+                      ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-xs hover:bg-amber-300 font-bold'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                   }`}
                 >
                   {isSavingCloud ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-700" />
                   ) : (
                     <Save className="w-3.5 h-3.5" />
                   )}
-                  <span>{hasUnsavedChanges ? 'Simpan' : 'Sinkron'}</span>
+                  <span>{hasUnsavedChanges ? 'Simpan' : 'Tersimpan'}</span>
                 </button>
               )}
             </div>
@@ -1632,52 +1632,52 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
         {isAccessLoading ? (
           <div className="min-h-[55vh] flex items-center justify-center">
-            <div className="w-full max-w-md rounded-3xl border border-white/[0.08] bg-slate-950/55 backdrop-blur-xl px-6 py-12 text-center shadow-2xl">
-              <div className="w-10 h-10 border-[3px] border-emerald-400/25 border-t-emerald-400 rounded-full animate-spin mx-auto" />
-              <p className="mt-5 text-sm font-bold text-slate-200">Menyiapkan Ruang Kerja Akademik...</p>
-              <p className="mt-1 text-xs text-slate-400">Membaca periode aktif dan penugasan guru.</p>
+            <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center shadow-lg">
+              <div className="w-10 h-10 border-[3px] border-emerald-500/25 border-t-emerald-600 rounded-full animate-spin mx-auto" />
+              <p className="mt-5 text-sm font-bold text-slate-800">Menyiapkan Ruang Kerja Akademik...</p>
+              <p className="mt-1 text-xs text-slate-500">Membaca periode aktif dan penugasan guru.</p>
             </div>
           </div>
         ) : !selectedContext ? (
           /* ============================================================
-             CLASS SELECTION / LANDING (Visual Exact Redesign)
+             CLASS SELECTION / LANDING (Visual Exact Redesign - Clean Light SaaS)
           ============================================================ */
           <main className="space-y-4 sm:space-y-5">
             {accessError && (
-              <div className="flex items-start gap-3 rounded-xl border border-rose-400/20 bg-rose-500/[0.07] px-4 py-3 text-xs sm:text-sm text-rose-200">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
+              <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs sm:text-sm text-rose-700">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600" />
                 <span>{accessError}</span>
               </div>
             )}
 
-            {/* 1. HERO BANNER (Compact & Executive) */}
+            {/* 1. HERO BANNER (Clean Light Executive Style) */}
             {academicAccess && (
-              <section className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-r from-[#071322] via-[#091b2c] to-[#0b2438] shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_35%,rgba(16,185,129,0.10),transparent_40%),radial-gradient(circle_at_15%_80%,rgba(14,165,233,0.06),transparent_35%)] pointer-events-none" />
+              <section className="relative overflow-hidden rounded-2xl border border-emerald-100/90 bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-white shadow-xs">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_35%,rgba(16,185,129,0.06),transparent_40%),radial-gradient(circle_at_15%_80%,rgba(14,165,233,0.04),transparent_35%)] pointer-events-none" />
 
                 <div className="relative p-4 sm:p-5 lg:px-6 lg:py-4.5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   {/* Left Side: Greeting & Inline Quote */}
                   <div className="min-w-0 max-w-2xl">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-400/[0.08] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-300">
-                        <Sparkles className="h-2.5 w-2.5" />
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100/70 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
+                        <Sparkles className="h-2.5 w-2.5 text-emerald-600" />
                         Ruang Kerja Rapor
                       </span>
                       <span className="text-[11px] text-slate-400 hidden sm:inline">•</span>
-                      <span className="text-[11px] text-slate-400 hidden sm:inline font-normal">Kurikulum Merdeka</span>
+                      <span className="text-[11px] text-slate-500 hidden sm:inline font-medium">Kurikulum Merdeka</span>
                     </div>
 
-                    <h2 className="mt-1.5 text-xl sm:text-2xl lg:text-[25px] font-bold leading-tight tracking-tight text-white">
+                    <h2 className="mt-1.5 text-xl sm:text-2xl lg:text-[25px] font-bold leading-tight tracking-tight text-slate-900 font-heading">
                       Halo, {teacherName} <span className="inline-block">👋</span>
                     </h2>
 
                     {/* Inline Compact Inspiration Quote */}
-                    <div className="mt-2 flex items-center gap-2 rounded-xl border border-white/[0.07] bg-slate-950/50 px-3 py-1.5 backdrop-blur-xs">
-                      <Quote className="h-3 w-3 text-emerald-400 shrink-0" />
-                      <p className="text-xs italic text-slate-300 truncate font-normal">
+                    <div className="mt-2 flex items-center gap-2 rounded-xl border border-emerald-100/90 bg-white/80 px-3 py-1.5 backdrop-blur-xs">
+                      <Quote className="h-3 w-3 text-emerald-600 shrink-0" />
+                      <p className="text-xs italic text-slate-600 truncate font-normal">
                         “Setiap anak memiliki potensi, tugas kita adalah membantu mereka menemukannya.”
                       </p>
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 shrink-0 hidden md:inline">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 shrink-0 hidden md:inline">
                         — Ki Hajar Dewantara
                       </span>
                     </div>
@@ -1685,33 +1685,33 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
                   {/* Right Side: 3 Compact Feature Pills */}
                   <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 shrink-0">
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xs">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-xs">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <BarChart2 className="h-3.5 w-3.5" />
                       </div>
                       <div className="leading-tight text-left">
-                        <p className="text-xs font-semibold text-white">Kelola Nilai</p>
-                        <p className="text-[10px] text-slate-400 font-normal">Lebih terstruktur</p>
+                        <p className="text-xs font-bold text-slate-900">Kelola Nilai</p>
+                        <p className="text-[10px] text-slate-500 font-normal">Lebih terstruktur</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xs">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-xs">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-700 border border-sky-200">
                         <Users className="h-3.5 w-3.5" />
                       </div>
                       <div className="leading-tight text-left">
-                        <p className="text-xs font-semibold text-white">Pantau Siswa</p>
-                        <p className="text-[10px] text-slate-400 font-normal">Capaian belajar</p>
+                        <p className="text-xs font-bold text-slate-900">Pantau Siswa</p>
+                        <p className="text-[10px] text-slate-500 font-normal">Capaian belajar</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-xs">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-white shadow-xs">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
                         <FileText className="h-3.5 w-3.5" />
                       </div>
                       <div className="leading-tight text-left">
-                        <p className="text-xs font-semibold text-white">Rapor Siap</p>
-                        <p className="text-[10px] text-slate-400 font-normal">Cetak & ekspor</p>
+                        <p className="text-xs font-bold text-slate-900">Rapor Siap</p>
+                        <p className="text-[10px] text-slate-500 font-normal">Cetak & ekspor</p>
                       </div>
                     </div>
                   </div>
@@ -1725,17 +1725,17 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                 {/* Section Header & Controls */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 px-0.5">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-400 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center">
                       <Layers className="h-3.5 w-3.5" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-white">Kelas Saya</h2>
-                        <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 font-heading">Kelas Saya</h2>
+                        <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
                           {classCards.length} Kelas
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 font-normal">Pilih kelas binaan atau penugasan mapel Anda.</p>
+                      <p className="text-xs text-slate-500 font-normal">Pilih kelas binaan atau penugasan mapel Anda.</p>
                     </div>
                   </div>
 
@@ -1745,13 +1745,13 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       type="button"
                       onClick={handleBatchSyncAllClasses}
                       disabled={isBatchSyncing || isExportingAllRekap}
-                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-sm"
+                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-xs"
                       title="Tarik nilai dari Analisis Soal otomatis untuk seluruh kelas yang Anda ampu sekaligus"
                     >
                       {isBatchSyncing ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-400 shrink-0" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-700 shrink-0" />
                       ) : (
-                        <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <Zap className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                       )}
                       <span>{isBatchSyncing ? (batchSyncStatusText || 'Menarik Nilai...') : '⚡ Tarik Analisis (Semua Kelas)'}</span>
                     </button>
@@ -1761,13 +1761,13 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       type="button"
                       onClick={handleExportAllClassesRekap}
                       disabled={isExportingAllRekap || isBatchSyncing}
-                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-sm"
+                      className="h-8.5 sm:h-9 px-3 sm:px-3.5 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-50 shadow-xs"
                       title="Download rekap nilai Excel seluruh kelas yang Anda ampu dalam 1 berkas multi-sheet (.xlsx)"
                     >
                       {isExportingAllRekap ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400 shrink-0" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 shrink-0" />
                       ) : (
-                        <FileSpreadsheet className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                       )}
                       <span>{isExportingAllRekap ? 'Menyiapkan Excel...' : '📊 Rekap Nilai Semua Kelas (.xlsx)'}</span>
                     </button>
@@ -1780,19 +1780,19 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                         value={landingSearchQuery}
                         onChange={(e) => setLandingSearchQuery(e.target.value)}
                         placeholder="Cari kelas..."
-                        className="h-8.5 sm:h-9 pl-8 pr-3 rounded-xl border border-white/[0.08] bg-slate-900/80 text-xs font-normal text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400/40 w-28 sm:w-36"
+                        className="h-8.5 sm:h-9 pl-8 pr-3 rounded-xl border border-slate-200 bg-white text-xs font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 w-28 sm:w-36 shadow-xs"
                       />
                     </div>
 
                     {/* View Mode Toggle */}
-                    <div className="flex items-center rounded-xl border border-white/[0.08] bg-slate-900/80 p-0.5 text-xs">
+                    <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100 p-0.5 text-xs">
                       <button
                         type="button"
                         onClick={() => setLandingViewMode('card')}
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
                           landingViewMode === 'card'
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs font-semibold'
-                            : 'text-slate-400 hover:text-white'
+                            ? 'bg-white text-emerald-800 shadow-xs font-bold'
+                            : 'text-slate-500 hover:text-slate-900'
                         }`}
                         title="Tampilan Kartu"
                       >
@@ -1804,8 +1804,8 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                         onClick={() => setLandingViewMode('list')}
                         className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
                           landingViewMode === 'list'
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs font-semibold'
-                            : 'text-slate-400 hover:text-white'
+                            ? 'bg-white text-emerald-800 shadow-xs font-bold'
+                            : 'text-slate-500 hover:text-slate-900'
                         }`}
                         title="Tampilan Daftar"
                       >
@@ -1845,17 +1845,15 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                       const circumference = 2 * Math.PI * radius;
                       const strokeOffset = circumference - (scoredPercentage / 100) * circumference;
 
-                      const isSingleCard = filteredClassCards.length === 1;
-
                       return (
                         <article
                           key={academicClass.id}
-                          className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-[#07111E] p-4 sm:p-5 shadow-[0_12px_36px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-400/35 flex flex-col justify-between gap-3.5"
+                          className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md flex flex-col justify-between gap-3.5"
                         >
                           {/* SISI ATAS: ICON BUKU + IDENTITAS KELAS + METADATA */}
                           <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 min-w-0">
                             {/* C1. Icon Utama Kiri: BookOpen akademis rounded-2xl subtle emerald */}
-                            <div className="w-12 h-12 sm:w-13 sm:h-13 shrink-0 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.08] flex items-center justify-center text-emerald-400 shadow-inner">
+                            <div className="w-12 h-12 sm:w-13 sm:h-13 shrink-0 rounded-2xl border border-emerald-200 bg-emerald-50 flex items-center justify-center text-emerald-700 shadow-xs">
                               <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2]" />
                             </div>
 
@@ -1866,35 +1864,35 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                                 <span
                                   className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
                                     isHomeroom
-                                      ? 'border-emerald-500/30 bg-emerald-950/40 text-emerald-300'
-                                      : 'border-sky-500/30 bg-sky-950/40 text-sky-300'
+                                      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                                      : 'border-sky-200 bg-sky-50 text-sky-800'
                                   }`}
                                 >
                                   {isHomeroom ? 'Wali Kelas' : 'Guru Mapel'}
                                 </span>
 
-                                <span className="rounded-full border border-amber-500/30 bg-amber-950/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-300">
+                                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-800">
                                   Rombel
                                 </span>
                               </div>
 
-                              {/* Nama Kelas (Hanya tampil sekali) */}
-                              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white truncate leading-tight">
+                              {/* Nama Kelas */}
+                              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 truncate leading-tight font-heading">
                                 Kelas {academicClass.name}
                               </h3>
 
                               {/* Metadata Satu Baris: Compact & whitespace-nowrap agar selalu pas satu baris */}
-                              <div className="mt-1 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-400 font-medium whitespace-nowrap overflow-hidden">
+                              <div className="mt-1 flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-500 font-medium whitespace-nowrap overflow-hidden">
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Layers className="w-3 h-3 text-slate-400 shrink-0" />
                                   <span>Tingkat {academicClass.grade ?? '-'}</span>
                                 </div>
-                                <span className="text-slate-600 text-[9px]">•</span>
+                                <span className="text-slate-300 text-[9px]">•</span>
                                 <div className="flex items-center gap-1 shrink-0">
                                   <BookOpen className="w-3 h-3 text-slate-400 shrink-0" />
                                   <span>{totalContextMapel} Mapel</span>
                                 </div>
-                                <span className="text-slate-600 text-[9px]">•</span>
+                                <span className="text-slate-300 text-[9px]">•</span>
                                 <div className="flex items-center gap-1 shrink-0">
                                   <Users className="w-3 h-3 text-slate-400 shrink-0" />
                                   <span>{studentCount} Siswa</span>
@@ -1905,25 +1903,15 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
                           {/* DAFTAR MATA PELAJARAN & INDIKATOR STATUS VISUAL */}
                           {contexts && contexts.length > 0 && (
-                            <div className="pt-2 pb-0.5 border-t border-white/[0.05]">
-                              <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mb-1.5">
+                            <div className="pt-2 pb-0.5 border-t border-slate-100">
+                              <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-1.5">
                                 <span>Status Mapel:</span>
-                                <span className={isAllScored ? 'text-emerald-400 font-bold' : scoredPercentage > 0 ? 'text-amber-400 font-bold' : 'text-slate-500'}>
+                                <span className={isAllScored ? 'text-emerald-700 font-bold' : scoredPercentage > 0 ? 'text-amber-700 font-bold' : 'text-slate-400'}>
                                   {scoredCount} dari {totalContextMapel} Selesai
                                 </span>
                               </div>
                               <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto custom-scrollbar pr-0.5">
                                 {contexts.map((ctx) => {
-                                  const sKeys = [
-                                    ctx.subjectId,
-                                    ctx.subjectId?.toLowerCase(),
-                                    ctx.subjectId?.toUpperCase(),
-                                    ctx.subjectCode,
-                                    ctx.subjectCode?.toLowerCase(),
-                                    ctx.subjectName,
-                                    ctx.subjectName?.toLowerCase(),
-                                  ].filter(Boolean);
-
                                   const isScored = getScoredSubjectStats(academicClass, [ctx]).scoredCount > 0;
 
                                   return (
@@ -1931,14 +1919,14 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                                       key={ctx.subjectId}
                                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-colors ${
                                         isScored
-                                          ? 'bg-emerald-500/15 border-emerald-400/35 text-emerald-300 font-semibold'
-                                          : 'bg-white/[0.03] border-white/[0.07] text-slate-400'
+                                          ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-semibold'
+                                          : 'bg-slate-50 border-slate-200 text-slate-600'
                                       }`}
                                       title={`${ctx.subjectName}: ${isScored ? 'Nilai sudah terisi (Selesai)' : 'Nilai belum diisi'}`}
                                     >
                                       <span
                                         className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                          isScored ? 'bg-emerald-400 ring-2 ring-emerald-400/20' : 'bg-slate-500'
+                                          isScored ? 'bg-emerald-600 ring-2 ring-emerald-200' : 'bg-slate-400'
                                         }`}
                                       />
                                       <span className="truncate max-w-[130px]">{ctx.subjectName}</span>
@@ -1950,9 +1938,9 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                           )}
 
                           {/* SISI BAWAH / AKSI: MINI PROGRESS CONTAINER + TOMBOL BUKA KELAS */}
-                          <div className="flex items-center justify-between gap-2.5 pt-3 border-t border-white/[0.05]">
+                          <div className="flex items-center justify-between gap-2.5 pt-3 border-t border-slate-100">
                             {/* C3. Area Progress */}
-                            <div className="flex items-center gap-2.5 sm:gap-3 bg-[#0A1626]/90 rounded-2xl border border-white/[0.08] px-3 py-2 shadow-sm min-w-0">
+                            <div className="flex items-center gap-2.5 sm:gap-3 bg-slate-50 rounded-2xl border border-slate-200 px-3 py-2 shadow-xs min-w-0">
                               <div className="relative flex items-center justify-center shrink-0" style={{ width: gaugeSize, height: gaugeSize }}>
                                 <svg width={gaugeSize} height={gaugeSize} className="transform -rotate-90">
                                   <circle
@@ -1962,7 +1950,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                                     stroke="currentColor"
                                     strokeWidth={strokeWidth}
                                     fill="transparent"
-                                    className="text-slate-800"
+                                    className="text-slate-200"
                                   />
                                   <circle
                                     cx={gaugeSize / 2}
@@ -1976,35 +1964,35 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                                     strokeLinecap="round"
                                     className={
                                       isAllScored
-                                        ? 'text-emerald-400'
+                                        ? 'text-emerald-600'
                                         : scoredPercentage > 0
-                                        ? 'text-amber-400'
-                                        : 'text-emerald-500/25'
+                                        ? 'text-amber-500'
+                                        : 'text-slate-300'
                                     }
                                   />
                                 </svg>
-                                <span className="absolute text-[11px] font-bold text-white">{scoredPercentage}%</span>
+                                <span className="absolute text-[11px] font-bold text-slate-800">{scoredPercentage}%</span>
                               </div>
 
                               <div className="text-left leading-tight pr-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-bold text-white truncate">{scoredCount} / {totalContextMapel} Mapel</p>
-                                <p className={`mt-0.5 text-[10px] sm:text-[11px] font-medium truncate ${
-                                  isAllScored ? 'text-emerald-400' : scoredPercentage > 0 ? 'text-amber-400' : 'text-slate-400'
+                                <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">{scoredCount} / {totalContextMapel} Mapel</p>
+                                <p className={`mt-0.5 text-[10px] sm:text-[11px] font-semibold truncate ${
+                                  isAllScored ? 'text-emerald-700' : scoredPercentage > 0 ? 'text-amber-700' : 'text-slate-400'
                                 }`}>
                                   {isAllScored ? 'Selesai' : scoredPercentage > 0 ? 'Sedang dikerjakan' : 'Belum diisi'}
                                 </p>
                               </div>
                             </div>
 
-                            {/* C4. Tombol Buka Kelas: Sky-Blue dinamis untuk aksi buka, berganti Hijau Emerald jika nilai sudah terisi 100% */}
+                            {/* C4. Tombol Buka Kelas: Emerald / Sky modern */}
                             <button
                               type="button"
                               onClick={() => contexts[0] && handleSelectContext(contexts[0])}
                               disabled={!contexts[0]}
                               className={`inline-flex h-10 sm:h-11 items-center justify-center gap-2 rounded-2xl font-bold px-3.5 sm:px-4.5 text-xs sm:text-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer shrink-0 ${
                                 isAllScored
-                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_4px_18px_rgba(16,185,129,0.30)] hover:shadow-[0_6px_22px_rgba(16,185,129,0.45)]'
-                                  : 'bg-sky-600 hover:bg-sky-500 text-white shadow-[0_4px_18px_rgba(2,132,199,0.25)] hover:shadow-[0_6px_22px_rgba(2,132,199,0.40)]'
+                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
                               }`}
                             >
                               {isAllScored ? (
@@ -2022,14 +2010,14 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
                     {/* Placeholder Slot for Other Classes */}
                     {filteredClassCards.length === 1 && (
-                      <aside className="h-full min-h-[110px] flex items-center rounded-2xl sm:rounded-3xl border border-dashed border-white/[0.10] bg-[#07111E]/40 p-5 text-left">
+                      <aside className="h-full min-h-[110px] flex items-center rounded-2xl sm:rounded-3xl border border-dashed border-slate-300 bg-white p-5 text-left">
                         <div className="flex items-center gap-3.5">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-slate-400 shrink-0">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-400 shrink-0">
                             <Plus className="h-5 w-5" />
                           </div>
                           <div>
-                            <h3 className="text-xs sm:text-sm font-semibold text-slate-200">Belum ada kelas lainnya</h3>
-                            <p className="text-[11px] sm:text-xs leading-relaxed text-slate-400 font-normal mt-0.5">
+                            <h3 className="text-xs sm:text-sm font-semibold text-slate-800">Belum ada kelas lainnya</h3>
+                            <p className="text-[11px] sm:text-xs leading-relaxed text-slate-500 font-normal mt-0.5">
                               Kelas lain akan muncul otomatis jika terdapat penugasan tambahan dari administrator.
                             </p>
                           </div>
@@ -2039,10 +2027,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                   </div>
                 ) : (
                   /* List View Mode */
-                  <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0A1220]">
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
-                        <thead className="border-b border-white/[0.07] bg-white/[0.02] text-slate-300 uppercase tracking-normal text-[11px] font-semibold">
+                        <thead className="border-b border-slate-200 bg-slate-50 text-slate-700 uppercase tracking-normal text-[11px] font-semibold">
                           <tr>
                             <th className="py-3 px-4">Kelas / Rombel</th>
                             <th className="py-3 px-4">Peran</th>
@@ -2053,7 +2041,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                             <th className="py-3 px-4 text-right">Aksi</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/[0.05]">
+                        <tbody className="divide-y divide-slate-100">
                           {filteredClassCards.map(({ academicClass, contexts, isHomeroom }) => {
                             const studentCount = allStudents.filter(
                               (student) => (student.classId || '').trim().toUpperCase() === academicClass.id.trim().toUpperCase()
@@ -2065,24 +2053,24 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                             );
 
                             return (
-                              <tr key={academicClass.id} className="hover:bg-white/[0.02] transition-colors">
-                                <td className="py-3 px-4 font-semibold text-white text-[13px]">Kelas {academicClass.name}</td>
+                              <tr key={academicClass.id} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-3 px-4 font-bold text-slate-900 text-[13px]">Kelas {academicClass.name}</td>
                                 <td className="py-3 px-4">
-                                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                                    isHomeroom ? 'border-emerald-400/25 bg-emerald-500/[0.10] text-emerald-300' : 'border-sky-400/25 bg-sky-500/[0.10] text-sky-300'
+                                  <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                    isHomeroom ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-sky-200 bg-sky-50 text-sky-800'
                                   }`}>
                                     {isHomeroom ? 'Wali Kelas' : 'Guru Mapel'}
                                   </span>
                                 </td>
-                                <td className="py-3 px-4 text-slate-300 font-normal">Tingkat {academicClass.grade ?? '-'}</td>
-                                <td className="py-3 px-4 text-slate-300 font-normal">{studentCount} Siswa</td>
-                                <td className="py-3 px-4 text-slate-300 font-normal">{totalContextMapel} Mapel</td>
+                                <td className="py-3 px-4 text-slate-600 font-normal">Tingkat {academicClass.grade ?? '-'}</td>
+                                <td className="py-3 px-4 text-slate-600 font-normal">{studentCount} Siswa</td>
+                                <td className="py-3 px-4 text-slate-600 font-normal">{totalContextMapel} Mapel</td>
                                 <td className="py-3 px-4">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-16 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                                      <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${scoredPercentage}%` }} />
+                                    <div className="w-16 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${scoredPercentage}%` }} />
                                     </div>
-                                    <span className="font-semibold text-white text-[11px]">{scoredPercentage}%</span>
+                                    <span className="font-bold text-slate-800 text-[11px]">{scoredPercentage}%</span>
                                   </div>
                                 </td>
                                 <td className="py-3 px-4 text-right">
@@ -2090,7 +2078,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                                     type="button"
                                     onClick={() => contexts[0] && handleSelectContext(contexts[0])}
                                     disabled={!contexts[0]}
-                                    className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 text-xs font-semibold transition-all cursor-pointer"
+                                    className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 text-xs font-semibold transition-all cursor-pointer shadow-xs"
                                   >
                                     <span>Buka</span>
                                     <ChevronRight className="w-3.5 h-3.5" />
@@ -2109,34 +2097,34 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
             {/* Empty State when no classes assigned */}
             {academicAccess && classCards.length === 0 && !accessError && (
-              <section className="rounded-2xl border border-dashed border-white/[0.10] bg-slate-900/35 px-6 py-14 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400">
+              <section className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-400">
                   <School className="h-6 w-6" />
                 </div>
-                <h3 className="mt-4 text-base font-bold text-white">Belum ada penugasan aktif</h3>
-                <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-400 font-normal">
+                <h3 className="mt-4 text-base font-bold text-slate-800">Belum ada penugasan aktif</h3>
+                <p className="mx-auto mt-1.5 max-w-md text-xs leading-relaxed text-slate-500 font-normal">
                   Belum ada kelas dan mata pelajaran yang dapat dikelola pada periode akademik aktif. Silakan hubungi admin sekolah.
                 </p>
               </section>
             )}
 
             {/* 4. FOOTER (Identitas & Educational Quote) */}
-            <footer className="mt-8 pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400 text-[11px]">
+            <footer className="mt-8 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px]">
               <div>
-                <p className="font-semibold text-slate-300">e-Rapor Kurikulum Merdeka</p>
-                <p className="text-[10px] text-slate-400 font-normal">Sistem Penilaian & Laporan Hasil Belajar Peserta Didik</p>
+                <p className="font-bold text-slate-700">e-Rapor Kurikulum Merdeka</p>
+                <p className="text-[10px] text-slate-500 font-normal">Sistem Penilaian & Laporan Hasil Belajar Peserta Didik</p>
               </div>
-              <div className="italic text-right text-slate-400 text-[10px] font-normal">
-                “Pendidikan adalah investasi terbaik untuk masa depan.” — Anies Baswedan
+              <div className="italic text-right text-slate-500 text-[10px] font-normal">
+                “Pendidikan adalah investasi terbaik untuk masa depan.” — Ki Hajar Dewantara
               </div>
             </footer>
           </main>
         ) : isLoading || !classData ? (
           <div className="min-h-[55vh] flex items-center justify-center">
-            <div className="w-full max-w-md rounded-3xl border border-white/[0.08] bg-slate-950/55 backdrop-blur-xl px-6 py-12 text-center shadow-2xl">
-              <div className="w-10 h-10 border-[3px] border-amber-400/25 border-t-amber-400 rounded-full animate-spin mx-auto" />
-              <p className="mt-5 text-sm font-bold text-slate-200">Membuka Kelas {selectedClass}...</p>
-              <p className="mt-1 text-xs text-slate-400 font-normal">Menyiapkan {selectedContext.subjectName} dan data siswa.</p>
+            <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center shadow-lg">
+              <div className="w-10 h-10 border-[3px] border-emerald-500/25 border-t-emerald-600 rounded-full animate-spin mx-auto" />
+              <p className="mt-5 text-sm font-bold text-slate-800">Membuka Kelas {selectedClass}...</p>
+              <p className="mt-1 text-xs text-slate-500 font-normal">Menyiapkan {selectedContext.subjectName} dan data siswa.</p>
             </div>
           </div>
         ) : (
@@ -2145,30 +2133,30 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
              Executive Header with Integrated Navigation & Quick Stats
           ============================================================ */
           <main className="space-y-3.5">
-            <section className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 p-3.5 sm:p-4 print:hidden">
+            <section className="rounded-2xl border border-slate-200/90 bg-white shadow-xs p-3.5 sm:p-4 print:hidden">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
                 {/* Top Row on Mobile / Left Column on Desktop: Class Identity & Quick Metrics */}
                 <div className="flex items-center justify-between lg:justify-start gap-3 min-w-0 w-full lg:w-auto">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border border-amber-400/25 bg-amber-400/[0.09] flex items-center justify-center text-amber-300 shrink-0 shadow-inner">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border border-emerald-200 bg-emerald-50 flex items-center justify-center text-emerald-700 shrink-0 shadow-xs">
                       <GraduationCap className="w-5 h-5 sm:w-5.5 sm:h-5.5" />
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                        <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight font-heading">
                           Kelas {selectedClass}
                         </h2>
-                        <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold uppercase tracking-wider ${
+                        <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${
                           selectedIsHomeroom
-                            ? 'border-emerald-400/30 bg-emerald-500/[0.12] text-emerald-300'
-                            : 'border-cyan-400/30 bg-cyan-500/[0.12] text-cyan-300'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                            : 'border-sky-200 bg-sky-50 text-sky-800'
                         }`}>
                           {selectedIsHomeroom ? 'Wali Kelas' : 'Guru Mapel'}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-[11px] sm:text-xs text-slate-400 font-normal truncate">
-                        {selectedSchoolYear} <span className="text-slate-600 mx-1">•</span>
+                      <p className="mt-0.5 text-[11px] sm:text-xs text-slate-500 font-normal truncate">
+                        {selectedSchoolYear} <span className="text-slate-300 mx-1">•</span>
                         Semester {academicAccess?.academicPeriod?.semester || selectedSemester}
                       </p>
                     </div>
@@ -2176,20 +2164,20 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
 
                   {/* 3 Quick Metric Chips (Top Right on Mobile) */}
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-2 py-1 sm:px-2.5 sm:py-1.5 text-center min-w-[54px] sm:min-w-[68px]">
-                      <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-medium">Siswa</p>
-                      <p className="text-xs sm:text-base font-bold text-white leading-tight mt-0.5">{classStudents.length}</p>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 sm:px-2.5 sm:py-1.5 text-center min-w-[54px] sm:min-w-[68px]">
+                      <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-bold">Siswa</p>
+                      <p className="text-xs sm:text-base font-bold text-slate-900 leading-tight mt-0.5">{classStudents.length}</p>
                     </div>
 
-                    <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-2 py-1 sm:px-2.5 sm:py-1.5 text-center min-w-[54px] sm:min-w-[68px]">
-                      <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-medium">Mapel</p>
-                      <p className="text-xs sm:text-base font-bold text-white leading-tight mt-0.5">{selectedClassContexts.length}</p>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1 sm:px-2.5 sm:py-1.5 text-center min-w-[54px] sm:min-w-[68px]">
+                      <p className="text-[8px] sm:text-[9px] uppercase tracking-wider text-slate-400 font-bold">Mapel</p>
+                      <p className="text-xs sm:text-base font-bold text-slate-900 leading-tight mt-0.5">{selectedClassContexts.length}</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Bottom Row on Mobile / Center Column on Desktop: Segmented Navigation Pills */}
-                <nav className="flex items-center justify-start lg:justify-center gap-1.5 p-1 rounded-xl bg-slate-950/60 border border-white/[0.06] overflow-x-auto custom-scrollbar w-full lg:w-auto">
+                <nav className="flex items-center justify-start lg:justify-center gap-1.5 p-1 rounded-xl bg-slate-100 border border-slate-200 overflow-x-auto custom-scrollbar w-full lg:w-auto">
                   {(
                     [
                       ['scores', BookOpen, 'Input Nilai Akademik'],
@@ -2219,11 +2207,11 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                         onClick={() => setActiveTab(tab)}
                         className={`h-9 px-3 sm:px-3.5 rounded-lg font-semibold text-xs flex items-center gap-1.5 sm:gap-2 transition-all duration-200 whitespace-nowrap cursor-pointer active:scale-95 ${
                           isActive
-                            ? 'border border-emerald-400/50 bg-emerald-500/[0.15] text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                            ? 'bg-white text-emerald-800 shadow-xs border border-emerald-300 font-bold'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                         }`}
                       >
-                        <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-300' : 'text-slate-500'}`} />
+                        <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
                         <span>{label}</span>
                       </button>
                     );
@@ -2294,10 +2282,10 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                     isSaving={isSavingCharacter}
                   />
                 ) : (
-                  <div className="rounded-2xl border border-white/[0.08] bg-slate-900/60 p-8 text-center text-slate-300">
-                    <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-                    <p className="font-bold text-sm text-white">Akses Khusus Wali Kelas</p>
-                    <p className="text-xs text-slate-400 mt-1">Penilaian Karakter (18 Karakter) hanya dapat dikelola oleh Wali Kelas {selectedClass}.</p>
+                  <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-600 shadow-xs">
+                    <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                    <p className="font-bold text-sm text-slate-800">Akses Khusus Wali Kelas</p>
+                    <p className="text-xs text-slate-500 mt-1">Penilaian Karakter (18 Karakter) hanya dapat dikelola oleh Wali Kelas {selectedClass}.</p>
                   </div>
                 )
               )}
@@ -2324,28 +2312,28 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         )}
         {/* Exit Confirmation Dialog Modal */}
         {showExitConfirmModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-            <div className="w-full max-w-md overflow-hidden rounded-3xl border border-white/[0.12] bg-slate-900/95 backdrop-blur-2xl shadow-2xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fadeIn">
+            <div className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl">
               <div className="p-6">
-                <div className="w-12 h-12 rounded-2xl bg-amber-400/[0.12] border border-amber-400/25 text-amber-300 flex items-center justify-center shadow-inner">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shadow-xs">
                   <AlertCircle className="w-6 h-6" />
                 </div>
-                <h3 className="mt-4 text-base sm:text-lg font-bold text-white tracking-tight">Ada Perubahan yang Belum Disinkronkan</h3>
-                <p className="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                  Perubahan Kelas <span className="text-amber-300 font-semibold">{selectedClass}</span> sudah tersimpan lokal di peramban, tetapi belum dikirim ke Cloud Database.
+                <h3 className="mt-4 text-base sm:text-lg font-bold text-slate-900 tracking-tight font-heading">Ada Perubahan yang Belum Disinkronkan</h3>
+                <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  Perubahan Kelas <span className="text-amber-800 font-bold">{selectedClass}</span> sudah tersimpan lokal di peramban, tetapi belum dikirim ke Cloud Database.
                 </p>
                 <div className="grid sm:grid-cols-2 gap-2.5 mt-6">
                   <button
                     type="button"
                     onClick={handleConfirmSaveAndExit}
-                    className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold text-xs transition-colors cursor-pointer active:scale-95 shadow-md shadow-amber-400/20"
+                    className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors cursor-pointer active:scale-95 shadow-xs"
                   >
                     Simpan & Lanjut
                   </button>
                   <button
                     type="button"
                     onClick={handleConfirmExitWithoutSave}
-                    className="px-4 py-2.5 rounded-xl border border-white/[0.10] bg-white/[0.05] hover:bg-white/[0.09] text-slate-200 font-semibold text-xs transition-colors cursor-pointer active:scale-95"
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition-colors cursor-pointer active:scale-95"
                   >
                     Lanjut Tanpa Sinkron
                   </button>
@@ -2353,7 +2341,7 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowExitConfirmModal(false)}
-                  className="w-full mt-2.5 px-4 py-2 rounded-xl text-slate-400 hover:text-white font-medium text-xs transition-colors cursor-pointer"
+                  className="w-full mt-2.5 px-4 py-2 rounded-xl text-slate-500 hover:text-slate-800 font-medium text-xs transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
@@ -2379,8 +2367,8 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
         {/* Global Sync Success Notification Pop-up */}
         {syncSuccessToast && (
           <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-lg px-4 pointer-events-auto">
-            <div className="bg-slate-900/95 border-2 border-emerald-400 text-emerald-100 rounded-3xl p-4 sm:p-5 shadow-2xl shadow-emerald-500/30 backdrop-blur-xl flex items-start gap-3.5 animate-[fadeIn_200ms_ease-out]">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/50 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20">
+            <div className="bg-white border-2 border-emerald-500 text-slate-800 rounded-3xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl flex items-start gap-3.5 animate-[fadeIn_200ms_ease-out]">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0 shadow-xs">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div className="flex-1 text-xs space-y-1">

@@ -805,7 +805,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
     <div
       className={`space-y-4 ${
         isFullscreen
-          ? 'fixed inset-0 z-50 bg-[#040B14] p-4 overflow-y-auto'
+          ? 'fixed inset-0 z-50 bg-[#F8FAFC] p-4 overflow-y-auto'
           : 'relative'
       }`}
     >
@@ -852,13 +852,13 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
       {/* ============================================================
          MOBILE SUBJECT DROPDOWN SELECTOR (HP / SCREEN < LG)
       ============================================================ */}
-      <div className="block lg:hidden rounded-2xl border border-white/[0.08] bg-[#07111E] p-3 sm:p-3.5 shadow-xl mb-3 space-y-2">
+      <div className="block lg:hidden rounded-2xl border border-slate-200 bg-white p-3 sm:p-3.5 shadow-xs mb-3 space-y-2">
         <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-1.5">
-            <BookOpen className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span className="text-xs font-bold text-white">Mata Pelajaran:</span>
+            <BookOpen className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span className="text-xs font-bold text-slate-800">Mata Pelajaran:</span>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-400/30 bg-emerald-500/10 text-emerald-300 font-semibold">
+          <span className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-800 font-bold">
             {filteredSubjects.length} Mapel
           </span>
         </div>
@@ -874,7 +874,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 handleSelectSubject(filteredSubjects[currIdx - 1].id);
               }
             }}
-            className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+            className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
             title="Mata Pelajaran Sebelumnya"
           >
             <ChevronRight className="w-4 h-4 rotate-180" />
@@ -885,18 +885,18 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
             <select
               value={currentSubject?.id || ''}
               onChange={(e) => handleSelectSubject(e.target.value)}
-              className="w-full h-9 pl-3 pr-8 rounded-xl border border-emerald-500/40 bg-[#0A1626] text-xs font-bold text-emerald-300 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/40 appearance-none cursor-pointer truncate"
+              className="w-full h-9 pl-3 pr-8 rounded-xl border border-emerald-300 bg-emerald-50/60 text-xs font-bold text-emerald-900 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 appearance-none cursor-pointer truncate"
             >
               {filteredSubjects.map((subj, index) => {
                 const codeStr = subj.code ? `[${subj.code}] ` : `[${index + 1}] `;
                 return (
-                  <option key={subj.id} value={subj.id} className="bg-slate-900 text-white font-medium">
+                  <option key={subj.id} value={subj.id} className="bg-white text-slate-900 font-medium">
                     {codeStr}{subj.name}
                   </option>
                 );
               })}
             </select>
-            <ChevronDown className="w-4 h-4 text-emerald-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-emerald-600 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Quick Next Mapel Button */}
@@ -909,7 +909,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 handleSelectSubject(filteredSubjects[currIdx + 1].id);
               }
             }}
-            className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+            className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
             title="Mata Pelajaran Selanjutnya"
           >
             <ChevronRight className="w-4 h-4" />
@@ -926,10 +926,10 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
         ============================================================ */}
         <aside
           ref={sidebarRef}
-          className="hidden lg:flex rounded-2xl border border-white/[0.08] bg-[#07111E] p-4 shadow-xl shadow-black/20 flex-col gap-3.5 min-h-[580px]"
+          className="hidden lg:flex rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs flex-col gap-3.5 min-h-[580px]"
         >
           <div>
-            <h3 className="text-sm font-black text-white tracking-tight">
+            <h3 className="text-sm font-bold text-slate-900 tracking-tight font-heading">
               Daftar Mata Pelajaran
             </h3>
           </div>
@@ -941,12 +941,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               value={subjectSearchQuery}
               onChange={(e) => setSubjectSearchQuery(e.target.value)}
               placeholder="Cari mata pelajaran..."
-              className="w-full h-9 pl-3.5 pr-9 rounded-xl border border-white/[0.08] bg-[#0A1626] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400/40 focus:ring-1 focus:ring-emerald-400/25 transition-all"
+              className="w-full h-9 pl-3.5 pr-9 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all"
             />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
 
-          {/* Subject List - Fully visible without locking container */}
+          {/* Subject List */}
           <div className="space-y-2 flex-1">
             {filteredSubjects.length === 0 ? (
               <div className="py-6 text-center text-xs text-slate-500">
@@ -957,9 +957,6 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 const isSelected = subj.id === selectedSubjectId;
                 const meta = getSubjectMeta(subj.name, subj.category);
                 const Icon = meta.icon;
-                const tpCount = (subj.tpList || []).filter(
-                  (tp) => tp.isActive !== false && Boolean(tp.desc && tp.desc.trim())
-                ).length;
 
                 return (
                   <button
@@ -968,8 +965,8 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                     onClick={() => handleSelectSubject(subj.id)}
                     className={`w-full text-left rounded-xl p-3 flex items-center justify-between gap-2.5 transition-all duration-200 cursor-pointer ${
                       isSelected
-                        ? 'border-2 border-emerald-400 bg-emerald-950/30 shadow-[0_0_20px_rgba(16,185,129,0.14)]'
-                        : 'border border-white/[0.07] bg-[#0A1626] hover:bg-[#0D1C30] hover:border-white/[0.14]'
+                        ? 'border-2 border-emerald-500 bg-emerald-50/80 shadow-xs'
+                        : 'border border-slate-200 bg-slate-50/70 hover:bg-slate-100 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -977,8 +974,8 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                       <div
                         className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-colors ${
                           isSelected
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                            : 'bg-white/[0.04] text-slate-400 border border-white/[0.06]'
+                            ? 'bg-emerald-600 text-white shadow-xs'
+                            : 'bg-white text-slate-500 border border-slate-200'
                         }`}
                       >
                         <Icon className="w-4 h-4" />
@@ -987,8 +984,8 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                       {/* Subject Name & Category Badge */}
                       <div className="min-w-0">
                         <p
-                          className={`text-[13px] font-semibold truncate leading-snug ${
-                            isSelected ? 'text-white' : 'text-slate-200'
+                          className={`text-[13px] font-bold truncate leading-snug ${
+                            isSelected ? 'text-slate-900' : 'text-slate-800'
                           }`}
                         >
                           {subj.name}
@@ -1005,7 +1002,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
 
                     {/* Subject Code Badge */}
                     {subj.code && (
-                      <span className="shrink-0 text-[10px] font-bold text-amber-400/80 uppercase tracking-wider pl-1">
+                      <span className="shrink-0 text-[10px] font-bold text-amber-700 uppercase tracking-wider pl-1">
                         {subj.code}
                       </span>
                     )}
@@ -1018,22 +1015,21 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
 
         {/* ============================================================
            RIGHT COLUMN: SUBJECT DETAIL HEADER & SCORE SPREADSHEET
-           Height locked to sidebar so table frame remains aligned
         ============================================================ */}
         <section
           style={sidebarHeight ? { height: `${sidebarHeight}px` } : undefined}
           className="flex flex-col gap-4 min-w-0"
         >
           {/* 1. TOP HEADER BANNER OF SELECTED SUBJECT */}
-          <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] p-4 sm:p-5 shadow-xl shadow-black/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
             <div className="flex items-start gap-3.5 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0 shadow-inner">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0 shadow-xs">
                 <CurrentIcon className="w-6 h-6" />
               </div>
 
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight leading-snug">
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug font-heading">
                     {currentSubject.name}
                   </h2>
                   <span
@@ -1042,19 +1038,19 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                     {currentMeta?.categoryLabel}
                   </span>
                 </div>
-                <p className="mt-1 text-xs text-slate-400 font-normal leading-relaxed">
+                <p className="mt-1 text-xs text-slate-500 font-normal leading-relaxed">
                   Input nilai STS, capaian tujuan pembelajaran (TP), dan nilai akhir peserta didik.
                 </p>
               </div>
             </div>
 
             {/* Right Quick Summary Widget: KKTP Passing Grade Info */}
-            <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-4 py-2 text-left flex items-center gap-3 self-start sm:self-auto shrink-0 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-left flex items-center gap-3 self-start sm:self-auto shrink-0 shadow-xs">
               <div>
-                <p className="text-xs sm:text-sm font-bold text-amber-300 leading-tight">
+                <p className="text-xs sm:text-sm font-bold text-amber-800 leading-tight">
                   KKTP: {config.passingGrade || 75}
                 </p>
-                <p className="text-[11px] text-slate-400 font-normal mt-0.5">
+                <p className="text-[11px] text-slate-500 font-normal mt-0.5">
                   Kriteria Ketuntasan Minimal
                 </p>
               </div>
@@ -1072,14 +1068,14 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                   placeholder="Cari nama siswa..."
                   value={studentSearchQuery}
                   onChange={(e) => setStudentSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-9 pr-7 rounded-xl border border-white/[0.08] bg-[#07111E] text-xs font-normal text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400/40 focus:ring-1 focus:ring-emerald-400/25 transition-all"
+                  className="w-full h-9 pl-9 pr-7 rounded-xl border border-slate-200 bg-white text-xs font-normal text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all shadow-xs"
                 />
-                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 {studentSearchQuery && (
                   <button
                     type="button"
                     onClick={() => setStudentSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs cursor-pointer"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs cursor-pointer"
                   >
                     ✕
                   </button>
@@ -1090,10 +1086,10 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               <button
                 type="button"
                 onClick={handleDownloadTemplate}
-                className="h-9 px-3.5 rounded-xl border border-cyan-400/25 bg-[#07111E] hover:bg-cyan-500/10 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                className="h-9 px-3.5 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-xs"
                 title="Unduh template Excel"
               >
-                <Download className="w-3.5 h-3.5 text-cyan-400" />
+                <Download className="w-3.5 h-3.5 text-cyan-700" />
                 <span>Unduh Template</span>
               </button>
 
@@ -1102,10 +1098,10 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 type="button"
                 onClick={handleTriggerUpload}
                 disabled={isImporting}
-                className="h-9 px-3.5 rounded-xl border border-cyan-400/25 bg-[#07111E] hover:bg-cyan-500/10 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50"
+                className="h-9 px-3.5 rounded-xl border border-cyan-200 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50 shadow-xs"
                 title="Impor nilai dari Excel"
               >
-                <Upload className="w-3.5 h-3.5 text-cyan-400" />
+                <Upload className="w-3.5 h-3.5 text-cyan-700" />
                 <span>{isImporting ? 'Mengimpor...' : 'Impor Template'}</span>
               </button>
 
@@ -1114,10 +1110,10 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAnalysisSync}
-                  className="h-9 px-3.5 rounded-xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-sm"
+                  className="h-9 px-3.5 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-xs"
                   title="Tarik & Impor Nilai dari Analisis Soal (Otomatis)"
                 >
-                  <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                  <Zap className="w-3.5 h-3.5 text-emerald-700" />
                   <span>⚡ Tarik dari Analisis</span>
                 </button>
               )}
@@ -1126,10 +1122,10 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               <button
                 type="button"
                 onClick={handleOpenResetModal}
-                className="h-9 px-3.5 rounded-xl border border-rose-500/25 bg-[#07111E] hover:bg-rose-500/10 text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                className="h-9 px-3.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95 shadow-xs"
                 title="Kosongkan nilai mata pelajaran ini"
               >
-                <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                 <span>Kosongkan Nilai</span>
               </button>
             </div>
@@ -1137,14 +1133,14 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
             {/* Right: Info count + Sort + Mobile Mode Toggle + Fullscreen Toggle */}
             <div className="flex items-center gap-2 shrink-0">
               {/* Mobile View Toggle */}
-              <div className="flex items-center gap-0.5 bg-[#07111E] border border-white/[0.08] p-0.5 rounded-xl text-xs lg:hidden">
+              <div className="flex items-center gap-0.5 bg-slate-100 border border-slate-200 p-0.5 rounded-xl text-xs lg:hidden">
                 <button
                   type="button"
                   onClick={() => setMobileViewMode('table')}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                     mobileViewMode === 'table'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-emerald-800 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   Tabel
@@ -1152,27 +1148,27 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                 <button
                   type="button"
                   onClick={() => setMobileViewMode('cards')}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                     mobileViewMode === 'cards'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-emerald-800 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
                   }`}
                 >
                   Kartu Siswa
                 </button>
               </div>
 
-              <span className="text-xs font-normal text-slate-400 px-1 hidden sm:inline">
+              <span className="text-xs font-normal text-slate-500 px-1 hidden sm:inline">
                 Menampilkan {displayedStudents.length} siswa
               </span>
 
               <button
                 type="button"
                 onClick={handleToggleSort}
-                className={`h-9 px-3 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`h-9 px-3 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                   sortOrder !== 'default'
-                    ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
-                    : 'border-white/[0.08] bg-[#07111E] text-slate-300 hover:bg-white/[0.04]'
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
                 title="Urutkan siswa"
               >
@@ -1183,7 +1179,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               <button
                 type="button"
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="h-9 w-9 rounded-xl border border-white/[0.08] bg-[#07111E] hover:bg-white/[0.04] text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                className="h-9 w-9 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer shadow-xs"
                 title={isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen Grid'}
               >
                 {isFullscreen ? (
@@ -1197,9 +1193,9 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
 
           {/* 3. MAIN SPREADSHEET TABLE GRID / MOBILE CARD VIEW */}
           {mobileViewMode === 'cards' ? (
-            <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] p-3 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-3 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar shadow-xs">
               {displayedStudents.length === 0 ? (
-                <div className="py-12 text-center text-slate-400 text-xs font-normal">
+                <div className="py-12 text-center text-slate-500 text-xs font-normal">
                   Tidak ada siswa yang cocok dengan pencarian.
                 </div>
               ) : (
@@ -1225,17 +1221,17 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                   return (
                     <div
                       key={st.id}
-                      className="rounded-2xl border border-white/[0.08] bg-[#0A1626] p-3.5 shadow-lg space-y-3"
+                      className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 shadow-xs space-y-3"
                     >
                       {/* Header: Student Name & Number */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 border border-emerald-500/30 font-bold text-xs text-emerald-300">
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-100 border border-emerald-300 font-bold text-xs text-emerald-800">
                             {idx + 1}
                           </span>
                           <div className="min-w-0">
-                            <h4 className="font-bold text-white text-sm truncate">{st.name}</h4>
-                            <p className="text-[11px] text-slate-400 font-normal truncate">
+                            <h4 className="font-bold text-slate-900 text-sm truncate">{st.name}</h4>
+                            <p className="text-[11px] text-slate-500 font-normal truncate">
                               NIS: {st.nim || '-'} | NISN: {st.nisn || '-'}
                             </p>
                           </div>
@@ -1245,14 +1241,14 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         <span
                           className={`inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-bold border shrink-0 ${
                             predicate === 'A'
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : predicate === 'B'
-                              ? 'bg-sky-500/20 text-sky-300 border-sky-400/40'
+                              ? 'bg-sky-50 text-sky-800 border-sky-300'
                               : predicate === 'C'
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
+                              ? 'bg-amber-50 text-amber-800 border-amber-300'
                               : predicate === 'D'
-                              ? 'bg-rose-500/20 text-rose-300 border-rose-400/40'
-                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                              ? 'bg-rose-50 text-rose-800 border-rose-300'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
                           }`}
                         >
                           {predicate !== '-' ? `Predikat ${predicate}` : 'Belum Ada Nilai'}
@@ -1260,10 +1256,10 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                       </div>
 
                       {/* STS Score Input with Stepper */}
-                      <div className="flex items-center justify-between gap-3 bg-[#07111E] p-3 rounded-xl border border-white/[0.06]">
+                      <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
                         <div className="text-left">
-                          <label className="text-xs font-bold text-slate-200 block">Nilai Sumatif (STS)</label>
-                          <span className="text-[10px] text-slate-400 font-normal">Skala 0 - 100</span>
+                          <label className="text-xs font-bold text-slate-800 block">Nilai Sumatif (STS)</label>
+                          <span className="text-[10px] text-slate-500 font-normal">Skala 0 - 100</span>
                         </div>
 
                         <div className="flex items-center gap-1.5">
@@ -1274,7 +1270,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                               const next = Math.max(0, cur - 1);
                               handleStsScoreChange(st.id, st.name, String(next));
                             }}
-                            className="w-9 h-9 rounded-xl border border-white/[0.12] bg-slate-900 active:scale-95 text-white font-bold text-lg flex items-center justify-center cursor-pointer"
+                            className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-lg flex items-center justify-center cursor-pointer transition-colors"
                           >
                             -
                           </button>
@@ -1288,7 +1284,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                               typeof scoreData.stsScore === 'number' ? String(scoreData.stsScore) : ''
                             }
                             onChange={(e) => handleStsScoreChange(st.id, st.name, e.target.value)}
-                            className="w-16 h-9 text-center font-black text-base rounded-xl border border-emerald-400/40 bg-[#0A1626] text-emerald-300 focus:outline-none focus:border-emerald-400"
+                            className="w-16 h-9 text-center font-black text-base rounded-xl border border-emerald-300 bg-emerald-50/50 text-emerald-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
                           />
                           <button
                             type="button"
@@ -1297,7 +1293,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                               const next = Math.min(100, cur + 1);
                               handleStsScoreChange(st.id, st.name, String(next));
                             }}
-                            className="w-9 h-9 rounded-xl border border-white/[0.12] bg-slate-900 active:scale-95 text-white font-bold text-lg flex items-center justify-center cursor-pointer"
+                            className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-bold text-lg flex items-center justify-center cursor-pointer transition-colors"
                           >
                             +
                           </button>
@@ -1305,12 +1301,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                       </div>
 
                       {/* Status Capaian */}
-                      <div className="bg-[#07111E] p-3 rounded-xl border border-white/[0.06] text-xs space-y-1.5">
+                      <div className="bg-white p-3 rounded-xl border border-slate-200 text-xs space-y-1.5 shadow-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-semibold text-slate-400">Status Capaian:</span>
-                          <span className="font-bold text-emerald-300">{mastery}</span>
+                          <span className="text-[11px] font-semibold text-slate-500">Status Capaian:</span>
+                          <span className="font-bold text-emerald-700">{mastery}</span>
                         </div>
-                        <p className="text-[11px] text-slate-300 leading-relaxed italic">
+                        <p className="text-[11px] text-slate-600 leading-relaxed italic">
                           "{scoreData.customDescription || scoreData.autoDescription || 'Belum ada deskripsi'}"
                         </p>
                       </div>
@@ -1320,20 +1316,20 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
               )}
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] shadow-xl shadow-black/20 overflow-hidden flex-1 flex flex-col min-h-0">
+            <div className="rounded-2xl border border-slate-200/90 bg-white shadow-xs overflow-hidden flex-1 flex flex-col min-h-0">
               <div className="overflow-auto custom-scrollbar flex-1 min-h-0">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0A1626] text-slate-300 border-b border-white/[0.08] sticky top-0 z-20">
+                      <tr className="bg-slate-50 text-slate-700 border-b border-slate-200 sticky top-0 z-20">
                         {/* No */}
-                        <th className="py-3 px-3 w-12 text-center font-semibold text-xs text-slate-300 sticky left-0 z-30 bg-[#0A1626]">
+                        <th className="py-3 px-3 w-12 text-center font-bold text-xs text-slate-700 sticky left-0 z-30 bg-slate-50">
                           No
                         </th>
 
                         {/* Nama Siswa */}
-                        <th className="py-3 px-4 min-w-[200px] font-semibold text-xs text-slate-200 sticky left-12 z-30 bg-[#0A1626] border-r border-white/[0.08] shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                        <th className="py-3 px-4 min-w-[200px] font-bold text-xs text-slate-800 sticky left-12 z-30 bg-slate-50 border-r border-slate-200 shadow-[4px_0_10px_rgba(0,0,0,0.03)]">
                           <div>Nama Siswa</div>
-                          <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                          <div className="text-[11px] font-normal text-slate-500 mt-0.5 leading-[1.4]">
                             NIS / NISN
                           </div>
                         </th>
@@ -1343,57 +1339,57 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         activeTps.map((tp, tpIdx) => (
                           <th
                             key={tp.id}
-                            className="py-3 px-2 text-center w-[72px] font-semibold border-l border-white/[0.06]"
+                            className="py-3 px-2 text-center w-[72px] font-bold border-l border-slate-200"
                             title={tp.desc || `Tujuan Pembelajaran ${tpIdx + 1}`}
                           >
-                            <div className="text-cyan-300 font-semibold text-xs">
+                            <div className="text-emerald-800 font-bold text-xs">
                               {tp.code || `TP ${tpIdx + 1}`}
                             </div>
-                            <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                            <div className="text-[11px] font-normal text-slate-500 mt-0.5 leading-[1.4]">
                               Tercapai
                             </div>
                           </th>
                         ))}
 
                       {/* Nilai Sumatif */}
-                      <th className="py-3 px-3 text-center w-24 font-semibold border-l border-white/[0.06]">
-                        <div className="text-xs font-semibold text-white">Nilai STS</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                      <th className="py-3 px-3 text-center w-24 font-bold border-l border-slate-200">
+                        <div className="text-xs font-bold text-slate-900">Nilai STS</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5 leading-[1.4]">
                           0 - 100
                         </div>
                       </th>
 
                       {/* Predikat (Auto A/B/C/D) */}
-                      <th className="py-3 px-3 text-center w-20 font-semibold border-l border-white/[0.06]">
-                        <div className="text-xs font-semibold text-emerald-300">Predikat</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                      <th className="py-3 px-3 text-center w-20 font-bold border-l border-slate-200">
+                        <div className="text-xs font-bold text-emerald-800">Predikat</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5 leading-[1.4]">
                           A / B / C / D
                         </div>
                       </th>
 
                       {/* Status Penguasaan (Auto) */}
-                      <th className="py-3 px-3.5 min-w-[140px] font-semibold border-l border-white/[0.06]">
-                        <div className="text-xs font-semibold text-cyan-300">Penguasaan</div>
-                        <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                      <th className="py-3 px-3.5 min-w-[140px] font-bold border-l border-slate-200">
+                        <div className="text-xs font-bold text-slate-800">Penguasaan</div>
+                        <div className="text-[11px] font-normal text-slate-500 mt-0.5 leading-[1.4]">
                           Status Capaian
                         </div>
                       </th>
 
                       {/* Capaian Kompetensi (Hanya tampil jika rincian TP dibuka) */}
                       {showTpColumns && (
-                        <th className="py-3 px-3.5 min-w-[220px] font-semibold border-l border-white/[0.06] text-slate-200 text-xs">
+                        <th className="py-3 px-3.5 min-w-[220px] font-bold border-l border-slate-200 text-slate-800 text-xs">
                           Capaian Kompetensi (TP)
                         </th>
                       )}
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-white/[0.05]">
+                  <tbody className="divide-y divide-slate-100">
                     {displayedStudents.length === 0 ? (
                       <tr>
                         <td
                           colSpan={showTpColumns ? 7 + activeTps.length : 6}
-                          className="text-center py-12 text-slate-400 text-xs font-normal"
+                          className="text-center py-12 text-slate-500 text-xs font-normal"
                         >
                           Tidak ada siswa yang cocok dengan pencarian.
                         </td>
@@ -1425,19 +1421,19 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                         return (
                           <tr
                             key={st.id}
-                            className="hover:bg-[#0A1626]/70 transition-colors group"
+                            className="hover:bg-slate-50/80 transition-colors group"
                           >
                             {/* No */}
-                            <td className="py-3 px-3 text-center text-slate-400 font-normal text-xs sticky left-0 z-10 bg-[#07111E] group-hover:bg-[#0A1626]">
+                            <td className="py-3 px-3 text-center text-slate-600 font-medium text-xs sticky left-0 z-10 bg-white group-hover:bg-slate-50">
                               {idx + 1}
                             </td>
 
                             {/* Nama Siswa */}
-                            <td className="py-3 px-4 sticky left-12 z-10 bg-[#07111E] group-hover:bg-[#0A1626] border-r border-white/[0.08] shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
-                              <div className="font-semibold text-white text-[13px] leading-[1.35]">
+                            <td className="py-3 px-4 sticky left-12 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 shadow-[4px_0_10px_rgba(0,0,0,0.03)]">
+                              <div className="font-bold text-slate-900 text-[13px] leading-[1.35]">
                                 {st.name}
                               </div>
-                              <div className="text-[11px] font-normal text-slate-400 mt-0.5 leading-[1.4]">
+                              <div className="text-[11px] font-normal text-slate-500 mt-0.5 leading-[1.4]">
                                 NIS: {st.nim || '-'} | NISN: {st.nisn || '-'}
                               </div>
                             </td>
@@ -1455,7 +1451,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                                 return (
                                   <td
                                     key={tp.id}
-                                    className="py-2.5 px-2 text-center border-l border-white/[0.05]"
+                                    className="py-2.5 px-2 text-center border-l border-slate-100"
                                   >
                                     <button
                                       type="button"
@@ -1464,8 +1460,8 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                                       }
                                       className={`w-6 h-6 mx-auto rounded-md flex items-center justify-center transition-all cursor-pointer select-none ${
                                         isAchieved
-                                          ? 'bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                                          : 'border border-white/[0.15] bg-[#0A1626] hover:border-white/[0.3]'
+                                          ? 'bg-emerald-500 text-white shadow-xs'
+                                          : 'border border-slate-300 bg-white hover:border-emerald-500'
                                       }`}
                                       title={
                                         isAchieved
@@ -1482,7 +1478,7 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                               })}
 
                             {/* STS Final Score Input */}
-                            <td className="py-2.5 px-2 text-center border-l border-white/[0.05]">
+                            <td className="py-2.5 px-2 text-center border-l border-slate-100">
                               <input
                                 type="number"
                                 min="0"
@@ -1500,24 +1496,24 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                                     e.target.value
                                   )
                                 }
-                                className="w-16 h-8 text-center rounded-lg font-bold text-sm border border-emerald-400/30 bg-[#0A1626] text-emerald-300 focus:outline-none focus:border-emerald-400 transition-colors no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-16 h-8 text-center rounded-lg font-black text-sm border border-slate-200 bg-slate-50 focus:bg-white text-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all no-spin-button [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               />
                             </td>
 
                             {/* Predikat (A / B / C / D) */}
-                            <td className="py-2.5 px-2 text-center border-l border-white/[0.05]">
+                            <td className="py-2.5 px-2 text-center border-l border-slate-100">
                               {predicate === '-' ? (
-                                <span className="text-slate-500 font-medium text-xs">-</span>
+                                <span className="text-slate-400 font-medium text-xs">-</span>
                               ) : (
                                 <span
                                   className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold border ${
                                     predicate === 'A'
-                                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40 shadow-sm shadow-emerald-500/10'
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-xs'
                                       : predicate === 'B'
-                                      ? 'bg-sky-500/20 text-sky-300 border-sky-400/40 shadow-sm shadow-sky-500/10'
+                                      ? 'bg-sky-50 text-sky-800 border-sky-300 shadow-xs'
                                       : predicate === 'C'
-                                      ? 'bg-amber-500/20 text-amber-300 border-amber-400/40'
-                                      : 'bg-rose-500/20 text-rose-300 border-rose-400/40'
+                                      ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                      : 'bg-rose-50 text-rose-800 border-rose-300'
                                   }`}
                                 >
                                   {predicate}
@@ -1526,30 +1522,30 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                             </td>
 
                             {/* Status Penguasaan (Sangat Baik / Baik / Cukup / Perlu Bimbingan) */}
-                            <td className="py-2.5 px-3 border-l border-white/[0.05]">
+                            <td className="py-2.5 px-3 border-l border-slate-100">
                               {mastery === '-' ? (
-                                <span className="text-slate-500 font-medium text-xs italic">-</span>
+                                <span className="text-slate-400 font-medium text-xs italic">-</span>
                               ) : (
                                 <span
                                   className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${
                                     predicate === 'A'
-                                      ? 'bg-emerald-500/10 text-emerald-300'
+                                      ? 'bg-emerald-50 text-emerald-800'
                                       : predicate === 'B'
-                                      ? 'bg-sky-500/10 text-sky-300'
+                                      ? 'bg-sky-50 text-sky-800'
                                       : predicate === 'C'
-                                      ? 'bg-amber-500/10 text-amber-300'
-                                      : 'bg-rose-500/10 text-rose-300'
+                                      ? 'bg-amber-50 text-amber-800'
+                                      : 'bg-rose-50 text-rose-800'
                                   }`}
                                 >
                                   <span
                                     className={`w-1.5 h-1.5 rounded-full ${
                                       predicate === 'A'
-                                        ? 'bg-emerald-400'
+                                        ? 'bg-emerald-500'
                                         : predicate === 'B'
-                                        ? 'bg-sky-400'
+                                        ? 'bg-sky-500'
                                         : predicate === 'C'
-                                        ? 'bg-amber-400'
-                                        : 'bg-rose-400'
+                                        ? 'bg-amber-500'
+                                        : 'bg-rose-500'
                                     }`}
                                   />
                                   <span>{mastery}</span>
@@ -1559,12 +1555,12 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
 
                             {/* Capaian Kompetensi (Hanya tampil jika mode TP dibuka) */}
                             {showTpColumns && (
-                              <td className="py-2.5 px-3.5 border-l border-white/[0.05]">
+                              <td className="py-2.5 px-3.5 border-l border-slate-100">
                                 <div className="flex items-center justify-between gap-2">
-                                  <p className="text-xs font-normal text-slate-300 leading-[1.4] truncate max-w-[220px]">
+                                  <p className="text-xs font-normal text-slate-700 leading-[1.4] truncate max-w-[220px]">
                                     {scoreData.customDescription ||
                                       scoreData.autoDescription || (
-                                        <span className="text-slate-500 italic font-normal">
+                                        <span className="text-slate-400 italic font-normal">
                                           Belum dinilai
                                         </span>
                                       )}
@@ -1573,14 +1569,14 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => openCustomDescModal(st.id)}
-                                    className="p-1 rounded-md text-slate-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+                                    className="p-1 rounded-md text-slate-400 hover:text-slate-700 transition-colors shrink-0 cursor-pointer"
                                     title="Lihat & sesuaikan narasi capaian"
                                   >
                                     <ChevronDown className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                                 {hasCustomDesc && (
-                                  <span className="text-[10px] font-medium text-amber-300 block mt-0.5">
+                                  <span className="text-[10px] font-semibold text-amber-700 block mt-0.5">
                                     (Kustom Guru)
                                   </span>
                                 )}
@@ -1600,53 +1596,53 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
 
       {/* Modal Edit Custom Description */}
       {editingCustomDescStudentId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#07111E] border border-white/[0.1] rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3">
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-emerald-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-5 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-emerald-600" />
                 <span>Sesuaikan Capaian Kompetensi</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setEditingCustomDescStudentId(null)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-slate-400 hover:text-slate-700 cursor-pointer p-1 rounded-lg"
               >
                 ✕
               </button>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                 Teks Narasi Rapor ({currentSubject.name})
               </label>
               <textarea
                 rows={4}
                 value={customDescText}
                 onChange={(e) => setCustomDescText(e.target.value)}
-                className="w-full text-xs font-normal text-white bg-[#0A1626] border border-white/[0.1] focus:border-emerald-400 rounded-xl p-3 focus:outline-none leading-relaxed resize-none"
+                className="w-full text-xs font-normal text-slate-900 bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 rounded-xl p-3 focus:outline-none leading-relaxed resize-none"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setCustomDescText('')}
-                className="px-3 py-1.5 text-xs text-slate-400 hover:text-amber-300 font-medium cursor-pointer"
+                className="px-3 py-1.5 text-xs text-slate-500 hover:text-amber-700 font-medium cursor-pointer"
               >
                 Reset ke Otomatis
               </button>
               <button
                 type="button"
                 onClick={() => setEditingCustomDescStudentId(null)}
-                className="px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] text-xs font-semibold text-slate-300 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer transition-colors"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={saveCustomDesc}
-                className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-xs font-semibold text-slate-950 shadow-md shadow-emerald-400/20 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white shadow-xs cursor-pointer transition-colors"
               >
                 Simpan Narasi
               </button>
@@ -1657,36 +1653,36 @@ export const RaporScoreGrid: React.FC<RaporScoreGridProps> = ({
 
       {/* Modal Konfirmasi Kosongkan Nilai (In-App Modal Tanpa window.confirm) */}
       {showResetConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#07111E] border border-rose-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white border border-rose-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-5 h-5 text-rose-400" />
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-rose-600" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-sm font-bold text-white">
+                <h3 className="text-sm font-bold text-slate-900">
                   Kosongkan Seluruh Nilai?
                 </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-600 leading-relaxed">
                   Apakah Anda yakin ingin mengosongkan seluruh nilai STS, capaian TP, dan catatan guru untuk mata pelajaran{' '}
-                  <span className="font-bold text-rose-300">{currentSubject.name}</span> pada{' '}
-                  <span className="font-bold text-white">{students.length} siswa</span> di kelas ini? Tindakan ini tidak dapat dibatalkan.
+                  <span className="font-bold text-rose-700">{currentSubject.name}</span> pada{' '}
+                  <span className="font-bold text-slate-900">{students.length} siswa</span> di kelas ini? Tindakan ini tidak dapat dibatalkan.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/[0.08]">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowResetConfirmModal(false)}
-                className="px-4 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-xs font-bold text-slate-300 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmResetCurrentSubjectScores}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow-lg shadow-rose-600/30 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-xs font-bold text-white shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Ya, Kosongkan Nilai</span>

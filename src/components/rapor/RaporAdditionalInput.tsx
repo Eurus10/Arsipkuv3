@@ -402,13 +402,13 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Mobile Student Dropdown Selector (< LG) */}
-        <div className="block lg:hidden col-span-1 border border-white/[0.08] bg-[#07111E] p-3 sm:p-3.5 rounded-2xl shadow-lg space-y-2">
+        <div className="block lg:hidden col-span-1 border border-slate-200 bg-white p-3 sm:p-3.5 rounded-2xl shadow-xs space-y-2">
           <div className="flex items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="text-xs font-bold text-white">Pilih Siswa:</span>
+              <User className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="text-xs font-bold text-slate-900">Pilih Siswa:</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 font-semibold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-300 bg-amber-50 text-amber-800 font-semibold">
               {filteredStudents.length} Siswa
             </span>
           </div>
@@ -424,7 +424,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   setSelectedStudentId(filteredStudents[currIdx - 1].id);
                 }
               }}
-              className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+              className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
               title="Siswa Sebelumnya"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
@@ -435,15 +435,15 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
               <select
                 value={currentStudent?.id || ''}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="w-full h-9 pl-3 pr-8 rounded-xl border border-amber-500/40 bg-[#0A1626] text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/40 appearance-none cursor-pointer truncate"
+                className="w-full h-9 pl-3 pr-8 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 appearance-none cursor-pointer truncate"
               >
                 {filteredStudents.map((st, index) => (
-                  <option key={st.id} value={st.id} className="bg-slate-900 text-white font-medium">
+                  <option key={st.id} value={st.id} className="bg-white text-slate-900 font-medium">
                     [{index + 1}] {st.name} {st.nisn ? `(${st.nisn})` : ''}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-4 h-4 text-amber-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
             {/* Next Student Button */}
@@ -456,7 +456,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   setSelectedStudentId(filteredStudents[currIdx + 1].id);
                 }
               }}
-              className="w-9 h-9 rounded-xl border border-white/[0.08] bg-[#0A1626] hover:bg-[#0D1C30] text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
+              className="w-9 h-9 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shrink-0 transition-all cursor-pointer active:scale-95"
               title="Siswa Selanjutnya"
             >
               <ChevronRight className="w-4 h-4" />
@@ -467,7 +467,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
         {/* Kiri: Student Selector Sidebar (Desktop ONLY >= LG) */}
         <div className="hidden lg:block lg:col-span-3 space-y-2">
           <div className="flex items-center justify-between mb-1.5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Daftar Siswa ({students.length})
             </h3>
           </div>
@@ -479,7 +479,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
               placeholder="Cari siswa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+              className="w-full h-9 pl-9 pr-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 transition-all"
             />
           </div>
 
@@ -497,38 +497,38 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   onClick={() => setSelectedStudentId(st.id)}
                   className={`w-full text-left p-2.5 rounded-xl border transition-all flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? 'bg-amber-500/15 border-amber-400/50 text-white shadow-lg shadow-amber-500/10'
-                      : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                      ? 'bg-amber-50 border-amber-300 text-slate-900 shadow-xs'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div
                       className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
                         isSelected
-                          ? 'bg-amber-500 text-slate-950'
-                          : 'bg-slate-800 text-slate-400'
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-slate-100 text-slate-500'
                       }`}
                     >
                       <User className="w-3.5 h-3.5" />
                     </div>
                     <div className="truncate min-w-0 pr-1">
-                      <p className="text-xs font-bold truncate">{st.name}</p>
+                      <p className="text-xs font-bold truncate text-slate-900">{st.name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         <span className="text-[10px] text-slate-500 truncate">NIS: {st.nim || '-'}</span>
-                        <span className="text-slate-600 text-[9px]">•</span>
+                        <span className="text-slate-300 text-[9px]">•</span>
                         {remedialCount > 0 ? (
-                          <span className="text-[10px] font-bold text-rose-400">
+                          <span className="text-[10px] font-bold text-rose-600">
                             Remedial: {remedialCount}
                           </span>
                         ) : (
                           <span className={`text-[10px] font-bold ${
                             averageScore >= 88 
-                              ? 'text-emerald-400' 
+                              ? 'text-emerald-700' 
                               : averageScore >= 75 
-                                ? 'text-amber-400' 
+                                ? 'text-amber-700' 
                                 : averageScore > 0 
-                                  ? 'text-rose-400' 
-                                  : 'text-slate-500'
+                                  ? 'text-rose-600' 
+                                  : 'text-slate-400'
                           }`}>
                             Rata-rata: {averageScore > 0 ? averageScore : '-'}
                           </span>
@@ -538,7 +538,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   </div>
 
                   {totalAbsen > 0 && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 flex-shrink-0">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-rose-50 text-rose-700 border border-rose-200 flex-shrink-0">
                       Absen: {totalAbsen}
                     </span>
                   )}
@@ -554,25 +554,25 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
             {/* Tengah: Form untuk guru menulis catatan */}
             <div className="lg:col-span-5 space-y-4">
               {/* Header info */}
-              <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex items-center justify-between">
                 <div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-wider text-amber-400">
+                  <span className="text-[9px] font-extrabold uppercase tracking-wider text-amber-600">
                     Data Pelengkap Rapor Siswa
                   </span>
-                  <h2 className="text-sm sm:text-base font-black text-white truncate max-w-[250px]">
+                  <h2 className="text-sm sm:text-base font-black text-slate-900 truncate max-w-[250px]">
                     {currentStudent.name}
                   </h2>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     NIS: {currentStudent.nim || '-'} | NISN: {currentStudent.nisn || '-'}
                   </p>
                 </div>
               </div>
 
               {/* Teacher Notes / Motivasi Section */}
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3.5">
-                <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2.5 gap-2">
-                  <div className="flex items-center gap-2 text-white font-bold text-xs">
-                    <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold text-xs">
+                    <MessageSquare className="w-3.5 h-3.5 text-amber-500" />
                     <span>Catatan Wali Kelas / Motivasi Guru</span>
                   </div>
 
@@ -581,13 +581,13 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                       type="button"
                       disabled={isGeneratingAi}
                       onClick={handleAutoGenerateNoteForCurrent}
-                      className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Buat catatan otomatis menggunakan Gemini AI untuk siswa ini"
                     >
                       {isGeneratingAi ? (
-                        <Loader2 className="w-3 h-3 text-amber-400 animate-spin" />
+                        <Loader2 className="w-3 h-3 text-amber-600 animate-spin" />
                       ) : (
-                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <Sparkles className="w-3 h-3 text-amber-600" />
                       )}
                       <span>AI Catatan</span>
                     </button>
@@ -596,7 +596,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                       type="button"
                       disabled={isGeneratingAi}
                       onClick={handleAutoGenerateNotesForAll}
-                      className="px-2 py-1 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 text-[10px] font-black flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-2 py-1 rounded-lg bg-amber-500 text-white hover:bg-amber-600 text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
                       title="Isi otomatis catatan seluruh siswa dengan Gemini AI"
                     >
                       {isGeneratingAi ? (
@@ -614,13 +614,13 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                   value={currentInfo.teacherNotes || ''}
                   onChange={(e) => handleUpdateCurrent({ teacherNotes: e.target.value })}
                   placeholder="Tuliskan catatan apresiasi, motivasi, dan evaluasi guru untuk siswa..."
-                  className="w-full text-xs text-slate-100 bg-slate-950 border border-slate-700 focus:border-amber-400 rounded-xl p-3 focus:outline-none leading-relaxed resize-none"
+                  className="w-full text-xs text-slate-900 bg-slate-50 border border-slate-200 focus:bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 rounded-xl p-3 focus:outline-none leading-relaxed resize-none transition-all"
                 />
 
                 {/* Preset Notes Picker */}
                 <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span className="text-[10px] font-bold text-slate-600 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-500" />
                     {currentRemedialCount > 0 ? (
                       <span>Rekomendasi Catatan Remedial ({currentRemedialCount} Mapel Belum Tuntas):</span>
                     ) : (
@@ -633,7 +633,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                         key={idx}
                         type="button"
                         onClick={() => handleUpdateCurrent({ teacherNotes: note })}
-                        className="text-left w-full text-[10px] p-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors cursor-pointer leading-relaxed"
+                        className="text-left w-full text-[10px] p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-colors cursor-pointer leading-relaxed"
                       >
                         "{note}"
                       </button>
@@ -646,15 +646,15 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
             {/* Kanan: Informasi absensi dan ekskul */}
             <div className="lg:col-span-4 space-y-4">
               {/* Attendance Section */}
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center gap-2 text-white font-bold text-xs border-b border-slate-800 pb-2">
-                  <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 text-slate-900 font-bold text-xs border-b border-slate-100 pb-2">
+                  <Calendar className="w-3.5 h-3.5 text-amber-500" />
                   <span>Ketidakhadiran (Absensi Akhir Semester)</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5">
                   <div className="space-y-1 text-center">
-                    <label className="text-[10px] font-semibold text-slate-300">
+                    <label className="text-[10px] font-semibold text-slate-600">
                       Sakit (Hari)
                     </label>
                     <input
@@ -662,12 +662,12 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                       min="0"
                       value={currentInfo.attendance?.sakit ?? 0}
                       onChange={(e) => handleAttendanceChange('sakit', e.target.value)}
-                      className="w-full text-center py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-amber-300 focus:outline-none focus:border-amber-400 no-spin-button [appearance:textfield]"
+                      className="w-full text-center py-1.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs font-bold text-amber-800 focus:outline-none focus:border-amber-500 no-spin-button [appearance:textfield]"
                     />
                   </div>
 
                   <div className="space-y-1 text-center">
-                    <label className="text-[10px] font-semibold text-slate-300">
+                    <label className="text-[10px] font-semibold text-slate-600">
                       Izin (Hari)
                     </label>
                     <input
@@ -675,12 +675,12 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                       min="0"
                       value={currentInfo.attendance?.izin ?? 0}
                       onChange={(e) => handleAttendanceChange('izin', e.target.value)}
-                      className="w-full text-center py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-sky-300 focus:outline-none focus:border-sky-400 no-spin-button [appearance:textfield]"
+                      className="w-full text-center py-1.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs font-bold text-sky-800 focus:outline-none focus:border-sky-500 no-spin-button [appearance:textfield]"
                     />
                   </div>
 
                   <div className="space-y-1 text-center">
-                    <label className="text-[10px] font-semibold text-slate-300">
+                    <label className="text-[10px] font-semibold text-slate-600">
                       Alpha (Hari)
                     </label>
                     <input
@@ -688,23 +688,23 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                       min="0"
                       value={currentInfo.attendance?.alpha ?? 0}
                       onChange={(e) => handleAttendanceChange('alpha', e.target.value)}
-                      className="w-full text-center py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs font-bold text-rose-300 focus:outline-none focus:border-rose-400 no-spin-button [appearance:textfield]"
+                      className="w-full text-center py-1.5 bg-slate-50 border border-slate-200 focus:bg-white rounded-xl text-xs font-bold text-rose-700 focus:outline-none focus:border-rose-500 no-spin-button [appearance:textfield]"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Extracurricular Section */}
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                  <div className="flex items-center gap-2 text-white font-bold text-xs">
-                    <Award className="w-3.5 h-3.5 text-purple-400" />
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="flex items-center gap-2 text-slate-900 font-bold text-xs">
+                    <Award className="w-3.5 h-3.5 text-purple-600" />
                     <span>Ekstrakurikuler</span>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddEkstra}
-                    className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 text-[10px] font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
+                    className="px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 text-[10px] font-bold flex items-center gap-0.5 cursor-pointer transition-colors"
                   >
                     <Plus className="w-2.5 h-2.5" />
                     <span>Tambah</span>
@@ -713,14 +713,14 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
 
                 <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
                   {(currentInfo.extracurriculars || []).length === 0 ? (
-                    <p className="text-[10px] text-slate-500 italic text-center py-2">
+                    <p className="text-[10px] text-slate-400 italic text-center py-2">
                       Belum ada ekskul.
                     </p>
                   ) : (
                     (currentInfo.extracurriculars || []).map((ek) => (
                       <div
                         key={ek.id}
-                        className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2"
+                        className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2"
                       >
                         <div className="flex items-center justify-between gap-1.5">
                           <input
@@ -728,7 +728,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                             value={ek.name}
                             onChange={(e) => handleUpdateEkstra(ek.id, { name: e.target.value })}
                             placeholder="Nama Ekskul (Pramuka, dll)"
-                            className="text-[11px] font-bold text-white bg-slate-900 border border-slate-700 px-2 py-0.5 rounded flex-1 focus:outline-none focus:border-purple-400 min-w-0"
+                            className="text-[11px] font-bold text-slate-900 bg-white border border-slate-200 px-2 py-0.5 rounded flex-1 focus:outline-none focus:border-purple-500 min-w-0"
                           />
 
                           <select
@@ -738,7 +738,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                                 predicate: e.target.value as any,
                               })
                             }
-                            className="text-[10px] font-bold bg-slate-900 border border-slate-700 text-purple-300 px-1.5 py-0.5 rounded focus:outline-none cursor-pointer"
+                            className="text-[10px] font-bold bg-white border border-slate-200 text-purple-700 px-1.5 py-0.5 rounded focus:outline-none cursor-pointer"
                           >
                             <option value="Sangat Baik">Sangat Baik</option>
                             <option value="Baik">Baik</option>
@@ -749,7 +749,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                           <button
                             type="button"
                             onClick={() => handleDeleteEkstra(ek.id)}
-                            className="p-0.5 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
+                            className="p-0.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer shrink-0"
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -762,7 +762,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
                             handleUpdateEkstra(ek.id, { description: e.target.value })
                           }
                           placeholder="Keterangan pencapaian"
-                          className="w-full text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-2 py-1 rounded focus:outline-none focus:border-purple-400"
+                          className="w-full text-[10px] text-slate-700 bg-white border border-slate-200 px-2 py-1 rounded focus:outline-none focus:border-purple-500"
                         />
                       </div>
                     ))
@@ -771,9 +771,9 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
               </div>
 
               {/* Informative Notice Box */}
-              <div className="p-3.5 rounded-2xl bg-amber-500/[0.03] border border-amber-500/20 flex items-start gap-2.5">
-                <span className="text-amber-400 text-xs shrink-0 mt-0.5">ℹ️</span>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-normal">
+              <div className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200 flex items-start gap-2.5">
+                <span className="text-amber-600 text-xs shrink-0 mt-0.5">ℹ️</span>
+                <p className="text-[10px] text-slate-600 leading-relaxed font-normal">
                   <strong>Catatan Akhir Semester:</strong> Absensi & Ekskul di atas diinput khusus untuk keperluan Akhir Semester Genap/Ganjil dan disembunyikan secara otomatis pada cetakan <strong>Rapor STS (Tengah Semester)</strong>.
                 </p>
               </div>

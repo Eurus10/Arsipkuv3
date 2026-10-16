@@ -308,19 +308,19 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
       )}
 
       {/* Top Action Bar with A/B/C/D Quick Dropdowns */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-[#07111E] border border-white/[0.08] shadow-xl">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-purple-300 shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-700 shrink-0">
             <HeartHandshake className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
               <span>Penilaian 18 Karakter Peserta Didik</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-400/30">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
                 Lembar 2 Rapor
               </span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Pilih predikat A, B, C, atau D pada setiap aspek. Narasi deskripsi terisi otomatis dan dapat diedit langsung.
             </p>
           </div>
@@ -340,26 +340,26 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                 }
               }}
               disabled={!currentStudent}
-              className="px-3 py-2 rounded-xl border border-sky-400/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 text-xs font-semibold focus:outline-none cursor-pointer disabled:opacity-50 appearance-none pr-7 transition-all"
+              className="px-3 py-2 rounded-xl border border-sky-300 bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs font-semibold focus:outline-none cursor-pointer disabled:opacity-50 appearance-none pr-7 transition-all"
               title="Set semua 18 karakter siswa ini ke predikat pilihan"
             >
-              <option value="" disabled className="bg-slate-900 text-slate-400">
+              <option value="" disabled className="bg-white text-slate-400">
                 ⚡ Set Siswa Ini (A/B/C/D)...
               </option>
-              <option value="A" className="bg-slate-900 text-white">
+              <option value="A" className="bg-white text-slate-900">
                 Set Siswa Ini: A (Sangat Baik)
               </option>
-              <option value="B" className="bg-slate-900 text-white">
+              <option value="B" className="bg-white text-slate-900">
                 Set Siswa Ini: B (Baik)
               </option>
-              <option value="C" className="bg-slate-900 text-white">
+              <option value="C" className="bg-white text-slate-900">
                 Set Siswa Ini: C (Cukup)
               </option>
-              <option value="D" className="bg-slate-900 text-white">
+              <option value="D" className="bg-white text-slate-900">
                 Set Siswa Ini: D (Perlu Bimbingan)
               </option>
             </select>
-            <Zap className="w-3.5 h-3.5 text-sky-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Zap className="w-3.5 h-3.5 text-sky-600 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Dropdown 2: Set Seluruh Kelas */}
@@ -373,26 +373,26 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                   e.target.value = '';
                 }
               }}
-              className="px-3 py-2 rounded-xl border border-purple-400/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-semibold focus:outline-none cursor-pointer appearance-none pr-7 transition-all"
+              className="px-3 py-2 rounded-xl border border-purple-300 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold focus:outline-none cursor-pointer appearance-none pr-7 transition-all"
               title="Set seluruh siswa se-kelas ke predikat pilihan"
             >
-              <option value="" disabled className="bg-slate-900 text-slate-400">
+              <option value="" disabled className="bg-white text-slate-400">
                 👥 Set Se-Kelas (A/B/C/D)...
               </option>
-              <option value="A" className="bg-slate-900 text-white">
+              <option value="A" className="bg-white text-slate-900">
                 Set Se-Kelas: A (Sangat Baik)
               </option>
-              <option value="B" className="bg-slate-900 text-white">
+              <option value="B" className="bg-white text-slate-900">
                 Set Se-Kelas: B (Baik)
               </option>
-              <option value="C" className="bg-slate-900 text-white">
+              <option value="C" className="bg-white text-slate-900">
                 Set Se-Kelas: C (Cukup)
               </option>
-              <option value="D" className="bg-slate-900 text-white">
+              <option value="D" className="bg-white text-slate-900">
                 Set Se-Kelas: D (Perlu Bimbingan)
               </option>
             </select>
-            <Users className="w-3.5 h-3.5 text-purple-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Users className="w-3.5 h-3.5 text-purple-600 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Save Button */}
@@ -401,7 +401,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
               type="button"
               onClick={onSaveCharacterRecords}
               disabled={isSaving}
-              className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-400/20 transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{isSaving ? 'Menyimpan...' : 'Simpan Karakter'}</span>
@@ -413,33 +413,33 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
       {/* Main Workspace: Left Sidebar (Student List) + Right Content (18 Character Rows) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         {/* LEFT COLUMN: Student Selector */}
-        <div className="lg:col-span-4 xl:col-span-3 rounded-2xl bg-[#07111E] border border-white/[0.08] p-4 space-y-3 shadow-xl">
-          <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="lg:col-span-4 xl:col-span-3 rounded-2xl bg-white border border-slate-200/90 p-4 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-emerald-600" />
               <span>Daftar Siswa ({students.length})</span>
             </h3>
-            <span className="text-[11px] font-normal text-slate-400">
+            <span className="text-[11px] font-normal text-slate-500">
               Kelas {classData.config.classLevel}
             </span>
           </div>
 
           {/* Search Student Input */}
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Cari siswa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-8 pl-8 pr-3 rounded-lg border border-white/[0.08] bg-slate-950 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400/40"
+              className="w-full h-8 pl-8 pr-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
             />
           </div>
 
           {/* Student List */}
           <div className="space-y-1.5 max-h-[580px] overflow-y-auto custom-scrollbar pr-1">
             {filteredStudents.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-6">
+              <p className="text-xs text-slate-500 text-center py-6">
                 Tidak ada siswa yang cocok.
               </p>
             ) : (
@@ -460,14 +460,14 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                     onClick={() => setSelectedStudentId(st.id)}
                     className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between gap-2 border cursor-pointer ${
                       isSelected
-                        ? 'bg-purple-500/20 border-purple-400/50 shadow-md shadow-purple-500/10'
-                        : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.05] text-slate-300'
+                        ? 'bg-purple-50 border-purple-300 shadow-xs'
+                        : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
                     }`}
                   >
                     <div className="min-w-0 flex items-center gap-2.5">
                       <span
                         className={`w-5 text-[11px] font-bold text-center shrink-0 ${
-                          isSelected ? 'text-purple-300' : 'text-slate-500'
+                          isSelected ? 'text-purple-700' : 'text-slate-400'
                         }`}
                       >
                         {idx + 1}
@@ -475,7 +475,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                       <div className="min-w-0">
                         <p
                           className={`text-xs font-semibold truncate ${
-                            isSelected ? 'text-white' : 'text-slate-200'
+                            isSelected ? 'text-slate-900 font-bold' : 'text-slate-700'
                           }`}
                         >
                           {st.name}
@@ -490,10 +490,10 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                       <span
                         className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                           isComplete
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
                             : filled > 0
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                            : 'bg-slate-800 text-slate-500'
+                            ? 'bg-amber-50 text-amber-800 border border-amber-300'
+                            : 'bg-slate-100 text-slate-500'
                         }`}
                       >
                         {filled}/{activeDescriptors.length}
@@ -510,18 +510,18 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
         <div className="lg:col-span-8 xl:col-span-9 space-y-4">
           {/* Student Header & Quick Switcher */}
           {currentStudent && (
-            <div className="p-4 rounded-2xl bg-[#07111E] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
               <div>
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <h3 className="text-base font-bold text-white">
+                  <h3 className="text-base font-bold text-slate-900">
                     {currentStudent.name}
                   </h3>
-                  <span className="px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/[0.1] text-slate-300 text-xs">
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
                     NIS: {currentStudent.nim || '-'} | NISN: {currentStudent.nisn || '-'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  Status Penilaian: <strong className="text-emerald-400 font-semibold">{completedCount} dari {activeDescriptors.length}</strong> karakter terisi
+                <p className="text-xs text-slate-500 mt-1">
+                  Status Penilaian: <strong className="text-emerald-700 font-semibold">{completedCount} dari {activeDescriptors.length}</strong> karakter terisi
                 </p>
               </div>
 
@@ -531,19 +531,19 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                   type="button"
                   onClick={handlePrevStudent}
                   disabled={currentIndex <= 0}
-                  className="p-1.5 rounded-lg border border-white/[0.08] bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                  className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 disabled:opacity-30 cursor-pointer transition-colors"
                   title="Siswa Sebelumnya"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="text-xs font-semibold text-slate-300 px-2">
+                <span className="text-xs font-semibold text-slate-700 px-2">
                   {currentIndex + 1} / {students.length}
                 </span>
                 <button
                   type="button"
                   onClick={handleNextStudent}
                   disabled={currentIndex >= students.length - 1}
-                  className="p-1.5 rounded-lg border border-white/[0.08] bg-slate-900 text-slate-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                  className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 disabled:opacity-30 cursor-pointer transition-colors"
                   title="Siswa Berikutnya"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -563,14 +563,14 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
               return (
                 <div
                   key={desc.id}
-                  className="flex flex-col md:flex-row md:items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-[#07111E] border border-white/[0.08] hover:border-white/[0.18] transition-all shadow-md"
+                  className="flex flex-col md:flex-row md:items-center gap-2.5 p-2.5 sm:p-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 transition-all shadow-xs"
                 >
                   {/* Part 1: Number & Character Name (e.g. 1. Religius) */}
                   <div className="flex items-center gap-2 md:w-52 lg:w-56 shrink-0">
-                    <span className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/[0.1] text-[11px] font-bold text-slate-300 flex items-center justify-center shrink-0">
+                    <span className="w-5 h-5 rounded-md bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700 flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
-                    <span className="text-xs font-bold text-white truncate" title={desc.name}>
+                    <span className="text-xs font-bold text-slate-900 truncate" title={desc.name}>
                       {desc.name}
                     </span>
                   </div>
@@ -581,17 +581,17 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                       const isChosen = selectedPred === p;
                       const colorClasses = {
                         A: isChosen
-                          ? 'bg-emerald-500 text-slate-950 font-black border-emerald-400 shadow-md shadow-emerald-500/25'
-                          : 'bg-emerald-500/10 text-emerald-300 border-emerald-400/25 hover:bg-emerald-500/20',
+                          ? 'bg-emerald-600 text-white font-bold border-emerald-600 shadow-xs'
+                          : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100',
                         B: isChosen
-                          ? 'bg-sky-500 text-slate-950 font-black border-sky-400 shadow-md shadow-sky-500/25'
-                          : 'bg-sky-500/10 text-sky-300 border-sky-400/25 hover:bg-sky-500/20',
+                          ? 'bg-sky-600 text-white font-bold border-sky-600 shadow-xs'
+                          : 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100',
                         C: isChosen
-                          ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow-md shadow-amber-500/25'
-                          : 'bg-amber-500/10 text-amber-300 border-amber-400/25 hover:bg-amber-500/20',
+                          ? 'bg-amber-500 text-white font-bold border-amber-500 shadow-xs'
+                          : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100',
                         D: isChosen
-                          ? 'bg-rose-500 text-white font-black border-rose-400 shadow-md shadow-rose-500/25'
-                          : 'bg-rose-500/10 text-rose-300 border-rose-400/25 hover:bg-rose-500/20',
+                          ? 'bg-rose-600 text-white font-bold border-rose-600 shadow-xs'
+                          : 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100',
                       };
 
                       return (
@@ -621,10 +621,10 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                           ? desc.indicators[selectedPred] || 'Tulis deskripsi...'
                           : 'Pilih A/B/C/D atau ketik deskripsi manual...'
                       }
-                      className={`w-full h-8 px-3 rounded-lg border text-xs text-slate-200 placeholder-slate-500 focus:outline-none transition-all ${
+                      className={`w-full h-8 px-3 rounded-lg border text-xs text-slate-900 placeholder-slate-400 focus:outline-none transition-all ${
                         isCustomized
-                          ? 'border-amber-400/40 bg-amber-500/[0.04] focus:border-amber-400'
-                          : 'border-white/[0.08] bg-slate-950/70 focus:border-purple-400/50'
+                          ? 'border-amber-400 bg-amber-50/40 focus:border-amber-500'
+                          : 'border-slate-200 bg-slate-50 focus:bg-white focus:border-purple-400'
                       }`}
                       title={descText}
                     />
@@ -633,7 +633,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
                       <button
                         type="button"
                         onClick={() => handleResetDescription(desc)}
-                        className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/[0.05] transition-colors cursor-pointer"
+                        className="shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-cyan-700 hover:bg-slate-100 transition-colors cursor-pointer"
                         title="Kembalikan narasi ke indikator baku"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -646,9 +646,9 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
           </div>
 
           {/* Catatan Khusus Wali Kelas untuk Lembar Karakter */}
-          <div className="p-4 rounded-2xl bg-[#07111E] border border-white/[0.08] space-y-2 shadow-xl">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <div className="p-4 rounded-2xl bg-white border border-slate-200/90 space-y-2 shadow-xs">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               <span>Catatan Perkembangan Karakter Wali Kelas (Opsional)</span>
             </h4>
             <textarea
@@ -656,7 +656,7 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
               value={currentRecord.teacherNote || ''}
               onChange={(e) => handleTeacherNoteChange(e.target.value)}
               placeholder="Contoh: Ananda menunjukkan pembiasaan ibadah dan sikap disiplin yang sangat membanggakan di kelas..."
-              className="w-full px-3 py-2 rounded-xl border border-white/[0.08] bg-slate-950/70 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400/40 custom-scrollbar resize-none leading-relaxed"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:bg-white custom-scrollbar resize-none leading-relaxed transition-all"
             />
           </div>
         </div>
@@ -664,33 +664,33 @@ export const RaporCharacterGrid: React.FC<RaporCharacterGridProps> = ({
 
       {/* Confirmation Modal for Applying Selected Predicate to entire class */}
       {bulkModalPredicate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-2xl bg-[#0B1525] border border-white/[0.1] p-6 space-y-4 shadow-2xl">
-            <div className="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-400/30 text-purple-300 flex items-center justify-center mx-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 p-6 space-y-4 shadow-2xl">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center mx-auto">
               <Users className="w-6 h-6" />
             </div>
 
             <div className="text-center space-y-1.5">
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-slate-900">
                 Terapkan Predikat {bulkModalPredicate} ({PREDICATE_LABELS[bulkModalPredicate]}) Se-Kelas?
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 Tindakan ini akan mengatur seluruh 18 aspek karakter untuk <strong>{students.length} siswa</strong> dengan Predikat <strong>{bulkModalPredicate} ({PREDICATE_LABELS[bulkModalPredicate]})</strong> beserta narasi capaian indikator baku otomatis.
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setBulkModalPredicate(null)}
-                className="px-4 py-2 rounded-xl border border-white/[0.1] text-xs font-semibold text-slate-300 hover:bg-white/[0.05] cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer transition-colors"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={() => handleConfirmApplyClassPredicate(bulkModalPredicate)}
-                className="px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-white text-xs font-bold shadow-lg shadow-purple-500/25 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs cursor-pointer transition-colors"
               >
                 Ya, Terapkan ke Seluruh Kelas
               </button>

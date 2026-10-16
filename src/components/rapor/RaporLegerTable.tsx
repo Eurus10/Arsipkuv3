@@ -99,16 +99,16 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
   return (
     <div className="space-y-6">
       {/* Top action bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200/90 shadow-xs">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-amber-400" />
+          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-500" />
             <span>Rekapitulasi Leger Nilai e-Rapor — Kelas {config.classLevel}</span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Semester {config.semester === '1' ? 'Ganjil' : 'Genap'} ({config.schoolYear}) • {students.length} Siswa Terdaftar
             {sortByRank && (
-              <span className="ml-2 px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30">
+              <span className="ml-2 px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 font-semibold border border-amber-200">
                 Mode Urut Peringkat Aktif
               </span>
             )}
@@ -124,7 +124,7 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
               placeholder="Cari siswa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 w-44"
+              className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 w-44 transition-all"
             />
           </div>
 
@@ -134,15 +134,15 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
             onClick={() => setSortByRank((prev) => !prev)}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
               sortByRank
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
-                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700/80 hover:border-slate-600'
+                ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-xs'
+                : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
             }`}
             title={sortByRank ? 'Kembalikan ke urutan daftar nama siswa' : 'Urutkan siswa berdasarkan peringkat & total nilai'}
           >
-            <Trophy className={`w-4 h-4 ${sortByRank ? 'text-amber-400' : 'text-slate-400'}`} />
+            <Trophy className={`w-4 h-4 ${sortByRank ? 'text-amber-500' : 'text-slate-400'}`} />
             <span>{sortByRank ? 'Urut Peringkat (Aktif)' : 'Filter Peringkat'}</span>
             {sortByRank && (
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
             )}
           </button>
 
@@ -150,7 +150,7 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
           <button
             type="button"
             onClick={handleExportExcel}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center gap-2 shadow-lg transition-all cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer"
             title="Download Excel dengan 2 Sheet (Urut Nama & Urut Peringkat)"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -160,48 +160,48 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
       </div>
 
       {/* Leger Matrix Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs">
         <div className="overflow-x-auto custom-scrollbar max-h-[600px]">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-950 text-slate-300 border-b border-slate-800 sticky top-0 z-20">
-                <th className="py-3 px-2 text-center w-9 font-bold sticky left-0 z-30 bg-slate-950">
+              <tr className="bg-slate-50 text-slate-700 border-b border-slate-200 sticky top-0 z-20">
+                <th className="py-3 px-2 text-center w-9 font-bold sticky left-0 z-30 bg-slate-50">
                   No
                 </th>
-                <th className="py-3 px-3 min-w-[170px] font-bold sticky left-9 z-30 bg-slate-950 border-r border-slate-800 shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                <th className="py-3 px-3 min-w-[170px] font-bold sticky left-9 z-30 bg-slate-50 border-r border-slate-200 shadow-[4px_0_10px_rgba(0,0,0,0.03)] text-slate-800">
                   Nama Siswa
                 </th>
                 <th className="py-3 px-2 text-center w-12 font-bold">L/P</th>
                 {subjects.map((s) => (
                   <th
                     key={s.id}
-                    className="py-3 px-2 text-center font-bold border-l border-slate-800/80 bg-slate-950/90 min-w-[65px]"
+                    className="py-3 px-2 text-center font-bold border-l border-slate-200 bg-slate-50 min-w-[65px]"
                     title={s.name}
                   >
-                    <span className="text-amber-400 font-extrabold">{s.code}</span>
+                    <span className="text-amber-700 font-extrabold">{s.code}</span>
                   </th>
                 ))}
-                <th className="py-3 px-2 text-center font-black text-sky-400 border-l border-slate-800 bg-slate-950/90 w-16">
+                <th className="py-3 px-2 text-center font-bold text-sky-700 border-l border-slate-200 bg-slate-50 w-16">
                   Jumlah
                 </th>
-                <th className="py-3 px-2 text-center font-black text-emerald-400 border-l border-slate-800 bg-slate-950/90 w-16">
+                <th className="py-3 px-2 text-center font-bold text-emerald-700 border-l border-slate-200 bg-slate-50 w-16">
                   Rerata
                 </th>
-                <th className="py-3 px-2 text-center font-black text-amber-300 border-l border-slate-800 bg-slate-950/90 w-14">
+                <th className="py-3 px-2 text-center font-bold text-amber-700 border-l border-slate-200 bg-slate-50 w-14">
                   Rank
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {filteredList.map((item, idx) => (
-                <tr key={item.student.id} className="hover:bg-slate-800/40 transition-colors group">
-                  <td className="py-2.5 px-2 text-center text-slate-400 font-medium sticky left-0 z-10 bg-slate-900 group-hover:bg-slate-850">
+                <tr key={item.student.id} className="hover:bg-slate-50/80 transition-colors group">
+                  <td className="py-2.5 px-2 text-center text-slate-600 font-medium sticky left-0 z-10 bg-white group-hover:bg-slate-50">
                     {idx + 1}
                   </td>
-                  <td className="py-2.5 px-3 font-bold text-white sticky left-9 z-10 bg-slate-900 group-hover:bg-slate-850 border-r border-slate-800 shadow-[4px_0_10px_rgba(0,0,0,0.3)]">
+                  <td className="py-2.5 px-3 font-bold text-slate-900 sticky left-9 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 shadow-[4px_0_10px_rgba(0,0,0,0.03)]">
                     {item.student.name}
                   </td>
-                  <td className="py-2.5 px-2 text-center text-slate-400">
+                  <td className="py-2.5 px-2 text-center text-slate-500">
                     {item.student.gender || '-'}
                   </td>
                   {subjects.map((s) => {
@@ -209,42 +209,42 @@ export const RaporLegerTable: React.FC<RaporLegerTableProps> = ({
                     return (
                       <td
                         key={s.id}
-                        className="py-2.5 px-2 text-center font-semibold border-l border-slate-800/40"
+                        className="py-2.5 px-2 text-center font-semibold border-l border-slate-100"
                       >
                         {typeof sc === 'number' ? (
                           <span
                             className={
                               sc >= config.passingGrade
-                                ? 'text-slate-200'
-                                : 'text-rose-400 font-bold'
+                                ? 'text-slate-800'
+                                : 'text-rose-600 font-bold'
                             }
                           >
                             {sc}
                           </span>
                         ) : (
-                          <span className="text-slate-600">-</span>
+                          <span className="text-slate-400">-</span>
                         )}
                       </td>
                     );
                   })}
-                  <td className="py-2.5 px-2 text-center font-bold text-sky-300 border-l border-slate-800/60 bg-sky-950/10">
+                  <td className="py-2.5 px-2 text-center font-bold text-sky-700 border-l border-slate-100 bg-sky-50/30">
                     {item.total > 0 ? item.total : '-'}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-black text-emerald-300 border-l border-slate-800/60 bg-emerald-950/10">
+                  <td className="py-2.5 px-2 text-center font-bold text-emerald-700 border-l border-slate-100 bg-emerald-50/30">
                     {item.avg > 0 ? item.avg : '-'}
                   </td>
-                  <td className="py-2.5 px-2 text-center font-black text-amber-300 border-l border-slate-800/60 bg-amber-950/10">
+                  <td className="py-2.5 px-2 text-center font-bold text-amber-700 border-l border-slate-100 bg-amber-50/30">
                     {item.total > 0 ? (
                       item.ranking === 1 ? (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-[11px] border border-amber-500/40">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[11px] border border-amber-300">
                           🥇 #1
                         </span>
                       ) : item.ranking === 2 ? (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-slate-300/20 text-slate-200 font-extrabold text-[11px] border border-slate-400/40">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold text-[11px] border border-slate-300">
                           🥈 #2
                         </span>
                       ) : item.ranking === 3 ? (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-700/20 text-amber-400 font-extrabold text-[11px] border border-amber-700/40">
+                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-extrabold text-[11px] border border-amber-200">
                           🥉 #3
                         </span>
                       ) : (

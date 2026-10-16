@@ -377,41 +377,34 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-2rem)] text-slate-100 font-sans selection:bg-amber-400/30 selection:text-amber-100">
-      {/* Background Ambience */}
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-48 left-[8%] h-[30rem] w-[30rem] rounded-full bg-amber-400/[0.04] blur-[120px]" />
-        <div className="absolute top-[35%] right-[4%] h-[26rem] w-[26rem] rounded-full bg-emerald-500/[0.035] blur-[130px]" />
-        <div className="absolute -bottom-24 left-[42%] h-[24rem] w-[24rem] rounded-full bg-sky-500/[0.025] blur-[120px]" />
-      </div>
-
+    <div className="relative min-h-[calc(100vh-2rem)] bg-slate-50 text-slate-800 font-sans selection:bg-amber-400/30 selection:text-amber-900">
       <div className="mx-auto w-full max-w-[1680px] px-2.5 sm:px-4 lg:px-5 xl:px-6 py-2.5 sm:py-3 pb-20 md:pb-6">
         {/* Sticky Header */}
-        <header className="sticky top-0 z-40 mb-3 rounded-2xl border border-white/[0.09] bg-slate-950/90 backdrop-blur-xl shadow-lg shadow-black/20">
+        <header className="sticky top-0 z-40 mb-3 rounded-2xl border border-slate-200/90 bg-white shadow-xs">
           <div className="h-14 sm:h-[60px] px-2.5 sm:px-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <button
                 type="button"
                 onClick={onBack}
-                className="group shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-white/[0.08] bg-white/[0.035] hover:bg-white/[0.08] hover:border-white/[0.16] text-slate-300 hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
+                className="group shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
                 title="Kembali ke Dashboard"
               >
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               </button>
 
               <div className="min-w-0 flex items-center gap-2.5">
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-400/25 bg-amber-400/[0.08] text-amber-300 text-[10px] font-black uppercase tracking-[0.14em] shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-[10px] font-black uppercase tracking-[0.14em] shrink-0">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
                   Admin e-Rapor
                 </span>
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
-                    <h1 className="text-sm sm:text-[15px] font-extrabold text-white tracking-tight truncate">
+                    <h1 className="text-sm sm:text-[15px] font-bold text-slate-900 tracking-tight truncate">
                       Monitoring & Rekapitulasi e-Rapor
                     </h1>
                     <span className="hidden lg:inline text-slate-700">•</span>
-                    <span className="hidden lg:inline text-[11px] text-slate-400 truncate">
+                    <span className="hidden lg:inline text-[11px] text-slate-500 truncate">
                       SDIT AL FIKRI
                     </span>
                   </div>
@@ -426,10 +419,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   <select
                     value={selectedPeriodId}
                     onChange={(e) => handlePeriodChange(e.target.value)}
-                    className="h-9 px-3 rounded-xl border border-white/[0.09] bg-slate-900/90 text-white text-xs font-bold focus:outline-none focus:border-amber-400/50 cursor-pointer"
+                    className="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-bold focus:outline-none focus:border-amber-500 focus:bg-white cursor-pointer transition-all"
                   >
                     {periods.map((p) => (
-                      <option key={p.id} value={p.id} className="bg-slate-950 text-white">
+                      <option key={p.id} value={p.id} className="bg-white text-slate-900">
                         {p.school_year} • Semester {p.semester} {p.is_active ? '(Aktif)' : ''}
                       </option>
                     ))}
@@ -442,10 +435,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                 type="button"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="h-9 w-9 sm:w-auto sm:px-3 rounded-xl border border-white/[0.09] bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-40"
+                className="h-9 w-9 sm:w-auto sm:px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 disabled:opacity-40"
                 title="Sinkronkan & segarkan data"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-500' : ''}`} />
                 <span className="hidden sm:inline">Segarkan</span>
               </button>
 
@@ -453,10 +446,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('academic_settings')}
-                className="h-9 px-3 rounded-xl border border-amber-400/25 bg-amber-400/[0.10] hover:bg-amber-400/[0.18] text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                className="h-9 px-3 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-xs"
                 title="Buka Pengaturan Akademik & Penugasan Guru"
               >
-                <Settings className="w-3.5 h-3.5" />
+                <Settings className="w-3.5 h-3.5 text-amber-700" />
                 <span className="hidden md:inline">Pengaturan Akademik</span>
               </button>
             </div>
@@ -465,20 +458,20 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
         {isLoading ? (
           <div className="min-h-[55vh] flex items-center justify-center">
-            <div className="w-full max-w-md rounded-3xl border border-white/[0.08] bg-slate-950/55 backdrop-blur-xl px-6 py-12 text-center shadow-2xl">
-              <div className="w-10 h-10 border-[3px] border-amber-400/25 border-t-amber-400 rounded-full animate-spin mx-auto" />
-              <p className="mt-5 text-sm font-bold text-slate-200">Memuat Dashboard Monitoring e-Rapor...</p>
-              <p className="mt-1 text-xs text-slate-400">Menghitung progres pengisian nilai guru.</p>
+            <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center shadow-lg">
+              <div className="w-10 h-10 border-[3px] border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto" />
+              <p className="mt-5 text-sm font-bold text-slate-900">Memuat Dashboard Monitoring e-Rapor...</p>
+              <p className="mt-1 text-xs text-slate-500">Menghitung progres pengisian nilai guru.</p>
             </div>
           </div>
         ) : error ? (
-          <div className="my-10 rounded-2xl border border-rose-500/25 bg-rose-500/[0.08] p-6 text-center max-w-xl mx-auto">
-            <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-white mb-1">Gagal Memuat Data</h3>
-            <p className="text-xs text-rose-200 mb-4">{error}</p>
+          <div className="my-10 rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center max-w-xl mx-auto shadow-xs">
+            <AlertCircle className="w-8 h-8 text-rose-600 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-slate-900 mb-1">Gagal Memuat Data</h3>
+            <p className="text-xs text-rose-700 mb-4">{error}</p>
             <button
               onClick={loadInitialData}
-              className="px-4 py-2 bg-rose-500 hover:bg-rose-400 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
             >
               Coba Lagi
             </button>
@@ -489,42 +482,42 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
             {summary && (
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* 1. Progres Keseluruhan */}
-                <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl p-4 shadow-lg">
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
                       Progres e-Rapor
                     </p>
-                    <div className="w-8 h-8 rounded-xl border border-amber-400/20 bg-amber-400/[0.08] flex items-center justify-center text-amber-400">
+                    <div className="w-8 h-8 rounded-xl border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-600">
                       <TrendingUp className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-2xl sm:text-3xl font-black text-white">{summary.overallProgress}%</p>
-                    <span className="text-[10px] text-slate-400 font-bold">
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{summary.overallProgress}%</p>
+                    <span className="text-[10px] text-slate-500 font-bold">
                       {summary.totalScored} / {summary.totalTargets} siswa
                     </span>
                   </div>
-                  <div className="mt-2.5 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                  <div className="mt-2.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-700"
+                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-700"
                       style={{ width: `${summary.overallProgress}%` }}
                     />
                   </div>
                 </div>
 
                 {/* 2. Total Rombel */}
-                <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl p-4 shadow-lg">
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
                       Total Rombel
                     </p>
-                    <div className="w-8 h-8 rounded-xl border border-sky-400/20 bg-sky-400/[0.08] flex items-center justify-center text-sky-400">
+                    <div className="w-8 h-8 rounded-xl border border-sky-200 bg-sky-50 flex items-center justify-center text-sky-600">
                       <School className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-2xl sm:text-3xl font-black text-white">{summary.totalClasses}</p>
-                    <span className="text-[10px] text-slate-400 font-bold">Kelas Aktif</span>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{summary.totalClasses}</p>
+                    <span className="text-[10px] text-slate-500 font-bold">Kelas Aktif</span>
                   </div>
                   <p className="mt-2 text-[10px] text-slate-500 font-medium truncate">
                     Tingkat 1 sampai Tingkat 6
@@ -532,20 +525,20 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                 </div>
 
                 {/* 3. Penugasan Guru */}
-                <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl p-4 shadow-lg">
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
                       Penugasan Guru
                     </p>
-                    <div className="w-8 h-8 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.08] flex items-center justify-center text-emerald-400">
+                    <div className="w-8 h-8 rounded-xl border border-emerald-200 bg-emerald-50 flex items-center justify-center text-emerald-600">
                       <UserCheck className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-2xl sm:text-3xl font-black text-white">
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">
                       {summary.totalTeacherAssignments}
                     </p>
-                    <span className="text-[10px] text-slate-400 font-bold">Assignment</span>
+                    <span className="text-[10px] text-slate-500 font-bold">Assignment</span>
                   </div>
                   <p className="mt-2 text-[10px] text-slate-500 font-medium truncate">
                     Wali Kelas & Guru Mapel
@@ -553,18 +546,18 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                 </div>
 
                 {/* 4. Mata Pelajaran */}
-                <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl p-4 shadow-lg">
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">
                       Mata Pelajaran
                     </p>
-                    <div className="w-8 h-8 rounded-xl border border-purple-400/20 bg-purple-400/[0.08] flex items-center justify-center text-purple-400">
+                    <div className="w-8 h-8 rounded-xl border border-purple-200 bg-purple-50 flex items-center justify-center text-purple-600">
                       <BookOpen className="w-4 h-4" />
                     </div>
                   </div>
                   <div className="mt-2 flex items-baseline gap-2">
-                    <p className="text-2xl sm:text-3xl font-black text-white">{summary.totalSubjects}</p>
-                    <span className="text-[10px] text-slate-400 font-bold">Mapel Aktif</span>
+                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900">{summary.totalSubjects}</p>
+                    <span className="text-[10px] text-slate-500 font-bold">Mapel Aktif</span>
                   </div>
                   <p className="mt-2 text-[10px] text-slate-500 font-medium truncate">
                     Kurikulum Merdeka SDIT
@@ -574,7 +567,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
             )}
 
             {/* Filter & Toolbar */}
-            <div className="rounded-2xl border border-white/[0.09] bg-slate-950/65 backdrop-blur-xl p-3 sm:p-4 shadow-lg space-y-3">
+            <div className="rounded-2xl border border-slate-200/90 bg-white p-3 sm:p-4 shadow-xs space-y-3">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 {/* Search Bar */}
                 <div className="relative flex-1 min-w-0">
@@ -584,12 +577,12 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari kelas, mata pelajaran, atau nama guru..."
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-white/[0.08] bg-white/[0.035] text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/50"
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-amber-500 transition-all"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700"
                     >
                       ✕
                     </button>
@@ -602,7 +595,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   <select
                     value={classFilter}
                     onChange={(e) => setClassFilter(e.target.value)}
-                    className="h-10 px-3 rounded-xl border border-white/[0.08] bg-slate-900 text-white text-xs font-bold focus:outline-none focus:border-amber-400/50 cursor-pointer"
+                    className="h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-bold focus:outline-none focus:border-[#176B45] cursor-pointer"
                   >
                     <option value="all">Semua Rombel ({uniqueClasses.length})</option>
                     {uniqueClasses.map((c) => (
@@ -613,14 +606,14 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   </select>
 
                   {/* View Mode Toggle */}
-                  <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.03] p-0.5">
+                  <div className="flex items-center rounded-xl border border-slate-200 bg-slate-100 p-0.5">
                     <button
                       type="button"
                       onClick={() => setViewMode('compact')}
                       className={`h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                         viewMode === 'compact'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-white text-[#176B45] shadow-sm font-black'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                       title="Tampilan ringkas per rombel dengan rincian mapel interaktif"
                     >
@@ -632,8 +625,8 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                       onClick={() => setViewMode('flat')}
                       className={`h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                         viewMode === 'flat'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-white text-[#176B45] shadow-sm font-black'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                       title="Daftar panjang seluruh mata pelajaran"
                     >
@@ -645,8 +638,8 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                       onClick={() => setViewMode('tree')}
                       className={`h-9 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                         viewMode === 'tree'
-                          ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-white text-[#176B45] shadow-sm font-black'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                       title="Tampilan kartu grid per rombel"
                     >
@@ -664,8 +657,8 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   onClick={() => setStatusFilter('all')}
                   className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'all'
-                      ? 'border-amber-400/40 bg-amber-400/[0.15] text-amber-300'
-                      : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:text-white'
+                      ? 'border-amber-400/40 bg-amber-50 text-amber-800'
+                      : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-900'
                   }`}
                 >
                   Semua Status ({viewMode === 'compact' ? rombelStatusCounts.total : statusCounts.total})
@@ -675,11 +668,11 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   onClick={() => setStatusFilter('completed')}
                   className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'completed'
-                      ? 'border-emerald-400/40 bg-emerald-400/[0.15] text-emerald-300'
-                      : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:text-white'
+                      ? 'border-emerald-400/40 bg-emerald-50 text-emerald-700'
+                      : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-900'
                   }`}
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Selesai ({viewMode === 'compact' ? rombelStatusCounts.completed : statusCounts.completed})</span>
                 </button>
                 <button
@@ -687,8 +680,8 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   onClick={() => setStatusFilter('in_progress')}
                   className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'in_progress'
-                      ? 'border-amber-400/40 bg-amber-400/[0.15] text-amber-300'
-                      : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:text-white'
+                      ? 'border-amber-400/40 bg-amber-50 text-amber-800'
+                      : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-900'
                   }`}
                 >
                   <Clock className="w-3.5 h-3.5 text-amber-400" />
@@ -699,8 +692,8 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   onClick={() => setStatusFilter('not_started')}
                   className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                     statusFilter === 'not_started'
-                      ? 'border-rose-400/40 bg-rose-400/[0.15] text-rose-300'
-                      : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:text-white'
+                      ? 'border-rose-400/40 bg-rose-50 text-rose-700'
+                      : 'border-slate-200 bg-slate-50 text-slate-400 hover:text-slate-900'
                   }`}
                 >
                   <AlertCircle className="w-3.5 h-3.5 text-rose-400" />
@@ -710,9 +703,9 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
               {/* Sub-toolbar for Compact Mode */}
               {viewMode === 'compact' && (
-                <div className="flex items-center justify-between gap-3 pt-2 text-xs flex-wrap border-t border-white/[0.05]">
+                <div className="flex items-center justify-between gap-3 pt-2 text-xs flex-wrap border-t border-slate-100">
                   <div className="flex items-center gap-2 text-slate-400">
-                    <span className="text-slate-200 font-bold">
+                    <span className="text-slate-700 font-bold">
                       {filteredRombelList.length} Rombel Terpantau
                     </span>
                     <span className="hidden sm:inline text-[11px] text-slate-500">
@@ -725,7 +718,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                       <button
                         type="button"
                         onClick={handleExpandAll}
-                        className="px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
                         title="Buka rincian mapel untuk semua rombel"
                       >
                         <ChevronDown className="w-3 h-3 text-amber-400" />
@@ -734,7 +727,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                       <button
                         type="button"
                         onClick={handleCollapseAll}
-                        className="px-2.5 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
                         title="Tutup semua rincian mapel"
                       >
                         <ChevronUp className="w-3 h-3 text-slate-400" />
@@ -748,11 +741,11 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
             {/* View Mode 1: Compact Table per Rombel with Expandable Subject Details */}
             {viewMode === 'compact' && (
-              <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl shadow-xl overflow-hidden">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/[0.08] bg-white/[0.03] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      <tr className="border-b border-slate-200 bg-slate-50 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
                         <th className="py-3 px-4 w-36">Kelas / Rombel</th>
                         <th className="py-3 px-4">Wali Kelas</th>
                         <th className="py-3 px-4 text-center">Jumlah Siswa</th>
@@ -762,7 +755,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                         <th className="py-3 px-4 text-right">Rincian Mapel</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.05] text-xs">
+                    <tbody className="divide-y divide-slate-100 text-xs">
                       {filteredRombelList.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="py-12 text-center text-slate-500">
@@ -778,18 +771,18 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                             <React.Fragment key={rombel.classId}>
                               <tr
                                 onClick={() => toggleClassExpand(rombel.classId)}
-                                className={`hover:bg-white/[0.03] transition-colors cursor-pointer group ${
-                                  isExpanded ? 'bg-white/[0.02]' : ''
+                                className={`hover:bg-slate-50 transition-colors cursor-pointer group ${
+                                  isExpanded ? 'bg-slate-50' : ''
                                 }`}
                               >
                                 {/* Kelas / Rombel */}
                                 <td className="py-3.5 px-4 whitespace-nowrap">
                                   <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-amber-400/15 border border-amber-400/25 text-amber-300 flex items-center justify-center font-black text-xs shrink-0 group-hover:scale-105 transition-transform">
+                                    <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-center font-black text-xs shrink-0 group-hover:scale-105 transition-transform">
                                       {rombel.grade || rombel.className[0]}
                                     </div>
                                     <div>
-                                      <span className="font-extrabold text-white text-sm block">
+                                      <span className="font-extrabold text-slate-900 text-sm block">
                                         Kelas {rombel.className}
                                       </span>
                                       <span className="text-[10px] text-slate-400">
@@ -804,10 +797,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                   <div className="flex items-center gap-2">
                                     {rombel.homeroomTeacherName ? (
                                       <div className="flex items-center gap-1.5">
-                                        <span className="font-semibold text-slate-200">
+                                        <span className="font-semibold text-slate-700">
                                           {rombel.homeroomTeacherName}
                                         </span>
-                                        <span className="px-1.5 py-0.5 rounded-md border border-emerald-400/20 bg-emerald-400/[0.08] text-[9px] font-bold text-emerald-300">
+                                        <span className="px-1.5 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-[9px] font-bold text-emerald-700">
                                           Wali Kelas
                                         </span>
                                       </div>
@@ -819,7 +812,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
                                 {/* Jumlah Siswa */}
                                 <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                                  <span className="inline-flex items-center gap-1.5 font-bold text-slate-200">
+                                  <span className="inline-flex items-center gap-1.5 font-bold text-slate-700">
                                     <Users className="w-3.5 h-3.5 text-slate-400" />
                                     <span>{rombel.totalStudents} Siswa</span>
                                   </span>
@@ -830,10 +823,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                   <span
                                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
                                       rombel.completedSubjects === rombel.totalSubjects && rombel.totalSubjects > 0
-                                        ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
                                         : rombel.completedSubjects > 0
-                                        ? 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
-                                        : 'bg-slate-800 border border-white/[0.08] text-slate-400'
+                                        ? 'bg-amber-50 border border-amber-200 text-amber-800'
+                                        : 'bg-slate-100 border border-slate-200 text-slate-400'
                                     }`}
                                   >
                                     <BookOpen className="w-3.5 h-3.5" />
@@ -850,9 +843,9 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                       <span
                                         className={
                                           rombel.status === 'completed'
-                                            ? 'text-emerald-300'
+                                            ? 'text-emerald-700'
                                             : rombel.status === 'in_progress'
-                                            ? 'text-amber-300'
+                                            ? 'text-amber-800'
                                             : 'text-slate-500'
                                         }
                                       >
@@ -860,14 +853,14 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                       </span>
                                       <span className="text-[10px] text-slate-500 font-normal">Rerata</span>
                                     </div>
-                                    <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                    <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                       <div
                                         className={`h-full rounded-full transition-all duration-500 ${
                                           rombel.status === 'completed'
                                             ? 'bg-emerald-400'
                                             : rombel.status === 'in_progress'
                                             ? 'bg-amber-400'
-                                            : 'bg-slate-700'
+                                            : 'bg-slate-300'
                                         }`}
                                         style={{ width: `${rombel.avgProgress}%` }}
                                       />
@@ -880,10 +873,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                   <span
                                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                       rombel.status === 'completed'
-                                        ? 'border border-emerald-400/25 bg-emerald-500/[0.10] text-emerald-300'
+                                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
                                         : rombel.status === 'in_progress'
-                                        ? 'border border-amber-400/25 bg-amber-500/[0.10] text-amber-300'
-                                        : 'border border-rose-400/25 bg-rose-500/[0.10] text-rose-300'
+                                        ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                                        : 'border border-rose-200 bg-rose-50 text-rose-700'
                                     }`}
                                   >
                                     {rombel.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
@@ -910,7 +903,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                       isExpanded
                                         ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/20'
-                                        : 'bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-slate-300 hover:text-white'
+                                        : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900'
                                     }`}
                                   >
                                     <span>
@@ -927,37 +920,37 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
                               {/* Expanded Row for Subject Details */}
                               {isExpanded && (
-                                <tr className="bg-slate-900/60 border-b border-white/[0.08]">
+                                <tr className="bg-slate-50 border-b border-slate-200">
                                   <td colSpan={7} className="p-3 sm:p-4 md:p-5">
-                                    <div className="rounded-2xl border border-white/[0.08] bg-slate-950/80 p-4 space-y-3 shadow-inner">
-                                      <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-white/[0.06]">
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-inner">
+                                      <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200">
                                         <div className="flex items-center gap-2">
                                           <BookOpen className="w-4 h-4 text-amber-400" />
-                                          <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                                          <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
                                             Rincian {displayedSubjects.length} Mata Pelajaran — Kelas {rombel.className}
                                           </h4>
                                         </div>
                                         <div className="flex items-center gap-3 text-xs text-slate-400">
                                           <span>
                                             Selesai:{' '}
-                                            <strong className="text-emerald-300">{rombel.completedSubjects}</strong>
+                                            <strong className="text-emerald-700">{rombel.completedSubjects}</strong>
                                           </span>
                                           <span>•</span>
                                           <span>
                                             Proses:{' '}
-                                            <strong className="text-amber-300">{rombel.inProgressSubjects}</strong>
+                                            <strong className="text-amber-800">{rombel.inProgressSubjects}</strong>
                                           </span>
                                           <span>•</span>
                                           <span>
                                             Belum:{' '}
-                                            <strong className="text-rose-300">{rombel.notStartedSubjects}</strong>
+                                            <strong className="text-rose-700">{rombel.notStartedSubjects}</strong>
                                           </span>
                                         </div>
                                       </div>
 
-                                      <div className="border border-white/[0.07] rounded-xl overflow-hidden">
+                                      <div className="border border-slate-200 rounded-xl overflow-hidden">
                                         <table className="w-full text-left text-xs">
-                                          <thead className="bg-white/[0.02] border-b border-white/[0.06] text-[10px] uppercase font-bold text-slate-400">
+                                          <thead className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-400">
                                             <tr>
                                               <th className="py-2.5 px-3">Mata Pelajaran</th>
                                               <th className="py-2.5 px-3">Guru Pengampu</th>
@@ -967,7 +960,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                               <th className="py-2.5 px-3 text-right">Aksi</th>
                                             </tr>
                                           </thead>
-                                          <tbody className="divide-y divide-white/[0.04]">
+                                          <tbody className="divide-y divide-slate-100">
                                             {displayedSubjects.length === 0 ? (
                                               <tr>
                                                 <td colSpan={6} className="py-6 text-center text-slate-500">
@@ -978,10 +971,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                               displayedSubjects.map((subj) => (
                                                 <tr
                                                   key={subj.subjectId}
-                                                  className="hover:bg-white/[0.02] transition-colors"
+                                                  className="hover:bg-slate-50 transition-colors"
                                                 >
                                                   {/* Subject */}
-                                                  <td className="py-2.5 px-3 font-semibold text-white">
+                                                  <td className="py-2.5 px-3 font-semibold text-slate-900">
                                                     <div className="flex items-center gap-1.5">
                                                       <span>{subj.subjectName}</span>
                                                       {subj.subjectCode && (
@@ -998,14 +991,14 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                                       <span
                                                         className={
                                                           subj.teacherId
-                                                            ? 'text-slate-200 font-medium'
-                                                            : 'text-rose-300 italic'
+                                                            ? 'text-slate-700 font-medium'
+                                                            : 'text-rose-700 italic'
                                                         }
                                                       >
                                                         {subj.teacherName}
                                                       </span>
                                                       {subj.assignmentType === 'homeroom_teacher' && (
-                                                        <span className="px-1.5 py-0.2 rounded border border-emerald-400/20 bg-emerald-400/[0.08] text-[9px] font-bold text-emerald-300">
+                                                        <span className="px-1.5 py-0.2 rounded border border-emerald-200 bg-emerald-50 text-[9px] font-bold text-emerald-700">
                                                           Wali Kelas
                                                         </span>
                                                       )}
@@ -1014,26 +1007,26 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
                                                   {/* Scored Students */}
                                                   <td className="py-2.5 px-3 text-center">
-                                                    <span className="font-bold text-white">{subj.scoredStudents}</span>
+                                                    <span className="font-bold text-slate-900">{subj.scoredStudents}</span>
                                                     <span className="text-slate-500"> / {subj.totalStudents}</span>
                                                   </td>
 
                                                   {/* Progress Bar */}
                                                   <td className="py-2.5 px-3">
                                                     <div className="flex items-center gap-2">
-                                                      <div className="flex-1 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                                      <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                                         <div
                                                           className={`h-full rounded-full ${
                                                             subj.status === 'completed'
                                                               ? 'bg-emerald-400'
                                                               : subj.status === 'in_progress'
                                                               ? 'bg-amber-400'
-                                                              : 'bg-slate-700'
+                                                              : 'bg-slate-300'
                                                           }`}
                                                           style={{ width: `${subj.progressPercentage}%` }}
                                                         />
                                                       </div>
-                                                      <span className="text-[10px] font-bold text-slate-300 w-8 text-right">
+                                                      <span className="text-[10px] font-bold text-slate-700 w-8 text-right">
                                                         {subj.progressPercentage}%
                                                       </span>
                                                     </div>
@@ -1044,10 +1037,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                                     <span
                                                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                                                         subj.status === 'completed'
-                                                          ? 'bg-emerald-400/15 text-emerald-300'
+                                                          ? 'bg-emerald-50 text-emerald-700'
                                                           : subj.status === 'in_progress'
-                                                          ? 'bg-amber-400/15 text-amber-300'
-                                                          : 'bg-rose-400/15 text-rose-300'
+                                                          ? 'bg-amber-50 text-amber-800'
+                                                          : 'bg-rose-50 text-rose-700'
                                                       }`}
                                                     >
                                                       {subj.status === 'completed'
@@ -1064,7 +1057,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                                       type="button"
                                                       onClick={() => handlePreviewAsTeacher(subj.teacherId)}
                                                       disabled={!subj.teacherId}
-                                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-amber-400/[0.15] hover:border-amber-400/35 hover:text-amber-200 text-slate-300 text-[11px] font-bold transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-800 text-slate-700 text-[11px] font-bold transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                                                       title="Buka lembar penilaian guru ini"
                                                     >
                                                       <Eye className="w-3 h-3" />
@@ -1093,11 +1086,11 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
             {/* View Mode 2: Flat Table for All Subjects */}
             {viewMode === 'flat' && (
-              <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl shadow-xl overflow-hidden">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/[0.08] bg-white/[0.03] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      <tr className="border-b border-slate-200 bg-slate-50 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.12em] text-slate-400">
                         <th className="py-3 px-4">Kelas</th>
                         <th className="py-3 px-4">Mata Pelajaran</th>
                         <th className="py-3 px-4">Guru Pengampu</th>
@@ -1107,7 +1100,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                         <th className="py-3 px-4 text-right">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.05] text-xs">
+                    <tbody className="divide-y divide-slate-100 text-xs">
                       {filteredRows.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="py-12 text-center text-slate-500">
@@ -1118,15 +1111,15 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                         filteredRows.map((row) => (
                           <tr
                             key={row.id}
-                            className="hover:bg-white/[0.025] transition-colors group"
+                            className="hover:bg-slate-50 transition-colors group"
                           >
                             {/* Class */}
-                            <td className="py-3 px-4 font-bold text-white whitespace-nowrap">
+                            <td className="py-3 px-4 font-bold text-slate-900 whitespace-nowrap">
                               Kelas {row.className}
                             </td>
 
                             {/* Subject */}
-                            <td className="py-3 px-4 font-semibold text-slate-200">
+                            <td className="py-3 px-4 font-semibold text-slate-700">
                               <div className="flex items-center gap-1.5">
                                 <span>{row.subjectName}</span>
                                 {row.subjectCode && (
@@ -1142,13 +1135,13 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                               <div className="flex items-center gap-2">
                                 <span
                                   className={`font-semibold ${
-                                    row.teacherId ? 'text-slate-200' : 'text-rose-300 italic'
+                                    row.teacherId ? 'text-slate-700' : 'text-rose-700 italic'
                                   }`}
                                 >
                                   {row.teacherName}
                                 </span>
                                 {row.assignmentType === 'homeroom_teacher' && (
-                                  <span className="px-1.5 py-0.5 rounded-md border border-emerald-400/20 bg-emerald-400/[0.08] text-[9px] font-bold text-emerald-300">
+                                  <span className="px-1.5 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-[9px] font-bold text-emerald-700">
                                     Wali Kelas
                                   </span>
                                 )}
@@ -1157,7 +1150,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
                             {/* Scored Students */}
                             <td className="py-3 px-4 text-center whitespace-nowrap">
-                              <span className="font-extrabold text-white">
+                              <span className="font-extrabold text-slate-900">
                                 {row.scoredStudents}
                               </span>
                               <span className="text-slate-500 font-medium"> / {row.totalStudents}</span>
@@ -1170,23 +1163,23 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                   <span
                                     className={
                                       row.status === 'completed'
-                                        ? 'text-emerald-300'
+                                        ? 'text-emerald-700'
                                         : row.status === 'in_progress'
-                                        ? 'text-amber-300'
+                                        ? 'text-amber-800'
                                         : 'text-slate-500'
                                     }
                                   >
                                     {row.progressPercentage}%
                                   </span>
                                 </div>
-                                <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                                   <div
                                     className={`h-full rounded-full transition-all duration-500 ${
                                       row.status === 'completed'
                                         ? 'bg-emerald-400'
                                         : row.status === 'in_progress'
                                         ? 'bg-amber-400'
-                                        : 'bg-slate-700'
+                                        : 'bg-slate-300'
                                     }`}
                                     style={{ width: `${row.progressPercentage}%` }}
                                   />
@@ -1199,10 +1192,10 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                               <span
                                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                   row.status === 'completed'
-                                    ? 'border border-emerald-400/25 bg-emerald-500/[0.10] text-emerald-300'
+                                    ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
                                     : row.status === 'in_progress'
-                                    ? 'border border-amber-400/25 bg-amber-500/[0.10] text-amber-300'
-                                    : 'border border-rose-400/25 bg-rose-500/[0.10] text-rose-300'
+                                    ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                                    : 'border border-rose-200 bg-rose-50 text-rose-700'
                                 }`}
                               >
                                 {row.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
@@ -1224,7 +1217,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                 type="button"
                                 onClick={() => handlePreviewAsTeacher(row.teacherId)}
                                 disabled={!row.teacherId}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/[0.09] bg-white/[0.04] hover:bg-amber-400/[0.15] hover:border-amber-400/35 hover:text-amber-200 text-slate-300 text-xs font-bold transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-800 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                                 title="Lihat/Buka workspace sebagai guru ini"
                               >
                                 <Eye className="w-3.5 h-3.5" />
@@ -1244,22 +1237,22 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
             {viewMode === 'tree' && (
               <div className="space-y-3">
                 {filteredTree.length === 0 ? (
-                  <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 p-12 text-center text-slate-500">
+                  <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-500">
                     Tidak ada rombel yang sesuai filter.
                   </div>
                 ) : (
                   filteredTree.map((cls) => (
                     <article
                       key={cls.classId}
-                      className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl p-4 sm:p-5 shadow-lg space-y-3"
+                      className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-lg space-y-3"
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/[0.07]">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl border border-amber-400/20 bg-amber-400/[0.08] flex items-center justify-center text-amber-300 font-extrabold text-sm">
+                          <div className="w-9 h-9 rounded-xl border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-800 font-extrabold text-sm">
                             {cls.grade || cls.className[0]}
                           </div>
                           <div>
-                            <h3 className="text-base font-black text-white">Kelas {cls.className}</h3>
+                            <h3 className="text-base font-black text-slate-900">Kelas {cls.className}</h3>
                             <p className="text-[11px] text-slate-400 font-medium">
                               Wali Kelas: {cls.homeroomTeacherName || 'Belum Ditugaskan'} • {cls.totalStudents} Siswa
                             </p>
@@ -1275,20 +1268,20 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                         {cls.subjects.map((subj) => (
                           <div
                             key={subj.subjectId}
-                            className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 flex flex-col justify-between hover:border-amber-400/25 transition-all"
+                            className="rounded-xl border border-slate-200 bg-slate-50 p-3 flex flex-col justify-between hover:border-amber-200 transition-all"
                           >
                             <div>
                               <div className="flex items-start justify-between gap-2">
-                                <h4 className="text-xs font-bold text-white leading-tight">
+                                <h4 className="text-xs font-bold text-slate-900 leading-tight">
                                   {subj.subjectName}
                                 </h4>
                                 <span
                                   className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
                                     subj.status === 'completed'
-                                      ? 'bg-emerald-400/15 text-emerald-300'
+                                      ? 'bg-emerald-50 text-emerald-700'
                                       : subj.status === 'in_progress'
-                                      ? 'bg-amber-400/15 text-amber-300'
-                                      : 'bg-rose-400/15 text-rose-300'
+                                      ? 'bg-amber-50 text-amber-800'
+                                      : 'bg-rose-50 text-rose-700'
                                   }`}
                                 >
                                   {subj.status === 'completed'
@@ -1304,9 +1297,9 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                               </p>
                             </div>
 
-                            <div className="mt-3 pt-2 border-t border-white/[0.05] flex items-center justify-between gap-2">
+                            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
                               <div className="text-[10px] text-slate-400">
-                                <span className="font-bold text-white">{subj.scoredStudents}</span> /{' '}
+                                <span className="font-bold text-slate-900">{subj.scoredStudents}</span> /{' '}
                                 {subj.totalStudents} ({subj.progressPercentage}%)
                               </div>
 
@@ -1314,7 +1307,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                 type="button"
                                 onClick={() => handlePreviewAsTeacher(subj.teacherId)}
                                 disabled={!subj.teacherId}
-                                className="px-2.5 py-1 rounded-lg border border-white/[0.08] bg-white/[0.04] hover:bg-amber-400/[0.15] text-slate-300 hover:text-amber-200 text-[10px] font-bold transition-all cursor-pointer disabled:opacity-30"
+                                className="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-800 text-[10px] font-bold transition-all cursor-pointer disabled:opacity-30"
                               >
                                 Buka Rapor
                               </button>

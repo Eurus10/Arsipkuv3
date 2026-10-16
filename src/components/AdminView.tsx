@@ -546,15 +546,15 @@ export const AdminView: React.FC<AdminViewProps> = ({
   });
 
   return (
-    <div className="max-w-[1340px] mx-auto px-4 sm:px-8 py-6 sm:py-8 pb-28 md:pb-12 text-slate-100 font-sans">
+    <div className="max-w-[1340px] mx-auto px-4 sm:px-8 py-6 sm:py-8 pb-28 md:pb-12 text-slate-800 font-sans">
       {/* Top Security & Admin Control Ribbon */}
-      <div className="bg-[#161824] border border-[#2A3044] rounded-3xl p-4 sm:p-5 mb-6 shadow-xl relative overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-5 mb-6 shadow-xl relative overflow-hidden">
         {/* Ambient subtle glow */}
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-sky-500/5 rounded-full blur-3xl pointer-events-none" />
 
         {/* Top Row: Session Status & Primary Account Actions */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[#252A3C]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-500/20 to-emerald-500/20 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0 shadow-inner">
               <ShieldCheck className="w-5.5 h-5.5 text-sky-400" />
@@ -565,11 +565,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
                   Sesi Admin Aktif
                 </span>
-                <span className="text-[10px] bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded-full border border-sky-500/20 font-semibold hidden sm:inline-block">
+                <span className="text-[10px] bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full border border-sky-500/20 font-semibold hidden sm:inline-block">
                   SDIT AL FIKRI
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium mt-0.5">
+              <p className="text-xs text-slate-600 font-medium mt-0.5">
                 Mode pengelola arsip digital &amp; kontrol konfigurasi sistem
               </p>
             </div>
@@ -578,7 +578,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
           <div className="flex items-center gap-2.5 self-end md:self-auto">
             <button
               onClick={() => setShowPasswordChangeModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-300 hover:text-white bg-[#1E2232] hover:bg-[#272C40] border border-[#2E354B] rounded-xl transition-all cursor-pointer shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-white hover:bg-white border border-slate-200 rounded-xl transition-all cursor-pointer shadow-sm"
               title="Ubah kata sandi akun admin"
             >
               <KeyRound className="w-3.5 h-3.5 text-amber-400" />
@@ -587,7 +587,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <button
               onClick={onLogout}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-rose-300 hover:text-white bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 rounded-xl transition-all cursor-pointer shadow-sm shadow-rose-500/5"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-rose-700 hover:text-slate-800 bg-rose-50 hover:bg-rose-500/25 border border-rose-500/30 rounded-xl transition-all cursor-pointer shadow-sm shadow-rose-500/5"
               title="Keluar dari mode admin &amp; kunci menu pengelola"
             >
               <LogOut className="w-3.5 h-3.5 text-rose-400" />
@@ -599,7 +599,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         {/* Bottom Row: Categorized Quick Admin Tools */}
         <div className="pt-3.5">
           <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
               <FolderTree className="w-3.5 h-3.5 text-sky-400" />
               Alat Pengelolaan &amp; Pengaturan Sistem
             </span>
@@ -608,10 +608,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
             <button
               onClick={() => setShowAnalysisSubmissionsModal(true)}
-              className="relative flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-teal-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-teal-500/30 hover:border-teal-500/60 rounded-xl transition-all cursor-pointer group shadow-sm"
+              className="relative flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-teal-700 hover:text-slate-800 bg-white hover:bg-white border border-teal-500/30 hover:border-teal-500/60 rounded-xl transition-all cursor-pointer group shadow-sm"
               title="Pusat Setoran & Antrean Cetak Berkas Guru (Analisis Soal & Rekap Absensi)"
             >
-              <div className="w-6 h-6 rounded-lg bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-teal-50 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform flex-shrink-0">
                 <Inbox className="w-3.5 h-3.5" />
               </div>
               <span className="truncate">Pusat Setoran Guru</span>
@@ -624,9 +624,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <button
               onClick={() => setShowLogoManagerModal(true)}
-              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-teal-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-teal-500/25 hover:border-teal-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
+              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-teal-700 hover:text-slate-800 bg-white hover:bg-white border border-teal-500/25 hover:border-teal-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
             >
-              <div className="w-6 h-6 rounded-lg bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-teal-50 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform flex-shrink-0">
                 <ImageIcon className="w-3.5 h-3.5" />
               </div>
               <span className="truncate">Logo Aplikasi</span>
@@ -634,9 +634,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <button
               onClick={() => setShowTeacherManagerModal(true)}
-              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-emerald-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-emerald-500/25 hover:border-emerald-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
+              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-emerald-700 hover:text-slate-800 bg-white hover:bg-white border border-emerald-500/25 hover:border-emerald-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
             >
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-emerald-50 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
                 <Users className="w-3.5 h-3.5" />
               </div>
               <span className="truncate">Whitelist Guru</span>
@@ -644,9 +644,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <button
               onClick={() => setShowTokenManagerModal(true)}
-              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-amber-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-amber-500/25 hover:border-amber-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
+              className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-amber-700 hover:text-slate-800 bg-white hover:bg-white border border-amber-500/25 hover:border-amber-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
             >
-              <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-amber-50 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform flex-shrink-0">
                 <Key className="w-3.5 h-3.5" />
               </div>
               <span className="truncate">Lisensi &amp; Token</span>
@@ -656,11 +656,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
               onClick={() => setAdminActiveTab('tahun')}
               className={`flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer group shadow-sm ${
                 adminActiveTab === 'tahun'
-                  ? 'text-sky-200 bg-sky-500/25 border border-sky-500/50'
-                  : 'text-sky-300 hover:text-white bg-[#1B2030] hover:bg-[#23293E] border border-sky-500/25 hover:border-sky-500/50'
+                  ? 'text-sky-700 bg-sky-500/25 border border-sky-500/50'
+                  : 'text-sky-700 hover:text-slate-800 bg-white hover:bg-white border border-sky-500/25 hover:border-sky-500/50'
               }`}
             >
-              <div className="w-6 h-6 rounded-lg bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform flex-shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-sky-50 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform flex-shrink-0">
                 <Calendar className="w-3.5 h-3.5" />
               </div>
               <span className="truncate">Tahun Pelajaran</span>
@@ -669,9 +669,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
             {documents.length > 0 && (
               <button
                 onClick={() => setShowClearAllModal(true)}
-                className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-rose-300 hover:text-white bg-[#1B2030] hover:bg-rose-500/15 border border-rose-500/25 hover:border-rose-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
+                className="flex items-center justify-center sm:justify-start gap-2 px-3.5 py-2.5 text-xs font-bold text-rose-700 hover:text-slate-800 bg-white hover:bg-rose-50 border border-rose-500/25 hover:border-rose-500/50 rounded-xl transition-all cursor-pointer group shadow-sm"
               >
-                <div className="w-6 h-6 rounded-lg bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                <div className="w-6 h-6 rounded-lg bg-rose-50 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform flex-shrink-0">
                   <Trash2 className="w-3.5 h-3.5" />
                 </div>
                 <span className="truncate">Kosongkan Arsip</span>
@@ -685,19 +685,19 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {(pendingAnalysisCount + pendingAttendanceCount) > 0 && (
         <div className="bg-gradient-to-r from-amber-500/10 via-teal-950/30 to-[#181B26] border border-amber-500/40 rounded-3xl p-4 sm:p-5 mb-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/10">
+            <div className="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/10">
               <Inbox className="w-5 h-5 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <h3 className="text-sm sm:text-base font-bold text-slate-800">
                   Pusat Setoran &amp; Antrean Cetak Berkas Guru (Pak Zaki)
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 text-amber-300 text-xs font-black border border-amber-500/40 animate-pulse">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 text-amber-700 text-xs font-black border border-amber-500/40 animate-pulse">
                   {pendingAnalysisCount + pendingAttendanceCount} Menunggu Verifikasi / Cetak
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-600 mt-1">
                 Pusat antrean berkas digital untuk Analisis Butir Soal &amp; Rekap Kehadiran Siswa yang siap dicetak resmi atau diekspor ke Excel.
               </p>
             </div>
@@ -715,19 +715,19 @@ export const AdminView: React.FC<AdminViewProps> = ({
       )}
 
       {/* Sub-navigation Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 border-b border-[#252A3C] scrollbar-thin">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 border-b border-slate-200 scrollbar-thin">
         <button
           type="button"
           onClick={() => setAdminActiveTab('arsip')}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
             adminActiveTab === 'arsip'
-              ? 'bg-sky-500/15 text-sky-300 border border-sky-500/30 shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+              ? 'bg-sky-50 text-sky-700 border border-sky-500/30 shadow-md'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent'
           }`}
         >
           <Folder className="w-4 h-4 text-sky-400" />
           <span>Kelola Arsip Dokumen</span>
-          <span className="px-2 py-0.5 text-[10px] rounded-full bg-[#12141D] text-slate-300 border border-slate-700/50 font-bold">
+          <span className="px-2 py-0.5 text-[10px] rounded-full bg-white text-slate-600 border border-slate-200 font-bold">
             {documents.length}
           </span>
         </button>
@@ -737,8 +737,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
           onClick={() => setAdminActiveTab('templates')}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
             adminActiveTab === 'templates'
-              ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+              ? 'bg-cyan-50 text-cyan-700 border border-cyan-500/30 shadow-md'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent'
           }`}
         >
           <LayoutTemplate className="w-4 h-4 text-cyan-400" />
@@ -750,13 +750,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
           onClick={() => setAdminActiveTab('tahun')}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
             adminActiveTab === 'tahun'
-              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-500/30 shadow-md'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent'
           }`}
         >
           <Calendar className="w-4 h-4 text-emerald-400" />
           <span>Master Tahun Pelajaran</span>
-          <span className="px-2 py-0.5 text-[10px] rounded-full bg-[#12141D] text-slate-300 border border-slate-700/50 font-bold">
+          <span className="px-2 py-0.5 text-[10px] rounded-full bg-white text-slate-600 border border-slate-200 font-bold">
             {availableYears.length}
           </span>
         </button>
@@ -766,8 +766,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
           onClick={() => setAdminActiveTab('backup')}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
             adminActiveTab === 'backup'
-              ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 shadow-md'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-[#181B26] border border-transparent'
+              ? 'bg-indigo-50 text-indigo-700 border border-indigo-500/30 shadow-md'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent'
           }`}
         >
           <Cloud className="w-4 h-4 text-indigo-400" />
@@ -787,10 +787,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   Pengaturan &amp; Kelola Arsip
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-heading">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 font-heading">
                 Pengelolaan Data Arsip
               </h1>
-              <p className="text-slate-400 font-medium text-xs sm:text-sm mt-0.5">
+              <p className="text-slate-500 font-medium text-xs sm:text-sm mt-0.5">
                 Tambah arsip baru, edit tautan Google Drive, dan kelola dokumen sekolah
               </p>
             </div>
@@ -808,9 +808,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-[#181B26] border border-[#272D3E] rounded-xl hover:bg-[#202534] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-white transition-colors cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5 text-slate-400" />
+                  <X className="w-3.5 h-3.5 text-slate-500" />
                   <span>{isEditing ? 'Batal Edit' : 'Tutup Form'}</span>
                 </button>
               )}
@@ -822,10 +822,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     refreshSchoolYears();
                   }
                 }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-[#181B26] border border-[#272D3E] rounded-xl hover:bg-[#202534] transition-colors shadow-sm cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-white border border-slate-200 rounded-xl hover:bg-white transition-colors shadow-sm cursor-pointer"
                 title="Reset ke data contoh bawaan"
               >
-                <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
                 <span>Reset Data Default</span>
               </button>
             </div>
@@ -833,14 +833,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           {/* Compact Trigger Banner when Form is Collapsed */}
           {!isFormExpanded && !isEditing && (
-            <div className="bg-[#181B26]/80 border border-[#2A3044] rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+            <div className="bg-white/80 border border-slate-200 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-sky-50 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
                   <FolderPlus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Tambah Berkas / Tautan Google Drive Baru</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <h3 className="text-sm font-bold text-slate-800">Tambah Berkas / Tautan Google Drive Baru</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Tambahkan arsip administrasi, naskah bank soal, rapor, atau sertifikat sekolah
                   </p>
                 </div>
@@ -858,23 +858,23 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           {/* Form Card (Collapsible) */}
           {(isFormExpanded || isEditing) && (
-            <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-8 shadow-xl mb-8 animate-fade-in">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#242A3C]">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xl mb-8 animate-fade-in">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-2xl bg-sky-50 border border-sky-500/30 text-sky-400 flex items-center justify-center">
                     {isEditing ? <Edit2 className="w-5 h-5" /> : <FolderPlus className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h2 className="text-base sm:text-lg font-bold text-white font-heading">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-800 font-heading">
                       {isEditing ? 'Edit Metadata Dokumen' : 'Tambah Dokumen Baru'}
                     </h2>
-                    <p className="text-xs text-slate-400">Tautan Google Drive dapat langsung diakses oleh guru & staf</p>
+                    <p className="text-xs text-slate-500">Tautan Google Drive dapat langsung diakses oleh guru & staf</p>
                   </div>
                 </div>
                 {(isEditing || isFormExpanded) && (
                   <button
                     onClick={resetForm}
-                    className="text-xs text-slate-400 hover:text-white flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#12141D] hover:bg-[#202534] border border-[#262C3E] font-medium transition-colors cursor-pointer"
+                    className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-white border border-slate-200 font-medium transition-colors cursor-pointer"
                   >
                     <X className="w-3 h-3" />
                     <span>{isEditing ? 'Batal' : 'Tutup Form'}</span>
@@ -883,14 +883,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
         {formSuccessMessage && (
-          <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
+          <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-500/30 text-emerald-700 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
             <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
             <span className="font-medium">{formSuccessMessage}</span>
           </div>
         )}
 
         {formErrorMessage && (
-          <div className="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
+          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-500/30 text-rose-700 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
             <X className="w-4 h-4 text-rose-400 flex-shrink-0" />
             <span className="font-medium">{formErrorMessage}</span>
           </div>
@@ -899,7 +899,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Document Type Selector */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
               Pilih Jenis Dokumen Arsip <span className="text-rose-400">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -912,8 +912,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 }}
                 className={`py-3 px-3.5 text-xs sm:text-sm font-semibold rounded-2xl border transition-all cursor-pointer ${
                   type === 'administrasi'
-                    ? 'bg-emerald-500/15 border-emerald-400 text-emerald-300 shadow-sm'
-                    : 'bg-[#12141D] border-[#272D3E] text-slate-400 hover:text-slate-200'
+                    ? 'bg-emerald-50 border-emerald-400 text-emerald-700 shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
                 }`}
               >
                 1. Administrasi
@@ -929,8 +929,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 }}
                 className={`py-3 px-3.5 text-xs sm:text-sm font-semibold rounded-2xl border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                   type === 'soal'
-                    ? 'bg-blue-500/15 border-blue-400 text-blue-300 shadow-sm'
-                    : 'bg-[#12141D] border-[#272D3E] text-slate-400 hover:text-slate-200'
+                    ? 'bg-blue-50 border-blue-400 text-blue-700 shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <BookOpenCheck className="w-4 h-4 text-blue-400" />
@@ -946,7 +946,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 className={`py-3 px-3.5 text-xs sm:text-sm font-semibold rounded-2xl border transition-all cursor-pointer ${
                   type === 'sertifikat'
                     ? 'bg-purple-500/15 border-purple-400 text-purple-300 shadow-sm'
-                    : 'bg-[#12141D] border-[#272D3E] text-slate-400 hover:text-slate-200'
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
                 }`}
               >
                 3. Arsip Sertifikat
@@ -960,8 +960,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 }}
                 className={`py-3 px-3.5 text-xs sm:text-sm font-semibold rounded-2xl border transition-all cursor-pointer ${
                   type === 'rapor'
-                    ? 'bg-rose-500/15 border-rose-400 text-rose-300 shadow-sm'
-                    : 'bg-[#12141D] border-[#272D3E] text-slate-400 hover:text-slate-200'
+                    ? 'bg-rose-50 border-rose-400 text-rose-700 shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'
                 }`}
               >
                 4. Arsip Rapor
@@ -971,10 +971,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           {/* Folder Induk Bank Soal Notice */}
           {type === 'soal' && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-3">
+            <div className="p-4 bg-rose-50 border border-rose-500/30 rounded-2xl flex items-start gap-3">
               <FolderTree className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-rose-200 leading-relaxed">
-                <strong className="text-white block mb-0.5">Struktur Folder Induk Berdasarkan Jenis Ujian:</strong>
+              <div className="text-xs text-rose-700 leading-relaxed">
+                <strong className="text-slate-800 block mb-0.5">Struktur Folder Induk Berdasarkan Jenis Ujian:</strong>
                 Link Google Drive yang Anda masukkan adalah <em>Folder Induk Jenis Ujian</em> (misal: <strong>STS Ganjil, SAS Ganjil, SAT Genap, Ujian Sekolah</strong>). Di dalam folder ini sudah memuat subfolder seluruh jenjang kelas (Kelas 1 s/d 6) dan seluruh mata pelajaran.
               </div>
             </div>
@@ -982,10 +982,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           {/* Arsip Rapor Notice */}
           {type === 'rapor' && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-3">
+            <div className="p-4 bg-rose-50 border border-rose-500/30 rounded-2xl flex items-start gap-3">
               <GraduationCap className="w-5 h-5 text-rose-400 flex-shrink-0 mt-0.5" />
-              <div className="text-xs text-rose-200 leading-relaxed">
-                <strong className="text-white block mb-0.5">Arsip Buku Rapor, Leger Nilai & P5:</strong>
+              <div className="text-xs text-rose-700 leading-relaxed">
+                <strong className="text-slate-800 block mb-0.5">Arsip Buku Rapor, Leger Nilai & P5:</strong>
                 Pilih jenjang kelas, semester, kategori rapor, dan tempelkan tautan link Google Drive (folder per kelas / file leger / buku rapor). Berkas akan langsung tersimpan di cloud dan terorganisir rapi di menu <strong>Arsip Rapor</strong>.
               </div>
             </div>
@@ -993,7 +993,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           {/* Nama Dokumen */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
               Judul / Nama Dokumen <span className="text-rose-400">*</span>
             </label>
             <input
@@ -1011,7 +1011,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   ? 'Contoh: Rapor Semester Ganjil Kelas 4A atau Rapor P5'
                   : 'Contoh: Sertifikat Pelatihan Guru Kurikulum Merdeka'
               }
-              className="w-full px-4 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-all font-medium"
+              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-all font-medium"
             />
           </div>
 
@@ -1019,16 +1019,16 @@ export const AdminView: React.FC<AdminViewProps> = ({
           {type === 'sertifikat' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Penerima Sertifikat
                 </label>
                 <select
                   value={recipient}
                   onChange={(e) => setRecipient(e.target.value)}
-                  className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-purple-400 transition-all font-medium"
+                  className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-purple-400 transition-all font-medium"
                 >
                   {RECIPIENT_TYPES.filter((r) => r !== 'Semua Penerima').map((r) => (
-                    <option key={r} value={r} className="bg-[#181B26] text-slate-100">
+                    <option key={r} value={r} className="bg-white text-slate-800">
                       {r}
                     </option>
                   ))}
@@ -1036,16 +1036,16 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Kategori Sertifikat
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-purple-400 transition-all font-medium"
+                  className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-purple-400 transition-all font-medium"
                 >
                   {CATEGORIES_SERTIFIKAT.filter((cat) => cat !== 'Semua Kategori').map((cat) => (
-                    <option key={cat} value={cat} className="bg-[#181B26] text-slate-100">
+                    <option key={cat} value={cat} className="bg-white text-slate-800">
                       {cat}
                     </option>
                   ))}
@@ -1053,7 +1053,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Nomor Sertifikat / Piagam (Opsional)
                 </label>
                 <input
@@ -1061,7 +1061,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   value={certificateNumber}
                   onChange={(e) => setCertificateNumber(e.target.value)}
                   placeholder="Contoh: 088/DIKNAS/PKM-SD/2025"
-                  className="w-full px-4 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-purple-400 transition-all font-medium"
+                  className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-400 transition-all font-medium"
                 />
               </div>
             </div>
@@ -1072,7 +1072,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Jenis Ujian / Evaluasi */}
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Jenis Ujian / Evaluasi <span className="text-rose-400">*</span>
                 </label>
                 <select
@@ -1088,10 +1088,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
                       setTitle(`${short} ${yr}`);
                     }
                   }}
-                  className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium"
+                  className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-rose-400 transition-all font-medium"
                 >
                   {EXAM_TYPES.filter((ex) => ex !== 'Semua Jenis Ujian').map((ex) => (
-                    <option key={ex} value={ex} className="bg-[#181B26] text-slate-100">
+                    <option key={ex} value={ex} className="bg-white text-slate-800">
                       {ex}
                     </option>
                   ))}
@@ -1101,13 +1101,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
               {/* Tahun Pelajaran */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-300">
+                  <label className="block text-xs font-semibold text-slate-600">
                     Tahun Pelajaran <span className="text-rose-400">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsCustomYearMode(!isCustomYearMode)}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 cursor-pointer"
+                    className="text-xs text-emerald-400 hover:text-emerald-700 font-semibold flex items-center gap-1 cursor-pointer"
                   >
                     {isCustomYearMode ? 'Pilih dari Daftar' : '+ Ketik Tahun Baru'}
                   </button>
@@ -1121,7 +1121,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                       value={customYearText}
                       onChange={(e) => setCustomYearText(e.target.value)}
                       placeholder="Contoh: 2026/2027 atau 2025-2026"
-                      className="flex-1 px-4 py-3 bg-[#12141D] border border-emerald-500/50 rounded-2xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-400 transition-all font-medium"
+                      className="flex-1 px-4 py-3 bg-white border border-emerald-500/50 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-400 transition-all font-medium"
                     />
                     <button
                       type="button"
@@ -1133,7 +1133,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                           setIsCustomYearMode(false);
                         }
                       }}
-                      className="px-3.5 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
+                      className="px-3.5 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 border border-emerald-500/40 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
                       title="Simpan tahun ini ke daftar"
                     >
                       Simpan
@@ -1144,10 +1144,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     id="admin-select-year"
                     value={schoolYear}
                     onChange={(e) => setSchoolYear(e.target.value)}
-                    className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium"
+                    className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-rose-400 transition-all font-medium"
                   >
                     {availableYears.map((y) => (
-                      <option key={y} value={y} className="bg-[#181B26] text-slate-100">
+                      <option key={y} value={y} className="bg-white text-slate-800">
                         {y}
                       </option>
                     ))}
@@ -1156,26 +1156,26 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               {/* Info Cakupan Folder */}
-              <div className="sm:col-span-2 p-3 bg-[#12141D] border border-[#272D3E] rounded-2xl flex items-center justify-between text-xs text-slate-300">
-                <span className="font-semibold text-rose-300">Cakupan Folder Induk:</span>
-                <span className="font-medium text-slate-400">Seluruh Tingkat Kelas (1 s/d 6) & Seluruh Mata Pelajaran</span>
+              <div className="sm:col-span-2 p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs text-slate-600">
+                <span className="font-semibold text-rose-700">Cakupan Folder Induk:</span>
+                <span className="font-medium text-slate-500">Seluruh Tingkat Kelas (1 s/d 6) & Seluruh Mata Pelajaran</span>
               </div>
             </div>
           ) : (
             /* Row: Kelas & Tahun Pelajaran for Administrasi / Sertifikat */
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Tingkat Kelas <span className="text-rose-400">*</span>
                 </label>
                 <select
                   id="admin-select-class"
                   value={classLevel}
                   onChange={(e) => setClassLevel(e.target.value)}
-                  className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-amber-400 transition-all font-medium"
+                  className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-amber-400 transition-all font-medium"
                 >
                   {CLASS_LEVELS.filter((c) => c !== 'Semua Kelas').map((c) => (
-                    <option key={c} value={c} className="bg-[#181B26] text-slate-100">
+                    <option key={c} value={c} className="bg-white text-slate-800">
                       {c}
                     </option>
                   ))}
@@ -1185,13 +1185,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
               {/* Tahun Pelajaran dengan opsi tambah baru */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-300">
+                  <label className="block text-xs font-semibold text-slate-600">
                     Tahun Pelajaran <span className="text-rose-400">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsCustomYearMode(!isCustomYearMode)}
-                    className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 cursor-pointer"
+                    className="text-xs text-emerald-400 hover:text-emerald-700 font-semibold flex items-center gap-1 cursor-pointer"
                   >
                     {isCustomYearMode ? 'Pilih dari Daftar' : '+ Ketik Tahun Baru'}
                   </button>
@@ -1205,7 +1205,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                       value={customYearText}
                       onChange={(e) => setCustomYearText(e.target.value)}
                       placeholder="Contoh: 2026/2027 atau 2025-2026"
-                      className="flex-1 px-4 py-3 bg-[#12141D] border border-emerald-500/50 rounded-2xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-400 transition-all font-medium"
+                      className="flex-1 px-4 py-3 bg-white border border-emerald-500/50 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-400 transition-all font-medium"
                     />
                     <button
                       type="button"
@@ -1217,7 +1217,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                           setIsCustomYearMode(false);
                         }
                       }}
-                      className="px-3.5 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
+                      className="px-3.5 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-700 border border-emerald-500/40 rounded-2xl text-xs font-bold transition-colors cursor-pointer"
                       title="Simpan tahun ini ke daftar"
                     >
                       Simpan
@@ -1228,10 +1228,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     id="admin-select-year"
                     value={schoolYear}
                     onChange={(e) => setSchoolYear(e.target.value)}
-                    className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-amber-400 transition-all font-medium"
+                    className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-amber-400 transition-all font-medium"
                   >
                     {availableYears.map((y) => (
-                      <option key={y} value={y} className="bg-[#181B26] text-slate-100">
+                      <option key={y} value={y} className="bg-white text-slate-800">
                         {y}
                       </option>
                     ))}
@@ -1244,17 +1244,17 @@ export const AdminView: React.FC<AdminViewProps> = ({
           {/* If type is Administrasi -> Show Kategori */}
           {type === 'administrasi' && (
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                 Kategori Administrasi
               </label>
               <select
                 id="admin-select-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-emerald-400 transition-all font-medium"
+                className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-emerald-400 transition-all font-medium"
               >
                 {CATEGORIES_ADMINISTRASI.filter((cat) => cat !== 'Semua Kategori').map((cat) => (
-                  <option key={cat} value={cat} className="bg-[#181B26] text-slate-100">
+                  <option key={cat} value={cat} className="bg-white text-slate-800">
                     {cat}
                   </option>
                 ))}
@@ -1266,17 +1266,17 @@ export const AdminView: React.FC<AdminViewProps> = ({
           {type === 'rapor' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Semester Rapor
                 </label>
                 <select
                   id="admin-select-rapor-semester"
                   value={semester}
                   onChange={(e) => setSemester(e.target.value)}
-                  className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium"
+                  className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-rose-400 transition-all font-medium"
                 >
                   {SEMESTER_TYPES.filter((s) => s !== 'Semua Semester').map((sem) => (
-                    <option key={sem} value={sem} className="bg-[#181B26] text-slate-100">
+                    <option key={sem} value={sem} className="bg-white text-slate-800">
                       {sem}
                     </option>
                   ))}
@@ -1284,17 +1284,17 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Kategori Rapor & Nilai
                 </label>
                 <select
                   id="admin-select-rapor-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-200 focus:outline-none focus:border-rose-400 transition-all font-medium"
+                  className="w-full px-3.5 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-700 focus:outline-none focus:border-rose-400 transition-all font-medium"
                 >
                   {CATEGORIES_RAPOR.filter((cat) => cat !== 'Semua Kategori Rapor').map((cat) => (
-                    <option key={cat} value={cat} className="bg-[#181B26] text-slate-100">
+                    <option key={cat} value={cat} className="bg-white text-slate-800">
                       {cat}
                     </option>
                   ))}
@@ -1306,7 +1306,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
           {/* Link Google Drive */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-slate-300">
+              <label className="block text-xs font-semibold text-slate-600">
                 Link Google Drive {type === 'soal' ? '(Folder Induk)' : ''} <span className="text-rose-400">*</span>
               </label>
               {driveUrl && (
@@ -1314,7 +1314,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   href={sanitizeDriveUrl(driveUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-amber-400 hover:text-amber-300 inline-flex items-center gap-1 font-semibold"
+                  className="text-xs text-amber-400 hover:text-amber-700 inline-flex items-center gap-1 font-semibold"
                 >
                   <span>Tes Tautan Drive</span>
                   <ExternalLink className="w-3 h-3" />
@@ -1328,9 +1328,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
               value={driveUrl}
               onChange={(e) => setDriveUrl(e.target.value)}
               placeholder="https://drive.google.com/drive/folders/... atau docs.google.com/..."
-              className="w-full px-4 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-all font-mono text-xs"
+              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-all font-mono text-xs"
             />
-            <p className="text-[11px] text-slate-400 mt-1.5">
+            <p className="text-[11px] text-slate-500 mt-1.5">
               {type === 'soal'
                 ? 'Masukkan link folder induk Google Drive yang berisi subfolder rombel (1A, 1B, 1C) dan seluruh mapel.'
                 : 'Masukkan tautan Google Drive / Docs / Sheets yang dapat dibuka oleh guru & staf sekolah.'}
@@ -1339,7 +1339,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           {/* Catatan Singkat */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">
               Catatan Rombel / Keterangan (Opsional)
             </label>
             <input
@@ -1352,7 +1352,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   ? 'Contoh: Memuat rombel 1A, 1B, 1C & kunci jawaban seluruh mapel'
                   : 'Contoh: Termasuk modul ajar dan lembar penilaian'
               }
-              className="w-full px-4 py-3 bg-[#12141D] border border-[#272D3E] rounded-2xl text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-all"
+              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition-all"
             />
           </div>
 
@@ -1362,7 +1362,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-2xl transition-colors cursor-pointer"
+                className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 bg-white hover:bg-white border border-slate-200 rounded-2xl transition-colors cursor-pointer"
               >
                 Batal
               </button>
@@ -1392,16 +1392,16 @@ export const AdminView: React.FC<AdminViewProps> = ({
     )}
 
       {/* List Existing Documents in Admin */}
-      <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-8 shadow-xl">
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+            <h3 className="text-lg font-bold text-slate-800 font-heading flex items-center gap-2">
               <span>Daftar Semua Arsip</span>
-              <span className="px-2 py-0.5 text-xs bg-[#242A3D] text-slate-200 rounded-full font-bold">
+              <span className="px-2 py-0.5 text-xs bg-white text-slate-700 rounded-full font-bold">
                 {documents.length}
               </span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Edit metadata, pilih arsip untuk hapus massal, atau hapus berkas yang tidak digunakan
             </p>
           </div>
@@ -1409,20 +1409,20 @@ export const AdminView: React.FC<AdminViewProps> = ({
           <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
             {/* Admin Search */}
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
+              <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none" />
               <input
                 type="text"
                 value={adminSearch}
                 onChange={(e) => setAdminSearch(e.target.value)}
                 placeholder="Cari arsip..."
-                className="w-full pl-10 pr-3.5 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-sky-400 transition-all font-medium"
+                className="w-full pl-10 pr-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-sky-400 transition-all font-medium"
               />
             </div>
 
             {documents.length > 0 && (
               <button
                 onClick={() => setShowClearAllModal(true)}
-                className="px-3 py-2 text-xs font-semibold text-rose-300 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition-colors flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
+                className="px-3 py-2 text-xs font-semibold text-rose-700 hover:text-slate-800 bg-rose-50 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl transition-colors flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
                 title="Hapus seluruh arsip data"
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-400" />
@@ -1435,21 +1435,21 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
         {/* Batch Selection Action Bar */}
         {selectedIds.length > 0 && (
-          <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
-            <div className="flex items-center gap-2 text-xs font-bold text-rose-200">
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-500/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2 text-xs font-bold text-rose-700">
               <CheckSquare className="w-4 h-4 text-rose-400" />
               <span>{selectedIds.length} arsip dipilih</span>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <button
                 onClick={() => setSelectedIds([])}
-                className="px-3 py-1.5 bg-[#171A24] hover:bg-[#202534] text-slate-300 text-xs font-semibold rounded-xl border border-[#272D3E] cursor-pointer"
+                className="px-3 py-1.5 bg-white hover:bg-white text-slate-600 text-xs font-semibold rounded-xl border border-slate-200 cursor-pointer"
               >
                 Batal Pilihan
               </button>
               <button
                 onClick={() => setShowBatchDeleteModal(true)}
-                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-slate-800 text-xs font-bold rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Hapus ({selectedIds.length}) Arsip Terpilih</span>
@@ -1459,9 +1459,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
         )}
 
         {filteredAdminDocs.length === 0 ? (
-          <div className="p-10 text-center bg-[#12141D] rounded-2xl border border-[#24293A] text-xs text-slate-400">
+          <div className="p-10 text-center bg-white rounded-2xl border border-slate-200 text-xs text-slate-500">
             <Folder className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-            <p className="font-semibold text-slate-300">
+            <p className="font-semibold text-slate-600">
               {documents.length === 0
                 ? 'Belum ada data arsip yang tersimpan.'
                 : 'Tidak ada dokumen yang sesuai dengan pencarian.'}
@@ -1475,7 +1475,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         ) : (
           <div>
             {/* Table Selection Header */}
-            <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#23293B] text-xs text-slate-400 px-3">
+            <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-200 text-xs text-slate-500 px-3">
               <label className="flex items-center gap-2.5 cursor-pointer select-none font-semibold">
                 <input
                   type="checkbox"
@@ -1484,7 +1484,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     selectedIds.length === filteredAdminDocs.length
                   }
                   onChange={handleToggleSelectAll}
-                  className="rounded border-[#2E364A] text-rose-500 focus:ring-rose-400 cursor-pointer w-4 h-4"
+                  className="rounded border-slate-200 text-rose-500 focus:ring-rose-400 cursor-pointer w-4 h-4"
                 />
                 <span>Pilih Semua ({filteredAdminDocs.length})</span>
               </label>
@@ -1502,7 +1502,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   <div
                     key={doc.id}
                     className={`py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3 rounded-2xl transition-colors ${
-                      isSelected ? 'bg-rose-500/5' : 'hover:bg-[#1C202E]'
+                      isSelected ? 'bg-rose-500/5' : 'hover:bg-white'
                     }`}
                   >
                     <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
@@ -1511,7 +1511,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleToggleSelect(doc.id)}
-                        className="mt-1 sm:mt-0 rounded border-[#2E364A] text-rose-500 focus:ring-rose-400 cursor-pointer w-4 h-4 flex-shrink-0"
+                        className="mt-1 sm:mt-0 rounded border-slate-200 text-rose-500 focus:ring-rose-400 cursor-pointer w-4 h-4 flex-shrink-0"
                       />
 
                       <div className="min-w-0 flex-1">
@@ -1519,12 +1519,12 @@ export const AdminView: React.FC<AdminViewProps> = ({
                           <span
                             className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full ${
                               doc.type === 'administrasi'
-                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                                ? 'bg-emerald-50 text-emerald-400 border border-emerald-500/30'
                                 : doc.type === 'soal'
-                                ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30'
+                                ? 'bg-blue-50 text-blue-400 border border-blue-500/30'
                                 : doc.type === 'sertifikat'
                                 ? 'bg-purple-500/15 text-purple-400 border border-purple-500/30'
-                                : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                                : 'bg-rose-50 text-rose-400 border border-rose-500/30'
                             }`}
                           >
                             {doc.type === 'soal'
@@ -1535,11 +1535,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
                               ? 'Sertifikat'
                               : 'Administrasi'}
                           </span>
-                          <h4 className="text-sm font-semibold text-slate-100 truncate">
+                          <h4 className="text-sm font-semibold text-slate-800 truncate">
                             {doc.title}
                           </h4>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           {doc.type === 'soal'
                             ? `${doc.examType || 'Bank Soal'} (Kelas 1-6) • T.P. ${doc.schoolYear}`
                             : doc.type === 'rapor'
@@ -1562,7 +1562,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                           e.stopPropagation();
                           openExternalDriveUrl(doc.driveUrl);
                         }}
-                        className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-[#13151F] rounded-xl transition-colors cursor-pointer"
+                        className="p-2 text-slate-500 hover:text-emerald-400 hover:bg-white rounded-xl transition-colors cursor-pointer"
                         title="Buka tautan Drive"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -1574,7 +1574,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                           populateForm(doc);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        className="p-2 text-slate-400 hover:text-amber-400 hover:bg-[#13151F] rounded-xl transition-colors cursor-pointer"
+                        className="p-2 text-slate-500 hover:text-amber-400 hover:bg-white rounded-xl transition-colors cursor-pointer"
                         title="Edit Dokumen"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -1583,7 +1583,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setDocToDelete(doc)}
-                        className="p-2 text-slate-400 hover:text-rose-400 hover:bg-[#13151F] rounded-xl transition-colors cursor-pointer"
+                        className="p-2 text-slate-500 hover:text-rose-400 hover:bg-white rounded-xl transition-colors cursor-pointer"
                         title="Hapus Arsip Ini"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -1603,17 +1603,17 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {adminActiveTab === 'templates' && (
         <div className="space-y-6">
           {templates && templates.length > 0 ? (
-            <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-7 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#24293A]">
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-slate-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-50 border border-cyan-500/30 text-cyan-400 flex items-center justify-center">
                     <FileDown className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-white font-heading">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-800 font-heading">
                       Akses Cepat Ujian &amp; Template
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500">
                       Kelola tautan Google Drive yang tampil pada Kelompok A di Dashboard.
                     </p>
                   </div>
@@ -1673,11 +1673,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
                         return (
                           <div
                             key={tpl.id}
-                            className="p-4 bg-[#12141D] border border-[#272D3E] rounded-2xl flex flex-col justify-between"
+                            className="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col justify-between"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-2">
-                                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-600 border border-slate-700">
                                   {tpl.fileFormat}
                                 </span>
 
@@ -1686,33 +1686,33 @@ export const AdminView: React.FC<AdminViewProps> = ({
                                 </span>
                               </div>
 
-                              <h4 className="text-sm font-bold text-white mb-1">
+                              <h4 className="text-sm font-bold text-slate-800 mb-1">
                                 {label.title}
                               </h4>
 
-                              <p className="text-xs text-slate-400 line-clamp-2 mb-3">
+                              <p className="text-xs text-slate-500 line-clamp-2 mb-3">
                                 {label.description}
                               </p>
 
-                              <div className="px-3 py-2 rounded-xl bg-[#0D1018] border border-[#202535] mb-3">
+                              <div className="px-3 py-2 rounded-xl bg-white border border-slate-200 mb-3">
                                 <p className="text-[10px] text-slate-500 mb-1">
                                   Tautan tersimpan
                                 </p>
 
-                                <p className="text-[11px] text-slate-300 truncate">
+                                <p className="text-[11px] text-slate-600 truncate">
                                   {tpl.driveUrl || 'Belum ada tautan'}
                                 </p>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#202535]">
+                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200">
                               <button
                                 type="button"
                                 onClick={() =>
                                   openExternalDriveUrl(tpl.driveUrl)
                                 }
                                 disabled={!tpl.driveUrl}
-                                className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300 font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-700 font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 <ExternalLink className="w-3.5 h-3.5" />
                                 <span>Buka</span>
@@ -1724,7 +1724,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                                   onClick={() =>
                                     setSelectedTemplateToEdit(tpl)
                                   }
-                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1C2130] hover:bg-[#283044] text-amber-400 text-xs font-bold transition-colors cursor-pointer"
+                                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white hover:bg-white text-amber-400 text-xs font-bold transition-colors cursor-pointer"
                                 >
                                   <Edit2 className="w-3 h-3" />
                                   <span>Edit Link</span>
@@ -1744,11 +1744,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-bold text-white">
+                          <h4 className="text-sm font-bold text-slate-800">
                             Tracking Pengumpulan Soal
                           </h4>
 
-                          <p className="text-xs text-slate-400 mt-1">
+                          <p className="text-xs text-slate-500 mt-1">
                             Menu ini merupakan fitur internal aplikasi,
                             bukan tautan Google Drive. Aksesnya langsung
                             melalui kartu Tracking pada Dashboard.
@@ -1761,7 +1761,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
               })()}
             </div>
           ) : (
-            <div className="p-8 text-center bg-[#181B26] border border-[#262C3E] rounded-3xl text-xs text-slate-400">
+            <div className="p-8 text-center bg-white border border-slate-200 rounded-3xl text-xs text-slate-500">
               Belum ada konfigurasi template tersimpan.
             </div>
           )}
@@ -1771,17 +1771,17 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {/* Tab 3: Master Tahun Pelajaran */}
       {adminActiveTab === 'tahun' && (
         <div className="space-y-6">
-          <div className="bg-[#181B26] border border-[#262C3E] rounded-3xl p-6 sm:p-7 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-[#24293A]">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-200">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-white font-heading">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-800 font-heading">
                     Daftar Tahun Pelajaran Terdaftar ({availableYears.length})
                   </h3>
-                  <p className="text-xs text-slate-400">Tahun pelajaran ini akan otomatis muncul pada seluruh menu filter arsip</p>
+                  <p className="text-xs text-slate-500">Tahun pelajaran ini akan otomatis muncul pada seluruh menu filter arsip</p>
                 </div>
               </div>
               <button
@@ -1798,14 +1798,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
               {availableYears.map((year) => (
                 <div
                   key={year}
-                  className="flex items-center gap-2 px-3.5 py-2 bg-[#12141D] border border-[#272D3E] rounded-xl text-xs font-semibold text-slate-200 hover:border-emerald-500/40 transition-colors"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:border-emerald-500/40 transition-colors"
                 >
                   <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{year}</span>
                   {availableYears.length > 1 && (
                     <button
                       onClick={() => handleDeleteSchoolYear(year)}
-                      className="p-0.5 text-slate-400 hover:text-rose-400 rounded transition-colors ml-1 cursor-pointer"
+                      className="p-0.5 text-slate-500 hover:text-rose-400 rounded transition-colors ml-1 cursor-pointer"
                       title={`Hapus tahun ${year}`}
                     >
                       <X className="w-3 h-3" />
@@ -1821,23 +1821,23 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {/* Tab 4: Sinkronisasi Cloud & Cadangan Data */}
       {adminActiveTab === 'backup' && (
         <div className="space-y-6">
-          <div className="bg-[#181B26] border border-sky-500/30 rounded-3xl p-6 sm:p-7 shadow-xl">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b border-[#24293A]">
+          <div className="bg-white border border-sky-500/30 rounded-3xl p-6 sm:p-7 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 pb-4 border-b border-slate-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-sky-50 border border-sky-500/30 text-sky-400 flex items-center justify-center flex-shrink-0">
                   <Cloud className="w-5 h-5 text-sky-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm sm:text-base font-bold text-white font-heading">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-800 font-heading">
                       Sinkronisasi Cloud &amp; Cadangan Data
                     </h3>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-400 border border-emerald-500/30">
                       <CloudCheck className="w-3 h-3" />
                       <span>Cloud Aktif</span>
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Data link Google Drive otomatis tersinkron ke Firebase Firestore (Vercel &amp; Domain Custom aman)
                   </p>
                 </div>
@@ -1867,7 +1867,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isImporting}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl transition-all cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-800 bg-white hover:bg-white border border-slate-200 rounded-xl transition-all cursor-pointer disabled:opacity-50"
                   title="Pulihkan data arsip dari file JSON cadangan"
                 >
                   <Upload className="w-3.5 h-3.5 text-sky-400" />
@@ -1881,8 +1881,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
               <div
                 className={`p-3.5 rounded-2xl text-xs flex items-center gap-2.5 mb-4 ${
                   backupMessage.type === 'success'
-                    ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                    : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
+                    ? 'bg-emerald-50 border border-emerald-500/30 text-emerald-700'
+                    : 'bg-rose-50 border border-rose-500/30 text-rose-700'
                 }`}
               >
                 {backupMessage.type === 'success' ? (
@@ -1894,12 +1894,12 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300 bg-[#12141D] p-4 rounded-2xl border border-[#24293A]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 bg-white p-4 rounded-2xl border border-slate-200">
               <div className="flex items-start gap-2.5">
                 <FileJson className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold text-white block">File Cadangan Portabel:</span>
-                  <p className="text-slate-400 text-[11px]">
+                  <span className="font-semibold text-slate-800 block">File Cadangan Portabel:</span>
+                  <p className="text-slate-500 text-[11px]">
                     File JSON dapat disimpan sebagai arsip cadangan lokal sekolah kapan pun dibutuhkan.
                   </p>
                 </div>
@@ -1907,8 +1907,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
               <div className="flex items-start gap-2.5">
                 <CloudCheck className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold text-white block">Sinkronisasi Otomatis Antar Perangkat:</span>
-                  <p className="text-slate-400 text-[11px]">
+                  <span className="font-semibold text-slate-800 block">Sinkronisasi Otomatis Antar Perangkat:</span>
+                  <p className="text-slate-500 text-[11px]">
                     Setiap data yang Anda simpan di sini akan langsung terbaca oleh seluruh guru di domain Vercel / domain sekolah.
                   </p>
                 </div>
@@ -1922,22 +1922,22 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {docToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm"
             onClick={() => setDocToDelete(null)}
           />
-          <div className="relative w-full max-w-md bg-[#181B26] border border-rose-500/40 rounded-3xl p-6 shadow-2xl z-10 text-slate-100 animate-scale-in">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4">
+          <div className="relative w-full max-w-md bg-white border border-rose-500/40 rounded-3xl p-6 shadow-2xl z-10 text-slate-800 animate-scale-in">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4">
               <Trash2 className="w-6 h-6" />
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1">Hapus Data Arsip?</h3>
-            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-800 mb-1">Hapus Data Arsip?</h3>
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed">
               Anda akan menghapus arsip berikut dari sistem:
             </p>
 
-            <div className="p-3.5 bg-[#12141D] border border-[#272D3E] rounded-2xl mb-5 space-y-1">
-              <div className="text-sm font-semibold text-white truncate">{docToDelete.title}</div>
-              <div className="text-xs text-slate-400">
+            <div className="p-3.5 bg-white border border-slate-200 rounded-2xl mb-5 space-y-1">
+              <div className="text-sm font-semibold text-slate-800 truncate">{docToDelete.title}</div>
+              <div className="text-xs text-slate-500">
                 {docToDelete.type === 'soal'
                   ? `Bank Soal • ${docToDelete.examType || 'Folder Induk'} • ${docToDelete.schoolYear}`
                   : docToDelete.type === 'rapor'
@@ -1950,14 +1950,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
               <button
                 type="button"
                 onClick={() => setDocToDelete(null)}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-slate-600 bg-white hover:bg-white border border-slate-200 rounded-xl cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmSingleDelete}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer"
+                className="px-5 py-2.5 text-xs font-bold text-slate-800 bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer"
               >
                 Ya, Hapus Arsip
               </button>
@@ -1970,18 +1970,18 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {showBatchDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm"
             onClick={() => setShowBatchDeleteModal(false)}
           />
-          <div className="relative w-full max-w-md bg-[#181B26] border border-rose-500/40 rounded-3xl p-6 shadow-2xl z-10 text-slate-100 animate-scale-in">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4">
+          <div className="relative w-full max-w-md bg-white border border-rose-500/40 rounded-3xl p-6 shadow-2xl z-10 text-slate-800 animate-scale-in">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4">
               <AlertTriangle className="w-6 h-6" />
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1">
+            <h3 className="text-lg font-bold text-slate-800 mb-1">
               Hapus {selectedIds.length} Arsip Terpilih?
             </h3>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+            <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Semua data arsip yang dipilih ({selectedIds.length} item) akan dihapus dari daftar arsip digital SDIT AL FIKRI. Tindakan ini tidak dapat dibatalkan.
             </p>
 
@@ -1989,14 +1989,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBatchDeleteModal(false)}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-slate-600 bg-white hover:bg-white border border-slate-200 rounded-xl cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmBatchDelete}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer"
+                className="px-5 py-2.5 text-xs font-bold text-slate-800 bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer"
               >
                 Hapus {selectedIds.length} Arsip
               </button>
@@ -2009,16 +2009,16 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {showClearAllModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm"
             onClick={() => setShowClearAllModal(false)}
           />
-          <div className="relative w-full max-w-md bg-[#181B26] border border-rose-500/40 rounded-3xl p-6 shadow-2xl z-10 text-slate-100 animate-scale-in">
-            <div className="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4">
+          <div className="relative w-full max-w-md bg-white border border-rose-500/40 rounded-3xl p-6 shadow-2xl z-10 text-slate-800 animate-scale-in">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-4">
               <Trash2 className="w-6 h-6" />
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1">Kosongkan Seluruh Data Arsip?</h3>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-800 mb-1">Kosongkan Seluruh Data Arsip?</h3>
+            <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Tindakan ini akan <strong>menghapus seluruh data arsip ({documents.length} dokumen)</strong>. Halaman arsip akan kembali bersih agar Anda dapat menginput link Google Drive dari awal.
             </p>
 
@@ -2026,14 +2026,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowClearAllModal(false)}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl cursor-pointer"
+                className="px-4 py-2.5 text-xs font-semibold text-slate-600 bg-white hover:bg-white border border-slate-200 rounded-xl cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmClearAll}
-                className="px-5 py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer"
+                className="px-5 py-2.5 text-xs font-bold text-slate-800 bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-600/20 cursor-pointer"
               >
                 Ya, Kosongkan Semua Data
               </button>
@@ -2046,36 +2046,36 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {showAddYearModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm"
             onClick={() => setShowAddYearModal(false)}
           />
-          <div className="relative w-full max-w-md bg-[#181B26] border border-[#2A3144] rounded-3xl p-6 shadow-2xl z-10 text-slate-100">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl z-10 text-slate-800">
             <button
               onClick={() => setShowAddYearModal(false)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-xl hover:bg-[#222738] cursor-pointer"
+              className="absolute top-5 right-5 p-2 text-slate-500 hover:text-slate-800 rounded-xl hover:bg-white cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Tambah Tahun Pelajaran Baru</h3>
-                <p className="text-xs text-slate-400">Tahun baru akan otomatis muncul di semua filter aplikasi</p>
+                <h3 className="text-base font-bold text-slate-800">Tambah Tahun Pelajaran Baru</h3>
+                <p className="text-xs text-slate-500">Tahun baru akan otomatis muncul di semua filter aplikasi</p>
               </div>
             </div>
 
             {yearSuccessMsg && (
-              <div className="mb-4 p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl flex items-center gap-2">
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-500/30 text-emerald-700 text-xs rounded-xl flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span>{yearSuccessMsg}</span>
               </div>
             )}
 
             {yearErrorMsg && (
-              <div className="mb-4 p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs rounded-xl flex items-center gap-2">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-500/30 text-rose-700 text-xs rounded-xl flex items-center gap-2">
                 <X className="w-4 h-4 text-rose-400 flex-shrink-0" />
                 <span>{yearErrorMsg}</span>
               </div>
@@ -2083,7 +2083,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <form onSubmit={handleAddNewSchoolYear} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                   Format Tahun Pelajaran <span className="text-rose-400">*</span>
                 </label>
                 <input
@@ -2093,9 +2093,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   value={newYearInput}
                   onChange={(e) => setNewYearInput(e.target.value)}
                   placeholder="Contoh: 2026/2027 atau 2025-2026"
-                  className="w-full bg-[#12141D] border border-[#282E40] text-sm text-slate-100 px-4 py-3 rounded-2xl focus:outline-none focus:border-emerald-400 font-medium"
+                  className="w-full bg-white border border-slate-200 text-sm text-slate-800 px-4 py-3 rounded-2xl focus:outline-none focus:border-emerald-400 font-medium"
                 />
-                <p className="text-[11px] text-slate-400 mt-1.5">
+                <p className="text-[11px] text-slate-500 mt-1.5">
                   Bisa menggunakan format garis miring (2026/2027) maupun strip (2025-2026).
                 </p>
               </div>
@@ -2104,7 +2104,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddYearModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white hover:bg-white border border-slate-200 rounded-xl cursor-pointer"
                 >
                   Batal
                 </button>
@@ -2124,36 +2124,36 @@ export const AdminView: React.FC<AdminViewProps> = ({
       {showPasswordChangeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm"
             onClick={() => setShowPasswordChangeModal(false)}
           />
-          <div className="relative w-full max-w-md bg-[#181B26] border border-[#2A3144] rounded-3xl p-6 shadow-2xl z-10 text-slate-100">
+          <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl z-10 text-slate-800">
             <button
               onClick={() => setShowPasswordChangeModal(false)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white rounded-xl hover:bg-[#222738] cursor-pointer"
+              className="absolute top-5 right-5 p-2 text-slate-500 hover:text-slate-800 rounded-xl hover:bg-white cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 text-amber-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-400/30 text-amber-400 flex items-center justify-center">
                 <KeyRound className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Ganti Kata Sandi Admin</h3>
-                <p className="text-xs text-slate-400">Atur kata sandi baru untuk akses Pengaturan</p>
+                <h3 className="text-base font-bold text-slate-800">Ganti Kata Sandi Admin</h3>
+                <p className="text-xs text-slate-500">Atur kata sandi baru untuk akses Pengaturan</p>
               </div>
             </div>
 
             {passChangeSuccess && (
-              <div className="mb-4 p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl flex items-center gap-2">
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-500/30 text-emerald-700 text-xs rounded-xl flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span>{passChangeSuccess}</span>
               </div>
             )}
 
             {passChangeError && (
-              <div className="mb-4 p-3 bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs rounded-xl flex items-center gap-2">
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-500/30 text-rose-700 text-xs rounded-xl flex items-center gap-2">
                 <X className="w-4 h-4 text-rose-400 flex-shrink-0" />
                 <span>{passChangeError}</span>
               </div>
@@ -2161,7 +2161,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <form onSubmit={handlePasswordChangeSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Kata Sandi Baru
                 </label>
                 <div className="relative">
@@ -2171,12 +2171,12 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimal 3 karakter"
-                    className="w-full bg-[#12141D] border border-[#282E40] text-sm text-slate-100 px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-amber-400"
+                    className="w-full bg-white border border-slate-200 text-sm text-slate-800 px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-amber-400"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassText(!showPassText)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
                   >
                     {showPassText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -2184,7 +2184,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
                   Konfirmasi Kata Sandi Baru
                 </label>
                 <input
@@ -2193,7 +2193,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Ulangi kata sandi baru"
-                  className="w-full bg-[#12141D] border border-[#282E40] text-sm text-slate-100 px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-amber-400"
+                  className="w-full bg-white border border-slate-200 text-sm text-slate-800 px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -2201,7 +2201,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPasswordChangeModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-300 bg-[#12141D] hover:bg-[#202534] border border-[#272D3E] rounded-xl cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white hover:bg-white border border-slate-200 rounded-xl cursor-pointer"
                 >
                   Batal
                 </button>

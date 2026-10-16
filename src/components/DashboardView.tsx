@@ -73,6 +73,8 @@ interface DashboardViewProps {
   onOpenRaporSts?: () => void;
   branding?: AppBranding;
   onUpdateBranding?: (newBranding: AppBranding) => Promise<void> | void;
+  globalSearch?: string;
+  onGlobalSearchChange?: (query: string) => void;
 }
 
 export const DashboardView: React.FC<
@@ -96,12 +98,17 @@ export const DashboardView: React.FC<
   onOpenRaporSts,
   branding = DEFAULT_BRANDING,
   onUpdateBranding,
+  globalSearch: propGlobalSearch,
+  onGlobalSearchChange,
 }) => {
   const [showEvaluationModule, setShowEvaluationModule] =
     useState(false);
 
-  const [globalSearch, setGlobalSearch] =
+  const [localSearch, setLocalSearch] =
     useState('');
+
+  const globalSearch = propGlobalSearch !== undefined ? propGlobalSearch : localSearch;
+  const setGlobalSearch = onGlobalSearchChange || setLocalSearch;
 
   // Personal QRIS & Profile Modal State
   const [isQrisModalOpen, setIsQrisModalOpen] = useState(false);
@@ -273,100 +280,6 @@ export const DashboardView: React.FC<
               Pusat akses terpadu Administrasi Guru Kurikulum Merdeka, Folder Induk Bank Soal
               Ujian, Arsip Sertifikat & Piagam, serta Arsip Rapor & Leger Nilai Sekolah.
             </p>
-          </div>
-
-          {/* Controls */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 self-start lg:self-center flex-shrink-0 w-full sm:w-auto pt-1 sm:pt-0">
-            {/* Search Bar */}
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-
-              <input
-                id="dashboard-search-input"
-                type="text"
-                value={globalSearch}
-                onChange={(e) =>
-                  setGlobalSearch(e.target.value)
-                }
-                placeholder="Cari seluruh dokumen..."
-                className="w-full bg-white/95 backdrop-blur-md border border-white/20 text-xs sm:text-sm text-slate-800 placeholder-slate-400 pl-11 pr-9 py-2.5 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white transition-all font-medium shadow-md"
-              />
-
-              {globalSearch && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setGlobalSearch('')
-                  }
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
-                  title="Bersihkan"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Date Pill */}
-            <div className="hidden xl:flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-white/90 backdrop-blur-md border border-white/40 text-xs font-bold text-slate-700 shadow-md">
-              <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{todayFormatted}</span>
-            </div>
-
-            {/* Tombol Terpadu Muzaki & QRIS */}
-            <button
-              type="button"
-              id="btn-developer-qris"
-              onClick={() => {
-                setQrisModalDefaultTab(isAdmin ? 'edit' : 'view');
-                setIsQrisModalOpen(true);
-              }}
-              className="flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white backdrop-blur-md border border-emerald-200 text-slate-700 hover:text-emerald-700 transition-all duration-200 shadow-md group/dev cursor-pointer active:scale-95 shrink-0"
-              title="Profil Pengembang Muzaki & QRIS Dukungan"
-            >
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 p-0.5 flex items-center justify-center shadow-xs overflow-hidden shrink-0 group-hover/dev:scale-105 transition-transform">
-                {branding?.personalAvatarUrl ? (
-                  <img
-                    src={branding.personalAvatarUrl}
-                    alt={branding.personalName || 'Muzaki'}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <div className="w-full h-full rounded-full bg-emerald-800 flex items-center justify-center text-white font-black text-[9px]">
-                    {branding?.personalName ? branding.personalName.substring(0, 2).toUpperCase() : 'MZ'}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 text-left">
-                <span className="text-xs font-bold tracking-tight text-slate-800 group-hover/dev:text-emerald-700 transition-colors">
-                  {branding?.personalName || 'Muzaki'}
-                </span>
-                <div className="w-4 h-4 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
-                  <QrCode className="w-2.5 h-2.5" />
-                </div>
-              </div>
-            </button>
-
-            {/* Notification Bell (Lonceng Notifikasi Guru & Admin) */}
-            <TeacherNotificationBell
-              activeTeacher={activeTeacher}
-              isAdmin={isAdmin}
-              onNavigate={onNavigate}
-              onOpenRaporSts={onOpenRaporSts}
-            />
-
-            {/* Tombol Logout Sesi Aktif Guru & Admin (Tampilan Desktop & Tablet) */}
-            {(activeTeacher || isAdmin) && (
-              <button
-                type="button"
-                id="btn-dashboard-logout"
-                onClick={isAdmin ? onLogout : onLogoutTeacher}
-                className="flex items-center gap-1.5 px-3 py-2 sm:py-2 rounded-full bg-rose-50 hover:bg-rose-100 active:scale-95 border border-rose-200 text-rose-700 hover:text-rose-800 transition-all duration-200 cursor-pointer shadow-xs text-xs font-bold shrink-0"
-                title={isAdmin ? "Keluar Mode Admin" : `Keluar Sesi Guru: ${activeTeacher?.name}`}
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Keluar</span>
-              </button>
-            )}
           </div>
         </div>
       </header>

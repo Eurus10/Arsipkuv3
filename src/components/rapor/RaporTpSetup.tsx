@@ -400,20 +400,20 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
       )}
 
       {subjects.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/[0.10] bg-[#07111E] p-12 text-center">
-          <BookOpen className="w-10 h-10 text-slate-600 mx-auto" />
-          <h3 className="mt-4 text-base font-black text-white">Belum ada Mapel Aktif</h3>
-          <p className="mt-2 max-w-md mx-auto text-xs leading-relaxed text-slate-400">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-xs">
+          <BookOpen className="w-10 h-10 text-slate-400 mx-auto" />
+          <h3 className="mt-4 text-base font-bold text-slate-900">Belum ada Mapel Aktif</h3>
+          <p className="mt-2 max-w-md mx-auto text-xs leading-relaxed text-slate-500">
             Belum ada master mata pelajaran aktif untuk jenjang Kelas {gradeLevel}.
           </p>
         </div>
       ) : visibleSubjects.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-amber-400/20 bg-amber-400/[0.03] p-12 text-center">
-          <BookOpen className="w-10 h-10 text-amber-400/60 mx-auto" />
-          <h3 className="mt-4 text-base font-black text-white">
+        <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/50 p-12 text-center shadow-xs">
+          <BookOpen className="w-10 h-10 text-amber-500 mx-auto" />
+          <h3 className="mt-4 text-base font-bold text-slate-900">
             Belum ada Mapel yang ditugaskan untuk konteks ini
           </h3>
-          <p className="mt-2 max-w-md mx-auto text-xs leading-relaxed text-slate-400">
+          <p className="mt-2 max-w-md mx-auto text-xs leading-relaxed text-slate-500">
             Anda tidak memiliki penugasan mata pelajaran aktif pada Kelas {classLevel}.
           </p>
         </div>
@@ -426,9 +426,9 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
           {/* ============================================================
              LEFT COLUMN: DAFTAR MATA PELAJARAN (SIDEBAR)
           ============================================================ */}
-          <aside className="rounded-2xl border border-white/[0.08] bg-[#07111E] p-4 shadow-xl shadow-black/20 flex flex-col gap-3.5">
+          <aside className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs flex flex-col gap-3.5">
             <div>
-              <h3 className="text-sm font-black text-white tracking-tight">Daftar Mata Pelajaran</h3>
+              <h3 className="text-sm font-bold text-slate-900 tracking-tight">Daftar Mata Pelajaran</h3>
             </div>
 
             {/* Instant Search Bar */}
@@ -438,15 +438,15 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Cari mata pelajaran..."
-                className="w-full h-9 pl-3.5 pr-9 rounded-xl border border-white/[0.08] bg-[#0A1626] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400/40 focus:ring-1 focus:ring-emerald-400/25 transition-all"
+                className="w-full h-9 pl-3.5 pr-9 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 focus:bg-white transition-all"
               />
-              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             </div>
 
             {/* Subject List */}
             <div className="space-y-2 max-h-[calc(100vh-20rem)] overflow-y-auto custom-scrollbar pr-0.5">
               {filteredSubjects.length === 0 ? (
-                <div className="py-6 text-center text-xs text-slate-500">
+                <div className="py-6 text-center text-xs text-slate-400">
                   Tidak ada mata pelajaran yang cocok.
                 </div>
               ) : (
@@ -465,8 +465,8 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                       onClick={() => handleSelectSubject(subj.id)}
                       className={`w-full text-left rounded-xl p-3 flex items-center justify-between gap-2.5 transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? 'border-2 border-emerald-400 bg-emerald-950/30 shadow-[0_0_20px_rgba(16,185,129,0.14)]'
-                          : 'border border-white/[0.07] bg-[#0A1626] hover:bg-[#0D1C30] hover:border-white/[0.14]'
+                          ? 'border-2 border-emerald-500 bg-emerald-50/60 shadow-xs'
+                          : 'border border-slate-200 bg-white hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -474,8 +474,8 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                         <div
                           className={`w-9 h-9 shrink-0 rounded-lg flex items-center justify-center transition-colors ${
                             isSelected
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                              : 'bg-white/[0.04] text-slate-400 border border-white/[0.06]'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : 'bg-slate-100 text-slate-600 border border-slate-200'
                           }`}
                         >
                           <Icon className="w-4 h-4" />
@@ -483,11 +483,11 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                         {/* Subject Name & Category Badge */}
                         <div className="min-w-0">
-                          <p className={`text-xs font-black truncate leading-tight ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                          <p className={`text-xs font-bold truncate leading-tight ${isSelected ? 'text-emerald-900' : 'text-slate-800'}`}>
                             {subj.name}
                           </p>
                           <div className="mt-1 flex items-center gap-1.5">
-                            <span className={`px-2 py-0.5 rounded-full border text-[8.5px] font-black uppercase tracking-wider ${meta.categoryClass}`}>
+                            <span className={`px-2 py-0.5 rounded-full border text-[8.5px] font-bold uppercase tracking-wider ${meta.categoryClass}`}>
                               {meta.categoryLabel}
                             </span>
                           </div>
@@ -495,7 +495,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                       </div>
 
                       {/* TP Count Badge */}
-                      <span className="shrink-0 text-[11px] font-extrabold text-slate-300 whitespace-nowrap pl-1">
+                      <span className="shrink-0 text-[11px] font-bold text-slate-600 whitespace-nowrap pl-1">
                         {tpCount} TP
                       </span>
                     </button>
@@ -512,27 +512,27 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
             {currentSubject ? (
               <>
                 {/* 1. TOP HEADER BANNER OF SELECTED SUBJECT */}
-                <div className="rounded-2xl border border-white/[0.08] bg-[#07111E] p-4 sm:p-5 shadow-xl shadow-black/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-start gap-3.5 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shrink-0 shadow-inner">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0 shadow-xs">
                       <CurrentIcon className="w-6 h-6" />
                     </div>
 
                     <div className="min-w-0">
-                      <h2 className="text-base sm:text-lg font-black text-white tracking-tight leading-snug">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug">
                         {currentSubject.name}
                       </h2>
                       <div className="mt-1 flex items-center gap-2 flex-wrap">
-                        <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wider ${currentMeta?.categoryClass}`}>
+                        <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase tracking-wider ${currentMeta?.categoryClass}`}>
                           {currentMeta?.categoryLabel}
                         </span>
                         {currentSubject.code && (
-                          <span className="font-mono text-[9.5px] font-bold text-slate-400">
+                          <span className="font-mono text-[9.5px] font-bold text-slate-500">
                             {currentSubject.code}
                           </span>
                         )}
                       </div>
-                      <p className="mt-1.5 text-xs text-slate-400 leading-relaxed max-w-xl">
+                      <p className="mt-1.5 text-xs text-slate-500 leading-relaxed max-w-xl">
                         {currentMeta?.defaultDesc}
                       </p>
                     </div>
@@ -540,11 +540,11 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                   {/* Right Status Badge: 8 TP Aktif dari 8 TP + More Button */}
                   <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                    <div className="rounded-xl border border-white/[0.08] bg-slate-950/70 px-3.5 py-2 text-right">
-                      <p className="text-xs font-black text-white leading-tight">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-right">
+                      <p className="text-xs font-bold text-slate-900 leading-tight">
                         {activeTps.length} TP Aktif
                       </p>
-                      <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                      <p className="text-[10px] text-slate-500 font-medium mt-0.5">
                         dari {(currentSubject.tpList || []).length} TP
                       </p>
                     </div>
@@ -552,7 +552,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                     <button
                       type="button"
                       title="Opsi Mata Pelajaran"
-                      className="w-8 h-8 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.08] text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                      className="w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-900 flex items-center justify-center transition-all cursor-pointer"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
@@ -561,7 +561,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                 {/* 2. TP SECTION HEADER & ACTIONS */}
                 <div className="flex items-center justify-between gap-3 px-1">
-                  <h3 className="text-sm sm:text-base font-black text-white tracking-tight">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
                     Tujuan Pembelajaran (TP)
                   </h3>
 
@@ -572,8 +572,8 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                         onClick={() => setIsReorderMode(!isReorderMode)}
                         className={`h-8 px-3 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                           isReorderMode
-                            ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
-                            : 'border-white/[0.09] bg-white/[0.03] hover:bg-white/[0.08] text-slate-300'
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                            : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                         }`}
                       >
                         <ArrowUpDown className="w-3.5 h-3.5" />
@@ -586,7 +586,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                         type="button"
                         onClick={handleStartAdd}
                         disabled={saving || isAdding}
-                        className="h-8 sm:h-8.5 px-3.5 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20 active:scale-95 cursor-pointer disabled:opacity-50"
+                        className="h-8 sm:h-8.5 px-3.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-50"
                       >
                         <Plus className="w-4 h-4 stroke-[3]" />
                         <span>Tambah TP</span>
@@ -597,15 +597,15 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                 {/* 3. INLINE ADD TP FORM */}
                 {isAdding && (
-                  <div className="rounded-2xl border border-emerald-400/40 bg-[#07111E] p-4 shadow-xl space-y-3 animate-fadeIn">
-                    <div className="flex items-center justify-between pb-2 border-b border-white/[0.07]">
-                      <p className="text-xs font-black text-emerald-300 flex items-center gap-1.5">
+                  <div className="rounded-2xl border border-emerald-300 bg-white p-4 shadow-xs space-y-3 animate-fadeIn">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
                         <Plus className="w-4 h-4" /> Tambah Tujuan Pembelajaran Baru
                       </p>
                       <button
                         type="button"
                         onClick={handleCancelAdd}
-                        className="text-slate-400 hover:text-white p-1 cursor-pointer"
+                        className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -613,7 +613,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                       <div className="sm:col-span-1">
-                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
                           Nomor / Kode TP
                         </label>
                         <input
@@ -621,29 +621,29 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                           value={draftCode}
                           onChange={(e) => setDraftCode(e.target.value)}
                           placeholder={`TP ${activeTps.length + 1}`}
-                          className="w-full h-9 rounded-xl border border-white/[0.1] bg-slate-950 px-3 text-xs text-white focus:border-emerald-400 focus:outline-none"
+                          className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-none"
                         />
                       </div>
                       <div className="sm:col-span-3">
-                        <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                          Deskripsi Capaian Kompetensi <span className="text-rose-400">*</span>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
+                          Deskripsi Capaian Kompetensi <span className="text-rose-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={draftDescription}
                           onChange={(e) => setDraftDescription(e.target.value)}
                           placeholder="contoh: Membaca dan melafalkan surah-surah pendek dengan tartil."
-                          className="w-full h-9 rounded-xl border border-white/[0.1] bg-slate-950 px-3 text-xs text-white focus:border-emerald-400 focus:outline-none"
+                          className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-none"
                           autoFocus
                         />
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.06]">
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                       <button
                         type="button"
                         onClick={handleCancelAdd}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-white/[0.05] transition-all cursor-pointer flex items-center gap-1"
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center gap-1"
                       >
                         <X className="w-3.5 h-3.5" />
                         Batal
@@ -652,7 +652,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                         type="button"
                         onClick={handleSaveNewTp}
                         disabled={saving}
-                        className="px-4 py-1.5 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-400/20 disabled:opacity-50"
+                        className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
                       >
                         <Save className="w-3.5 h-3.5" />
                         Simpan TP
@@ -663,13 +663,13 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                 {/* 4. TP LIST ROWS */}
                 {activeTps.length === 0 && !isAdding ? (
-                  <div className="p-10 rounded-2xl border border-dashed border-white/[0.08] bg-[#07111E] text-center">
-                    <p className="text-xs text-slate-400">Belum ada Tujuan Pembelajaran aktif pada mata pelajaran ini.</p>
+                  <div className="p-10 rounded-2xl border border-dashed border-slate-300 bg-white text-center shadow-xs">
+                    <p className="text-xs text-slate-500">Belum ada Tujuan Pembelajaran aktif pada mata pelajaran ini.</p>
                     {!readOnly && (
                       <button
                         type="button"
                         onClick={handleStartAdd}
-                        className="mt-3 px-4 py-2 rounded-xl bg-emerald-400/10 hover:bg-emerald-400/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-1.5"
+                        className="mt-3 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold cursor-pointer transition-all inline-flex items-center gap-1.5"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Tambah TP Pertama
@@ -684,13 +684,13 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                       return (
                         <div
                           key={tp.id}
-                          className="group rounded-xl border border-white/[0.07] bg-[#07111E] p-3 sm:px-4 sm:py-3.5 shadow-md hover:border-white/[0.14] transition-all duration-150"
+                          className="group rounded-xl border border-slate-200/90 bg-white p-3 sm:px-4 sm:py-3.5 shadow-xs hover:border-slate-300 transition-all duration-150"
                         >
                           {isEditing ? (
                             <div className="space-y-3">
                               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                                 <div className="sm:col-span-1">
-                                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
                                     Nomor / Kode
                                   </label>
                                   <input
@@ -698,11 +698,11 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                                     value={draftCode}
                                     onChange={(e) => setDraftCode(e.target.value)}
                                     placeholder="TP 1"
-                                    className="w-full h-9 rounded-xl border border-white/[0.1] bg-slate-950 px-3 text-xs text-white focus:border-emerald-400 focus:outline-none"
+                                    className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-none"
                                   />
                                 </div>
                                 <div className="sm:col-span-3">
-                                  <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block mb-1">
                                     Deskripsi Capaian
                                   </label>
                                   <input
@@ -710,17 +710,17 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                                     value={draftDescription}
                                     onChange={(e) => setDraftDescription(e.target.value)}
                                     placeholder="Deskripsi capaian..."
-                                    className="w-full h-9 rounded-xl border border-white/[0.1] bg-slate-950 px-3 text-xs text-white focus:border-emerald-400 focus:outline-none"
+                                    className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs text-slate-900 focus:bg-white focus:border-emerald-500 focus:outline-none"
                                     autoFocus
                                   />
                                 </div>
                               </div>
 
-                              <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.05]">
+                              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                                 <button
                                   type="button"
                                   onClick={cancelEdit}
-                                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-white/[0.05] transition-all cursor-pointer flex items-center gap-1"
+                                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all cursor-pointer flex items-center gap-1"
                                 >
                                   <X className="w-3.5 h-3.5" />
                                   Batal
@@ -729,7 +729,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                                   type="button"
                                   onClick={() => saveEdit(tp.id)}
                                   disabled={saving}
-                                  className="px-4 py-1.5 rounded-lg bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs font-black transition-all cursor-pointer flex items-center gap-1 shadow-md shadow-emerald-400/20 disabled:opacity-50"
+                                  className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-xs disabled:opacity-50"
                                 >
                                   <Save className="w-3.5 h-3.5" />
                                   Simpan
@@ -740,16 +740,16 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                             <div className="flex items-center justify-between gap-3">
                               {/* Left: Drag Dots + Number Badge + Description */}
                               <div className="flex items-center gap-3 min-w-0">
-                                <GripVertical className="w-4 h-4 text-slate-600 shrink-0 select-none" />
+                                <GripVertical className="w-4 h-4 text-slate-400 shrink-0 select-none" />
 
                                 {/* Number Badge */}
-                                <div className="w-7 h-7 rounded-lg bg-[#0A1626] border border-white/[0.08] flex items-center justify-center text-xs font-black text-emerald-300 shrink-0 shadow-inner">
+                                <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-emerald-800 shrink-0 shadow-xs">
                                   {index + 1}
                                 </div>
 
                                 {/* TP Description Text */}
                                 <div className="min-w-0">
-                                  <p className="text-xs sm:text-[13px] text-slate-200 font-medium leading-relaxed">
+                                  <p className="text-xs sm:text-[13px] text-slate-800 font-medium leading-relaxed">
                                     {tp.desc}
                                   </p>
                                 </div>
@@ -758,20 +758,20 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                               {/* Right: Active Status Pill + Edit + Trash Icons */}
                               <div className="flex items-center gap-3 shrink-0 pl-2">
                                 {/* Status Pill */}
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/20">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                                  <span className="text-[10px] font-bold text-emerald-300">Aktif</span>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  <span className="text-[10px] font-bold text-emerald-800">Aktif</span>
                                 </div>
 
                                 {/* Reorder Buttons when active */}
                                 {isReorderMode && !readOnly && (
-                                  <div className="flex items-center gap-0.5 border-l border-white/[0.08] pl-2">
+                                  <div className="flex items-center gap-0.5 border-l border-slate-200 pl-2">
                                     <button
                                       type="button"
                                       onClick={() => moveTp(index, 'up')}
                                       disabled={index === 0 || saving}
                                       title="Pindahkan ke atas"
-                                      className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] disabled:opacity-20 cursor-pointer"
+                                      className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 cursor-pointer"
                                     >
                                       <ArrowUp className="w-3.5 h-3.5" />
                                     </button>
@@ -780,7 +780,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                                       onClick={() => moveTp(index, 'down')}
                                       disabled={index === activeTps.length - 1 || saving}
                                       title="Pindahkan ke bawah"
-                                      className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] disabled:opacity-20 cursor-pointer"
+                                      className="p-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-20 cursor-pointer"
                                     >
                                       <ArrowDown className="w-3.5 h-3.5" />
                                     </button>
@@ -789,12 +789,12 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
 
                                 {/* Action Buttons */}
                                 {!readOnly && (
-                                  <div className="flex items-center gap-1 border-l border-white/[0.08] pl-2">
+                                  <div className="flex items-center gap-1 border-l border-slate-200 pl-2">
                                     <button
                                       type="button"
                                       onClick={() => startEdit(tp)}
                                       title="Edit TP"
-                                      className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                                     >
                                       <Edit3 className="w-3.5 h-3.5" />
                                     </button>
@@ -802,7 +802,7 @@ export const RaporTpSetup: React.FC<RaporTpSetupProps> = ({
                                       type="button"
                                       onClick={() => deactivateTp(tp.id)}
                                       title="Nonaktifkan TP"
-                                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/[0.1] transition-colors cursor-pointer"
+                                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
