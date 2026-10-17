@@ -333,12 +333,12 @@ function buildAcademicWorksheet(
     .map((sr) => sr.scores[student.id]?.teacherNote)
     .find((note) => note && note.trim().length > 0);
   const addInfo = additionalInfo[student.id] || {
-    teacherNotes: subjectNote || 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.',
+    teacherNotes: subjectNote || '',
   };
   const displayNote =
     addInfo.teacherNotes && addInfo.teacherNotes.trim().length > 0
       ? addInfo.teacherNotes
-      : 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.';
+      : subjectNote || '-';
 
   setCell(r, 0, 'CATATAN WALI KELAS:', {
     font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
@@ -1345,12 +1345,12 @@ function createDocxStudentSection(
     .map((sr) => sr.scores[student.id]?.teacherNote)
     .find((note) => note && note.trim().length > 0);
   const addInfo = additionalInfo[student.id] || {
-    teacherNotes: subjectNote || 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.',
+    teacherNotes: subjectNote || '',
   };
   const displayNote =
     addInfo.teacherNotes && addInfo.teacherNotes.trim().length > 0
       ? addInfo.teacherNotes
-      : 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.';
+      : subjectNote || '-';
 
   elements.push(
     new Paragraph({

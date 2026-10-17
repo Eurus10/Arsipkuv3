@@ -51,6 +51,7 @@ import {
 } from './services/teacherStorage';
 import { AppBranding, getLocalBranding, subscribeToBranding, updateStoredBranding } from './services/brandingStorage';
 import { subscribeToAnalysisSubmissions } from './services/analysisSubmissionService';
+import { fetchGradeRangeConfig } from './services/academicGradeRangeService';
 import { Navbar } from './components/Navbar';
 import { DashboardView } from './components/DashboardView';
 import { LazyViewLoader } from './components/common/LazyViewLoader';
@@ -288,6 +289,9 @@ export default function App() {
     setIsAdmin(isAdminLoggedIn());
     const initialTeacher = getActiveTeacherSession();
     setActiveTeacher(initialTeacher);
+
+    // Pre-fetch latest Grade Range & KKTP config from Cloud Firestore across all devices
+    void fetchGradeRangeConfig();
 
     if (initialTeacher) {
       silentSyncActiveTeacherSession()

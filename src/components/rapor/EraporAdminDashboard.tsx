@@ -419,7 +419,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   <select
                     value={selectedPeriodId}
                     onChange={(e) => handlePeriodChange(e.target.value)}
-                    className="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-bold focus:outline-none focus:border-amber-500 focus:bg-white cursor-pointer transition-all"
+                    className="h-9 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-bold focus:outline-none focus:border-[#176B45] focus:bg-white cursor-pointer transition-all"
                   >
                     {periods.map((p) => (
                       <option key={p.id} value={p.id} className="bg-white text-slate-900">
@@ -458,7 +458,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
         {isLoading ? (
           <div className="min-h-[55vh] flex items-center justify-center">
-            <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center shadow-lg">
+            <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white px-6 py-12 text-center shadow-md">
               <div className="w-10 h-10 border-[3px] border-amber-200 border-t-amber-500 rounded-full animate-spin mx-auto" />
               <p className="mt-5 text-sm font-bold text-slate-900">Memuat Dashboard Monitoring e-Rapor...</p>
               <p className="mt-1 text-xs text-slate-500">Menghitung progres pengisian nilai guru.</p>
@@ -577,7 +577,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Cari kelas, mata pelajaran, atau nama guru..."
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-amber-500 transition-all"
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#176B45] transition-all"
                   />
                   {searchQuery && (
                     <button
@@ -741,7 +741,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
             {/* View Mode 1: Compact Table per Rombel with Expandable Subject Details */}
             {viewMode === 'compact' && (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-md overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -800,7 +800,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                         <span className="font-semibold text-slate-700">
                                           {rombel.homeroomTeacherName}
                                         </span>
-                                        <span className="px-1.5 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-[9px] font-bold text-emerald-700">
+                                        <span className="px-1.5 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-[10px] font-bold text-emerald-700">
                                           Wali Kelas
                                         </span>
                                       </div>
@@ -902,7 +902,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                     }}
                                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                                       isExpanded
-                                        ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-400/20'
+                                        ? 'bg-amber-400 text-slate-950 font-black shadow-sm shadow-amber-400/20'
                                         : 'bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900'
                                     }`}
                                   >
@@ -922,7 +922,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                               {isExpanded && (
                                 <tr className="bg-slate-50 border-b border-slate-200">
                                   <td colSpan={7} className="p-3 sm:p-4 md:p-5">
-                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-inner">
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
                                       <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200">
                                         <div className="flex items-center gap-2">
                                           <BookOpen className="w-4 h-4 text-amber-400" />
@@ -998,7 +998,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                                         {subj.teacherName}
                                                       </span>
                                                       {subj.assignmentType === 'homeroom_teacher' && (
-                                                        <span className="px-1.5 py-0.2 rounded border border-emerald-200 bg-emerald-50 text-[9px] font-bold text-emerald-700">
+                                                        <span className="px-1.5 py-0.5 rounded border border-emerald-200 bg-emerald-50 text-[10px] font-bold text-emerald-700">
                                                           Wali Kelas
                                                         </span>
                                                       )}
@@ -1035,12 +1035,12 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                                   {/* Status Badge */}
                                                   <td className="py-2.5 px-3 text-center">
                                                     <span
-                                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                                                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                                                         subj.status === 'completed'
-                                                          ? 'bg-emerald-50 text-emerald-700'
+                                                          ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
                                                           : subj.status === 'in_progress'
-                                                          ? 'bg-amber-50 text-amber-800'
-                                                          : 'bg-rose-50 text-rose-700'
+                                                          ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                                                          : 'border border-rose-200 bg-rose-50 text-rose-700'
                                                       }`}
                                                     >
                                                       {subj.status === 'completed'
@@ -1086,7 +1086,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
 
             {/* View Mode 2: Flat Table for All Subjects */}
             {viewMode === 'flat' && (
-              <div className="rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+              <div className="rounded-2xl border border-slate-200 bg-white shadow-md overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -1141,7 +1141,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                   {row.teacherName}
                                 </span>
                                 {row.assignmentType === 'homeroom_teacher' && (
-                                  <span className="px-1.5 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-[9px] font-bold text-emerald-700">
+                                  <span className="px-1.5 py-0.5 rounded-md border border-emerald-200 bg-emerald-50 text-[10px] font-bold text-emerald-700">
                                     Wali Kelas
                                   </span>
                                 )}
@@ -1244,7 +1244,7 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                   filteredTree.map((cls) => (
                     <article
                       key={cls.classId}
-                      className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-lg space-y-3"
+                      className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-md space-y-3"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
                         <div className="flex items-center gap-3">
@@ -1276,12 +1276,12 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
                                   {subj.subjectName}
                                 </h4>
                                 <span
-                                  className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
+                                  className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                                     subj.status === 'completed'
-                                      ? 'bg-emerald-50 text-emerald-700'
+                                      ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
                                       : subj.status === 'in_progress'
-                                      ? 'bg-amber-50 text-amber-800'
-                                      : 'bg-rose-50 text-rose-700'
+                                      ? 'border border-amber-200 bg-amber-50 text-amber-800'
+                                      : 'border border-rose-200 bg-rose-50 text-rose-700'
                                   }`}
                                 >
                                   {subj.status === 'completed'

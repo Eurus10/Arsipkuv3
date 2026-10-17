@@ -104,16 +104,16 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
   return (
     <div className="space-y-5 animate-fadeIn">
       {/* Panel Header */}
-      <section className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-2xl p-4 sm:p-5 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-cyan-500/15 border border-cyan-400/25 text-cyan-300 flex items-center justify-center shrink-0 shadow-inner">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0 shadow-xs">
             <Sliders className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base sm:text-lg font-black text-white tracking-tight">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight font-heading">
               Standar Rentang Predikat & KKTP Akademik
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Atur ambang batas interval nilai angka ke huruf (A, B, C, D) dan 4 kategori status penguasaan materi untuk Rapor STS
             </p>
           </div>
@@ -124,7 +124,7 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
             type="button"
             onClick={handleReset}
             disabled={isLoading || isSaving}
-            className="px-3.5 py-2 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40"
+            className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-40 shadow-xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Bawaan</span>
@@ -134,7 +134,7 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
             type="button"
             onClick={handleSave}
             disabled={isLoading || isSaving}
-            className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-cyan-500/20 disabled:opacity-40 active:scale-95"
+            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-700/10 disabled:opacity-40 active:scale-95"
           >
             <Save className="w-3.5 h-3.5" />
             <span>{isSaving ? 'Menyimpan...' : 'Simpan Rentang'}</span>
@@ -143,8 +143,8 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
       </section>
 
       {error && (
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3.5 flex items-start gap-2.5 text-xs text-rose-200">
-          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3.5 flex items-start gap-2.5 text-xs text-rose-800">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
@@ -153,27 +153,27 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Column (8 Cols): Configuration Form & Interval Table */}
         <div className="lg:col-span-8 space-y-5">
-          <form onSubmit={handleSave} className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-2xl p-5 shadow-2xl space-y-5">
+          <form onSubmit={handleSave} className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs space-y-5">
             {/* KKTP Passing Grade Input */}
-            <div className="bg-slate-900/60 border border-white/[0.07] rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                  <h3 className="text-xs sm:text-sm font-bold text-amber-950 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
                     <span>Kriteria Ketercapaian Tujuan Pembelajaran (KKTP / KKM)</span>
                   </h3>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-amber-800/80 mt-0.5">
                     Nilai tuntas minimal sekolah dasar. Nilai di bawah KKTP secara otomatis menjadi Predikat D (Perlu Bimbingan).
                   </p>
                 </div>
-                <div className="w-24">
+                <div className="w-24 shrink-0">
                   <input
                     type="number"
                     min="50"
                     max="90"
                     value={config.passingGrade}
                     onChange={(e) => handleKktpChange(parseInt(e.target.value, 10) || 75)}
-                    className="w-full h-10 px-3 rounded-xl border border-amber-400/40 bg-slate-950 text-amber-300 font-black text-center text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30"
+                    className="w-full h-10 px-3 rounded-xl border border-amber-300 bg-white text-amber-900 font-bold text-center text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 shadow-xs"
                   />
                 </div>
               </div>
@@ -181,23 +181,23 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
 
             {/* 4 Predicates Interval Cards */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Ambang Batas Minimum per Predikat
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* Predikat A */}
-                <div className="p-4 rounded-2xl border border-emerald-500/25 bg-emerald-950/15 space-y-2.5">
+                <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50/40 space-y-2.5 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                       Predikat A
                     </span>
-                    <span className="text-[10px] text-slate-400 font-medium">Maksimal 100</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Maksimal 100</span>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-slate-300">Nilai Minimal:</label>
+                    <label className="text-[11px] font-semibold text-slate-700">Nilai Minimal:</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -205,35 +205,35 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
                         max="100"
                         value={config.minA}
                         onChange={(e) => setConfig({ ...config, minA: parseInt(e.target.value, 10) || 91 })}
-                        className="w-24 h-9 px-3 rounded-lg border border-emerald-500/30 bg-slate-950 text-white font-bold text-center text-xs focus:outline-none focus:border-emerald-400"
+                        className="w-24 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-900 font-bold text-center text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 shadow-xs"
                       />
-                      <span className="text-xs text-slate-400">s/d 100</span>
+                      <span className="text-xs text-slate-500 font-medium">s/d 100</span>
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-medium text-slate-400">Label Status Penguasaan:</label>
+                    <label className="text-[10px] font-medium text-slate-500">Label Status Penguasaan:</label>
                     <input
                       type="text"
                       value={config.labels.A}
                       onChange={(e) => setConfig({ ...config, labels: { ...config.labels, A: e.target.value } })}
-                      className="w-full h-8 px-2.5 rounded-lg border border-emerald-500/20 bg-slate-950 text-emerald-300 text-xs font-semibold focus:outline-none focus:border-emerald-400"
+                      className="w-full h-8.5 px-2.5 rounded-xl border border-slate-200 bg-white text-emerald-800 text-xs font-semibold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 shadow-xs"
                     />
                   </div>
                 </div>
 
                 {/* Predikat B */}
-                <div className="p-4 rounded-2xl border border-cyan-500/25 bg-cyan-950/15 space-y-2.5">
+                <div className="p-4 rounded-2xl border border-sky-200 bg-sky-50/40 space-y-2.5 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold">
-                      <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 border border-sky-200 text-xs font-bold">
+                      <span className="w-2 h-2 rounded-full bg-sky-500"></span>
                       Predikat B
                     </span>
-                    <span className="text-[10px] text-slate-400 font-medium">&lt; {config.minA}</span>
+                    <span className="text-[10px] text-slate-500 font-medium">&lt; {config.minA}</span>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-slate-300">Nilai Minimal:</label>
+                    <label className="text-[11px] font-semibold text-slate-700">Nilai Minimal:</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -241,35 +241,35 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
                         max="99"
                         value={config.minB}
                         onChange={(e) => setConfig({ ...config, minB: parseInt(e.target.value, 10) || 81 })}
-                        className="w-24 h-9 px-3 rounded-lg border border-cyan-500/30 bg-slate-950 text-white font-bold text-center text-xs focus:outline-none focus:border-cyan-400"
+                        className="w-24 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-900 font-bold text-center text-xs focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 shadow-xs"
                       />
-                      <span className="text-xs text-slate-400">s/d {config.minA - 1}</span>
+                      <span className="text-xs text-slate-500 font-medium">s/d {config.minA - 1}</span>
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-medium text-slate-400">Label Status Penguasaan:</label>
+                    <label className="text-[10px] font-medium text-slate-500">Label Status Penguasaan:</label>
                     <input
                       type="text"
                       value={config.labels.B}
                       onChange={(e) => setConfig({ ...config, labels: { ...config.labels, B: e.target.value } })}
-                      className="w-full h-8 px-2.5 rounded-lg border border-cyan-500/20 bg-slate-950 text-cyan-300 text-xs font-semibold focus:outline-none focus:border-cyan-400"
+                      className="w-full h-8.5 px-2.5 rounded-xl border border-slate-200 bg-white text-sky-800 text-xs font-semibold focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 shadow-xs"
                     />
                   </div>
                 </div>
 
                 {/* Predikat C */}
-                <div className="p-4 rounded-2xl border border-amber-500/25 bg-amber-950/15 space-y-2.5">
+                <div className="p-4 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-2.5 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
-                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                       Predikat C
                     </span>
-                    <span className="text-[10px] text-slate-400 font-medium">&lt; {config.minB}</span>
+                    <span className="text-[10px] text-slate-500 font-medium">&lt; {config.minB}</span>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-slate-300">Nilai Minimal (KKTP):</label>
+                    <label className="text-[11px] font-semibold text-slate-700">Nilai Minimal (KKTP):</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
@@ -277,48 +277,48 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
                         max="90"
                         value={config.minC}
                         onChange={(e) => setConfig({ ...config, minC: parseInt(e.target.value, 10) || 75 })}
-                        className="w-24 h-9 px-3 rounded-lg border border-amber-500/30 bg-slate-950 text-white font-bold text-center text-xs focus:outline-none focus:border-amber-400"
+                        className="w-24 h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-900 font-bold text-center text-xs focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 shadow-xs"
                       />
-                      <span className="text-xs text-slate-400">s/d {config.minB - 1}</span>
+                      <span className="text-xs text-slate-500 font-medium">s/d {config.minB - 1}</span>
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-medium text-slate-400">Label Status Penguasaan:</label>
+                    <label className="text-[10px] font-medium text-slate-500">Label Status Penguasaan:</label>
                     <input
                       type="text"
                       value={config.labels.C}
                       onChange={(e) => setConfig({ ...config, labels: { ...config.labels, C: e.target.value } })}
-                      className="w-full h-8 px-2.5 rounded-lg border border-amber-500/20 bg-slate-950 text-amber-300 text-xs font-semibold focus:outline-none focus:border-amber-400"
+                      className="w-full h-8.5 px-2.5 rounded-xl border border-slate-200 bg-white text-amber-900 text-xs font-semibold focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/20 shadow-xs"
                     />
                   </div>
                 </div>
 
                 {/* Predikat D */}
-                <div className="p-4 rounded-2xl border border-rose-500/25 bg-rose-950/15 space-y-2.5">
+                <div className="p-4 rounded-2xl border border-rose-200 bg-rose-50/40 space-y-2.5 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-bold">
-                      <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold">
+                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                       Predikat D
                     </span>
-                    <span className="text-[10px] text-slate-400 font-medium">Bimbingan Khusus</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Bimbingan Khusus</span>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-slate-300">Rentang Nilai:</label>
-                    <div className="flex items-center gap-2 h-9 text-xs text-rose-300 font-bold">
+                    <label className="text-[11px] font-semibold text-slate-700">Rentang Nilai:</label>
+                    <div className="flex items-center gap-2 h-9 text-xs text-rose-800 font-bold">
                       <span>0 s/d {config.minC - 1}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">(&lt; KKTP)</span>
+                      <span className="text-[10px] text-slate-500 font-normal">(&lt; KKTP)</span>
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-medium text-slate-400">Label Status Penguasaan:</label>
+                    <label className="text-[10px] font-medium text-slate-500">Label Status Penguasaan:</label>
                     <input
                       type="text"
                       value={config.labels.D}
                       onChange={(e) => setConfig({ ...config, labels: { ...config.labels, D: e.target.value } })}
-                      className="w-full h-8 px-2.5 rounded-lg border border-rose-500/20 bg-slate-950 text-rose-300 text-xs font-semibold focus:outline-none focus:border-rose-400"
+                      className="w-full h-8.5 px-2.5 rounded-xl border border-slate-200 bg-white text-rose-900 text-xs font-semibold focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 shadow-xs"
                     />
                   </div>
                 </div>
@@ -329,7 +329,7 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
               <button
                 type="submit"
                 disabled={isLoading || isSaving}
-                className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black flex items-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-2 shadow-sm shadow-emerald-700/20 cursor-pointer disabled:opacity-40 transition-all active:scale-95"
               >
                 <Save className="w-4 h-4" />
                 <span>Simpan Perubahan Standar</span>
@@ -341,41 +341,41 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
         {/* Right Column (4 Cols): Summary Matrix & Live Interactive Tester */}
         <div className="lg:col-span-4 space-y-5">
           {/* Matriks Ringkasan Interval */}
-          <div className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-2xl p-4 sm:p-5 shadow-2xl space-y-3.5">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               <span>Matriks Interval Rapor</span>
             </h3>
 
-            <div className="border border-white/[0.07] rounded-xl overflow-hidden text-xs">
+            <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
               <table className="w-full text-left">
-                <thead className="bg-slate-900/80 text-slate-400 border-b border-white/[0.07]">
+                <thead className="bg-slate-50 text-slate-700 border-b border-slate-200">
                   <tr>
-                    <th className="py-2 px-3 font-semibold text-center w-12">Predikat</th>
-                    <th className="py-2 px-3 font-semibold text-center">Interval Nilai</th>
-                    <th className="py-2 px-3 font-semibold">Penguasaan</th>
+                    <th className="py-2.5 px-3 font-bold text-center w-14">Predikat</th>
+                    <th className="py-2.5 px-3 font-bold text-center">Interval Nilai</th>
+                    <th className="py-2.5 px-3 font-bold">Penguasaan</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.05]">
-                  <tr className="bg-emerald-950/10">
-                    <td className="py-2 px-3 text-center font-bold text-emerald-400">A</td>
-                    <td className="py-2 px-3 text-center font-semibold text-slate-200">{config.minA} – 100</td>
-                    <td className="py-2 px-3 text-emerald-300 font-medium">{config.labels.A}</td>
+                <tbody className="divide-y divide-slate-100">
+                  <tr className="bg-emerald-50/30 hover:bg-emerald-50/60 transition-colors">
+                    <td className="py-2 px-3 text-center font-black text-emerald-700">A</td>
+                    <td className="py-2 px-3 text-center font-bold text-slate-800">{config.minA} – 100</td>
+                    <td className="py-2 px-3 text-emerald-800 font-semibold">{config.labels.A}</td>
                   </tr>
-                  <tr className="bg-cyan-950/10">
-                    <td className="py-2 px-3 text-center font-bold text-cyan-400">B</td>
-                    <td className="py-2 px-3 text-center font-semibold text-slate-200">{config.minB} – {config.minA - 1}</td>
-                    <td className="py-2 px-3 text-cyan-300 font-medium">{config.labels.B}</td>
+                  <tr className="bg-sky-50/30 hover:bg-sky-50/60 transition-colors">
+                    <td className="py-2 px-3 text-center font-black text-sky-700">B</td>
+                    <td className="py-2 px-3 text-center font-bold text-slate-800">{config.minB} – {config.minA - 1}</td>
+                    <td className="py-2 px-3 text-sky-800 font-semibold">{config.labels.B}</td>
                   </tr>
-                  <tr className="bg-amber-950/10">
-                    <td className="py-2 px-3 text-center font-bold text-amber-400">C</td>
-                    <td className="py-2 px-3 text-center font-semibold text-slate-200">{config.minC} – {config.minB - 1}</td>
-                    <td className="py-2 px-3 text-amber-300 font-medium">{config.labels.C}</td>
+                  <tr className="bg-amber-50/30 hover:bg-amber-50/60 transition-colors">
+                    <td className="py-2 px-3 text-center font-black text-amber-700">C</td>
+                    <td className="py-2 px-3 text-center font-bold text-slate-800">{config.minC} – {config.minB - 1}</td>
+                    <td className="py-2 px-3 text-amber-800 font-semibold">{config.labels.C}</td>
                   </tr>
-                  <tr className="bg-rose-950/10">
-                    <td className="py-2 px-3 text-center font-bold text-rose-400">D</td>
-                    <td className="py-2 px-3 text-center font-semibold text-slate-200">0 – {config.minC - 1}</td>
-                    <td className="py-2 px-3 text-rose-300 font-medium">{config.labels.D}</td>
+                  <tr className="bg-rose-50/30 hover:bg-rose-50/60 transition-colors">
+                    <td className="py-2 px-3 text-center font-black text-rose-700">D</td>
+                    <td className="py-2 px-3 text-center font-bold text-slate-800">0 – {config.minC - 1}</td>
+                    <td className="py-2 px-3 text-rose-800 font-semibold">{config.labels.D}</td>
                   </tr>
                 </tbody>
               </table>
@@ -383,17 +383,17 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
           </div>
 
           {/* Live Simulator Tester */}
-          <div className="rounded-2xl sm:rounded-3xl border border-cyan-400/20 bg-gradient-to-b from-cyan-950/20 to-slate-950/80 backdrop-blur-2xl p-4 sm:p-5 shadow-2xl space-y-3.5">
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-cyan-400/15 text-cyan-300 flex items-center justify-center font-bold">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold">
                 <Calculator className="w-4 h-4" />
               </div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 Simulator Konversi Nilai
               </h3>
             </div>
 
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-500">
               Ketikkan contoh nilai siswa untuk memverifikasi kalkulasi otomatis:
             </p>
 
@@ -409,38 +409,38 @@ export const GradeRangePanel: React.FC<GradeRangePanelProps> = ({
                     setTestScore(v === '' ? '' : parseInt(v, 10));
                   }}
                   placeholder="Ketik nilai (0 - 100)..."
-                  className="w-full h-11 px-3.5 rounded-xl border border-white/[0.12] bg-slate-900 text-white font-black text-sm focus:outline-none focus:border-cyan-400"
+                  className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-bold text-sm focus:outline-none focus:border-emerald-500 focus:bg-white shadow-xs transition-colors"
                 />
               </div>
 
               {/* Output Result Card */}
-              <div className="p-3.5 rounded-xl border border-white/[0.08] bg-slate-900/70 flex items-center justify-between gap-3">
+              <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/80 flex items-center justify-between gap-3">
                 <div className="leading-tight">
-                  <span className="text-[10px] uppercase font-bold text-slate-400">Predikat Hasil:</span>
+                  <span className="text-[10px] uppercase font-bold text-slate-500">Predikat Hasil:</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span
-                      className={`text-xl font-black px-2 py-0.5 rounded-lg border ${
+                      className={`text-xl font-black px-2.5 py-0.5 rounded-lg border ${
                         simulatedPredicate === 'A'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                           : simulatedPredicate === 'B'
-                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                          ? 'bg-sky-100 text-sky-800 border-sky-300'
                           : simulatedPredicate === 'C'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          ? 'bg-amber-100 text-amber-800 border-amber-300'
                           : simulatedPredicate === 'D'
-                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                          : 'bg-slate-800 text-slate-500 border-slate-700'
+                          ? 'bg-rose-100 text-rose-800 border-rose-300'
+                          : 'bg-slate-200 text-slate-600 border-slate-300'
                       }`}
                     >
                       {simulatedPredicate}
                     </span>
-                    <span className="text-xs font-bold text-white">
+                    <span className="text-xs font-bold text-slate-900">
                       {simulatedMastery}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-right text-[10px] text-slate-400">
-                  <span>KKTP: {config.passingGrade}</span>
+                <div className="text-right text-[10px] text-slate-500 font-medium">
+                  <span>KKTP: <strong className="text-slate-800">{config.passingGrade}</strong></span>
                 </div>
               </div>
             </div>

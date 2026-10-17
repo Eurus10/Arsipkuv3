@@ -103,6 +103,7 @@ import {
 } from '../../services/teacherAcademicAccessService';
 import { RaporNotificationPopover, type RaporNotificationItem } from './RaporNotificationPopover';
 import { RaporTeacherProfilePopover } from './RaporTeacherProfilePopover';
+import { fetchGradeRangeConfig } from '../../services/academicGradeRangeService';
 
 interface RaporWorkspaceProps {
   onBack: () => void;
@@ -186,6 +187,11 @@ export const RaporWorkspace: React.FC<RaporWorkspaceProps> = ({
   useEffect(() => {
     loadCanonicalProgress();
   }, [loadCanonicalProgress]);
+
+  // Sync latest grade range (A, B, C, D) from Cloud Firestore
+  useEffect(() => {
+    void fetchGradeRangeConfig();
+  }, []);
 
   // Resolve academic access from the logged-in teacher assignment.
   useEffect(() => {

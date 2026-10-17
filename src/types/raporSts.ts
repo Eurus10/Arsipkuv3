@@ -280,6 +280,8 @@ export interface StudentCharacterRecord {
   teacherNote?: string;
 }
 
+import { getCachedGradeRangeConfig } from '../services/academicGradeRangeService';
+
 /**
  * Determine letter predicate (A/B/C/D) from numeric score
  */
@@ -292,17 +294,34 @@ export function getScorePredicate(
 
   let minA = customThresholds?.minA;
   let minB = customThresholds?.minB;
-  let minC = customThresholds?.minC ?? passingGrade;
+  let minC = customThresholds?.minC;
 
-  if (minA === undefined || minB === undefined) {
+  // 1. Check in-memory synced cache from academicGradeRangeService
+  if (minA === undefined || minB === undefined || minC === undefined) {
     try {
-      const raw = localStorage.getItem('sdit_rapor_sts_grade_range_config_v1');
+      const cached = getCachedGradeRangeConfig();
+      if (cached && typeof cached === 'object') {
+        minA = minA ?? cached.minA;
+        minB = minB ?? cached.minB;
+        minC = minC ?? cached.minC ?? cached.passingGrade;
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  // 2. Check localStorage keys if still not resolved
+  if (minA === undefined || minB === undefined || minC === undefined) {
+    try {
+      const raw =
+        localStorage.getItem('sdit_rapor_sts_grade_range_config_v1') ||
+        localStorage.getItem('sdit_academic_grade_range_config');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          minA = minA ?? parsed.minA;
-          minB = minB ?? parsed.minB;
-          minC = minC ?? parsed.minC ?? parsed.passingGrade;
+          minA = minA ?? (typeof parsed.minA === 'number' ? parsed.minA : undefined);
+          minB = minB ?? (typeof parsed.minB === 'number' ? parsed.minB : undefined);
+          minC = minC ?? (typeof parsed.minC === 'number' ? parsed.minC : typeof parsed.passingGrade === 'number' ? parsed.passingGrade : undefined);
         }
       }
     } catch {
@@ -310,9 +329,28 @@ export function getScorePredicate(
     }
   }
 
+  // 3. Also check global config cache if still not fully resolved
+  if (minA === undefined || minB === undefined || minC === undefined) {
+    try {
+      const globalRaw = localStorage.getItem('sdit_rapor_sts_global_config_v1');
+      if (globalRaw) {
+        const parsedGlobal = JSON.parse(globalRaw);
+        if (parsedGlobal?.gradeRanges && typeof parsedGlobal.gradeRanges === 'object') {
+          minA = minA ?? parsedGlobal.gradeRanges.minA;
+          minB = minB ?? parsedGlobal.gradeRanges.minB;
+          minC = minC ?? parsedGlobal.gradeRanges.minC ?? parsedGlobal.passingGrade;
+        } else if (typeof parsedGlobal?.passingGrade === 'number') {
+          minC = minC ?? parsedGlobal.passingGrade;
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }
+
   minA = minA ?? 91;
   minB = minB ?? 81;
-  minC = minC ?? passingGrade;
+  minC = minC ?? passingGrade ?? 75;
 
   if (score >= minA) return 'A';
   if (score >= minB) return 'B';
@@ -327,12 +365,22 @@ export function getMasteryStatusFromPredicate(
   predicate: CharacterPredicate | '-' | string
 ): MasteryStatus | '-' {
   try {
-    const raw = localStorage.getItem('sdit_rapor_sts_grade_range_config_v1');
+    const raw =
+      localStorage.getItem('sdit_rapor_sts_grade_range_config_v1') ||
+      localStorage.getItem('sdit_academic_grade_range_config');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed?.labels && typeof parsed.labels === 'object') {
         const custom = parsed.labels[predicate];
         if (custom) return custom as MasteryStatus;
+      }
+    }
+
+    const globalRaw = localStorage.getItem('sdit_rapor_sts_global_config_v1');
+    if (globalRaw) {
+      const parsedGlobal = JSON.parse(globalRaw);
+      if (parsedGlobal?.gradeRanges?.labels?.[predicate]) {
+        return parsedGlobal.gradeRanges.labels[predicate] as MasteryStatus;
       }
     }
   } catch {

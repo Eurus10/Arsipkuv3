@@ -25,6 +25,7 @@ import { Student } from './studentStorage';
 import { getStoredMasterClasses } from './storage';
 import { detectCategoryFromName } from './academicSubjectStorage';
 import { matchRaporSubject } from './analysisToRaporSyncService';
+import { fetchGradeRangeConfig } from './academicGradeRangeService';
 
 export const LOCAL_STORAGE_PREFIX = 'sdit_rapor_sts_class_';
 export const GLOBAL_CONFIG_LOCAL_KEY = 'sdit_rapor_sts_global_config';
@@ -232,6 +233,13 @@ export const saveStoredRaporSchoolYears = (years: string[]): void => {
  * Stores school name, npsn, address, headmaster, titimangsa, passing grade, and class teachers
  */
 export const fetchGlobalRaporConfig = async (): Promise<Partial<RaporStsConfig> | null> => {
+  // Sync global grade range thresholds (A, B, C, D) from Cloud in background
+  try {
+    void fetchGradeRangeConfig();
+  } catch {
+    // ignore
+  }
+
   // 1. Check Cloud
   try {
     const docRef = doc(db, 'rapor_sts_settings', 'global_config');
@@ -735,7 +743,7 @@ export const createInitialClassData = (
         { id: 'ekstra_1', name: 'Pramuka', predicate: 'Baik', description: 'Aktif dan disiplin dalam kepramukaan.' },
         { id: 'ekstra_2', name: 'Tahfidz Al-Qur\'an', predicate: 'Sangat Baik', description: 'Mencapai target hafalan juz 30 dengan tartil.' },
       ],
-      teacherNotes: 'Tingkatkan terus semangat belajar dan pertahankan akhlak mulia.',
+      teacherNotes: '',
     };
   });
 
@@ -813,7 +821,7 @@ export const fetchClassData = async (
           extracurriculars: [
             { id: 'ekstra_1', name: 'Pramuka', predicate: 'Baik', description: 'Aktif dalam kepramukaan.' },
           ],
-          teacherNotes: 'Tetap rajin belajar dan berprestasi.',
+          teacherNotes: '',
         };
         modified = true;
       }

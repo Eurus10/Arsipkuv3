@@ -664,13 +664,13 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
       studentId: student.id,
       attendance: { sakit: 0, izin: 0, alpha: 0 },
       extracurriculars: [],
-      teacherNotes: subjectNote || 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.',
+      teacherNotes: subjectNote || '',
     };
 
     const displayNote =
       addInfo.teacherNotes && addInfo.teacherNotes.trim().length > 0
         ? addInfo.teacherNotes
-        : subjectNote || 'Tingkatkan terus semangat belajarmu dan pertahankan akhlak mulia.';
+        : subjectNote || '-';
 
     // Semester title formatting (Ganjil / Genap)
     const semesterTitle =

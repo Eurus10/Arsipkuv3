@@ -58,7 +58,7 @@ export const RaporAdditionalInput: React.FC<RaporAdditionalInputProps> = ({
     extracurriculars: [
       { id: 'ekstra_1', name: 'Pramuka', predicate: 'Baik', description: 'Aktif dan disiplin dalam kegiatan kepramukaan.' },
     ],
-    teacherNotes: 'Tingkatkan terus semangat belajar dan pertahankan akhlak terpuji.',
+    teacherNotes: '',
   };
 
   // Helper to calculate student's average score, remedial count, and total subjects

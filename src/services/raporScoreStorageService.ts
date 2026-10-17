@@ -829,7 +829,9 @@ export async function loadRaporWorkspaceFromSupabase(
     }
 
     try {
-      const rawGrade = localStorage.getItem('sdit_academic_grade_range_config');
+      const rawGrade =
+        localStorage.getItem('sdit_rapor_sts_grade_range_config_v1') ||
+        localStorage.getItem('sdit_academic_grade_range_config');
       if (rawGrade) {
         gradeRangePref = JSON.parse(rawGrade);
       }
