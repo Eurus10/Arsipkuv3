@@ -51,6 +51,121 @@ function cleanObjectForFirestore(obj: any): any {
 }
 
 /**
+ * Normalisasi identitas teks untuk pencocokan kelas/mapel yang toleran kapitalisasi
+ * dan spasi berlebih.
+ */
+function normalizeSubmissionKey(value: unknown): string {
+  return String(value ?? '')
+    .normalize('NFKC')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('id-ID');
+}
+
+/**
+ * Alias identitas mapel. Nama/sheet tetap diperiksa walaupun ID tersedia,
+ * supaya payload lama yang belum menyimpan subjectId tetap dapat dicocokkan.
+ */
+function getSessionSubjectAliases(subject: any): string[] {
+  if (!subject || typeof subject !== 'object') return [];
+  const aliases: string[] = [];
+  const stableId = subject.subjectId ?? subject.subject_id ?? subject.id;
+  if (stableId !== undefined && stableId !== null && String(stableId).trim()) {
+    aliases.push(`id:${normalizeSubmissionKey(stableId)}`);
+  }
+
+  const name = subject.name ?? subject.subjectName ?? subject.subject_name;
+  if (name !== undefined && name !== null && String(name).trim()) {
+    aliases.push(`name:${normalizeSubmissionKey(name)}`);
+  }
+
+  const sheetName = subject.sheetName ?? subject.sheet_name;
+  if (sheetName !== undefined && sheetName !== null && String(sheetName).trim()) {
+    aliases.push(`sheet:${normalizeSubmissionKey(sheetName)}`);
+  }
+  return aliases;
+}
+
+/**
+ * Gabungkan daftar mapel dari dua payload sesi.
+ * - Mapel baru ditambahkan.
+ * - Mapel dengan ID, nama, atau sheet yang cocok diganti oleh versi terbaru.
+ * - Mapel lama yang tidak ada dalam kiriman terbaru tetap dipertahankan.
+ * - Duplikat yang sudah ada pada payload lama juga dirapikan.
+ */
+function mergeSessionSubjects(existingSubjects: any[], incomingSubjects: any[]): any[] {
+  const merged: any[] = [];
+
+  const addOrReplace = (subject: any) => {
+    if (!subject || typeof subject !== 'object') return;
+    const aliases = getSessionSubjectAliases(subject);
+    const matchingIndex = aliases.length > 0
+      ? merged.findIndex((item) => {
+          const itemAliases = getSessionSubjectAliases(item);
+          return aliases.some((alias) => itemAliases.includes(alias));
+        })
+      : -1;
+
+    if (matchingIndex === -1) {
+      // Entri tanpa identitas dipertahankan secara terpisah agar tidak salah
+      // dianggap sebagai mapel yang sama.
+      merged.push(subject);
+      return;
+    }
+
+    // Data kiriman terbaru menggantikan mapel lama. Untuk duplikat pada sumber
+    // yang sama, entri yang muncul belakangan juga menjadi acuan.
+    merged[matchingIndex] = subject;
+  };
+
+  existingSubjects.forEach(addOrReplace);
+  incomingSubjects.forEach(addOrReplace);
+  return merged;
+}
+
+/**
+ * Gabungkan payload hanya untuk setoran bertipe session.
+ * Metadata umum terbaru digunakan, tetapi subjects lama dipertahankan dan
+ * diperbarui per mapel. Snapshot siswa lama menjadi fallback jika kiriman terbaru
+ * tidak membawa snapshot yang valid.
+ */
+function mergeSessionPayload(existingPayload: any, incomingPayload: any): any {
+  const oldPayload = existingPayload && typeof existingPayload === 'object' ? existingPayload : {};
+  const newPayload = incomingPayload && typeof incomingPayload === 'object' ? incomingPayload : {};
+  const oldSession = oldPayload.session && typeof oldPayload.session === 'object' ? oldPayload.session : {};
+  const newSession = newPayload.session && typeof newPayload.session === 'object' ? newPayload.session : {};
+
+  const oldSubjects = Array.isArray(oldSession.subjects) ? oldSession.subjects : [];
+  const newSubjects = Array.isArray(newSession.subjects) ? newSession.subjects : [];
+  const mergedSubjects = mergeSessionSubjects(oldSubjects, newSubjects);
+
+  const incomingSnapshot = Array.isArray(newSession.studentSnapshot) && newSession.studentSnapshot.length > 0
+    ? newSession.studentSnapshot
+    : undefined;
+  const oldSnapshot = Array.isArray(oldSession.studentSnapshot) && oldSession.studentSnapshot.length > 0
+    ? oldSession.studentSnapshot
+    : undefined;
+  const incomingStudents = Array.isArray(newPayload.students) && newPayload.students.length > 0
+    ? newPayload.students
+    : undefined;
+  const oldStudents = Array.isArray(oldPayload.students) && oldPayload.students.length > 0
+    ? oldPayload.students
+    : undefined;
+
+  return {
+    ...oldPayload,
+    ...newPayload,
+    ...(incomingStudents || oldStudents ? { students: incomingStudents || oldStudents } : {}),
+    session: {
+      ...oldSession,
+      ...newSession,
+      subjects: mergedSubjects,
+      ...(incomingSnapshot || oldSnapshot ? { studentSnapshot: incomingSnapshot || oldSnapshot } : {}),
+    },
+  };
+}
+
+/**
  * Convert AnalysisSubmissionItem (TypeScript camelCase) to Supabase row (snake_case)
  */
 export function toSupabaseAnalysisRow(item: AnalysisSubmissionItem): Record<string, any> {
@@ -397,22 +512,33 @@ export async function sendAnalysisSubmission(
     }
   }
 
+  // Cache lokal menjadi sumber pencarian awal. Jangan memaksa refresh di sini:
+  // fetch umum saat ini memilih versi Supabase untuk ID yang sama, sehingga bisa
+  // menimpa payload lokal yang lebih baru ketika sinkronisasi sebelumnya gagal.
   const currentLocal = getLocalAnalysisSubmissions();
   const now = new Date().toISOString();
+  const incomingClassId = normalizeSubmissionKey(data.classId);
+  const incomingSchoolYear = normalizeSubmissionKey(data.schoolYear);
+  const incomingExamType = normalizeSubmissionKey(data.examType);
 
-  // Find existing submission for the same class & subject to overwrite
+  // Temukan setoran induk yang tepat. Untuk setoran sesi, jenis ujian ikut
+  // menjadi pembeda agar STS/SAS yang berbeda tidak saling menimpa.
   const existingSubmission = currentLocal.find((s) => {
+    const sameClass = normalizeSubmissionKey(s.classId) === incomingClassId;
+    const sameYear = normalizeSubmissionKey(s.schoolYear) === incomingSchoolYear;
+    if (!sameClass || !sameYear) return false;
+
     if (data.submissionType === 'session') {
       return (
-        s.submissionType === 'session' &&
-        s.classId === data.classId &&
-        s.schoolYear === data.schoolYear
+        (s.submissionType || 'session') === 'session' &&
+        normalizeSubmissionKey(s.examType) === incomingExamType
       );
     }
+
     return (
-      s.classId === data.classId &&
-      s.subjectName.trim().toLowerCase() === data.subjectName.trim().toLowerCase() &&
-      s.schoolYear === data.schoolYear
+      (s.submissionType || 'subject') !== 'session' &&
+      normalizeSubmissionKey(s.subjectName) === normalizeSubmissionKey(data.subjectName) &&
+      normalizeSubmissionKey(s.examType) === incomingExamType
     );
   });
 
@@ -449,18 +575,23 @@ export async function sendAnalysisSubmission(
           ? Object.keys(subj.studentResults).length
           : 0;
 
-      if (!mergedSubjectStatuses[name]) {
-        mergedSubjectStatuses[name] = {
+      const existingStatusKey = Object.keys(mergedSubjectStatuses).find(
+        (key) => normalizeSubmissionKey(key) === normalizeSubmissionKey(name)
+      );
+      const statusKey = existingStatusKey || name;
+      const previousStatus = mergedSubjectStatuses[statusKey];
+
+      if (!previousStatus) {
+        mergedSubjectStatuses[statusKey] = {
           status: 'menunggu',
           lastSubmittedAt: now,
           completedStudents: completed,
           totalStudents: totalClassStudents || data.totalStudents,
         };
       } else {
-        const prevStatus = mergedSubjectStatuses[name].status;
-        const nextStatus = prevStatus === 'revisi' ? 'menunggu' : prevStatus;
-        mergedSubjectStatuses[name] = {
-          ...mergedSubjectStatuses[name],
+        const nextStatus = previousStatus.status === 'revisi' ? 'menunggu' : previousStatus.status;
+        mergedSubjectStatuses[statusKey] = {
+          ...previousStatus,
           status: nextStatus,
           lastSubmittedAt: now,
           completedStudents: completed,
@@ -551,11 +682,18 @@ export async function sendAnalysisSubmission(
     });
   }
 
+  const mergedPayload = data.submissionType === 'session'
+    ? mergeSessionPayload(existingSubmission?.payload, data.payload)
+    : (data.payload ?? existingSubmission?.payload ?? {});
+
   const targetSubmission: AnalysisSubmissionItem = {
+    ...(existingSubmission || {}),
     ...data,
     id: submissionId,
     status: overallStatus,
     subjectStatuses: mergedSubjectStatuses,
+    // Pertahankan payload sesi lama dan timpa hanya mapel yang dikirim ulang.
+    payload: mergedPayload,
     firstSubmittedAt: existingSubmission?.firstSubmittedAt || existingSubmission?.submittedAt || now,
     submittedAt: now,
     updatedAt: now,

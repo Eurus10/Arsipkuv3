@@ -20,9 +20,9 @@ export const ALT_GRADE_RANGE_KEY = 'sdit_academic_grade_range_config';
 
 export const DEFAULT_GRADE_RANGE_CONFIG: GradeRangeConfig = {
   passingGrade: 75,
-  minA: 91,
-  minB: 81,
-  minC: 75,
+  minA: 86,
+  minB: 76,
+  minC: 70,
   labels: {
     A: 'Sangat Baik',
     B: 'Baik',
