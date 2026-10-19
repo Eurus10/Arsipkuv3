@@ -25,6 +25,7 @@ import {
   getMasteryStatusFromPredicate,
 } from '../types/raporSts';
 import { Student } from './studentStorage';
+import { angkaKeTerbilang } from '../utils/numberToWords';
 
 /**
  * Helper to preserve and format Indonesian academic degrees
@@ -218,23 +219,56 @@ function buildAcademicWorksheet(
   });
   r += 2; // Spasi sebelum tabel
 
-  // 3. HEADER TABEL HASIL CAPAIAN AKADEMIK (NO, MATA PELAJARAN, NILAI AKHIR, PREDIKAT, PENGUASAAN)
-  const headerCols = [
-    { title: 'NO', w: 6 },
-    { title: 'MATA PELAJARAN', w: 32 },
-    { title: 'NILAI AKHIR', w: 14 },
-    { title: 'PREDIKAT', w: 12 },
-    { title: 'PENGUASAAN', w: 22 },
-  ];
-
-  headerCols.forEach((col, idx) => {
-    setCell(r, idx, col.title, {
-      font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
-      fill: FILL_YELLOW_STYLE,
-      alignment: { horizontal: 'center', vertical: 'center' },
-      border: BORDER_BLACK_THIN,
-    });
+  // 3. HEADER TABEL HASIL CAPAIAN AKADEMIK (2-TIER PERSIS FORMAT RESMI)
+  // Baris 1: NO (rowspan 2), MATA PELAJARAN (rowspan 2), HASIL CAPAIAN KOMPETENSI (colspan 3)
+  setCell(r, 0, 'NO', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
   });
+  setCell(r, 1, 'MATA PELAJARAN', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  setCell(r, 2, 'HASIL CAPAIAN KOMPETENSI', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  setCell(r, 3, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+  setCell(r, 4, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+  addMerge(r, 0, r + 1, 0);
+  addMerge(r, 1, r + 1, 1);
+  addMerge(r, 2, r, 4);
+  rowHeights[r] = { hpt: 18 };
+  r++;
+
+  // Baris 2: NILAI AKHIR, PREDIKAT, PENGUASAAN
+  setCell(r, 0, '', { border: BORDER_BLACK_THIN });
+  setCell(r, 1, '', { border: BORDER_BLACK_THIN });
+  setCell(r, 2, 'NILAI AKHIR', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  setCell(r, 3, 'PREDIKAT', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  setCell(r, 4, 'PENGUASAAN', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  rowHeights[r] = { hpt: 18 };
   r++;
 
   // Helper untuk menambahkan baris kategori (Agama, Umum, Mulok)
@@ -325,6 +359,46 @@ function buildAcademicWorksheet(
     addCategoryHeader('III.', 'MUATAN LOKAL');
     addSubjectRows(mulokSubjects);
   }
+
+  // BARIS JUMLAH & TERBILANG AKADEMIK
+  const allSubjs = [...agamaSubjects, ...umumSubjects, ...mulokSubjects];
+  let totalScore = 0;
+  let hasAnyScore = false;
+  allSubjs.forEach((subj) => {
+    const sc = subjectRecords[subj.id]?.scores[student.id];
+    const val = sc?.finalScore ?? sc?.stsScore ?? null;
+    if (typeof val === 'number' && !isNaN(val)) {
+      totalScore += val;
+      hasAnyScore = true;
+    }
+  });
+
+  setCell(r, 0, 'JUMLAH', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  setCell(r, 1, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+  addMerge(r, 0, r, 1);
+
+  setCell(r, 2, hasAnyScore ? totalScore : '-', {
+    font: { name: EXCEL_FONT_NAME, sz: 9.5, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+
+  setCell(r, 3, hasAnyScore ? angkaKeTerbilang(totalScore) : '-', {
+    font: { name: EXCEL_FONT_NAME, sz: 9, bold: true },
+    fill: FILL_YELLOW_STYLE,
+    alignment: { horizontal: 'left', vertical: 'center' },
+    border: BORDER_BLACK_THIN,
+  });
+  setCell(r, 4, '', { fill: FILL_YELLOW_STYLE, border: BORDER_BLACK_THIN });
+  addMerge(r, 3, r, 4);
+  rowHeights[r] = { hpt: 20 };
+  r++;
 
   r++; // Spasi
 
@@ -1104,14 +1178,16 @@ function createDocxStudentSection(
 
   elements.push(createIdentityTable());
 
-  // Tabel Akademik (NO, MATA PELAJARAN, NILAI AKHIR, PREDIKAT, PENGUASAAN)
+  // Tabel Akademik (2-TIER: NO, MATA PELAJARAN, HASIL CAPAIAN KOMPETENSI -> NILAI AKHIR, PREDIKAT, PENGUASAAN)
   const akadRows: TableRow[] = [];
+  // Baris Header 1
   akadRows.push(
     new TableRow({
       tableHeader: true,
       cantSplit: true,
       children: [
         new TableCell({
+          rowSpan: 2,
           width: { size: 6, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
@@ -1124,6 +1200,7 @@ function createDocxStudentSection(
           ],
         }),
         new TableCell({
+          rowSpan: 2,
           width: { size: 38, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
@@ -1138,6 +1215,36 @@ function createDocxStudentSection(
           ],
         }),
         new TableCell({
+          columnSpan: 3,
+          width: { size: 56, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: 'HASIL CAPAIAN KOMPETENSI',
+                  bold: true,
+                  font: DOCX_FONT_FAMILY,
+                  size: 18,
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    })
+  );
+
+  // Baris Header 2 (Sub-Kolom)
+  akadRows.push(
+    new TableRow({
+      tableHeader: true,
+      cantSplit: true,
+      children: [
+        new TableCell({
           width: { size: 16, type: WidthType.PERCENTAGE },
           shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
           borders: cellBorders,
@@ -1146,7 +1253,7 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({ text: 'NILAI AKHIR', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
+                new TextRun({ text: 'NILAI AKHIR', bold: true, font: DOCX_FONT_FAMILY, size: 17 }),
               ],
             }),
           ],
@@ -1160,7 +1267,7 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({ text: 'PREDIKAT', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
+                new TextRun({ text: 'PREDIKAT', bold: true, font: DOCX_FONT_FAMILY, size: 17 }),
               ],
             }),
           ],
@@ -1174,7 +1281,7 @@ function createDocxStudentSection(
             new Paragraph({
               alignment: AlignmentType.CENTER,
               children: [
-                new TextRun({ text: 'PENGUASAAN', bold: true, font: DOCX_FONT_FAMILY, size: 18 }),
+                new TextRun({ text: 'PENGUASAAN', bold: true, font: DOCX_FONT_FAMILY, size: 17 }),
               ],
             }),
           ],
@@ -1331,6 +1438,86 @@ function createDocxStudentSection(
     addDocxCategory('III.', 'MUATAN LOKAL');
     addDocxSubjects(mulokSubjects);
   }
+
+  // BARIS JUMLAH & TERBILANG DI TABEL AKADEMIK DOCX
+  const allDocxSubjs = [...agamaSubjects, ...umumSubjects, ...mulokSubjects];
+  let docxTotalScore = 0;
+  let hasAnyDocxScore = false;
+  allDocxSubjs.forEach((subj) => {
+    const sc = subjectRecords[subj.id]?.scores[student.id];
+    const val = sc?.finalScore ?? sc?.stsScore ?? null;
+    if (typeof val === 'number' && !isNaN(val)) {
+      docxTotalScore += val;
+      hasAnyDocxScore = true;
+    }
+  });
+
+  akadRows.push(
+    new TableRow({
+      cantSplit: true,
+      children: [
+        new TableCell({
+          columnSpan: 2,
+          width: { size: 44, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: 'JUMLAH',
+                  bold: true,
+                  font: DOCX_FONT_FAMILY,
+                  size: 18,
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableCell({
+          width: { size: 16, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: hasAnyDocxScore ? String(docxTotalScore) : '-',
+                  bold: true,
+                  font: DOCX_FONT_FAMILY,
+                  size: 18,
+                }),
+              ],
+            }),
+          ],
+        }),
+        new TableCell({
+          columnSpan: 2,
+          width: { size: 40, type: WidthType.PERCENTAGE },
+          shading: { type: ShadingType.CLEAR, fill: DOCX_YELLOW_HEX },
+          borders: cellBorders,
+          verticalAlign: VerticalAlign.CENTER,
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.LEFT,
+              children: [
+                new TextRun({
+                  text: hasAnyDocxScore ? angkaKeTerbilang(docxTotalScore) : '-',
+                  bold: true,
+                  font: DOCX_FONT_FAMILY,
+                  size: 17,
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    })
+  );
 
   elements.push(
     new Table({

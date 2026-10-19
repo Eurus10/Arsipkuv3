@@ -52,6 +52,7 @@ import {
   updateSingleSubjectStatus,
   deleteAnalysisSubmission,
   fetchSubmissionsFromSupabase,
+  fetchSubmissionPayloadById,
   syncLocalSubmissionsToSupabase,
   syncFirestoreToSupabase,
 } from '../../services/analysisSubmissionService';
@@ -837,10 +838,18 @@ export const AdminAnalysisSubmissionsModal: React.FC<AdminAnalysisSubmissionsMod
     }
   };
 
-  const handleDownloadExcel = (sub: AnalysisSubmissionItem, specificSubjectName?: string) => {
+  const handleDownloadExcel = async (sub: AnalysisSubmissionItem, specificSubjectName?: string) => {
     try {
-      const payload = sub.payload;
-      if (!payload) {
+      let payload = sub.payload;
+      if (!payload || Object.keys(payload).length === 0) {
+        // Ambil payload spesifik secara on-demand (mencegah pemborosan egress di muka)
+        const loaded = await fetchSubmissionPayloadById(sub.id);
+        if (loaded) {
+          payload = loaded;
+        }
+      }
+
+      if (!payload || Object.keys(payload).length === 0) {
         alert('Data payload berkas tidak tersedia.');
         return;
       }

@@ -24,6 +24,7 @@ import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
 import {
   subscribeToAnalysisSubmissions,
   fetchSubmissionsFromSupabase,
+  fetchSubmissionPayloadById,
 } from '../../services/analysisSubmissionService';
 import {
   getAvailableSubmissionsForClass,
@@ -104,7 +105,7 @@ export const RaporAnalysisSyncModal: React.FC<RaporAnalysisSyncModalProps> = ({
   };
 
   // Handle Cloud Sync
-  const handleSyncCloud = () => {
+  const handleSyncCloud = async () => {
     if (selectedSubIds.length === 0) {
       setErrorMessage('Pilih minimal satu mata pelajaran untuk disinkronkan.');
       return;
@@ -115,6 +116,17 @@ export const RaporAnalysisSyncModal: React.FC<RaporAnalysisSyncModalProps> = ({
 
     try {
       const selectedSubs = availableSubmissions.filter((s) => selectedSubIds.includes(s.id));
+
+      // Ambil payload secara on-demand untuk setoran yang dipilih jika belum ada di memori
+      for (const sub of selectedSubs) {
+        if (!sub.payload || Object.keys(sub.payload).length === 0) {
+          const loaded = await fetchSubmissionPayloadById(sub.id);
+          if (loaded) {
+            sub.payload = loaded;
+          }
+        }
+      }
+
       const allExtractedSubjects = selectedSubs.flatMap((sub) =>
         extractSubjectsFromSubmission(sub, classData.config.classLevel)
       );

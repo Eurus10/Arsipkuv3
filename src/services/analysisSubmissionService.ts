@@ -266,8 +266,36 @@ export function saveLocalAnalysisSubmissions(items: AnalysisSubmissionItem[]): v
   }
 }
 
+export const ANALYSIS_SUMMARY_COLUMNS = [
+  'id',
+  'submission_type',
+  'subject_name',
+  'class_id',
+  'class_name',
+  'exam_type',
+  'school_year',
+  'teacher_name',
+  'teacher_id',
+  'teacher_role_title',
+  'kktp',
+  'total_students',
+  'completed_students',
+  'passed_students',
+  'average_grade',
+  'teacher_note',
+  'admin_note',
+  'status',
+  'subject_statuses',
+  'messages',
+  'first_submitted_at',
+  'submitted_at',
+  'updated_at',
+  'is_revision_resubmitted',
+  'last_revision_resubmitted_at',
+].join(', ');
+
 /**
- * Fetch fresh submissions from Supabase table
+ * Fetch fresh submissions from Supabase table with projection (hemat egress >99% tanpa payload raksasa)
  */
 export async function fetchSubmissionsFromSupabase(force: boolean = false): Promise<AnalysisSubmissionItem[]> {
   const now = Date.now();
@@ -281,10 +309,31 @@ export async function fetchSubmissionsFromSupabase(force: boolean = false): Prom
   }
 
   try {
-    const { data, error } = await supabase
+    let data: any[] | null = null;
+    let error: any = null;
+
+    // 1. Coba fetch ringan tanpa kolom payload raksasa (hemat transfer ratusan MB)
+    const summaryRes = await supabase
       .from(SUPABASE_TABLE)
-      .select('*')
+      .select(ANALYSIS_SUMMARY_COLUMNS)
       .order('submitted_at', { ascending: false });
+
+    if (!summaryRes.error && summaryRes.data) {
+      data = summaryRes.data;
+    } else {
+      // Fallback aman jika ada kolom baru yang belum ada di skema cache Supabase
+      console.warn('[Supabase] Summary columns query fallback:', summaryRes.error?.message);
+      const fallbackRes = await supabase
+        .from(SUPABASE_TABLE)
+        .select('id, submission_type, subject_name, class_id, class_name, exam_type, school_year, teacher_name, status, submitted_at, updated_at, kktp, total_students, completed_students, passed_students, average_grade, subject_statuses, messages')
+        .order('submitted_at', { ascending: false });
+
+      if (!fallbackRes.error && fallbackRes.data) {
+        data = fallbackRes.data;
+      } else {
+        error = fallbackRes.error || summaryRes.error;
+      }
+    }
 
     if (error) {
       console.warn('[Supabase] Warning fetching analysis submissions:', error.message);
@@ -292,9 +341,19 @@ export async function fetchSubmissionsFromSupabase(force: boolean = false): Prom
     }
 
     if (data && Array.isArray(data)) {
-      const parsedItems = data.map(fromSupabaseAnalysisRow);
-      // Merge with any local submissions that haven't been pushed to Supabase yet
       const local = getLocalAnalysisSubmissions();
+      const localMap = new Map(local.map((s) => [s.id, s]));
+
+      const parsedItems = data.map((row) => {
+        const item = fromSupabaseAnalysisRow(row);
+        const existing = localMap.get(item.id);
+        // Pertahankan payload yang sudah tersimpan di cache lokal agar tidak hilang
+        if (existing?.payload && Object.keys(existing.payload).length > 0) {
+          item.payload = existing.payload;
+        }
+        return item;
+      });
+
       const supabaseIds = new Set(parsedItems.map((s) => s.id));
       const unpushedLocal = local.filter((s) => !supabaseIds.has(s.id));
 
@@ -317,6 +376,40 @@ export async function fetchSubmissionsFromSupabase(force: boolean = false): Prom
   }
 
   return getLocalAnalysisSubmissions();
+}
+
+/**
+ * Mengambil data payload analisis butir soal secara on-demand (hanya saat dibutuhkan).
+ * Mencegah pemborosan kuota egress Supabase karena tidak mengunduh seluruh payload di awal.
+ */
+export async function fetchSubmissionPayloadById(id: string): Promise<Record<string, any> | null> {
+  if (!id || !isSupabaseConfigured()) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from(SUPABASE_TABLE)
+      .select('payload')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) {
+      console.warn(`[Supabase] Gagal mengambil payload setoran ${id}:`, error.message);
+      return null;
+    }
+
+    if (data?.payload && typeof data.payload === 'object') {
+      const local = getLocalAnalysisSubmissions();
+      const updated = local.map((item) =>
+        item.id === id ? { ...item, payload: data.payload } : item
+      );
+      saveLocalAnalysisSubmissions(updated);
+      return data.payload;
+    }
+  } catch (err) {
+    console.warn(`[Supabase] Exception saat mengambil payload setoran ${id}:`, err);
+  }
+
+  return null;
 }
 
 /**
@@ -438,6 +531,52 @@ export async function syncFirestoreToSupabase(): Promise<{ total: number; pushed
   }
 }
 
+let realtimeDebounceTimer: any = null;
+
+function handleRealtimeSubmissionEvent(eventPayload: any) {
+  try {
+    const { eventType, new: newRow, old: oldRow } = eventPayload;
+    const local = getLocalAnalysisSubmissions();
+
+    if (eventType === 'DELETE' && oldRow?.id) {
+      const filtered = local.filter((item) => item.id !== oldRow.id);
+      saveLocalAnalysisSubmissions(filtered);
+      notifySubscribers(filtered);
+      return;
+    }
+
+    if ((eventType === 'INSERT' || eventType === 'UPDATE') && newRow?.id) {
+      const incoming = fromSupabaseAnalysisRow(newRow);
+      const existingIndex = local.findIndex((item) => item.id === newRow.id);
+
+      let updated: AnalysisSubmissionItem[];
+      if (existingIndex >= 0) {
+        const existing = local[existingIndex];
+        // Pertahankan payload dari lokal jika payload baru tidak disertakan dalam event
+        if (existing?.payload && (!incoming.payload || Object.keys(incoming.payload).length === 0)) {
+          incoming.payload = existing.payload;
+        }
+        updated = [...local];
+        updated[existingIndex] = { ...existing, ...incoming };
+      } else {
+        updated = [incoming, ...local];
+      }
+
+      saveLocalAnalysisSubmissions(updated);
+      notifySubscribers(updated);
+      return;
+    }
+  } catch (err) {
+    console.warn('[Supabase] Gagal memproses event realtime lokal:', err);
+  }
+
+  // Jika payload realtime tidak lengkap, lakukan fetch ringan dengan debounce 8 detik agar tidak membanjiri egress
+  if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+  realtimeDebounceTimer = setTimeout(() => {
+    void fetchSubmissionsFromSupabase(false);
+  }, 8000);
+}
+
 /**
  * Setup lightweight Supabase Realtime channel for live updates without polling
  */
@@ -451,9 +590,8 @@ function ensureRealtimeSubscription() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: SUPABASE_TABLE },
-        (_payload) => {
-          // Re-fetch on any INSERT, UPDATE, DELETE event
-          void fetchSubmissionsFromSupabase(true);
+        (payload) => {
+          handleRealtimeSubmissionEvent(payload);
         }
       )
       .subscribe();
