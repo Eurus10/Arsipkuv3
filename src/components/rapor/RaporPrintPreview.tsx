@@ -768,7 +768,7 @@ export const RaporPrintPreview: React.FC<RaporPrintPreviewProps> = ({
             </div>
 
           {/* IDENTITAS SISWA */}
-          <div className="flex gap-x-6 text-xs mb-2.5 text-black font-normal" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
+          <div className="flex gap-x-6 text-xs mb-3 text-black font-normal" style={{ fontFamily: BOOKMAN_FONT_FAMILY }}>
             {/* Kolom Kiri: NAMA & TEMPAT, TANGGAL LAHIR (Lebar dinamis ~62% agar nama tidak terpotong) */}
             <div className="flex-1 space-y-0.5 min-w-0 pr-2">
               <div className="flex items-start">

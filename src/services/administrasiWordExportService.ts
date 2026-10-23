@@ -170,6 +170,50 @@ function createKopHeader(title: string, subtitle: string, metaInfo: string): Par
   ];
 }
 
+function createTitleHeader(title: string, subtitle: string, metaInfo: string): Paragraph[] {
+  return [
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 100, after: 60 },
+      children: [
+        new TextRun({
+          text: title.toUpperCase(),
+          font: FONT_FAMILY,
+          size: 28, // 14pt
+          bold: true,
+          color: COLOR_PRIMARY,
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 0, after: 40 },
+      children: [
+        new TextRun({
+          text: subtitle,
+          font: FONT_FAMILY,
+          size: 22, // 11pt
+          bold: true,
+          color: COLOR_TEXT,
+        }),
+      ],
+    }),
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 0, after: 180 },
+      children: [
+        new TextRun({
+          text: metaInfo,
+          font: FONT_FAMILY,
+          size: 19, // 9.5pt
+          italics: true,
+          color: COLOR_MUTED,
+        }),
+      ],
+    }),
+  ];
+}
+
 function createSignatureTable(
   kepalaSekolah: string,
   guruPengampu: string,
@@ -970,7 +1014,7 @@ export async function exportProtaToWord(prota: ProtaData): Promise<void> {
   const distribusi = prota.distribusiMateri || [];
 
   const docChildren: any[] = [
-    ...createKopHeader(
+    ...createTitleHeader(
       'PROGRAM TAHUNAN (PROTA)',
       `KURIKULUM MERDEKA - ${id.namaSekolah || 'SDIT AL FIKRI'}`,
       `Tahun Pelajaran: ${id.tahunPelajaran} | Fase ${id.fase} - ${id.kelas}`
@@ -1181,7 +1225,10 @@ export async function exportProtaToWord(prota: ProtaData): Promise<void> {
       {
         properties: {
           page: {
-            margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
+            size: {
+              orientation: PageOrientation.LANDSCAPE,
+            },
+            margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 },
           },
         },
         children: docChildren,
@@ -1211,7 +1258,7 @@ export async function exportPromesToWord(promes: PromesData): Promise<void> {
   const alokasi = promes.alokasiMateriDanMinggu || [];
 
   const docChildren: any[] = [
-    ...createKopHeader(
+    ...createTitleHeader(
       'PROGRAM SEMESTER (PROMES)',
       `KURIKULUM MERDEKA - ${id.namaSekolah || 'SDIT AL FIKRI'}`,
       `Mata Pelajaran: ${id.mataPelajaran} | ${id.kelas} (${id.fase}) | ${id.semester} | TP ${id.tahunPelajaran}`
