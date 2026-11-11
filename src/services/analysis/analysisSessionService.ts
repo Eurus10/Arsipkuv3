@@ -243,6 +243,55 @@ export function clearActiveSession(): void {
 }
 
 /**
+ * Hapus seluruh sesi kelas tertentu dari LocalStorage dan cache
+ */
+export function deleteClassSession(classId: string, sessionId?: string): void {
+  try {
+    if (!classId) return;
+    const key = classId.toLowerCase().trim();
+    const all = getAllClassSessions(true);
+
+    if (all[key]) {
+      delete all[key];
+      memoryClassSessionsMap = all;
+      localStorage.setItem(CLASS_SESSIONS_MAP_KEY, JSON.stringify(all));
+    }
+
+    // Bersihkan dari daftar riwayat tersimpan (SAVED_SESSIONS_STORAGE_KEY)
+    const savedListRaw = localStorage.getItem(SAVED_SESSIONS_STORAGE_KEY);
+    if (savedListRaw) {
+      try {
+        const savedList: Array<{
+          sessionId?: string;
+          className?: string;
+        }> = JSON.parse(savedListRaw);
+        const filtered = savedList.filter((item) => {
+          if (sessionId && item.sessionId === sessionId) return false;
+          if (item.className && item.className.toLowerCase().trim() === key) return false;
+          return true;
+        });
+        localStorage.setItem(SAVED_SESSIONS_STORAGE_KEY, JSON.stringify(filtered));
+      } catch (e) {
+        console.error('Failed to update saved sessions list after delete:', e);
+      }
+    }
+
+    // Jika sesi yang dihapus adalah sesi aktif saat ini, bersihkan activeSession
+    const active = getActiveSession();
+    if (
+      active &&
+      (active.classId.toLowerCase().trim() === key || (sessionId && active.sessionId === sessionId))
+    ) {
+      clearActiveSession();
+    }
+
+    invalidateSessionsCache();
+  } catch (err) {
+    console.error('Failed to delete class session:', err);
+  }
+}
+
+/**
  * Hapus sesi Guru Bidang untuk beberapa kelas sekaligus.
  * Hanya menghapus subject yang sedang dipilih,
  * tidak menghapus seluruh sesi kelas.

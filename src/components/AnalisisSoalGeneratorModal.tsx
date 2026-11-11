@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Plus,
   RefreshCw,
+  Check,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { subscribeToStudents, getStoredStudentsLocal, Student } from '../services/studentStorage';
@@ -46,6 +47,7 @@ import { SubjectStatsModal } from './analysis/SubjectStatsModal';
 import { ImportAnalysisModal } from './analysis/ImportAnalysisModal';
 import { PillStepper } from './analysis/PillStepper';
 import { AnalysisSessionManagerModal } from './analysis/AnalysisSessionManagerModal';
+import { RestoreAnalysisModal } from './analysis/RestoreAnalysisModal';
 import {
   getSessionForClass,
   getOrCreateSessionForClass,
@@ -104,6 +106,7 @@ export const AnalisisSoalGeneratorModal: React.FC<AnalisisSoalGeneratorModalProp
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [importContext, setImportContext] = useState<AnalysisImportContext | null>(null);
   const [isSessionPickerOpen, setIsSessionPickerOpen] = useState(false);
+  const [isRestoreModalOpen, setIsRestoreModalOpen] = useState(false);
 
   // Legacy Blank Template Form State (Default resmi: 25 PG, 10 Isian, 5 Uraian)
   const [blankClassId, setBlankClassId] = useState<string>('');
@@ -296,6 +299,79 @@ const handleSaveStudentResult = (
     setIsSessionPickerOpen(true);
   };
 
+  // Handler: Unduh Template Kosong dari Modal Buka / Pulihkan
+  const handleDownloadBlankExcelFromModal = (params: {
+    classId: string;
+    pgCount: number;
+    isianCount: number;
+    cType: 'Essay/Uraian' | 'Menjodohkan';
+    cCount: number;
+  }) => {
+    const classStudents = students.filter(
+      (s) => s.classId.toLowerCase() === params.classId.toLowerCase()
+    );
+    if (classStudents.length === 0) {
+      alert('Belum ada data siswa untuk kelas ini di menu Data Siswa.');
+      return;
+    }
+
+    try {
+      const sortedStudents = [...classStudents].sort((a, b) =>
+        a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })
+      );
+      const foundCls = masterClasses.find((cls) => cls.id === params.classId);
+      const className = foundCls ? foundCls.name : params.classId;
+      const todayStr = new Date().toISOString().split('T')[0];
+      const filename = `Template_Analisis_Kosong_Kelas_${className}_${todayStr}.xlsx`;
+
+      const wsData: any[][] = [];
+      wsData.push(['YAYASAN DAARUL FIKRI TIGARAKSA']);
+      wsData.push(['SEKOLAH DASAR ISLAM TERPADU (SDIT) AL FIKRI']);
+      wsData.push(['LEMBAR ANALISIS BUTIR SOAL & CAPAIAN UJIAN']);
+      wsData.push([]);
+      wsData.push(['Mata Pelajaran', ':', '', '', 'Kelas', ':', className]);
+      wsData.push(['Guru Pengampu', ':', '', '', 'Tahun Pelajaran', ':', '2025/2026']);
+      wsData.push(['Jenis Ujian', ':', '', '', 'Tanggal', ':', todayStr]);
+      wsData.push([]);
+
+      const headerRow: string[] = ['No', 'Nama Peserta Didik'];
+      for (let i = 1; i <= params.pgCount; i++) headerRow.push(`PG ${i}`);
+      for (let i = 1; i <= params.isianCount; i++) headerRow.push(`IS ${i}`);
+      const partCLabel = params.cType === 'Essay/Uraian' ? 'UR' : 'MJ';
+      for (let i = 1; i <= params.cCount; i++) headerRow.push(`${partCLabel} ${i}`);
+      headerRow.push('Jml Benar', 'Total Skor', 'Nilai Akhir', 'Keterangan');
+      wsData.push(headerRow);
+
+      const totalQ = params.pgCount + params.isianCount + params.cCount;
+      const startRow = 10;
+
+      sortedStudents.forEach((student, index) => {
+        const rowNum = startRow + index;
+        const row: any[] = [index + 1, student.name];
+        for (let q = 0; q < totalQ; q++) row.push('');
+
+        const firstCol = XLSX.utils.encode_col(2);
+        const lastCol = XLSX.utils.encode_col(2 + totalQ - 1);
+        const formulaSum = `=SUM(${firstCol}${rowNum}:${lastCol}${rowNum})`;
+
+        row.push({ t: 'n', f: formulaSum, v: '' });
+        row.push({ t: 'n', f: formulaSum, v: '' });
+        row.push({ t: 'n', f: `=ROUND((${XLSX.utils.encode_col(2 + totalQ + 1)}${rowNum}/${totalQ})*100, 2)`, v: '' });
+        row.push({ t: 's', f: `=IF(${XLSX.utils.encode_col(2 + totalQ + 2)}${rowNum}>=70, "L", "TL")`, v: '' });
+
+        wsData.push(row);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, `Analisis ${className}`);
+      XLSX.writeFile(wb, filename);
+    } catch (err: any) {
+      console.error('Error generating blank Excel:', err);
+      alert('Gagal membuat file template Excel: ' + (err.message || 'Error'));
+    }
+  };
+
   // Handler: Legacy Blank Excel Generator
   const handleGenerateBlankExcel = () => {
     setBlankStatus(null);
@@ -455,102 +531,102 @@ const handleSaveStudentResult = (
         {/* ====================================================
             TOP MODAL HEADER (Responsive 2-Row on Mobile, Safe-Area Protected)
             ==================================================== */}
-        <div className="px-4 sm:px-7 py-3 sm:py-4 pt-[max(0.625rem,env(safe-area-inset-top))] bg-white border-b border-slate-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-          {/* Top Line on Mobile / Left Column on Desktop */}
-          <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shadow-xs shrink-0">
-                <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm sm:text-base md:text-lg font-black text-slate-900 tracking-tight leading-tight">
-                    Generator &amp; Workspace Analisis Soal
-                  </h2>
-                  <span className="hidden md:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-sky-50 text-sky-700 border border-sky-200">
-                    SDIT AL FIKRI
-                  </span>
-                </div>
-                <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 line-clamp-1">
-                  Dual Mode: Wali Kelas (Per-Kelas) &amp; Guru Bidang (Multi-Kelas)
-                </p>
-              </div>
+        {/* ====================================================
+            TOP MODAL HEADER (SESUAI GAMBAR REFERENSI)
+            ==================================================== */}
+        <div className="px-4 sm:px-7 py-3.5 sm:py-4 pt-[max(0.625rem,env(safe-area-inset-top))] bg-white border-b border-slate-150 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shadow-2xs shrink-0">
+              <FileSpreadsheet className="w-5 h-5" />
             </div>
-
-            {/* Mobile Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="sm:hidden w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer shrink-0"
-              title="Tutup Modal"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-tight">
+                Lembar Analisis Soal
+              </h2>
+            </div>
           </div>
 
-          {/* Bottom Line on Mobile / Right Column on Desktop */}
-          <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
-            {/* Dual Mode Persona Switcher (Capsule) */}
-            <div className="flex items-center p-1 rounded-xl bg-slate-100 border border-slate-200/80 gap-1 w-full sm:w-auto justify-between sm:justify-start">
-              <button
-                type="button"
-                onClick={() => setPersonaMode('WALI_KELAS')}
-                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  personaMode === 'WALI_KELAS'
-                    ? 'bg-white text-sky-700 shadow-xs border border-slate-200/60'
-                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
-                }`}
-                title="Kelola seluruh mata pelajaran untuk satu kelas"
-              >
-                <Users className="w-3.5 h-3.5 shrink-0" />
-                <span>Wali Kelas</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPersonaMode('GURU_BIDANG')}
-                className={`flex-1 sm:flex-none px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  personaMode === 'GURU_BIDANG'
-                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200/60'
-                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
-                }`}
-                title="Kelola 1 mata pelajaran untuk banyak kelas sekaligus"
-              >
-                <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                <span>Guru Bidang</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPersonaMode('LEGACY_BLANK')}
-                className={`flex-1 sm:flex-none px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  personaMode === 'LEGACY_BLANK'
-                    ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
-                    : 'text-slate-600 hover:text-slate-900 border border-transparent'
-                }`}
-                title="Download template kosong Excel"
-              >
-                <Download className="w-3.5 h-3.5 shrink-0" />
-                <span className="hidden xs:inline sm:hidden md:inline">Kosong</span>
-              </button>
-            </div>
-
-            {/* Desktop Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="hidden sm:flex w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 items-center justify-center transition-all cursor-pointer shrink-0"
-              title="Tutup Modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          {/* Close Button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs"
+            title="Tutup Modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* ====================================================
             MODAL BODY
             ==================================================== */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-7 overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))] bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 lg:p-7 overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))] bg-slate-50/50 space-y-4">
+          {/* 3 MODERN MODE CARDS (PERSISTENT) */}
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-4 pt-0.5 pb-1">
+            {/* KARTU 1: MODE WALI KELAS */}
+            <button
+              type="button"
+              onClick={() => setPersonaMode('WALI_KELAS')}
+              className={`relative p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2 ${
+                personaMode === 'WALI_KELAS'
+                  ? 'bg-emerald-50/80 border-emerald-500 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-2xs'
+              }`}
+            >
+              {personaMode === 'WALI_KELAS' && (
+                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </div>
+              )}
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${personaMode === 'WALI_KELAS' ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-50 text-emerald-600'}`}>
+                <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="leading-tight">
+                <span className="block text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Mode</span>
+                <span className="block text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Wali Kelas</span>
+              </div>
+            </button>
+
+            {/* KARTU 2: MODE GURU BIDANG */}
+            <button
+              type="button"
+              onClick={() => setPersonaMode('GURU_BIDANG')}
+              className={`relative p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2 ${
+                personaMode === 'GURU_BIDANG'
+                  ? 'bg-sky-50/80 border-sky-500 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-2xs'
+              }`}
+            >
+              {personaMode === 'GURU_BIDANG' && (
+                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-sky-600 text-white flex items-center justify-center shadow-xs">
+                  <Check className="w-2.5 h-2.5 stroke-[3]" />
+                </div>
+              )}
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${personaMode === 'GURU_BIDANG' ? 'bg-sky-100 text-sky-700' : 'bg-sky-50 text-sky-600'}`}>
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="leading-tight">
+                <span className="block text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Mode</span>
+                <span className="block text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Guru Bidang</span>
+              </div>
+            </button>
+
+            {/* KARTU 3: BUKA / PULIHKAN */}
+            <button
+              type="button"
+              onClick={() => setIsRestoreModalOpen(true)}
+              className="relative p-3 sm:p-4 rounded-2xl border border-amber-200/80 bg-amber-50/40 hover:bg-amber-50 hover:border-amber-300 transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-2 shadow-2xs"
+            >
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div className="leading-tight">
+                <span className="block text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Buka /</span>
+                <span className="block text-[11px] sm:text-xs font-black text-slate-900 tracking-tight">Pulihkan</span>
+              </div>
+            </button>
+          </div>
+
           {personaMode === 'WALI_KELAS' ? (
             /* 1. MODE WALI KELAS (PER-KELAS) */
             activeSession ? (
@@ -596,10 +672,7 @@ const handleSaveStudentResult = (
                 setPersonaMode={setPersonaMode}
                 onStartSession={handleStartSession}
                 onOpenImport={() => {
-                  setImportContext({
-                    callerMode: 'WALI_KELAS',
-                  });
-                  setIsImportOpen(true);
+                  setIsRestoreModalOpen(true);
                 }}
                 onSelectExistingSession={(session) => {
                   saveSessionForClass(session);
@@ -847,7 +920,37 @@ const handleSaveStudentResult = (
             setActiveSession(null);
             setIsSessionPickerOpen(false);
           }}
+          onSessionDeleted={(deleted) => {
+            if (
+              activeSession &&
+              (activeSession.sessionId === deleted.sessionId ||
+                activeSession.classId.toLowerCase() === deleted.classId.toLowerCase())
+            ) {
+              setActiveSession(null);
+            }
+          }}
           masterClasses={masterClasses}
+        />
+
+        {/* 7. Modal Buka / Pulihkan Analisis (3 Menu Pilihan Sesuai Desain Baru) */}
+        <RestoreAnalysisModal
+          isOpen={isRestoreModalOpen}
+          onClose={() => setIsRestoreModalOpen(false)}
+          masterClasses={masterClasses}
+          students={students}
+          onOpenImportExcel={() => {
+            setImportContext({
+              callerMode: 'WALI_KELAS',
+            });
+            setIsImportOpen(true);
+          }}
+          onRestoreSession={(restored) => {
+            saveSessionForClass(restored);
+            setActiveSession(restored);
+            setPersonaMode('WALI_KELAS');
+            setIsRestoreModalOpen(false);
+          }}
+          onDownloadBlankExcel={handleDownloadBlankExcelFromModal}
         />
       </div>
     </div>

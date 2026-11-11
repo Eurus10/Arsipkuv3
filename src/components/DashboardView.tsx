@@ -355,6 +355,7 @@ export const DashboardView: React.FC<
             examBreakdowns={examConfig.examBreakdowns}
             examSchedules={examConfig.examSchedules}
             activeExamSchedule={examConfig.activeExamSchedule}
+            examConfig={examConfig}
             isAdmin={isAdmin}
             onRequestTeacherAuth={
               onRequestTeacherAuth

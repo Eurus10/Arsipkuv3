@@ -22,6 +22,10 @@ export const EditExamConfigModal: React.FC<EditExamConfigModalProps> = ({
   const [activePeriod, setActivePeriod] = useState('');
   const [deadline, setDeadline] = useState('');
   const [instructions, setInstructions] = useState('');
+  const [customWebLinkTitle, setCustomWebLinkTitle] = useState('');
+  const [customWebLinkSubtitle, setCustomWebLinkSubtitle] = useState('');
+  const [customWebLinkUrl, setCustomWebLinkUrl] = useState('');
+  const [customWebLinkEnabled, setCustomWebLinkEnabled] = useState(true);
   const [examBreakdowns, setExamBreakdowns] = useState<ExamBreakdownItem[]>(DEFAULT_EXAM_BREAKDOWNS.slice(0, 3));
   const [activeBreakdownTab, setActiveBreakdownTab] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -35,6 +39,10 @@ export const EditExamConfigModal: React.FC<EditExamConfigModalProps> = ({
       setActivePeriod(config.activePeriod || '');
       setDeadline(config.deadline || '');
       setInstructions(config.instructions || '');
+      setCustomWebLinkTitle(config.customWebLinkTitle || 'Tautan Web');
+      setCustomWebLinkSubtitle(config.customWebLinkSubtitle || 'Akses halaman web eksternal');
+      setCustomWebLinkUrl(config.customWebLinkUrl || '');
+      setCustomWebLinkEnabled(config.customWebLinkEnabled ?? true);
       const savedBreakdowns =
         config.examBreakdowns && config.examBreakdowns.length > 0
           ? JSON.parse(JSON.stringify(config.examBreakdowns))
@@ -167,6 +175,11 @@ export const EditExamConfigModal: React.FC<EditExamConfigModalProps> = ({
           questionRules: getRulesForBreakdown(item, index),
         }));
 
+      let finalWebUrl = customWebLinkUrl.trim();
+      if (finalWebUrl && !/^https?:\/\//i.test(finalWebUrl)) {
+        finalWebUrl = 'https://' + finalWebUrl;
+      }
+
       await onSave({
         driveFolderUrl: sanitizeDriveUrl(driveFolderUrl),
         title: title.trim() || 'Folder Pengumpulan Soal Ujian',
@@ -175,6 +188,10 @@ export const EditExamConfigModal: React.FC<EditExamConfigModalProps> = ({
         deadline: deadline.trim(),
         instructions: instructions.trim(),
         examBreakdowns: normalizedBreakdowns,
+        customWebLinkTitle: customWebLinkTitle.trim() || 'Tautan Web',
+        customWebLinkSubtitle: customWebLinkSubtitle.trim() || 'Akses halaman web eksternal',
+        customWebLinkUrl: finalWebUrl,
+        customWebLinkEnabled: customWebLinkEnabled,
       });
 
       onClose();

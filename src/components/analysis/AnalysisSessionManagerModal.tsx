@@ -13,10 +13,15 @@ import {
   FolderOpen,
   Layers,
   GraduationCap,
+  Trash2,
+  AlertCircle,
 } from 'lucide-react';
 import { AnalysisSession } from '../../types/analysisTypes';
 import { MasterClass } from '../../data/masterExamData';
-import { getAllClassSessions } from '../../services/analysis/analysisSessionService';
+import {
+  getAllClassSessions,
+  deleteClassSession,
+} from '../../services/analysis/analysisSessionService';
 
 interface AnalysisSessionManagerModalProps {
   isOpen: boolean;
@@ -24,6 +29,7 @@ interface AnalysisSessionManagerModalProps {
   activeSession: AnalysisSession | null;
   onSelectSession: (session: AnalysisSession) => void;
   onCreateNewSession: () => void;
+  onSessionDeleted?: (session: AnalysisSession) => void;
   masterClasses: MasterClass[];
 }
 
@@ -33,9 +39,11 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
   activeSession,
   onSelectSession,
   onCreateNewSession,
+  onSessionDeleted,
   masterClasses,
 }) => {
   const [sessionsMap, setSessionsMap] = useState<Record<string, AnalysisSession>>({});
+  const [sessionToDelete, setSessionToDelete] = useState<AnalysisSession | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -43,6 +51,14 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
       setSessionsMap(all);
     }
   }, [isOpen]);
+
+  const handleConfirmDelete = (session: AnalysisSession) => {
+    deleteClassSession(session.classId, session.sessionId);
+    onSessionDeleted?.(session);
+    const updated = getAllClassSessions(true);
+    setSessionsMap(updated);
+    setSessionToDelete(null);
+  };
 
   const savedSessionsList = useMemo(() => {
     return Object.values(sessionsMap).sort((a, b) => {
@@ -178,6 +194,18 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSessionToDelete(item);
+                          }}
+                          className="p-2 rounded-xl text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/90 active:scale-95 transition-all cursor-pointer shadow-2xs"
+                          title={`Hapus sesi Kelas ${item.className || item.classId} (${item.examType}) dari memori`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
                         {!isCurrent ? (
                           <button
                             type="button"
@@ -236,6 +264,57 @@ export const AnalysisSessionManagerModal: React.FC<AnalysisSessionManagerModalPr
           </button>
         </div>
       </div>
+
+      {/* Modal Konfirmasi Hapus Sesi Kelas */}
+      {sessionToDelete && (
+        <div
+          className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setSessionToDelete(null);
+          }}
+        >
+          <div className="w-full max-w-md bg-white border border-rose-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-800 space-y-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0 shadow-2xs">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">
+                  Hapus Sesi Kelas {sessionToDelete.className || sessionToDelete.classId}?
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Sesi ujian <strong className="text-slate-800 font-bold">{sessionToDelete.examType}</strong> untuk kelas{' '}
+                  <strong className="text-slate-800 font-bold">{sessionToDelete.className || sessionToDelete.classId}</strong>{' '}
+                  beserta <strong className="text-slate-800 font-bold">{sessionToDelete.subjects?.length || 0} mata pelajaran</strong>{' '}
+                  akan dihapus permanen dari memori browser lokal perangkat ini.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 font-medium leading-relaxed">
+              Tindakan ini tidak dapat dibatalkan. Pastikan Anda telah mengunduh berkas Excel rekap jika data nilai masih diperlukan.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setSessionToDelete(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleConfirmDelete(sessionToDelete)}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Ya, Hapus Sesi</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

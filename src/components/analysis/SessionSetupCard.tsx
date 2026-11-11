@@ -13,13 +13,20 @@ import {
   ArrowRight,
   GraduationCap,
   FileText,
+  Trash2,
+  AlertCircle,
+  Check,
 } from 'lucide-react';
 import { MasterClass } from '../../data/masterExamData';
 import { Student, getStoredSchools, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
 import { ExamType, AnalysisSession } from '../../types/analysisTypes';
 import { PillStepper } from './PillStepper';
 import { getEraporHomeroomForClass } from '../../services/analysis/eraporHomeroomBridge';
-import { getAllClassSessions } from '../../services/analysis/analysisSessionService';
+import {
+  getAllClassSessions,
+  deleteClassSession,
+} from '../../services/analysis/analysisSessionService';
+import { getAcademicSubjectsForClassSync } from '../../services/analysis/analysisAcademicBridge';
 
 interface SessionSetupCardProps {
   masterClasses: MasterClass[];
@@ -72,16 +79,26 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
     });
   });
   const [kktp, setKktp] = useState<number>(70);
+  const [sessionsMap, setSessionsMap] = useState<Record<string, AnalysisSession>>(() =>
+    getAllClassSessions(true)
+  );
+  const [sessionToDelete, setSessionToDelete] = useState<AnalysisSession | null>(null);
 
   // Daftar sesi kelas yang sudah tersimpan
   const savedSessionsList = useMemo(() => {
-    const all = getAllClassSessions(true);
-    return Object.values(all).sort((a, b) => {
+    return Object.values(sessionsMap).sort((a, b) => {
       const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
       const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
       return timeB - timeA;
     });
-  }, []);
+  }, [sessionsMap]);
+
+  const handleConfirmDeleteSession = (session: AnalysisSession) => {
+    deleteClassSession(session.classId, session.sessionId);
+    const updated = getAllClassSessions(true);
+    setSessionsMap(updated);
+    setSessionToDelete(null);
+  };
 
   // Initialize selected class & schools list on load
   useEffect(() => {
@@ -136,87 +153,6 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
 
   return (
     <div className="space-y-5 font-sans text-slate-800">
-      {/* ====================================================
-          3 CIRCULAR MODE SHORTCUTS
-          ==================================================== */}
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-4 pb-2">
-        {/* MODE 1: WALI KELAS */}
-        <button
-          type="button"
-          onClick={() => setPersonaMode?.('WALI_KELAS')}
-          className="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none"
-        >
-          <div
-            className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full border flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-active:scale-95 ${
-              personaMode === 'WALI_KELAS'
-                ? 'bg-sky-50 border-sky-400 text-sky-600 shadow-md scale-105'
-                : 'bg-white border-slate-200 text-slate-500 hover:text-sky-600 hover:border-sky-300 shadow-xs'
-            }`}
-          >
-            <Users className="w-7 h-7 sm:w-8 sm:h-8" />
-            
-            {/* Active Indicator Dot */}
-            {personaMode === 'WALI_KELAS' && (
-              <div className="absolute -bottom-1 w-2.5 h-2.5 rounded-full bg-sky-500 shadow-xs border-2 border-white" />
-            )}
-          </div>
-
-          <span className="text-xs sm:text-sm font-black text-slate-900 mt-2.5 tracking-tight group-hover:text-sky-600 transition-colors">
-            Mode Wali Kelas
-          </span>
-          <span className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
-            Analisis per kelas
-          </span>
-        </button>
-
-        {/* MODE 2: GURU BIDANG */}
-        <button
-          type="button"
-          onClick={() => setPersonaMode?.('GURU_BIDANG')}
-          className="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none"
-        >
-          <div
-            className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full border flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-active:scale-95 ${
-              personaMode === 'GURU_BIDANG'
-                ? 'bg-indigo-50 border-indigo-400 text-indigo-600 shadow-md scale-105'
-                : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 shadow-xs'
-            }`}
-          >
-            <BookOpen className="w-7 h-7 sm:w-8 sm:h-8" />
-            
-            {/* Active Indicator Dot */}
-            {personaMode === 'GURU_BIDANG' && (
-              <div className="absolute -bottom-1 w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-xs border-2 border-white" />
-            )}
-          </div>
-
-          <span className="text-xs sm:text-sm font-black text-slate-900 mt-2.5 tracking-tight group-hover:text-indigo-600 transition-colors">
-            Mode Guru Bidang
-          </span>
-          <span className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
-            Analisis multi kelas
-          </span>
-        </button>
-
-        {/* MODE 3: BUKA / PULIHKAN */}
-        <button
-          type="button"
-          onClick={onOpenImport}
-          className="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none"
-        >
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-emerald-50 border border-emerald-400 text-emerald-600 shadow-xs flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-active:scale-95">
-            <FolderOpen className="w-7 h-7 sm:w-8 sm:h-8" />
-          </div>
-
-          <span className="text-xs sm:text-sm font-black text-slate-900 mt-2.5 tracking-tight group-hover:text-emerald-600 transition-colors">
-            Buka / Pulihkan
-          </span>
-          <span className="text-[10px] sm:text-xs text-slate-500 font-medium mt-0.5">
-            Proyek Excel
-          </span>
-        </button>
-      </div>
-
       {/* BANNER SESI AKTIF TERSIMPAN */}
       {savedSessionsList.length > 0 && onSelectExistingSession && (
         <div className="p-4 sm:p-4.5 rounded-2xl bg-white border border-slate-200/90 space-y-3 shadow-xs">
@@ -235,28 +171,93 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
           </div>
           <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
             {savedSessionsList.map((s) => (
-              <button
+              <div
                 key={s.sessionId || s.classId}
-                type="button"
-                onClick={() => onSelectExistingSession(s)}
-                className="px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 text-left transition-all shrink-0 cursor-pointer group flex items-center gap-3 shadow-2xs"
+                className="flex items-center rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 transition-all shrink-0 group shadow-2xs overflow-hidden"
               >
-                <div>
-                  <div className="text-xs font-black text-slate-900 group-hover:text-sky-700 flex items-center gap-1.5">
-                    <span>Kelas {s.className || s.classId}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-bold border border-purple-200">
-                      {s.examType}
-                    </span>
+                <button
+                  type="button"
+                  onClick={() => onSelectExistingSession(s)}
+                  className="px-3.5 py-2.5 text-left transition-all cursor-pointer flex items-center gap-3 pr-2"
+                >
+                  <div>
+                    <div className="text-xs font-black text-slate-900 group-hover:text-sky-700 flex items-center gap-1.5">
+                      <span>Kelas {s.className || s.classId}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 font-bold border border-purple-200">
+                        {s.examType}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      {s.subjects.length} Mapel • {s.teacherName || 'Wali Kelas'}
+                    </div>
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">
-                    {s.subjects.length} Mapel • {s.teacherName || 'Wali Kelas'}
+                  <div className="w-6 h-6 rounded-lg bg-sky-50 group-hover:bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 shrink-0">
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </div>
-                </div>
-                <div className="w-6 h-6 rounded-lg bg-sky-50 group-hover:bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 shrink-0">
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </button>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSessionToDelete(s);
+                  }}
+                  className="p-2 mr-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 transition-all cursor-pointer"
+                  title={`Hapus sesi Kelas ${s.className || s.classId} dari browser`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Konfirmasi Hapus Sesi di Setup Card */}
+      {sessionToDelete && (
+        <div
+          className="fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setSessionToDelete(null);
+          }}
+        >
+          <div className="w-full max-w-md bg-white border border-rose-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-800 space-y-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shrink-0 shadow-2xs">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">
+                  Hapus Sesi Kelas {sessionToDelete.className || sessionToDelete.classId}?
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Sesi ujian <strong className="text-slate-800 font-bold">{sessionToDelete.examType}</strong> untuk kelas{' '}
+                  <strong className="text-slate-800 font-bold">{sessionToDelete.className || sessionToDelete.classId}</strong>{' '}
+                  beserta seluruh data nilai yang tersimpan di perangkat ini akan dihapus.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 font-medium leading-relaxed">
+              Tindakan ini tidak dapat dibatalkan. Pastikan Anda telah mengunduh berkas Excel jika data nilai masih diperlukan.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setSessionToDelete(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleConfirmDeleteSession(sessionToDelete)}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Ya, Hapus Sesi</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -349,6 +350,15 @@ export const SessionSetupCard: React.FC<SessionSetupCardProps> = ({
                 )}
               </span>
             </div>
+
+            {selectedClassId && (
+              <div className="flex items-center gap-1.5 text-[11px] text-teal-800 font-semibold mt-1.5 pt-1.5 border-t border-slate-200/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block animate-pulse" />
+                <span>
+                  {getAcademicSubjectsForClassSync(selectedClassId).length} Mapel resmi tersinkron dengan Pengaturan Akademik e-Rapor
+                </span>
+              </div>
+            )}
           </div>
 
           {/* 3. GURU / WALI KELAS */}

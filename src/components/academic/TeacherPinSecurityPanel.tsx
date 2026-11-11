@@ -150,8 +150,8 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
   if (isLoading) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
           <p className="text-sm font-semibold">Memeriksa status keamanan PIN guru...</p>
         </div>
       </div>
@@ -161,19 +161,19 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
   return (
     <div className="space-y-5 animate-fadeIn">
       {/* Header Info Banner */}
-      <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl p-4 sm:p-5 shadow-lg flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-400/25 text-amber-300 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 shadow-xs">
             <KeyRound className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <span>Keamanan Akses & Reset PIN e-Rapor Guru</span>
-              <span className="px-2 py-0.5 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-300 text-[10px] font-extrabold uppercase">
+              <span className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">
                 Khusus Admin
               </span>
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Kelola dan setel ulang (reset) PIN jika guru lupa kata sandi PIN e-Rapor untuk membuka lembar penilaian
             </p>
           </div>
@@ -182,51 +182,51 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
         <button
           type="button"
           onClick={loadTeacherPins}
-          className="px-3.5 py-2 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer self-stretch sm:self-auto justify-center"
+          className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs self-stretch sm:self-auto justify-center"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
+          <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
           <span>Segarkan</span>
         </button>
       </div>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-white/[0.08] bg-slate-950/40 p-3.5 flex items-center justify-between">
+        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 flex items-center justify-between shadow-xs">
           <div>
-            <p className="text-[11px] text-slate-400 font-semibold">Total Guru</p>
-            <p className="text-lg font-black text-white mt-0.5">{stats.total}</p>
+            <p className="text-[11px] text-slate-500 font-semibold">Total Guru</p>
+            <p className="text-lg font-black text-slate-900 mt-0.5">{stats.total}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center font-bold">
             {stats.total}
           </div>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-3.5 flex items-center justify-between">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3.5 flex items-center justify-between shadow-xs">
           <div>
-            <p className="text-[11px] text-emerald-400 font-semibold">PIN Terpasang</p>
-            <p className="text-lg font-black text-emerald-300 mt-0.5">{stats.withPin}</p>
+            <p className="text-[11px] text-emerald-800 font-semibold">PIN Terpasang</p>
+            <p className="text-lg font-black text-emerald-900 mt-0.5">{stats.withPin}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center">
             <CheckCircle2 className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-700/40 bg-slate-900/40 p-3.5 flex items-center justify-between">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex items-center justify-between shadow-xs">
           <div>
-            <p className="text-[11px] text-slate-400 font-semibold">Belum Buat PIN</p>
-            <p className="text-lg font-black text-slate-300 mt-0.5">{stats.withoutPin}</p>
+            <p className="text-[11px] text-slate-600 font-semibold">Belum Buat PIN</p>
+            <p className="text-lg font-black text-slate-800 mt-0.5">{stats.withoutPin}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-slate-200/80 border border-slate-300 text-slate-600 flex items-center justify-center">
             <Clock className="w-4 h-4" />
           </div>
         </div>
 
-        <div className="rounded-xl border border-rose-500/20 bg-rose-500/[0.05] p-3.5 flex items-center justify-between">
+        <div className="rounded-xl border border-rose-200 bg-rose-50/60 p-3.5 flex items-center justify-between shadow-xs">
           <div>
-            <p className="text-[11px] text-rose-400 font-semibold">Akun Diblokir</p>
-            <p className="text-lg font-black text-rose-300 mt-0.5">{stats.blocked}</p>
+            <p className="text-[11px] text-rose-800 font-semibold">Akun Diblokir</p>
+            <p className="text-lg font-black text-rose-900 mt-0.5">{stats.blocked}</p>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-rose-500/15 text-rose-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-rose-100 border border-rose-200 text-rose-700 flex items-center justify-center">
             <UserX className="w-4 h-4" />
           </div>
         </div>
@@ -241,7 +241,7 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
             placeholder="Cari nama guru atau jabatan..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900/90 border border-white/[0.10] pl-10 pr-4 py-2 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
+            className="w-full bg-white border border-slate-200 pl-10 pr-4 py-2 rounded-xl text-slate-800 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 placeholder:text-slate-400 shadow-xs"
           />
         </div>
 
@@ -252,8 +252,8 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
             onClick={() => setFilterStatus('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               filterStatus === 'all'
-                ? 'bg-cyan-500 text-slate-950 font-black'
-                : 'text-slate-400 hover:text-white bg-slate-900/60 border border-white/[0.06]'
+                ? 'bg-emerald-700 text-white font-bold shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200 shadow-xs hover:bg-slate-50'
             }`}
           >
             Semua ({stats.total})
@@ -263,8 +263,8 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
             onClick={() => setFilterStatus('has_pin')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               filterStatus === 'has_pin'
-                ? 'bg-emerald-500 text-slate-950 font-black'
-                : 'text-slate-400 hover:text-emerald-300 bg-slate-900/60 border border-white/[0.06]'
+                ? 'bg-emerald-700 text-white font-bold shadow-xs'
+                : 'text-emerald-800 hover:text-emerald-950 bg-emerald-50/70 border border-emerald-200 shadow-xs hover:bg-emerald-100'
             }`}
           >
             PIN Aktif ({stats.withPin})
@@ -274,8 +274,8 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
             onClick={() => setFilterStatus('no_pin')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               filterStatus === 'no_pin'
-                ? 'bg-slate-300 text-slate-950 font-black'
-                : 'text-slate-400 hover:text-slate-200 bg-slate-900/60 border border-white/[0.06]'
+                ? 'bg-slate-800 text-white font-bold shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 bg-white border border-slate-200 shadow-xs hover:bg-slate-50'
             }`}
           >
             Belum Set ({stats.withoutPin})
@@ -286,8 +286,8 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
               onClick={() => setFilterStatus('blocked')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 filterStatus === 'blocked'
-                  ? 'bg-rose-500 text-white font-black'
-                  : 'text-slate-400 hover:text-rose-300 bg-slate-900/60 border border-white/[0.06]'
+                  ? 'bg-rose-700 text-white font-bold shadow-xs'
+                  : 'text-rose-800 hover:text-rose-950 bg-rose-50 border border-rose-200 shadow-xs hover:bg-rose-100'
               }`}
             >
               Diblokir ({stats.blocked})
@@ -297,10 +297,10 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
       </div>
 
       {/* Teachers Table */}
-      <div className="rounded-2xl border border-white/[0.08] bg-slate-950/60 backdrop-blur-xl overflow-hidden shadow-lg">
+      <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-xs">
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/90 text-slate-400 border-b border-white/[0.08] uppercase text-[10px] tracking-wider">
+            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase text-[10px] tracking-wider">
               <tr>
                 <th className="py-3.5 px-4 font-bold">Nama Guru & Akun</th>
                 <th className="py-3.5 px-4 font-bold">Jabatan / Peran</th>
@@ -309,45 +309,45 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
                 <th className="py-3.5 px-4 font-bold text-right">Tindakan Admin</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.05]">
+            <tbody className="divide-y divide-slate-100">
               {filteredTeachers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400">
-                    <p className="font-semibold text-sm">Tidak ada data guru yang cocok</p>
-                    <p className="text-xs text-slate-500 mt-1">Coba sesuaikan kata kunci pencarian atau filter</p>
+                    <p className="font-semibold text-sm text-slate-600">Tidak ada data guru yang cocok</p>
+                    <p className="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau filter</p>
                   </td>
                 </tr>
               ) : (
                 filteredTeachers.map((teacher) => {
                   const isBlocked = teacher.status === 'blocked';
                   return (
-                    <tr key={teacher.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={teacher.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 font-bold text-xs flex items-center justify-center shrink-0 uppercase">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0 uppercase shadow-xs">
                             {teacher.name.charAt(0) || 'G'}
                           </div>
                           <div>
-                            <p className="font-bold text-white text-xs leading-snug">{teacher.name}</p>
+                            <p className="font-bold text-slate-900 text-xs leading-snug">{teacher.name}</p>
                             <p className="text-[10px] text-slate-400 font-mono">ID: {teacher.id.slice(0, 8)}...</p>
                           </div>
                         </div>
                       </td>
 
                       <td className="py-3 px-4">
-                        <span className="text-slate-300 font-medium text-xs">
+                        <span className="text-slate-700 font-medium text-xs">
                           {teacher.role_title || 'Guru Pengampu'}
                         </span>
                       </td>
 
                       <td className="py-3 px-4 text-center">
                         {isBlocked ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 border border-rose-500/30 text-rose-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 border border-rose-200 text-rose-700 shadow-xs">
                             <UserX className="w-3 h-3" />
                             <span>Diblokir</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-xs">
                             <UserCheck className="w-3 h-3" />
                             <span>Aktif</span>
                           </span>
@@ -356,13 +356,13 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
 
                       <td className="py-3 px-4 text-center">
                         {teacher.hasPin ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 shadow-sm">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-xs">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                             <span>PIN Terpasang</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-slate-800/80 border border-slate-700 text-slate-400">
-                            <Clock className="w-3.5 h-3.5 text-slate-500" />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-slate-100 border border-slate-200 text-slate-600">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
                             <span>Belum Diatur</span>
                           </span>
                         )}
@@ -375,8 +375,8 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
                           disabled={!teacher.hasPin}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                             teacher.hasPin
-                              ? 'bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/30 text-amber-300 hover:text-amber-200 cursor-pointer active:scale-95 shadow-sm'
-                              : 'bg-white/[0.03] border border-white/[0.06] text-slate-600 cursor-not-allowed'
+                              ? 'bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 hover:text-amber-900 cursor-pointer active:scale-95 shadow-xs'
+                              : 'bg-slate-50 border border-slate-200 text-slate-400 cursor-not-allowed'
                           }`}
                           title={
                             teacher.hasPin
@@ -399,35 +399,35 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
 
       {/* Confirmation Modal for Reset PIN */}
       {pendingResetTeacher && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0 shadow-xs">
                 <ShieldAlert className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Konfirmasi Reset PIN e-Rapor</h3>
-                <p className="text-xs text-slate-400 mt-0.5">Tindakan pemulihan akses guru</p>
+                <h3 className="text-base font-bold text-slate-900">Konfirmasi Reset PIN e-Rapor</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Tindakan pemulihan akses guru</p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-white/[0.08] bg-slate-950/60 p-3.5 text-xs space-y-2">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Guru Penerima:</span>
-                <span className="font-bold text-white text-sm">{pendingResetTeacher.name}</span>
+                <span className="text-slate-500">Guru Penerima:</span>
+                <span className="font-bold text-slate-900 text-sm">{pendingResetTeacher.name}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Jabatan:</span>
-                <span className="font-medium text-slate-300">{pendingResetTeacher.role_title || '-'}</span>
+                <span className="text-slate-500">Jabatan:</span>
+                <span className="font-medium text-slate-700">{pendingResetTeacher.role_title || '-'}</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-200/90 text-xs leading-relaxed space-y-1">
-              <p className="font-bold flex items-center gap-1.5 text-amber-300">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed space-y-1.5 shadow-xs">
+              <p className="font-bold flex items-center gap-1.5 text-amber-800">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
                 <span>Konsekuensi Reset:</span>
               </p>
-              <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-amber-200/80">
+              <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-amber-800/90">
                 <li>PIN e-Rapor lama akan dihapus dari database.</li>
                 <li>Sesi e-Rapor guru yang sedang aktif akan otomatis dicabut.</li>
                 <li>Guru akan langsung diminta membuat PIN baru saat membuka menu e-Rapor berikutnya.</li>
@@ -439,7 +439,7 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
                 type="button"
                 onClick={() => setPendingResetTeacher(null)}
                 disabled={isResetting}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-xs"
               >
                 Batal
               </button>
@@ -447,7 +447,7 @@ export const TeacherPinSecurityPanel: React.FC<TeacherPinSecurityPanelProps> = (
                 type="button"
                 onClick={handleConfirmReset}
                 disabled={isResetting}
-                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold flex items-center gap-2 shadow-sm shadow-amber-600/20 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
               >
                 {isResetting ? (
                   <>

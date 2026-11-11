@@ -33,6 +33,7 @@ import {
   Send,
   Printer,
   MessageSquare,
+  Trash2,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -69,26 +70,26 @@ import {
 } from '../../services/analysisSubmissionService';
 import { getActiveTeacherSession, silentSyncActiveTeacherSession } from '../../services/teacherStorage';
 import { AnalysisSubmissionItem } from '../../types/analysisSubmissionTypes';
+import { getAllCanonicalSubjectNames } from '../../services/analysis/analysisAcademicBridge';
 
-// Preset mata pelajaran umum guru bidang di SDIT AL FIKRI
-const PRESET_SUBJECTS = [
-  'Pendidikan Agama Islam & BP',
-  'Akidah Akhlak',
-  'Fiqih',
-  'QURDIST (Al-Qur\'an Hadits)',
-  'Bahasa Arab',
-  'PJOK',
-  'Bahasa Inggris',
-  'Seni Rupa',
-  'Seni Musik',
-  'Seni Tari / Teater',
-  'Bahasa Sunda',
-  'BTQ (Baca Tulis Al-Qur\'an)',
-  'Tahfidz Al-Qur\'an',
+// Preset mata pelajaran umum guru bidang di SDIT AL FIKRI (Fallback default)
+const FALLBACK_PRESET_SUBJECTS = [
+  'Pendidikan Agama Islam dan Budi Pekerti',
   'Pendidikan Pancasila',
   'Bahasa Indonesia',
   'Matematika',
-  'IPAS',
+  'Ilmu Pengetahuan Alam dan Sosial (IPAS)',
+  'Pendidikan Jasmani, Olahraga, dan Kesehatan',
+  'Seni Rupa',
+  'Seni Musik',
+  'Seni Tari / Teater',
+  'Bahasa Arab',
+  'Bahasa Inggris',
+  'Bahasa Sunda',
+  'BTQ (Baca Tulis Al-Qur\'an)',
+  'Tahfidz Al-Qur\'an',
+  'Akidah Akhlak',
+  'Fiqih',
   'Informatika',
   'PLKJ',
 ];
@@ -115,8 +116,14 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   const [schoolsList, setSchoolsList] = useState<string[]>(() => getStoredSchools());
   const [selectedSchool, setSelectedSchool] = useState<string>(DEFAULT_SCHOOL_NAME);
 
+  // State daftar mapel kanonikal tersinkronisasi
+  const [presetSubjects, setPresetSubjects] = useState<string[]>(() => {
+    const canonical = getAllCanonicalSubjectNames();
+    return canonical.length > 0 ? canonical : FALLBACK_PRESET_SUBJECTS;
+  });
+
   // State form setup guru bidang
-  const [subjectName, setSubjectName] = useState<string>('Pendidikan Agama Islam & BP');
+  const [subjectName, setSubjectName] = useState<string>('Pendidikan Agama Islam dan Budi Pekerti');
   const [isCustomSubject, setIsCustomSubject] = useState<boolean>(false);
   const [customSubjectText, setCustomSubjectText] = useState<string>('');
   const [teacherName, setTeacherName] = useState<string>('');
@@ -165,6 +172,13 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   const [showClassPickerModal, setShowClassPickerModal] = useState<boolean>(false);
   const [showSwitchSessionModal, setShowSwitchSessionModal] = useState<boolean>(false);
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState<boolean>(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<{
+    subjectName: string;
+    teacherName: string;
+    classIds: string[];
+    completedStudents: number;
+    totalStudents: number;
+  } | null>(null);
   const [searchStudent, setSearchStudent] = useState<string>('');
   const [batchDownloadStatus, setBatchDownloadStatus] = useState<string | null>(null);
   const [isSendToPakZakiOpen, setIsSendToPakZakiOpen] = useState<boolean>(false);
@@ -332,7 +346,7 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   // Handler: Beralih ke mata pelajaran yang sudah ada
   const handleSelectExistingSubject = (item: (typeof availableSubjectsList)[0]) => {
     setSubjectName(item.subjectName);
-    const isPreset = PRESET_SUBJECTS.includes(item.subjectName);
+    const isPreset = presetSubjects.includes(item.subjectName);
     setIsCustomSubject(!isPreset);
     if (!isPreset) {
       setCustomSubjectText(item.subjectName);
@@ -623,6 +637,69 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   setShowSwitchSessionModal(false);
 };
 
+const handleConfirmDeleteSubject = (target: {
+  subjectName: string;
+  teacherName: string;
+  classIds: string[];
+  completedStudents: number;
+  totalStudents: number;
+}) => {
+  const subjectId = `subj-${target.subjectName.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+  deleteSubjectSessionFromClasses(
+    subjectId,
+    target.subjectName,
+    target.classIds
+  );
+
+  const updatedMap = getAllClassSessions(true);
+  setClassSessionsMap(updatedMap);
+
+  // Jika mata pelajaran yang dihapus adalah yang sedang aktif di workspace
+  if (target.subjectName.toLowerCase().trim() === activeSubjectName.toLowerCase().trim()) {
+    clearActiveSession();
+    // Cari apakah masih ada mata pelajaran lain yang tersimpan
+    const remainingSubjects: AnalysisSubject[] = [];
+    Object.values(updatedMap).forEach((sess) => {
+      sess?.subjects?.forEach((s) => {
+        if (!remainingSubjects.some((r) => r.subjectName.toLowerCase() === s.subjectName.toLowerCase())) {
+          remainingSubjects.push(s);
+        }
+      });
+    });
+
+    if (remainingSubjects.length > 0) {
+      const nextSubj = remainingSubjects[0];
+      setSubjectName(nextSubj.subjectName);
+      const isPreset = presetSubjects.includes(nextSubj.subjectName);
+      setIsCustomSubject(!isPreset);
+      if (!isPreset) {
+        setCustomSubjectText(nextSubj.subjectName);
+      }
+      setTeacherName(nextSubj.teacherName || '');
+      setPgCount(nextSubj.config.pgCount);
+      setPgWeight(nextSubj.config.pgWeight);
+      setIsianCount(nextSubj.config.isianCount);
+      setIsianWeight(nextSubj.config.isianWeight);
+      setCType(nextSubj.config.cType as any);
+      setCCount(nextSubj.config.cCount);
+      setCWeight(nextSubj.config.cWeight);
+
+      const classesForNext = Object.values(updatedMap)
+        .filter((sess) => sess?.subjects?.some((s) => s.subjectName.toLowerCase() === nextSubj.subjectName.toLowerCase()))
+        .map((s) => s.classId);
+      setSelectedClassIds(classesForNext);
+      setActiveClassId(classesForNext[0] || '');
+      setIsConfigured(true);
+    } else {
+      setIsConfigured(false);
+      setSelectedClassIds([]);
+      setActiveClassId('');
+    }
+  }
+
+  setSubjectToDelete(null);
+};
+
   // Daftar siswa kelas aktif (disaring berdasarkan sekolah dan kelas)
   const activeClassStudents = useMemo(() => {
     return students
@@ -836,9 +913,15 @@ const handleExportAllClasses = () => {
             {/* 1. Mata Pelajaran & Nama Guru */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  2. Pilih Mata Pelajaran
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    2. Pilih Mata Pelajaran
+                  </label>
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>e-Rapor Terhubung</span>
+                  </div>
+                </div>
                 <select
                   value={isCustomSubject ? '__CUSTOM__' : subjectName}
                   onChange={(e) => {
@@ -851,7 +934,7 @@ const handleExportAllClasses = () => {
                   }}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-2xs"
                 >
-                  {PRESET_SUBJECTS.map((subj) => (
+                  {presetSubjects.map((subj) => (
                     <option key={subj} value={subj} className="bg-white text-slate-800">
                       {subj}
                     </option>
@@ -2436,20 +2519,34 @@ const handleExportAllClasses = () => {
                           </div>
                         </div>
 
-                        {!isCurrent ? (
+                        <div className="flex items-center gap-2 shrink-0">
                           <button
                             type="button"
-                            onClick={() => handleSelectExistingSubject(item)}
-                            className="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-2xs flex items-center gap-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSubjectToDelete(item);
+                            }}
+                            className="p-2 rounded-xl text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/90 active:scale-95 transition-all cursor-pointer shadow-2xs"
+                            title={`Hapus seluruh sesi ${item.subjectName} (${item.classIds.length} rombel)`}
                           >
-                            <span>Buka Sesi Ini</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
-                        ) : (
-                          <span className="text-xs text-indigo-700 font-bold shrink-0 px-2 py-1 rounded-lg bg-indigo-50">
-                            Aktif
-                          </span>
-                        )}
+
+                          {!isCurrent ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSelectExistingSubject(item)}
+                              className="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-2xs flex items-center gap-1"
+                            >
+                              <span>Buka Sesi Ini</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span className="text-xs text-indigo-700 font-bold shrink-0 px-2 py-1 rounded-lg bg-indigo-50">
+                              Aktif
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -2488,6 +2585,62 @@ const handleExportAllClasses = () => {
                 className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-2xs"
               >
                 Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Konfirmasi Hapus Sesi Mata Pelajaran dari Modal Ganti Sesi */}
+      {subjectToDelete && (
+        <div
+          className="fixed inset-0 z-[75] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] font-sans"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setSubjectToDelete(null);
+          }}
+        >
+          <div className="w-full max-w-md bg-white border border-rose-200 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-800 space-y-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center shrink-0 shadow-2xs">
+                <AlertCircle className="w-5 h-5 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">
+                  Hapus Sesi Mapel {subjectToDelete.subjectName}?
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Seluruh data konfigurasi butir soal dan{' '}
+                  <strong className="text-slate-900 font-bold">
+                    {subjectToDelete.completedStudents} nilai siswa
+                  </strong>{' '}
+                  pada mata pelajaran ini di{' '}
+                  <strong className="text-slate-900 font-bold">
+                    {subjectToDelete.classIds.length} rombel kelas ({subjectToDelete.classIds.join(', ')})
+                  </strong>{' '}
+                  akan dihapus permanen dari browser lokal.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-800 font-medium leading-relaxed">
+              Pastikan Anda sudah mengunduh file Excel sebelum menghapus sesi.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setSubjectToDelete(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs cursor-pointer transition-all shadow-2xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => handleConfirmDeleteSubject(subjectToDelete)}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Ya, Hapus Sesi Mapel</span>
               </button>
             </div>
           </div>
@@ -2613,7 +2766,7 @@ const handleExportAllClasses = () => {
                       }}
                       className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 font-bold outline-none cursor-pointer shadow-2xs"
                     >
-                      {PRESET_SUBJECTS.map((subj) => (
+                      {presetSubjects.map((subj) => (
                         <option key={subj} value={subj}>
                           {subj}
                         </option>

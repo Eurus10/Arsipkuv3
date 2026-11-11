@@ -496,6 +496,10 @@ export interface ExamUploadConfig {
   examBreakdowns?: ExamBreakdownItem[];
   examSchedules?: ExamScheduleSet[];
   activeExamSchedule?: ActiveExamSchedule;
+  customWebLinkTitle?: string;
+  customWebLinkSubtitle?: string;
+  customWebLinkUrl?: string;
+  customWebLinkEnabled?: boolean;
   updatedAt?: string;
 }
 
@@ -751,6 +755,10 @@ export const DEFAULT_EXAM_CONFIG: ExamUploadConfig = {
   examBreakdowns: DEFAULT_EXAM_BREAKDOWNS,
   examSchedules: DEFAULT_EXAM_SCHEDULES,
   activeExamSchedule: DEFAULT_ACTIVE_EXAM_SCHEDULE,
+  customWebLinkTitle: 'Tautan Web',
+  customWebLinkSubtitle: 'Akses halaman web eksternal',
+  customWebLinkUrl: '',
+  customWebLinkEnabled: true,
 };
 
 export const DEFAULT_TEMPLATES: SchoolTemplateItem[] = [

@@ -16,6 +16,11 @@ import {
 import { calculateMaxScore } from '../../services/analysis/analysisCalculationService';
 import { PillStepper } from './PillStepper';
 import { useModalNavigation } from '../../utils/modalNavigation';
+import {
+  getAcademicSubjectsForClassSync,
+  getAcademicSubjectsForClass,
+  AnalysisAcademicSubject,
+} from '../../services/analysis/analysisAcademicBridge';
 
 interface SubjectConfigModalProps {
   isOpen: boolean;
@@ -39,6 +44,12 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
   existingSubject,
   onSave,
 }) => {
+  const [academicSubjects, setAcademicSubjects] = useState<AnalysisAcademicSubject[]>(() => {
+    if (activeClass?.id) {
+      return getAcademicSubjectsForClassSync(activeClass.id);
+    }
+    return [];
+  });
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [customSubjectName, setCustomSubjectName] = useState<string>('');
   const [teacherName, setTeacherName] = useState<string>('');
@@ -57,6 +68,21 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
   // Intercept phone back button so modal closes gracefully without leaving web
   useModalNavigation('subject-config', isOpen, onClose);
 
+  // Sync academic subjects from bridge
+  useEffect(() => {
+    if (activeClass?.id) {
+      const syncList = getAcademicSubjectsForClassSync(activeClass.id);
+      if (syncList && syncList.length > 0) {
+        setAcademicSubjects(syncList);
+      }
+      getAcademicSubjectsForClass(activeClass.id).then((fresh) => {
+        if (fresh && fresh.length > 0) {
+          setAcademicSubjects(fresh);
+        }
+      });
+    }
+  }, [activeClass?.id, isOpen]);
+
   // Initialize form when opening
   useEffect(() => {
     if (existingSubject) {
@@ -70,6 +96,18 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
       setCType(existingSubject.config.cType || 'Uraian');
       setCCount(existingSubject.config.cCount);
       setCWeight(existingSubject.config.cWeight);
+    } else if (academicSubjects.length > 0) {
+      const first = academicSubjects[0];
+      setSelectedSubjectId(first.id);
+      setCustomSubjectName(first.name);
+      setTeacherName(first.teacher || defaultTeacherName || activeClass?.waliKelas || '');
+      setPgCount(25);
+      setPgWeight(1);
+      setIsianCount(10);
+      setIsianWeight(1);
+      setCType('Uraian');
+      setCCount(5);
+      setCWeight(2);
     } else if (activeClass && activeClass.subjects && activeClass.subjects.length > 0) {
       const first = activeClass.subjects[0];
       setSelectedSubjectId(first.id);
@@ -88,7 +126,7 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
       setIsianCount(10);
       setCCount(5);
     }
-  }, [existingSubject, activeClass, defaultTeacherName, isOpen]);
+  }, [existingSubject, activeClass, academicSubjects, defaultTeacherName, isOpen]);
 
   if (!isOpen) return null;
 
@@ -110,12 +148,16 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
     setSelectedSubjectId(subjId);
     if (subjId === 'CUSTOM') {
       setCustomSubjectName('');
-    } else if (activeClass) {
-      const found = activeClass.subjects.find((s) => s.id === subjId);
-      if (found) {
-        setCustomSubjectName(found.name);
-        if (!teacherName) {
-          setTeacherName(defaultTeacherName || found.teacher || activeClass.waliKelas || '');
+    } else {
+      const foundInAcademic = academicSubjects.find((s) => s.id === subjId);
+      if (foundInAcademic) {
+        setCustomSubjectName(foundInAcademic.name);
+        setTeacherName(foundInAcademic.teacher || defaultTeacherName || activeClass?.waliKelas || '');
+      } else if (activeClass) {
+        const found = activeClass.subjects.find((s) => s.id === subjId);
+        if (found) {
+          setCustomSubjectName(found.name);
+          setTeacherName(found.teacher || defaultTeacherName || activeClass.waliKelas || '');
         }
       }
     }
@@ -132,9 +174,15 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
       selectedSubjectId === 'CUSTOM'
         ? `custom_${Date.now()}`
         : selectedSubjectId || `subj_${Date.now()}`;
+    
+    const matchedSubject =
+      academicSubjects.find((s) => s.id === selectedSubjectId) ||
+      activeClass?.subjects.find((s) => s.id === selectedSubjectId);
+
     const finalSubjectName =
       customSubjectName.trim() ||
-      (activeClass?.subjects.find((s) => s.id === selectedSubjectId)?.name ?? 'Mata Pelajaran');
+      matchedSubject?.name ||
+      'Mata Pelajaran';
 
     onSave({
       subjectId: finalSubjectId,
@@ -180,20 +228,32 @@ export const SubjectConfigModal: React.FC<SubjectConfigModalProps> = ({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4 sm:space-y-5 overscroll-contain pb-[max(1.5rem,env(safe-area-inset-bottom))] bg-white">
           {/* Pilih Mapel Master */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Mata Pelajaran
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Mata Pelajaran
+              </label>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/80 text-[10px] font-bold text-emerald-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>e-Rapor Terhubung</span>
+              </div>
+            </div>
             <select
               value={selectedSubjectId}
               onChange={(e) => handleSubjectSelect(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 focus:border-sky-500 rounded-xl px-3.5 py-2.5 text-sm sm:text-base text-slate-800 font-medium outline-none transition-all cursor-pointer"
             >
-              {activeClass?.subjects.map((subj) => (
-                <option key={subj.id} value={subj.id} className="bg-white text-slate-800">
-                  {subj.name} {subj.teacher ? `(Guru: ${subj.teacher})` : ''}
-                </option>
-              ))}
-              <option value="CUSTOM" className="bg-white text-slate-800">+ Tambah Mapel Lain (Kustom)</option>
+              {academicSubjects.length > 0
+                ? academicSubjects.map((subj) => (
+                    <option key={subj.id} value={subj.id} className="bg-white text-slate-800">
+                      {subj.name} {subj.teacher ? `(Guru: ${subj.teacher})` : ''} [{subj.category === 'agama' ? 'Agama' : subj.category === 'mulok' ? 'Mulok' : 'Umum'}]
+                    </option>
+                  ))
+                : activeClass?.subjects.map((subj) => (
+                    <option key={subj.id} value={subj.id} className="bg-white text-slate-800">
+                      {subj.name} {subj.teacher ? `(Guru: ${subj.teacher})` : ''}
+                    </option>
+                  ))}
+              <option value="CUSTOM" className="bg-white text-slate-800 font-semibold">+ Tambah Mapel Lain (Kustom)</option>
             </select>
           </div>
 

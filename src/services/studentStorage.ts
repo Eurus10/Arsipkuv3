@@ -29,6 +29,8 @@ export const DEFAULT_SCHOOL_NAME = 'SDIT AL FIKRI';
 const SCHOOLS_STORAGE_KEY = 'sdit_registered_schools_list';
 const STUDENTS_LOCAL_CACHE_KEY = 'sdit_students_local_cache';
 
+export const STUDENT_COLUMNS = 'id, name, class_id, school_name, nim, nisn, tempat_lahir, tanggal_lahir, gender, created_at, updated_at';
+
 export const getStoredStudentsLocal = (): Student[] => {
   try {
     const raw = localStorage.getItem(STUDENTS_LOCAL_CACHE_KEY);
@@ -309,7 +311,7 @@ export const subscribeToStudents = (
     try {
       const { data, error } = await supabase
         .from('students')
-        .select('*')
+        .select(STUDENT_COLUMNS)
         .order('name', { ascending: true });
 
           if (error) {
@@ -712,7 +714,7 @@ export const bulkUpsertStudents = async (
   try {
     const { data: freshStudents } = await supabase
       .from('students')
-      .select('*')
+      .select(STUDENT_COLUMNS)
       .order('name', { ascending: true });
 
     if (freshStudents) {

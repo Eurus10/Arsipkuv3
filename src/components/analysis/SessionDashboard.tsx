@@ -26,6 +26,9 @@ import {
   Printer,
   AlertCircle,
   MessageSquare,
+  ArrowRightLeft,
+  Copy,
+  Check,
 } from 'lucide-react';
 import {
   AnalysisSession,
@@ -35,6 +38,7 @@ import { Student, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
 import { MasterClass } from '../../data/masterExamData';
 import { calculateSubjectSummaryStats } from '../../services/analysis/analysisCalculationService';
 import { exportAnalysisProjectToExcel } from '../../services/analysis/analysisExcelService';
+import { createTransferCode } from '../../services/analysis/analysisTransferService';
 import { SendToPakZakiModal } from './SendToPakZakiModal';
 import { AnalysisSubmissionChatModal } from './AnalysisSubmissionChatModal';
 import {
@@ -76,9 +80,24 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [isSendToPakZakiOpen, setIsSendToPakZakiOpen] = useState<boolean>(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState<boolean>(false);
+  const [transferCodeData, setTransferCodeData] = useState<{ code: string; expiresAt: string } | null>(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
   const [submissions, setSubmissions] = useState<AnalysisSubmissionItem[]>(() =>
     getLocalAnalysisSubmissions()
   );
+
+  const handleGenerateTransferCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const res = await createTransferCode(session);
+      setTransferCodeData(res);
+    } catch (err: any) {
+      alert('Gagal membuat kode tarik: ' + (err?.message || 'Error'));
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
 
   React.useEffect(() => {
     const unsubscribe = subscribeToAnalysisSubmissions((items) => {
@@ -274,8 +293,8 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
               <span>🚀 Kirim ke Pak Zaki</span>
             </button>
 
-            {/* 3. Secondary Utility Deck: Download Excel, Import Guru Mapel, Ganti Sesi */}
-            <div className="grid grid-cols-3 gap-2">
+            {/* 3. Secondary Utility Deck: Download Excel, Import Guru Mapel, Kode Tarik, Ganti Sesi */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {/* Download Excel */}
               <button
                 type="button"
@@ -298,11 +317,23 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
                 <span className="truncate">Import</span>
               </button>
 
+              {/* Kode Tarik (Pindah HP ↔ Laptop) */}
+              <button
+                type="button"
+                onClick={handleGenerateTransferCode}
+                disabled={isGeneratingCode}
+                className="h-9 px-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 active:scale-[0.98] text-sky-800 border border-sky-200 font-bold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-2xs"
+                title="Buat kode 6-digit untuk melanjutkan analisis ini di laptop/HP lain secara instan"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5 text-sky-600 shrink-0 stroke-[2.2]" />
+                <span className="truncate">{isGeneratingCode ? '...' : 'Kode Tarik'}</span>
+              </button>
+
               {/* Ganti Sesi / Pilih Sesi Lain */}
               <button
                 type="button"
                 onClick={onResetSession}
-                className="h-9 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 border border-slate-200 font-bold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
+                className="h-9 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 border border-slate-200 font-bold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-2xs"
                 title="Pilih atau beralih ke sesi kelas lain yang pernah dibuat tanpa menghapus data"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-slate-600 shrink-0 stroke-[2.5]" />

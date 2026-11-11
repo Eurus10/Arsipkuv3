@@ -36,6 +36,25 @@
           }
         }
       })();
+
+      // Auto-recover if browser has stale chunks or hook dispatcher mismatch from dev server re-bundle
+      window.addEventListener('error', function(event) {
+        var errStr = (event && (event.message || (event.error && event.error.message))) || '';
+        if (
+          errStr.indexOf('resolveDispatcher') !== -1 ||
+          errStr.indexOf('Invalid hook call') !== -1 ||
+          errStr.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+          errStr.indexOf('dynamically imported module') !== -1
+        ) {
+          var now = Date.now();
+          var lastReload = parseInt(sessionStorage.getItem('last_vite_hash_reload') || '0', 10);
+          if (now - lastReload > 4000) {
+            sessionStorage.setItem('last_vite_hash_reload', String(now));
+            console.warn('[AutoRecovery] Stale chunk or React dispatcher mismatch detected, reloading cleanly...');
+            window.location.reload();
+          }
+        }
+      });
     </script>
     <title>Arsip Digital SDIT Al Fikri</title>
     <meta name="description" content="Portal pencarian dan arsip digital SDIT Al Fikri terhubung dengan Google Drive: Administrasi Guru, Bank Soal, Unduh Template Dokumen & Folder Soal, Tracking Pengumpulan & Cetak Soal, Sertifikat, dan E-Rapor STS Kurikulum Merdeka." />

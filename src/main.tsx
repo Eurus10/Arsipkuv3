@@ -5,6 +5,8 @@ import './index.css';
 import { runRaporMigrationDryRun } from './utils/runRaporMigrationDryRun';
 import { runLegacyTpInventoryRunner } from './utils/runLegacyTpInventoryRunner';
 
+import ErrorBoundary from './components/common/ErrorBoundary';
+
 // Dev-only / preview exposure for Browser Console audit
 if (typeof window !== 'undefined') {
   (window as any).__runRaporMigrationDryRun = runRaporMigrationDryRun;
@@ -13,7 +15,9 @@ if (typeof window !== 'undefined') {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );
 

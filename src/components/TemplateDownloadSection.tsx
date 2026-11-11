@@ -29,6 +29,7 @@ import {
   FlaskConical,
   CheckSquare,
   BookOpen,
+  Globe,
 } from 'lucide-react';
 
 import {
@@ -81,6 +82,11 @@ const DriveFolderTransitionModal = React.lazy(() =>
     default: m.DriveFolderTransitionModal,
   }))
 );
+const EditCustomWebLinkModal = React.lazy(() =>
+  import('./EditCustomWebLinkModal').then((m) => ({
+    default: m.EditCustomWebLinkModal,
+  }))
+);
 
 interface TemplateDownloadSectionProps {
   templates: SchoolTemplateItem[];
@@ -90,6 +96,8 @@ interface TemplateDownloadSectionProps {
   examSchedules?: ExamScheduleSet[];
 
   activeExamSchedule?: ActiveExamSchedule;
+
+  examConfig?: ExamUploadConfig;
 
   isAdmin?: boolean;
 
@@ -311,6 +319,7 @@ export const TemplateDownloadSection: React.FC<
   examBreakdowns = DEFAULT_EXAM_BREAKDOWNS,
   examSchedules = DEFAULT_EXAM_SCHEDULES,
   activeExamSchedule = DEFAULT_ACTIVE_EXAM_SCHEDULE,
+  examConfig,
   isAdmin = false,
   onRequestTeacherAuth,
   onUpdateTemplate,
@@ -319,6 +328,8 @@ export const TemplateDownloadSection: React.FC<
   onOpenEvaluation,
   onOpenRaporSts,
 }) => {
+  const [showEditCustomWebLinkModal, setShowEditCustomWebLinkModal] = useState(false);
+
   const [
     editingTemplate,
     setEditingTemplate,
@@ -1053,8 +1064,8 @@ export const TemplateDownloadSection: React.FC<
             </div>
           </div>
 
-          {/* Shortcut actions — desain kartu horizontal konsep nomor 1 */}
-          <div className="grid min-w-0 flex-1 grid-cols-4 gap-1.5 sm:grid-cols-2 sm:gap-2 xl:grid-cols-[repeat(auto-fit,minmax(170px,1fr))]">
+          {/* Shortcut actions — 5 tombol sejajar (Info Soal, Jadwal, Tracking, Skor Nilai, Tautan Web) */}
+          <div className="grid min-w-0 flex-1 grid-cols-5 gap-1.5 sm:grid-cols-2 sm:gap-2 xl:grid-cols-[repeat(auto-fit,minmax(160px,1fr))]">
             {/* 1. INFO BUTIR SOAL */}
             <button
               type="button"
@@ -1138,6 +1149,61 @@ export const TemplateDownloadSection: React.FC<
               </span>
               <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-amber-700 sm:block" aria-hidden="true" />
             </button>
+
+            {/* 5. TAUTAN WEB FLEKSIBEL (BARU) */}
+            {(examConfig?.customWebLinkEnabled ?? true) && (
+              <div className="group relative flex min-h-[94px] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-1.5 py-3 text-center shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/40 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 active:translate-y-0 sm:min-h-[76px] sm:flex-row sm:justify-start sm:gap-3 sm:px-3 sm:py-3 sm:text-left">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetUrl = (examConfig?.customWebLinkUrl || '').trim();
+                    if (targetUrl) {
+                      let finalUrl = targetUrl;
+                      if (!/^https?:\/\//i.test(finalUrl)) {
+                        finalUrl = 'https://' + finalUrl;
+                      }
+                      window.open(finalUrl, '_blank', 'noopener,noreferrer');
+                    } else {
+                      if (isAdmin) {
+                        setShowEditCustomWebLinkModal(true);
+                      } else {
+                        alert('Tautan web belum diatur oleh Admin. Silakan hubungi admin untuk mendaftarkan URL tujuan.');
+                      }
+                    }
+                  }}
+                  className="flex w-full min-w-0 flex-1 items-center justify-between text-left focus:outline-none cursor-pointer"
+                  title={examConfig?.customWebLinkTitle || 'Tautan Web Eksternal'}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 text-blue-700 transition-colors duration-200 group-hover:border-blue-200 group-hover:bg-blue-100 sm:h-11 sm:w-11">
+                      <Globe className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 w-full flex-1 sm:w-auto">
+                      <span className="block truncate text-[11px] font-bold tracking-tight text-slate-800 transition-colors group-hover:text-blue-800 sm:text-[13px]">
+                        {examConfig?.customWebLinkTitle || 'Tautan Web'}
+                      </span>
+                      <span className="mt-0.5 hidden text-[11px] leading-snug text-slate-500 sm:block truncate">
+                        {examConfig?.customWebLinkSubtitle || 'Akses web eksternal'}
+                      </span>
+                    </span>
+                  </div>
+                  <ArrowRight className="hidden h-4 w-4 shrink-0 text-slate-400 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-blue-700 sm:block" aria-hidden="true" />
+                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowEditCustomWebLinkModal(true);
+                    }}
+                    className="absolute top-1.5 right-1.5 p-1 rounded-md bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-700 opacity-70 group-hover:opacity-100 transition-all cursor-pointer shadow-2xs"
+                    title="Atur Nama & Link Web (Khusus Admin)"
+                  >
+                    <Settings2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/*
               SHORTCUT SALIN DATA (PBS) DINONAKTIFKAN SEMENTARA.
@@ -1779,153 +1845,102 @@ export const TemplateDownloadSection: React.FC<
 
       {showBreakdownSelector && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-sm animate-fadeIn"
           onMouseDown={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
+            if (event.target === event.currentTarget) {
               closeBreakdownModal();
             }
           }}
         >
-
-          <div className="w-full max-w-[720px] sm:max-w-[760px] max-h-[88vh] overflow-y-auto overflow-x-hidden rounded-[22px] bg-[#151822] border border-[#30384D] shadow-2xl shadow-black/50 text-slate-100">
-
+          <div className="w-full max-w-[760px] max-h-[88vh] flex flex-col rounded-3xl bg-white border border-slate-200/90 shadow-2xl shadow-slate-900/15 text-slate-800 overflow-hidden">
             {/* ==================================================
                 HEADER
                 ================================================== */}
-
-            <div className="relative px-4 pt-4 pb-3 border-b border-[#272D3E]">
-
-              <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 flex items-center justify-between gap-3">
-
-                <div className="flex items-center gap-2.5 min-w-0">
-
-                  <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center flex-shrink-0">
-
-                    <ClipboardList className="w-4 h-4 text-cyan-400" />
-
-                  </div>
-
-                  <div className="min-w-0">
-
-                    <h3 className="text-base font-bold text-white tracking-tight">
+            <div className="px-5 py-4 border-b border-slate-200/80 bg-white flex items-center justify-between gap-3 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 shadow-sm shadow-emerald-700/10 shrink-0">
+                  <ClipboardList className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-heading text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate">
                       Info Butir Soal Ujian
                     </h3>
-
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Komposisi dan jumlah butir soal per mata pelajaran.
-                    </p>
-
                   </div>
-
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    Komposisi dan jumlah butir soal per mata pelajaran serta jenjang kelas
+                  </p>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={
-                    closeBreakdownModal
-                  }
-                  className="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer flex-shrink-0"
-                  aria-label="Tutup"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-
               </div>
 
+              <button
+                type="button"
+                onClick={closeBreakdownModal}
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                aria-label="Tutup"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             {/* ==================================================
-                TAB UJIAN
-                Hanya STS / SAS / US
+                TAB UJIAN (STS / SAS / US)
                 ================================================== */}
-
-            <div className="px-4 pt-4">
-
-              <div className="grid grid-cols-3 gap-2">
-
-                {DEFAULT_QUESTION_RULES.map(
-                  (rule, index) => {
-
-                    const isActive =
-                      index === selectedExamIndex;
-
-                    return (
-                      <button
-                        key={rule.label}
-                        type="button"
-                        onClick={() => {
-                          setSelectedExamIndex(index);
-                          setSelectedExamBreakdown(null);
-                          setEditingQuestionRules(
-                            getQuestionRulesForIndex(index)
-                          );
-                          setIsEditingBreakdown(false);
-                        }}
-                        className={`relative overflow-hidden rounded-xl px-3 py-2.5 text-xs sm:text-sm font-bold transition-all duration-300 cursor-pointer ${
-                          isActive
-                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-md shadow-cyan-500/10'
-                            : 'bg-[#10131B] text-slate-400 border border-[#272D3E] hover:text-slate-200 hover:border-slate-500'
-                        }`}
-                      >
-                        {isActive && (
-                          <span className="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50" />
-                        )}
-
-                        <span className="relative z-10">
-                          {rule.label}
-                        </span>
-                      </button>
-                    );
-                  }
-                )}
-
+            <div className="px-5 pt-4 pb-1 shrink-0">
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/70">
+                {DEFAULT_QUESTION_RULES.map((rule, index) => {
+                  const isActive = index === selectedExamIndex;
+                  return (
+                    <button
+                      key={rule.label}
+                      type="button"
+                      onClick={() => {
+                        setSelectedExamIndex(index);
+                        setSelectedExamBreakdown(null);
+                        setEditingQuestionRules(getQuestionRulesForIndex(index));
+                        setIsEditingBreakdown(false);
+                      }}
+                      className={`relative rounded-xl px-3 py-2 text-xs sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                        isActive
+                          ? 'bg-emerald-700 text-white shadow-sm shadow-emerald-800/25'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                      }`}
+                    >
+                      {rule.label}
+                    </button>
+                  );
+                })}
               </div>
-
             </div>
 
             {/* ==================================================
-                CONTENT — TABEL KETENTUAN
+                SCROLLABLE BODY CONTENT
                 ================================================== */}
-
-            <div className="px-3.5 py-3.5">
-
+            <div className="px-5 py-3.5 overflow-y-auto overflow-x-hidden flex-1 space-y-3">
               {isEditingBreakdown ? (
-
-                <div className="rounded-[20px] border border-amber-400/25 bg-gradient-to-br from-[#211D17] via-[#1A1917] to-[#15161B] overflow-hidden">
-
-                  <div className="px-4 py-3 border-b border-[#302B22]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/25 flex items-center justify-center">
-                        <Settings2 className="w-4 h-4 text-amber-300" />
+                <div className="rounded-2xl border border-amber-200/90 bg-amber-50/20 overflow-hidden shadow-sm">
+                  <div className="px-4 py-3 bg-amber-50/80 border-b border-amber-200/80 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-amber-100/90 border border-amber-300/80 flex items-center justify-center text-amber-800 shrink-0">
+                        <Settings2 className="w-4 h-4" />
                       </div>
-
                       <div className="min-w-0">
-                        <div className="text-xs uppercase tracking-wider text-amber-400 font-extrabold">
-                          Administrator
+                        <div className="text-[11px] uppercase tracking-wider text-amber-800 font-bold">
+                          Mode Pengaturan
                         </div>
-
-                        <h4 className="text-sm sm:text-base font-bold text-white truncate">
+                        <h4 className="font-heading text-sm sm:text-base font-bold text-slate-900 truncate">
                           Atur {getExamShortLabel(selectedExamIndex)}
                         </h4>
-
-                        <p className="text-xs text-slate-400 mt-0.5">
-                          Tambahkan atau hapus ketentuan mapel sesuai kebutuhan.
-                        </p>
                       </div>
                     </div>
+                    <span className="text-xs text-amber-900/80 font-medium hidden sm:inline">
+                      Simpan perubahan setelah selesai mengedit
+                    </span>
                   </div>
 
-                  <div className="p-3.5">
-
-                    <div className="w-full overflow-hidden rounded-xl border border-[#343443]">
-
+                  <div className="p-4 space-y-3">
+                    <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
                       <table className="w-full table-fixed border-collapse">
-
                         <colgroup>
                           <col className="w-[40%]" />
                           <col className="w-[15%]" />
@@ -1933,44 +1948,32 @@ export const TemplateDownloadSection: React.FC<
                           <col className="w-[15%]" />
                           <col className="w-[15%]" />
                         </colgroup>
-
                         <thead>
-                          <tr className="bg-[#101219] border-b border-[#343443]">
-
-                            <th className="px-2.5 py-2.5 text-left text-xs uppercase tracking-wide text-cyan-300 font-bold">
+                          <tr className="bg-slate-50/90 border-b border-slate-200 text-slate-700">
+                            <th className="px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wider">
                               Kelas / Mapel
                             </th>
-
-                            <th className="px-1 py-2.5 text-center text-xs sm:text-sm uppercase tracking-wide text-cyan-300 font-extrabold">
-                              A
+                            <th className="px-1 py-2.5 text-center text-xs font-bold text-sky-800">
+                              PG (A)
                             </th>
-
-                            <th className="px-1 py-2.5 text-center text-xs sm:text-sm uppercase tracking-wide text-amber-300 font-extrabold">
-                              B
+                            <th className="px-1 py-2.5 text-center text-xs font-bold text-amber-800">
+                              Isian (B)
                             </th>
-
-                            <th className="px-1 py-2.5 text-center text-xs sm:text-sm uppercase tracking-wide text-purple-300 font-extrabold">
-                              C
+                            <th className="px-1 py-2.5 text-center text-xs font-bold text-purple-800">
+                              Uraian (C)
                             </th>
-
-                            <th className="px-1 py-2.5 text-center text-xs uppercase tracking-wide text-rose-300 font-bold">
+                            <th className="px-1 py-2.5 text-center text-xs font-bold text-rose-800">
                               Aksi
                             </th>
-
                           </tr>
                         </thead>
-
-                        <tbody>
-
+                        <tbody className="divide-y divide-slate-100">
                           {editingQuestionRules.map((row, rowIndex) => (
-
                             <tr
                               key={`${selectedExamIndex}-${rowIndex}`}
-                              className="border-b border-[#2A2D3A] last:border-b-0"
+                              className="hover:bg-slate-50/50 transition-colors"
                             >
-
-                              <td className="px-1.5 py-2">
-
+                              <td className="px-2 py-2">
                                 <input
                                   type="text"
                                   value={row.label}
@@ -1981,13 +1984,11 @@ export const TemplateDownloadSection: React.FC<
                                       e.target.value
                                     )
                                   }
-                                  className="block w-full h-9 rounded-xl border border-[#343443] bg-[#0E1017] px-2.5 text-xs sm:text-sm font-semibold text-white outline-none focus:border-amber-400"
+                                  placeholder="Nama mapel / kelas"
+                                  className="block w-full h-9 rounded-xl border border-slate-200 bg-white px-2.5 text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
                                 />
-
                               </td>
-
                               <td className="px-1 py-2">
-
                                 <input
                                   type="number"
                                   min={0}
@@ -2001,13 +2002,10 @@ export const TemplateDownloadSection: React.FC<
                                       e.target.value
                                     )
                                   }
-                                  className="block w-full h-9 rounded-xl border border-[#343443] bg-[#0E1017] px-1 text-center text-xs sm:text-sm font-extrabold text-white outline-none focus:border-amber-400"
+                                  className="block w-full h-9 rounded-xl border border-slate-200 bg-white px-1 text-center text-xs sm:text-sm font-bold text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
                                 />
-
                               </td>
-
                               <td className="px-1 py-2">
-
                                 <input
                                   type="number"
                                   min={0}
@@ -2021,13 +2019,10 @@ export const TemplateDownloadSection: React.FC<
                                       e.target.value
                                     )
                                   }
-                                  className="block w-full h-9 rounded-xl border border-[#343443] bg-[#0E1017] px-1 text-center text-xs sm:text-sm font-extrabold text-white outline-none focus:border-amber-400"
+                                  className="block w-full h-9 rounded-xl border border-slate-200 bg-white px-1 text-center text-xs sm:text-sm font-bold text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
                                 />
-
                               </td>
-
                               <td className="px-1 py-2">
-
                                 <input
                                   type="number"
                                   min={0}
@@ -2041,20 +2036,17 @@ export const TemplateDownloadSection: React.FC<
                                       e.target.value
                                     )
                                   }
-                                  className="block w-full h-9 rounded-xl border border-[#343443] bg-[#0E1017] px-1 text-center text-xs sm:text-sm font-extrabold text-white outline-none focus:border-amber-400"
+                                  className="block w-full h-9 rounded-xl border border-slate-200 bg-white px-1 text-center text-xs sm:text-sm font-bold text-slate-800 tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
                                 />
-
                               </td>
-
                               <td className="px-1 py-2">
-
                                 <button
                                   type="button"
                                   onClick={() =>
                                     deleteEditingQuestionRule(rowIndex)
                                   }
                                   disabled={editingQuestionRules.length <= 1}
-                                  className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-rose-400/20 bg-rose-400/10 text-rose-300 hover:bg-rose-400/20 hover:border-rose-400/40 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+                                  className="mx-auto flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                                   title={
                                     editingQuestionRules.length <= 1
                                       ? 'Minimal satu ketentuan harus tersisa'
@@ -2064,90 +2056,48 @@ export const TemplateDownloadSection: React.FC<
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
-
                               </td>
-
                             </tr>
-
                           ))}
-
                         </tbody>
-
                       </table>
-
                     </div>
 
                     <button
                       type="button"
                       onClick={addEditingQuestionRule}
-                      className="mt-3 w-full h-9 rounded-xl border border-dashed border-cyan-400/40 bg-cyan-400/10 hover:bg-cyan-400/20 hover:border-cyan-400/60 text-xs font-bold text-cyan-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      className="w-full h-9 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-400 text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
-                      Tambah Ketentuan
+                      Tambah Ketentuan Baru
                     </button>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
-
-                      <div className="rounded-xl bg-cyan-400/10 border border-cyan-400/20 px-3 py-2">
-                        <div className="text-xs font-bold text-cyan-300">
-                          A · Pilihan Ganda
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl bg-amber-400/10 border border-amber-400/20 px-3 py-2">
-                        <div className="text-xs font-bold text-amber-300">
-                          B · Isian
-                        </div>
-                      </div>
-
-                      <div className="rounded-xl bg-purple-400/10 border border-purple-400/20 px-3 py-2">
-                        <div className="text-xs font-bold text-purple-300">
-                          C · Essay / Menjodohkan
-                        </div>
-                      </div>
-
-                    </div>
-
                   </div>
 
-                  <div className="px-4 py-3 border-t border-[#302B22] flex justify-end gap-2">
-
+                  <div className="px-4 py-3 bg-amber-50/60 border-t border-amber-200/80 flex justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => {
                         setEditingQuestionRules(
-                          getQuestionRulesForIndex(
-                            selectedExamIndex
-                          )
+                          getQuestionRulesForIndex(selectedExamIndex)
                         );
                         setIsEditingBreakdown(false);
                       }}
                       disabled={isSavingBreakdown}
-                      className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold disabled:opacity-50 transition-all cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold disabled:opacity-50 transition-colors cursor-pointer shadow-xs"
                     >
                       Batal
                     </button>
-
                     <button
                       type="button"
                       onClick={saveBreakdownRules}
-                      disabled={
-                        isSavingBreakdown ||
-                        !onUpdateExamConfig
-                      }
-                      className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-500/20"
+                      disabled={isSavingBreakdown || !onUpdateExamConfig}
+                      className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold disabled:opacity-50 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-700/20"
                     >
-                      {isSavingBreakdown
-                        ? 'Menyimpan...'
-                        : 'Simpan'}
+                      {isSavingBreakdown ? 'Menyimpan...' : 'Simpan Perubahan'}
                     </button>
-
                   </div>
-
                 </div>
-
               ) : (
-
                 (() => {
                   const fallbackRules =
                     DEFAULT_QUESTION_RULES[
@@ -2165,213 +2115,167 @@ export const TemplateDownloadSection: React.FC<
                       fallbackRules?.label ||
                       getExamShortLabel(selectedExamIndex),
                     rows:
-                      persistedRules &&
-                      persistedRules.length > 0
+                      persistedRules && persistedRules.length > 0
                         ? persistedRules.map((row) => ({
                             label: row.label,
                             pg: Number(row.pg) || 0,
                             isian: Number(row.isian) || 0,
                             essay: Number(row.essay) || 0,
                           }))
-                        : (fallbackRules?.rows || []),
+                        : fallbackRules?.rows || [],
                   };
 
                   return (
-                    <div className="rounded-[20px] border border-[#2B3448] bg-gradient-to-br from-[#161B26] via-[#141824] to-[#11141E] overflow-hidden">
-
-                      <div className="px-4 py-3.5 border-b border-[#293246]">
-
-                        <div className="flex items-center justify-between gap-3">
-
-                          <div>
-                            <span className="text-xs uppercase tracking-wider text-cyan-400 font-extrabold">
-                              Ketentuan Jenis Soal
-                            </span>
-
-                            <h4 className="text-base sm:text-lg font-bold text-white tracking-tight mt-0.5">
-                              {activeRules.label}
-                            </h4>
-                          </div>
-
-                          <div className="px-3 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-xs font-bold text-cyan-300 whitespace-nowrap">
-                            {activeRules.rows.length} Ketentuan
-                          </div>
-
+                    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+                      {/* Subheader */}
+                      <div className="px-4 py-3 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between gap-3">
+                        <div>
+                          <span className="text-[11px] uppercase tracking-wider text-emerald-800 font-bold block">
+                            Ketentuan Format Soal
+                          </span>
+                          <h4 className="font-heading text-base font-bold text-slate-900 tracking-tight mt-0.5">
+                            {activeRules.label}
+                          </h4>
                         </div>
-
+                        <div className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200/80 text-xs font-bold text-emerald-800 whitespace-nowrap">
+                          {activeRules.rows.length} Ketentuan Mapel
+                        </div>
                       </div>
 
-                      {/* ==================================================
-                          TABEL KOMPAK
-                          Hanya menampilkan A / B / C.
-                          Tidak ada horizontal scroll dan tidak ada kolom Total.
-                          ================================================== */}
+                      {/* Tabel Komposisi */}
+                      <div className="w-full max-w-full overflow-hidden">
+                        <table className="w-full max-w-full table-fixed border-collapse">
+                          <colgroup>
+                            <col className="w-[38%]" />
+                            <col className="w-[15%]" />
+                            <col className="w-[15%]" />
+                            <col className="w-[16%]" />
+                            <col className="w-[16%]" />
+                          </colgroup>
+                          <thead>
+                            <tr className="bg-slate-50/90 border-b border-slate-200">
+                              <th className="px-3.5 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-slate-700">
+                                Mata Pelajaran
+                              </th>
+                              <th className="px-1 py-2.5 text-center">
+                                <span className="inline-block text-xs font-bold text-sky-800 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200/70">
+                                  PG (A)
+                                </span>
+                              </th>
+                              <th className="px-1 py-2.5 text-center">
+                                <span className="inline-block text-xs font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/70">
+                                  Isian (B)
+                                </span>
+                              </th>
+                              <th className="px-1 py-2.5 text-center">
+                                <span className="inline-block text-xs font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/70">
+                                  Uraian (C)
+                                </span>
+                              </th>
+                              <th className="px-1 py-2.5 text-center">
+                                <span className="inline-block text-xs font-extrabold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
+                                  Total
+                                </span>
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {activeRules.rows.map((row, index) => (
+                              <tr
+                                key={`${activeRules.label}-${row.label}`}
+                                className={`transition-colors hover:bg-emerald-50/30 ${
+                                  index % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'
+                                }`}
+                              >
+                                <td className="min-w-0 px-3.5 py-2.5">
+                                  <div className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug truncate">
+                                    {row.label}
+                                  </div>
+                                </td>
+                                <td className="px-1 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-700 tabular-nums">
+                                  {row.pg}
+                                </td>
+                                <td className="px-1 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-700 tabular-nums">
+                                  {row.isian}
+                                </td>
+                                <td className="px-1 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-700 tabular-nums">
+                                  {row.essay}
+                                </td>
+                                <td className="px-1 py-2.5 text-center">
+                                  <span className="inline-flex min-w-[32px] h-6 px-1.5 items-center justify-center rounded-md bg-emerald-50 border border-emerald-200/80 text-xs sm:text-sm font-extrabold text-emerald-800 tabular-nums">
+                                    {Number(row.pg || 0) +
+                                      Number(row.isian || 0) +
+                                      Number(row.essay || 0)}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
 
-                      <div className="w-full max-w-full overflow-hidden rounded-xl border border-[#293246]">
-
-  <table className="w-full max-w-full table-fixed border-collapse">
-
-    <colgroup>
-      <col className="w-[40%]" />
-      <col className="w-[15%]" />
-      <col className="w-[15%]" />
-      <col className="w-[15%]" />
-      <col className="w-[15%]" />
-    </colgroup>
-
-    <thead>
-      <tr className="bg-[#0F141F] border-b border-[#293246]">
-
-        <th className="px-3 py-3 text-left text-xs font-bold uppercase tracking-wider text-cyan-300">
-          Kelas / Mapel
-        </th>
-
-        <th className="px-1 py-3 text-center text-xs sm:text-sm font-extrabold text-cyan-300">
-          A
-        </th>
-
-        <th className="px-1 py-3 text-center text-xs sm:text-sm font-extrabold text-amber-300">
-          B
-        </th>
-
-        <th className="px-1 py-3 text-center text-xs sm:text-sm font-extrabold text-purple-300">
-          C
-        </th>
-
-        <th className="px-1 py-3 text-center text-xs sm:text-sm font-extrabold text-emerald-300">
-          TOTAL
-        </th>
-
-      </tr>
-    </thead>
-
-    <tbody>
-
-      {activeRules.rows.map((row, index) => (
-        <tr
-          key={`${activeRules.label}-${row.label}`}
-          className={`border-b border-[#202836] last:border-b-0 ${
-            index % 2 === 0
-              ? 'bg-[#121722]/50'
-              : 'bg-[#0F141F]/80'
-          }`}
-        >
-
-          <td className="min-w-0 px-3 py-2.5">
-            <div className="text-xs sm:text-sm font-semibold text-slate-100 leading-tight">
-              {row.label}
-            </div>
-          </td>
-
-          <td className="px-1 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-100 tabular-nums">
-            {row.pg}
-          </td>
-
-          <td className="px-1 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-100 tabular-nums">
-            {row.isian}
-          </td>
-
-          <td className="px-1 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-100 tabular-nums">
-            {row.essay}
-          </td>
-
-          <td className="px-1 py-2.5 text-center">
-            <span className="inline-flex min-w-[34px] h-7 px-2 items-center justify-center rounded-lg bg-emerald-400/15 border border-emerald-400/30 text-xs sm:text-sm font-extrabold text-emerald-300 tabular-nums">
-              {Number(row.pg || 0) +
-               Number(row.isian || 0) +
-               Number(row.essay || 0)}
-            </span>
-          </td>
-
-        </tr>
-      ))}
-
-    </tbody>
-
-  </table>
-
-</div>
-
-{/* ==================================================
-                          KETERANGAN BAGIAN
-                          ================================================== */}
-
-                      <div className="px-4 py-3.5 border-t border-[#293246] bg-[#101720]/50">
-
+                      {/* Keterangan Bagian & Legend */}
+                      <div className="px-4 py-3 border-t border-slate-200 bg-slate-50/60">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-
-                          <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-3 py-2">
-                            <div className="text-xs font-bold text-cyan-300">
-                              A · Pilihan Ganda
+                          <div className="rounded-xl border border-sky-200/80 bg-sky-50/50 px-3 py-2">
+                            <div className="text-xs font-bold text-sky-800">
+                              A · Pilihan Ganda (PG)
                             </div>
                           </div>
-
-                          <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 px-3 py-2">
-                            <div className="text-xs font-bold text-amber-300">
-                              B · Isian
+                          <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 px-3 py-2">
+                            <div className="text-xs font-bold text-amber-800">
+                              B · Soal Isian Singkat
                             </div>
                           </div>
-
-                          <div className="rounded-xl border border-purple-400/20 bg-purple-400/10 px-3 py-2">
-                            <div className="text-xs font-bold text-purple-300">
-                              C · Essay / Menjodohkan
+                          <div className="rounded-xl border border-purple-200/80 bg-purple-50/50 px-3 py-2">
+                            <div className="text-xs font-bold text-purple-800">
+                              C · Uraian / Menjodohkan
                             </div>
                           </div>
-
                         </div>
 
-                        <div className="flex items-start gap-2.5 mt-3">
-
-                          <Info className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-
-                          <p className="text-xs leading-relaxed text-slate-400">
-                            Jumlah pada kolom A, B, dan C menunjukkan jumlah soal pada masing-masing bagian.
+                        <div className="flex items-start gap-2 mt-2.5 text-xs text-slate-500">
+                          <Info className="w-4 h-4 text-emerald-700 mt-0.5 shrink-0" />
+                          <p className="leading-relaxed">
+                            Jumlah butir pada kolom A, B, dan C menunjukkan alokasi soal pada masing-masing lembar ujian.
                           </p>
-
                         </div>
-
                       </div>
-
                     </div>
                   );
                 })()
-
               )}
-
             </div>
 
             {/* ==================================================
                 FOOTER
                 ================================================== */}
-
             {!isEditingBreakdown && (
-              <div className="px-4 pb-4 flex items-center justify-between gap-3">
-
+              <div className="px-5 py-3 border-t border-slate-200/80 bg-slate-50/50 flex items-center justify-between gap-3 shrink-0">
                 {isAdmin ? (
                   <button
                     type="button"
                     onClick={beginEditingBreakdown}
-                    className="px-3.5 py-2.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-300 text-xs font-bold transition-all cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200/80 text-amber-800 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                   >
-                    ⚙ Atur Butir Soal
+                    <Settings2 className="w-3.5 h-3.5 text-amber-700" />
+                    Atur Butir Soal
                   </button>
                 ) : (
-                  <span className="text-xs text-slate-500">
-                    Informasi ketentuan ujian
+                  <span className="text-xs text-slate-400">
+                    Informasi resmi format dan butir soal ujian
                   </span>
                 )}
 
                 <button
                   type="button"
                   onClick={closeBreakdownModal}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Tutup
                 </button>
-
               </div>
             )}
-
           </div>
         </div>
       )}
@@ -2470,6 +2374,21 @@ export const TemplateDownloadSection: React.FC<
             onClose={() =>
               setDriveTransitionModal({ isOpen: false, targetUrl: '', title: '' })
             }
+          />
+        </React.Suspense>
+      )}
+
+      {showEditCustomWebLinkModal && (
+        <React.Suspense fallback={<LazyModalLoader title="Pengaturan Tautan Web" />}>
+          <EditCustomWebLinkModal
+            isOpen={true}
+            config={examConfig}
+            onClose={() => setShowEditCustomWebLinkModal(false)}
+            onSave={async (updates) => {
+              if (onUpdateExamConfig) {
+                await onUpdateExamConfig(updates);
+              }
+            }}
           />
         </React.Suspense>
       )}

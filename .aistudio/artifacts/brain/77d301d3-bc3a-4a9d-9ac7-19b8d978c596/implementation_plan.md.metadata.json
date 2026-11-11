@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan to move search bar to the top navbar next to QRIS and clean up duplicate controls (search, date, profile/QRIS pill, notification bell, logout) from the dashboard banner.",
-  "updatedAt": "2026-10-16T07:45:02.437560362Z",
-  "requestFeedback": true,
-  "userFacing": true
+  "summary":  "Implementation plan for revising the Analysis Worksheet setup: 1. Keep mode selection cards accessible even after session selection / mode switch, 2. Remove bulky workspace banner and start directly with school selection, 3. Make Buka/Pulihkan modal compact and clean with 3 top cards.",
+  "updatedAt":  "2026-10-29T07:22:52.441011533Z",
+  "requestFeedback":  true,
+  "userFacing":  true
 }

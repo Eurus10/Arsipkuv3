@@ -84,7 +84,7 @@ const RaporWorkspace = lazy(() =>
 );
 const EraporAdminDashboard = lazy(() =>
   import('./components/rapor/EraporAdminDashboard').then((m) => ({
-    default: m.EraporAdminDashboard,
+    default: m.EraporAdminDashboard || m.default,
   }))
 );
 const AdminView = lazy(() =>
@@ -108,7 +108,7 @@ const UploadSoalModal = lazy(() =>
 );
 const LoginModal = lazy(() =>
   import('./components/LoginModal').then((m) => ({
-    default: m.LoginModal,
+    default: m.default || m.LoginModal,
   }))
 );
 const TeacherAuthModal = lazy(() =>

@@ -41,6 +41,7 @@ import {
   fetchAcademicSubjects,
   updateAcademicSubject,
 } from '../../services/academicSubjectStorage';
+import { invalidateAcademicSubjectsCache } from '../../services/analysis/analysisAcademicBridge';
 
 export type AcademicSectionType =
   | 'master'
@@ -272,6 +273,7 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         notify('Mata pelajaran berhasil ditambahkan.');
       }
 
+      invalidateAcademicSubjectsCache();
       setSubjectModal(null);
       await loadSubjects(selectedLevelId);
     } catch (err) {
@@ -286,6 +288,7 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
     setError(null);
     try {
       await updateAcademicSubject(subject.id, { active: !subject.active });
+      invalidateAcademicSubjectsCache();
       notify(
         `Mata pelajaran "${subject.name}" ${subject.active ? 'dinonaktifkan' : 'diaktifkan'}.`,
         'info'
@@ -372,6 +375,7 @@ export const AcademicSettingsView: React.FC<AcademicSettingsViewProps> = ({
         copyObjectives: false,
       });
 
+      invalidateAcademicSubjectsCache();
       notify(
         `${result.copiedSubjectsCount} mata pelajaran berhasil disalin ke Kelas ${selectedLevel?.grade}.`
       );

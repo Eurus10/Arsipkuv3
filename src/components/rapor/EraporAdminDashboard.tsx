@@ -1326,3 +1326,5 @@ export const EraporAdminDashboard: React.FC<EraporAdminDashboardProps> = ({
     </div>
   );
 };
+
+export default EraporAdminDashboard;

@@ -9,7 +9,32 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        'react': path.resolve(__dirname, 'node_modules/react'),
+        'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
       },
+      dedupe: ['react', 'react-dom'],
+    },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-dom',
+        'react-dom/client',
+        'lucide-react',
+        '@supabase/supabase-js',
+        'docx',
+        'jspdf',
+        'jszip',
+        'mammoth',
+        'xlsx',
+        'xlsx-js-style',
+        'html-to-image',
+        'html2canvas',
+        'firebase/app',
+        'firebase/auth',
+        'firebase/firestore',
+      ],
     },
     build: {
       rollupOptions: {
