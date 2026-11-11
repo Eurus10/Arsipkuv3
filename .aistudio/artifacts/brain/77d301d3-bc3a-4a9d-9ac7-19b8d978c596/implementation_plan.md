@@ -1,24 +1,32 @@
-# Implementation Plan - Lembar Analisis Soal Revisions
+# Implementasi Redesain Workspace Analisis Butir Soal
 
-## User Requests & Proposed Solutions
+Berdasarkan referensi desain yang dilampirkan (`image_3dd8f2ac.png`), antarmuka **Workspace Analisis Butir Soal** telah diperbarui secara penuh untuk tampilan mobile dan desktop, baik pada **Mode Wali Kelas** maupun **Mode Guru Bidang**.
 
-### 1. Persistent Mode & Setup Navigation
-- **Issue**: When switching modes or selecting a class, the top 3 mode selection cards (`Mode Wali Kelas`, `Mode Guru Bidang`, `Buka / Pulihkan`) disappear, requiring the user to close and reopen the modal to switch modes.
-- **Solution**: Ensure the top 3 mode selection cards remain visible on the setup header or allow returning to mode selection at any point during setup, or keep them persistent at the top of the modal before active dashboard view.
+## Ringkasan Perubahan UI
 
-### 2. Remove Bulky Workspace Banner
-- **Issue**: The banner containing "WORKSPACE ANALISIS TERPADU" and introductory description takes up unnecessary space.
-- **Solution**: Remove the workspace banner entirely and start the view directly with "1. SEKOLAH / LEMBAGA".
+### 1. Header & Identitas Workspace
+- **Judul**: "Workspace Analisis Butir Soal" dilengkapi badge lavender `[📄 {Jenis Ujian}]` dan subjudul informatif.
+- **Kartu Identitas Terbagi 2 Kolom (Split Card)**:
+  - **Mode Wali Kelas**: Kolom Kiri menampilkan **`[🎓] KELAS {Nama Kelas}`** (aksen biru langit) dan Kolom Kanan menampilkan **`[👤] Wali Kelas: {Nama Guru}`** (aksen kuning emas).
+  - **Mode Guru Bidang**: Sesuai instruksi khusus, Kolom Kiri menampilkan **`[📖] {Nama Mata Pelajaran}`** dan Kolom Kanan menampilkan **`[👤] Guru Pengampu: {Nama Guru}`**.
 
-### 3. Compact "Buka / Pulihkan" View / Modal
-- **Issue**: The "Buka / Pulihkan" UI options appear too large/bulky, leaving little space below.
-- **Solution**: Redesign `RestoreAnalysisModal` to be extremely compact with 3 clean horizontal cards at the top (Import Excel, Tarik Analisis 6-Digit, Template Kosong), leaving the rest of the modal spacious and uncrowded.
+### 2. Strip Parameter & Metrik (Grid 2x2 di Mobile, 4 Kolom di Desktop)
+- **Jenis Ujian**: Ikon dokumen ungu / lavender (`STS1`, `SAS1`, dsb.).
+- **Peserta Didik / Kelas Diampu**: Ikon grup siswa ungu muda (total rombel dan siswa terdaftar).
+- **Target KKTP**: Ikon target amber pastel (`≥ 70` atau sesuai setting).
+- **Periode**: Ikon kalender mint emerald (`TP 2026/2027` / semester).
 
-## File Changes
-- **`src/components/AnalisisSoalGeneratorModal.tsx`**:
-  - Remove the workspace banner.
-  - Make top mode selection cards persistently accessible or ensure switching between Wali Kelas and Guru Bidang keeps the setup accessible without disappearing.
-- **`src/components/analysis/SessionSetupCard.tsx`**:
-  - Refine layout so mode cards remain at the top when switching or configuring.
-- **`src/components/analysis/RestoreAnalysisModal.tsx`**:
-  - Compact the 3 options into sleek, clean top cards.
+### 3. Tiga Tombol Aksi Utama Berwarna (Vibrant Card Actions)
+- **Mata Pelajaran / Tambah Mapel**: Kartu gradien biru cerah dengan lingkaran putih `+` untuk menambah mapel baru.
+- **Rekap Nilai**: Kartu mint lembut `#E8FAF2` dengan ikon pita medali untuk rekapitulasi nilai seluruh mapel/kelas.
+- **Kirim ke Pak Zaki**: Kartu gradien emerald hijau dengan ikon kirim `Send` untuk menyerahkan hasil analisis ke admin/Pak Zaki.
+
+### 4. Empat Tombol Utilitas Sekunder
+- **Download / Atur Kelas**: Kartu mint `#F0FAF4` untuk unduh berkas atau pengaturan butir soal.
+- **Import / Ganti Mapel**: Kartu lavender `#F7F3FF` untuk memasukkan data atau beralih ke sesi lain.
+- **Kode Tarik (Pindah Device)**: Kartu biru langit `#F0F8FF` dengan ikon transfer untuk melanjutkan pengerjaan di HP/laptop lain secara instan menggunakan kode 6-digit.
+- **Ganti Sesi / Hapus Sesi**: Kartu netral/rose untuk mengelola sesi pengerjaan.
+
+## Berkas yang Diperbarui
+1. `src/components/analysis/SessionDashboard.tsx` — Workspace Mode Wali Kelas.
+2. `src/components/analysis/SubjectTeacherWorkspace.tsx` — Workspace Mode Guru Bidang (menampilkan Mata Pelajaran pada kolom identitas utama).

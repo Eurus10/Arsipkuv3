@@ -34,6 +34,8 @@ import {
   Printer,
   MessageSquare,
   Trash2,
+  ArrowRightLeft,
+  Copy,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import {
@@ -44,6 +46,7 @@ import {
   StudentAnswers,
   AnalysisImportContext,
 } from '../../types/analysisTypes';
+import { createTransferCode } from '../../services/analysis/analysisTransferService';
 import { MasterClass } from '../../data/masterExamData';
 import { Student, getStoredSchools, DEFAULT_SCHOOL_NAME } from '../../services/studentStorage';
 import {
@@ -202,6 +205,26 @@ export const SubjectTeacherWorkspace: React.FC<SubjectTeacherWorkspaceProps> = (
   const [submissions, setSubmissions] = useState<AnalysisSubmissionItem[]>(() =>
     getLocalAnalysisSubmissions()
   );
+
+  const [transferCodeData, setTransferCodeData] = useState<{ code: string; expiresAt: string } | null>(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleGenerateTransferCodeForActiveClass = async () => {
+    if (!activeClassSession) {
+      alert('Sesi kelas ini belum siap untuk dibuatkan kode tarik.');
+      return;
+    }
+    setIsGeneratingCode(true);
+    try {
+      const res = await createTransferCode(activeClassSession);
+      setTransferCodeData(res);
+    } catch (err: any) {
+      alert('Gagal membuat kode tarik: ' + (err?.message || 'Error'));
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = subscribeToAnalysisSubmissions((items) => {
@@ -710,6 +733,15 @@ const handleConfirmDeleteSubject = (target: {
       )
       .sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' }));
   }, [students, activeClassId, selectedSchool]);
+
+  // Total siswa di seluruh rombel yang diampu
+  const totalStudentsAllClasses = useMemo(() => {
+    return students.filter(
+      (s) =>
+        selectedClassIds.some((cid) => cid.toLowerCase() === s.classId.toLowerCase()) &&
+        (!selectedSchool || (s.schoolName || DEFAULT_SCHOOL_NAME).toLowerCase() === selectedSchool.toLowerCase())
+    ).length;
+  }, [students, selectedClassIds, selectedSchool]);
 
   // Filter siswa pencarian
   const filteredStudents = useMemo(() => {
@@ -1259,173 +1291,228 @@ const handleExportAllClasses = () => {
   // ====================================================
   return (
     <div className="space-y-5 animate-[fadeIn_150ms_ease-out] font-sans text-slate-800">
-      {/* Top Banner Guru Bidang (Clean Executive Light) */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
-        {/* Subtle Ambient Glow */}
-        <div className="hidden sm:block pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-indigo-100/40 blur-3xl" />
-        <div className="hidden sm:block pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-purple-100/40 blur-3xl" />
+      {/* ====================================================
+          WORKSPACE HEADER & IDENTITY BANNER (DESAIN SESUAI LAMPIRAN)
+          ==================================================== */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
+        {/* 1. Header: Judul & Pill Badge Jenis Ujian */}
+        <div className="space-y-1.5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Workspace Analisis Butir Soal
+          </h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono shadow-2xs">
+              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+              <span>{examType}</span>
+            </span>
+            <span className="text-xs text-slate-500 font-medium line-clamp-1">
+              Pengelolaan asesmen mata pelajaran {activeSubjectName} untuk {selectedClassIds.length} rombel kelas
+            </span>
+          </div>
+        </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch justify-between gap-5 lg:gap-6">
-          {/* Info Utama Mapel */}
-          <div className="flex-1 flex flex-col justify-between min-w-0">
-            {/* 1. Top Row: Institutional Context & Tags */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100/90 border border-slate-200/90 text-slate-700 shadow-2xs">
-                <Building2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="font-bold text-slate-800">{selectedSchool || DEFAULT_SCHOOL_NAME}</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-500 font-mono">TP {schoolYear}</span>
-              </div>
-
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-50 border border-indigo-200 text-indigo-700 tracking-wider uppercase shadow-2xs">
-                <BookOpen className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                <span>{activeSubjectName}</span>
-              </div>
-
-              {/* Tombol Cepat Tambah Mapel Lain */}
-              <button
-                type="button"
-                onClick={handleOpenAddSubjectModal}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 transition-all cursor-pointer shadow-2xs active:scale-95"
-                title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
-              >
-                <Plus className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span>+ Tambah Mapel Lain</span>
-              </button>
-
-              {teacherName && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 border border-amber-200 text-amber-800 shadow-2xs">
-                  <UserCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  <span>Guru: {teacherName}</span>
-                </div>
-              )}
+        {/* 2. Banner Informasi Identitas (Split Card 2 Kolom) - Sesuai instruksi: Sisi Kiri menampilkan Mata Pelajaran */}
+        <div className="bg-[#F8FCFA] border border-slate-200/90 rounded-2xl p-3 sm:p-4 grid grid-cols-2 divide-x divide-slate-200 items-center shadow-2xs">
+          {/* Sisi Kiri: Mata Pelajaran */}
+          <div className="flex items-center justify-center gap-2.5 px-2">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
+              <BookOpen className="w-5 h-5" />
             </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Mata Pelajaran</span>
+              <span className="text-sm sm:text-base font-black text-sky-700 truncate block">
+                {activeSubjectName}
+              </span>
+            </div>
+          </div>
 
-            {/* 2. Middle Row: Main Title & Description */}
-            <div className="mt-3.5 mb-3.5">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug flex flex-wrap items-center gap-2 sm:gap-3">
-                <span>Workspace Analisis {activeSubjectName}</span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 font-mono">
-                  <FileText className="w-3 h-3 text-purple-600" />
-                  {examType}
-                </span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-1 line-clamp-1">
-                Pengelolaan dan analisis terpusat untuk {selectedClassIds.length} rombel kelas yang diampu
+          {/* Sisi Kanan: Guru Pengampu */}
+          <div className="flex items-center justify-center gap-2.5 px-2 pl-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
+              <UserCheck className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Guru Pengampu</span>
+              <span className="text-xs sm:text-sm font-black text-amber-800 truncate block">
+                {teacherName || 'Guru Pengampu'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. 4 Kartu Parameter / Metrik Utama (2x2 di Mobile, 4 Kolom di Desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {/* Card 1: Jenis Ujian */}
+          <div className="bg-[#F9F8FE] border border-[#ECE8FB] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#EDE7FB] border border-[#DDD3FA] flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Jenis Ujian</p>
+              <p className="text-xs sm:text-sm font-black text-slate-800 truncate">{examType}</p>
+            </div>
+          </div>
+
+          {/* Card 2: Kelas Diampu */}
+          <div className="bg-[#FAF7FE] border border-[#EFE8FC] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#EFE7FC] border border-[#E0D2FA] flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 text-purple-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Kelas Diampu</p>
+              <p className="text-xs sm:text-sm font-black text-slate-800 truncate">
+                {selectedClassIds.length} Rombel ({totalStudentsAllClasses} Siswa)
               </p>
             </div>
+          </div>
 
-            {/* 3. Bottom Row: 4-Card Parametric Strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-indigo-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Jenis Ujian</p>
-                  <p className="text-xs font-bold text-slate-800 truncate">{examType}</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-4 h-4 text-sky-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Kelas Diampu</p>
-                  <p className="text-xs font-bold text-slate-800 truncate">{selectedClassIds.length} Rombel</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
-                  <Target className="w-4 h-4 text-amber-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Target KKTP</p>
-                  <p className="text-xs font-black text-amber-700 truncate">≥ {kktp}</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4 text-emerald-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Tanggal Asesmen</p>
-                  <p className="text-xs font-bold text-slate-800 truncate">{analysisDate}</p>
-                </div>
-              </div>
+          {/* Card 3: Target KKTP */}
+          <div className="bg-[#FFFBF5] border border-[#FEEED8] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#FEF1DF] border border-[#FDE0BD] flex items-center justify-center shrink-0">
+              <Target className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target KKTP</p>
+              <p className="text-xs sm:text-sm font-black text-amber-700 truncate">≥ {kktp}</p>
             </div>
           </div>
 
-          {/* Action Buttons Top Banner */}
-          <div className="w-full lg:w-[280px] xl:w-[310px] shrink-0 flex flex-col justify-between gap-2.5 self-stretch pt-2 lg:pt-0">
-            <button
-              type="button"
-              onClick={handleExportAllClasses}
-              className="w-full h-11 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm border border-emerald-500/40 cursor-pointer transition-all"
-              title="Download berkas Excel untuk semua kelas yang diajar"
-            >
-              <Download className="w-4 h-4 stroke-[2.5]" />
-              <span>Download Excel Semua Kelas</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setSendTargetMode('all');
-                setIsSendToPakZakiOpen(true);
-              }}
-              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-600 hover:from-teal-700 hover:to-emerald-700 active:scale-[0.98] text-white font-extrabold text-xs tracking-wide flex items-center justify-center gap-2 shadow-sm border border-teal-500/40 cursor-pointer transition-all"
-              title="Kirim lembar analisis seluruh kelas ini langsung ke Pak Zaki"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>🚀 Kirim ke Pak Zaki (Semua Kelas)</span>
-            </button>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={handleOpenAddSubjectModal}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] text-emerald-800 border border-emerald-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
-                title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
-              >
-                <Plus className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="truncate">+ Tambah Mapel</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowSwitchSessionModal(true)}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-sky-50 hover:bg-sky-100 active:scale-[0.98] text-sky-800 border border-sky-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
-                title="Pilih atau beralih ke mapel / sesi yang pernah dibuat"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                <span className="truncate">Ganti Mapel</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(true)}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-purple-50 hover:bg-purple-100 active:scale-[0.98] text-purple-800 border border-purple-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
-                title="Edit struktur & bobot butir soal atau tambah rombel kelas"
-              >
-                <Settings2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                <span className="truncate">Atur Bobot &amp; Kelas</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowDeleteSessionModal(true)}
-                className="h-10 px-2 sm:px-3 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-[0.98] text-rose-700 border border-rose-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
-                title="Hapus sesi analisis mata pelajaran ini"
-              >
-                <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-                <span className="truncate">Hapus Sesi</span>
-              </button>
+          {/* Card 4: Periode */}
+          <div className="bg-[#F5FBF8] border border-[#DEF2E6] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F6ED] border border-[#CEEEDC] flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Periode</p>
+              <p className="text-xs sm:text-sm font-black text-slate-800 truncate">
+                {schoolYear.startsWith('TP') ? schoolYear : `TP ${schoolYear}`}
+              </p>
             </div>
           </div>
+        </div>
+
+        {/* 4. 3 Kartu Aksi Utama Berwarna (Mata Pelajaran, Rekap Nilai, Kirim ke Pak Zaki) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {/* Tombol 1: Tambah Mapel (Vibrant Blue Card) */}
+          <button
+            type="button"
+            onClick={handleOpenAddSubjectModal}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-[#00A3FF] to-[#007CF0] hover:from-[#0096EB] hover:to-[#006ED6] active:scale-[0.98] text-white flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all cursor-pointer border border-[#0091FF]"
+            title="Tambah mapel baru yang Anda ampu tanpa keluar sesi"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0">
+              <Plus className="w-4 h-4 stroke-[3]" />
+            </div>
+            <div className="leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-tight">Mata Pelajaran</span>
+              <span className="block text-[10px] sm:text-[11px] text-white/80 font-medium">Tambah data mapel</span>
+            </div>
+          </button>
+
+          {/* Tombol 2: Rekap Nilai Seluruh Kelas (Pale Mint Card) */}
+          <button
+            type="button"
+            onClick={handleExportAllClasses}
+            className="p-3 sm:p-4 rounded-2xl bg-[#E8FAF2] hover:bg-[#DDF7EB] border border-[#B9EED7] active:scale-[0.98] text-slate-900 flex flex-col items-center justify-center text-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+            title="Download berkas Excel untuk semua kelas yang diajar"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-600 shrink-0">
+              <Award className="w-4 h-4 stroke-[2.4]" />
+            </div>
+            <div className="leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-slate-900 tracking-tight">Rekap Nilai</span>
+              <span className="block text-[10px] sm:text-[11px] text-slate-500 font-medium">Seluruh kelas</span>
+            </div>
+          </button>
+
+          {/* Tombol 3: Kirim ke Pak Zaki (Vibrant Emerald Card) */}
+          <button
+            type="button"
+            onClick={() => {
+              setSendTargetMode('all');
+              setIsSendToPakZakiOpen(true);
+            }}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-[#00B074] to-[#00925F] hover:from-[#009E68] hover:to-[#008254] active:scale-[0.98] text-white flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all cursor-pointer border border-[#00A86B]"
+            title="Kirim lembar analisis seluruh kelas ini langsung ke Pak Zaki"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0">
+              <Send className="w-4 h-4 text-white stroke-[2.3]" />
+            </div>
+            <div className="leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-tight">Kirim ke Pak Zaki</span>
+              <span className="block text-[10px] sm:text-[11px] text-white/80 font-medium">Serahkan hasil</span>
+            </div>
+          </button>
+        </div>
+
+        {/* 5. Deck Tombol Utilitas (2x2 di Mobile, 4 Kolom di Desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* 1. Atur Bobot & Kelas */}
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F0FAF4] hover:bg-[#E4F7EC] border border-[#D0F0DC] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs"
+            title="Edit struktur & bobot butir soal atau tambah rombel kelas"
+          >
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
+              <Settings2 className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">Atur Kelas</span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">Bobot &amp; butir</span>
+            </div>
+          </button>
+
+          {/* 2. Ganti Mapel */}
+          <button
+            type="button"
+            onClick={() => setShowSwitchSessionModal(true)}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F7F3FF] hover:bg-[#EFE8FF] border border-[#E8DDFF] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs"
+            title="Pilih atau beralih ke mapel / sesi yang pernah dibuat"
+          >
+            <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0">
+              <RotateCcw className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">Ganti Mapel</span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">Pindah sesi</span>
+            </div>
+          </button>
+
+          {/* 3. Kode Tarik */}
+          <button
+            type="button"
+            onClick={handleGenerateTransferCodeForActiveClass}
+            disabled={isGeneratingCode}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F0F8FF] hover:bg-[#E2F2FF] border border-[#D6EEFF] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+            title="Buat kode 6-digit untuk melanjutkan analisis kelas aktif ini di laptop/HP lain secara instan"
+          >
+            <div className="w-8 h-8 rounded-xl bg-sky-100 border border-sky-200 text-sky-700 flex items-center justify-center shrink-0">
+              <ArrowRightLeft className="w-4 h-4 text-sky-700 stroke-[2.5]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">Kode Tarik</span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">
+                {isGeneratingCode ? 'Membuat...' : 'Pindah Device'}
+              </span>
+            </div>
+          </button>
+
+          {/* 4. Hapus Sesi */}
+          <button
+            type="button"
+            onClick={() => setShowDeleteSessionModal(true)}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#FFF5F5] hover:bg-[#FFEAEB] border border-[#FED7D7] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs"
+            title="Hapus sesi analisis mata pelajaran ini"
+          >
+            <div className="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 text-rose-700 flex items-center justify-center shrink-0">
+              <Trash2 className="w-4 h-4 text-rose-600 stroke-[2.2]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-rose-700 truncate">Hapus Sesi</span>
+              <span className="block text-[10px] text-rose-500 font-medium truncate">Hapus mapel ini</span>
+            </div>
+          </button>
         </div>
 
         {batchDownloadStatus && (
@@ -1917,6 +2004,17 @@ const handleExportAllClasses = () => {
             >
               <Send className="w-3.5 h-3.5 text-teal-600" />
               <span>Kirim ke Pak Zaki</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleGenerateTransferCodeForActiveClass}
+              disabled={isGeneratingCode}
+              className="h-10 px-3 rounded-xl bg-sky-50 hover:bg-sky-100 active:scale-[0.98] text-sky-800 font-bold text-xs flex items-center justify-center gap-1.5 border border-sky-200 cursor-pointer transition-all shadow-2xs"
+              title="Buat kode 6-digit untuk melanjutkan analisis kelas ini di laptop/HP lain secara instan"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5 text-sky-600" />
+              <span>{isGeneratingCode ? '...' : 'Kode Tarik'}</span>
             </button>
           </div>
         </div>
@@ -2962,6 +3060,135 @@ const handleExportAllClasses = () => {
               >
                 <Check className="w-4 h-4 text-white" />
                 <span>Simpan &amp; Buka Mapel Ini</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ====================================================
+          MODAL KODE TARIK ANALISIS (PINDAH HP ↔ LAPTOP)
+          ==================================================== */}
+      {transferCodeData && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setTransferCodeData(null);
+              setCopiedCode(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-800 space-y-4">
+            {/* Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center shrink-0 shadow-xs">
+                  <ArrowRightLeft className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">
+                    Kode Tarik Analisis
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    {activeSubjectName} • Kelas {activeClassId}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setTransferCodeData(null);
+                  setCopiedCode(false);
+                }}
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-all"
+                title="Tutup dialog"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Display Box for 6-Digit Code */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-slate-50 border-2 border-sky-200/90 text-center space-y-3">
+              <p className="text-[11px] font-black uppercase tracking-wider text-sky-900">
+                Gunakan 6-Digit Kode Ini di Laptop / HP Lain
+              </p>
+
+              {/* Big spaced 6-digit number */}
+              <div className="py-2.5 px-4 bg-white rounded-2xl border border-sky-200/80 shadow-xs inline-block">
+                <span className="font-mono text-3xl sm:text-4xl font-black text-sky-600 tracking-[0.35em] pl-[0.35em] select-all">
+                  {transferCodeData.code}
+                </span>
+              </div>
+
+              {/* Copy Button */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(transferCodeData.code);
+                    setCopiedCode(true);
+                    setTimeout(() => setCopiedCode(false), 2500);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-xs ${
+                    copiedCode
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white hover:bg-sky-50 text-sky-700 border border-sky-200'
+                  }`}
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>✓ Kode Berhasil Disalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Salin Kode</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Step Instruction Guide */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
+              <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Cara Membuka di Laptop / PC:</span>
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-slate-600 text-[11px] font-medium leading-relaxed">
+                <li>Buka web Evaluasi Pembelajaran di laptop Anda.</li>
+                <li>
+                  Klik tombol <strong className="text-slate-800">"Buka / Pulihkan Analisis"</strong> di menu atas.
+                </li>
+                <li>
+                  Pilih tab <strong className="text-sky-700">"Tarik Analisis"</strong> dan masukkan kode 6-digit di atas.
+                </li>
+              </ol>
+            </div>
+
+            {/* Meta info: Expiry & light payload */}
+            <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
+              <span className="flex items-center gap-1 text-slate-600">
+                <Clock3 className="w-3.5 h-3.5 text-slate-400" />
+                Masa berlaku: 24 Jam
+              </span>
+              <span className="text-emerald-700 font-semibold">Tersimpan di Cloud</span>
+            </div>
+
+            {/* Action button */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setTransferCodeData(null);
+                  setCopiedCode(false);
+                }}
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer transition-all shadow-xs"
+              >
+                Selesai / Tutup
               </button>
             </div>
           </div>

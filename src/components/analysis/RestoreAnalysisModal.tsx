@@ -285,7 +285,7 @@ export const RestoreAnalysisModal: React.FC<RestoreAnalysisModalProps> = ({
                   </div>
 
                   <p className="text-[11px] text-slate-500 text-center font-medium">
-                    Kode ini didapatkan dengan menekan tombol <strong>"Bagikan Kode Tarik"</strong> pada sesi analisis di HP Anda.
+                    Kode ini didapatkan dengan menekan tombol <strong>"Kode Tarik"</strong> pada sesi analisis di HP atau perangkat lain Anda.
                   </p>
                 </div>
 

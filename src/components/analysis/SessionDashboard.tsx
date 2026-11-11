@@ -29,6 +29,7 @@ import {
   ArrowRightLeft,
   Copy,
   Check,
+  X,
 } from 'lucide-react';
 import {
   AnalysisSession,
@@ -163,184 +164,220 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
       {/* ====================================================
           TOP SESSION BANNER & ACTION GRID (EXECUTIVE CLEAN LIGHT)
           ==================================================== */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 shadow-xs">
-        {/* Subtle decorative glow */}
-        <div className="hidden sm:block pointer-events-none absolute -top-24 -left-20 h-64 w-64 rounded-full bg-sky-100/50 blur-3xl" />
-        <div className="hidden sm:block pointer-events-none absolute -bottom-24 right-0 h-64 w-64 rounded-full bg-indigo-100/50 blur-3xl" />
+      {/* ====================================================
+          WORKSPACE HEADER & IDENTITY BANNER (DESAIN SESUAI LAMPIRAN)
+          ==================================================== */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-xs space-y-4 sm:space-y-5">
+        {/* 1. Header: Judul & Pill Badge Jenis Ujian */}
+        <div className="space-y-1.5">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Workspace Analisis Butir Soal
+          </h2>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono shadow-2xs">
+              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+              <span>{session.examType}</span>
+            </span>
+            <span className="text-xs text-slate-500 font-medium line-clamp-1">
+              Rekapitulasi instrumen asesmen dan diagnostik ketuntasan belajar siswa
+            </span>
+          </div>
+        </div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-stretch justify-between gap-5 lg:gap-6">
-          
-          {/* LEFT SIDE: Identity, Title, & Parametric Info Strip */}
-          <div className="flex-1 flex flex-col justify-between min-w-0">
-            {/* 1. Top Row: Institutional Context & Tags */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Sekolah & Tahun Pelajaran */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100/90 border border-slate-200/90 text-slate-700 shadow-2xs">
-                <Building2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="font-bold text-slate-800">{session.schoolName || DEFAULT_SCHOOL_NAME}</span>
-                <span className="text-slate-300">•</span>
-                <span className="text-slate-500 font-mono">TP {session.schoolYear}</span>
-              </div>
-
-              {/* Kelas (Badge Statis Rapi) */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-sky-50 border border-sky-200 text-sky-700 tracking-wider uppercase shadow-2xs">
-                <GraduationCap className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-                <span>KELAS {session.className}</span>
-              </div>
-
-              {/* Wali Kelas (Jika Ada) */}
-              {session.teacherName ? (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 border border-amber-200 text-amber-800 shadow-2xs">
-                  <UserCheck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  <span>Wali Kelas: {session.teacherName}</span>
-                </div>
-              ) : null}
+        {/* 2. Banner Informasi Identitas (Split Card 2 Kolom) */}
+        <div className="bg-[#F8FCFA] border border-slate-200/90 rounded-2xl p-3 sm:p-4 grid grid-cols-2 divide-x divide-slate-200 items-center shadow-2xs">
+          {/* Sisi Kiri: Kelas */}
+          <div className="flex items-center justify-center gap-2.5 px-2">
+            <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
+              <GraduationCap className="w-5 h-5" />
             </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Kelas</span>
+              <span className="text-sm sm:text-base font-black text-sky-700 truncate block">
+                KELAS {session.className}
+              </span>
+            </div>
+          </div>
 
-            {/* 2. Middle Row: Main Title & Description */}
-            <div className="mt-3.5 mb-3.5">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-snug flex flex-wrap items-center gap-2 sm:gap-3">
-                <span>Workspace Analisis Butir Soal</span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
-                  <FileText className="w-3 h-3 text-indigo-600" />
-                  {session.examType}
-                </span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-1 line-clamp-1">
-                Rekapitulasi instrumen asesmen dan diagnostik ketuntasan belajar siswa Kelas {session.className}
+          {/* Sisi Kanan: Wali Kelas */}
+          <div className="flex items-center justify-center gap-2.5 px-2 pl-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
+              <UserCheck className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Wali Kelas</span>
+              <span className="text-xs sm:text-sm font-black text-amber-800 truncate block">
+                {session.teacherName || 'Wali Kelas'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. 4 Kartu Parameter / Metrik Utama (2x2 di Mobile, 4 Kolom di Desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {/* Card 1: Jenis Ujian */}
+          <div className="bg-[#F9F8FE] border border-[#ECE8FB] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#EDE7FB] border border-[#DDD3FA] flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Jenis Ujian</p>
+              <p className="text-xs sm:text-sm font-black text-slate-800 truncate">{session.examType}</p>
+            </div>
+          </div>
+
+          {/* Card 2: Peserta Didik */}
+          <div className="bg-[#FAF7FE] border border-[#EFE8FC] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#EFE7FC] border border-[#E0D2FA] flex items-center justify-center shrink-0">
+              <Users className="w-4 h-4 text-purple-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Peserta Didik</p>
+              <p className="text-xs sm:text-sm font-black text-slate-800 truncate">{totalStudents} Siswa</p>
+            </div>
+          </div>
+
+          {/* Card 3: Target KKTP */}
+          <div className="bg-[#FFFBF5] border border-[#FEEED8] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#FEF1DF] border border-[#FDE0BD] flex items-center justify-center shrink-0">
+              <Target className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Target KKTP</p>
+              <p className="text-xs sm:text-sm font-black text-amber-700 truncate">≥ {session.kktp}</p>
+            </div>
+          </div>
+
+          {/* Card 4: Periode */}
+          <div className="bg-[#F5FBF8] border border-[#DEF2E6] rounded-2xl p-3 flex items-center gap-3 transition-colors shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F6ED] border border-[#CEEEDC] flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Periode</p>
+              <p className="text-xs sm:text-sm font-black text-slate-800 truncate">
+                {session.schoolYear.startsWith('TP') ? session.schoolYear : `TP ${session.schoolYear}`}
               </p>
             </div>
-
-            {/* 3. Bottom Row: 4-Card Parametric Strip (Clean, Structured, Balanced) */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 pt-1">
-              {/* Card 1: Jenis Ujian */}
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-indigo-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Jenis Ujian</p>
-                  <p className="text-xs font-bold text-slate-800 truncate">{session.examType}</p>
-                </div>
-              </div>
-
-              {/* Card 2: Jumlah Siswa */}
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4 text-purple-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Peserta Didik</p>
-                  <p className="text-xs font-bold text-slate-800 truncate">{totalStudents} Siswa</p>
-                </div>
-              </div>
-
-              {/* Card 3: Batas KKTP */}
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
-                  <Target className="w-4 h-4 text-amber-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Target KKTP</p>
-                  <p className="text-xs font-black text-amber-700 truncate">≥ {session.kktp}</p>
-                </div>
-              </div>
-
-              {/* Card 4: Tanggal Asesmen */}
-              <div className="bg-slate-50/80 border border-slate-200/80 hover:bg-slate-100/80 rounded-xl px-3 py-2 flex items-center gap-2.5 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4 text-emerald-600" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Tanggal Asesmen</p>
-                  <p className="text-xs font-bold text-slate-800 truncate">{session.analysisDate}</p>
-                </div>
-              </div>
-            </div>
           </div>
+        </div>
 
-          {/* RIGHT SIDE: Structured Action Console Deck */}
-          <div className="w-full lg:w-[330px] xl:w-[350px] shrink-0 flex flex-col justify-between gap-2.5 self-stretch pt-2 lg:pt-0">
-            {/* 1. Primary Action: Tambah Mapel */}
-            <button
-              type="button"
-              onClick={onAddSubject}
-              className="w-full h-11 px-4 rounded-xl bg-gradient-to-r from-sky-500 via-sky-600 to-blue-600 hover:from-sky-600 hover:to-blue-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm border border-sky-400 cursor-pointer transition-all"
-            >
+        {/* 4. 3 Kartu Aksi Utama Berwarna (Mata Pelajaran, Rekap Nilai, Kirim ke Pak Zaki) */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {/* Tombol 1: Tambah Mata Pelajaran (Vibrant Blue Card) */}
+          <button
+            type="button"
+            onClick={onAddSubject}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-[#00A3FF] to-[#007CF0] hover:from-[#0096EB] hover:to-[#006ED6] active:scale-[0.98] text-white flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all cursor-pointer border border-[#0091FF]"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0">
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Tambah Mata Pelajaran</span>
-            </button>
-
-            {/* 2. Key Analysis Action: Rekapitulasi Nilai Seluruh Mapel */}
-            <button
-              type="button"
-              onClick={onOpenRekap}
-              className="w-full h-10 px-4 rounded-xl bg-teal-50 hover:bg-teal-100 active:scale-[0.98] text-teal-800 font-black text-xs flex items-center justify-center gap-2 border border-teal-200 shadow-2xs cursor-pointer transition-all"
-              title="Lihat rekapitulasi nilai dan ketercapaian seluruh mapel"
-            >
-              <Award className="w-4 h-4 text-amber-600 shrink-0 stroke-[2.3]" />
-              <span className="tracking-wide">Rekapitulasi Nilai Seluruh Mapel</span>
-            </button>
-
-            {/* 2b. Kirim ke Pak Zaki */}
-            <button
-              type="button"
-              onClick={() => setIsSendToPakZakiOpen(true)}
-              className="w-full h-10 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.98] text-white font-extrabold text-xs flex items-center justify-center gap-2 border border-emerald-500/40 shadow-sm cursor-pointer transition-all"
-              title="Kirim lembar analisis kelas ini langsung ke Pak Zaki"
-            >
-              <Send className="w-4 h-4 text-emerald-100 shrink-0" />
-              <span>🚀 Kirim ke Pak Zaki</span>
-            </button>
-
-            {/* 3. Secondary Utility Deck: Download Excel, Import Guru Mapel, Kode Tarik, Ganti Sesi */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {/* Download Excel */}
-              <button
-                type="button"
-                onClick={handleExportAll}
-                className="h-9 px-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] text-emerald-800 border border-emerald-200 font-bold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
-                title="Unduh seluruh analisis dalam 1 file Excel multi-sheet"
-              >
-                <Download className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[2.5]" />
-                <span className="truncate">Download</span>
-              </button>
-
-              {/* Import Guru Mapel */}
-              <button
-                type="button"
-                onClick={onOpenImport}
-                className="h-9 px-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 active:scale-[0.98] text-indigo-800 border border-indigo-200 font-bold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-all shadow-2xs"
-                title="Impor file Excel nilai guru mapel ke dalam sesi ini"
-              >
-                <FolderUp className="w-3.5 h-3.5 text-indigo-600 shrink-0 stroke-[2.2]" />
-                <span className="truncate">Import</span>
-              </button>
-
-              {/* Kode Tarik (Pindah HP ↔ Laptop) */}
-              <button
-                type="button"
-                onClick={handleGenerateTransferCode}
-                disabled={isGeneratingCode}
-                className="h-9 px-1.5 rounded-lg bg-sky-50 hover:bg-sky-100 active:scale-[0.98] text-sky-800 border border-sky-200 font-bold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-2xs"
-                title="Buat kode 6-digit untuk melanjutkan analisis ini di laptop/HP lain secara instan"
-              >
-                <ArrowRightLeft className="w-3.5 h-3.5 text-sky-600 shrink-0 stroke-[2.2]" />
-                <span className="truncate">{isGeneratingCode ? '...' : 'Kode Tarik'}</span>
-              </button>
-
-              {/* Ganti Sesi / Pilih Sesi Lain */}
-              <button
-                type="button"
-                onClick={onResetSession}
-                className="h-9 px-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-[0.98] text-slate-700 border border-slate-200 font-bold text-[11px] flex items-center justify-center gap-1 cursor-pointer transition-all shadow-2xs"
-                title="Pilih atau beralih ke sesi kelas lain yang pernah dibuat tanpa menghapus data"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-slate-600 shrink-0 stroke-[2.5]" />
-                <span className="truncate">Ganti Sesi</span>
-              </button>
             </div>
-          </div>
+            <div className="leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-tight">Mata Pelajaran</span>
+              <span className="block text-[10px] sm:text-[11px] text-white/80 font-medium">Tambah data mapel</span>
+            </div>
+          </button>
+
+          {/* Tombol 2: Rekap Nilai Seluruh Mapel (Pale Mint Card) */}
+          <button
+            type="button"
+            onClick={onOpenRekap}
+            className="p-3 sm:p-4 rounded-2xl bg-[#E8FAF2] hover:bg-[#DDF7EB] border border-[#B9EED7] active:scale-[0.98] text-slate-900 flex flex-col items-center justify-center text-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-600 shrink-0">
+              <Award className="w-4 h-4 stroke-[2.4]" />
+            </div>
+            <div className="leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-slate-900 tracking-tight">Rekap Nilai</span>
+              <span className="block text-[10px] sm:text-[11px] text-slate-500 font-medium">Seluruh mapel</span>
+            </div>
+          </button>
+
+          {/* Tombol 3: Kirim ke Pak Zaki (Vibrant Emerald Card) */}
+          <button
+            type="button"
+            onClick={() => setIsSendToPakZakiOpen(true)}
+            className="p-3 sm:p-4 rounded-2xl bg-gradient-to-b from-[#00B074] to-[#00925F] hover:from-[#009E68] hover:to-[#008254] active:scale-[0.98] text-white flex flex-col items-center justify-center text-center gap-1.5 shadow-sm transition-all cursor-pointer border border-[#00A86B]"
+          >
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0">
+              <Send className="w-4 h-4 text-white stroke-[2.3]" />
+            </div>
+            <div className="leading-tight">
+              <span className="block text-xs sm:text-sm font-black text-white tracking-tight">Kirim ke Pak Zaki</span>
+              <span className="block text-[10px] sm:text-[11px] text-white/80 font-medium">Serahkan hasil</span>
+            </div>
+          </button>
+        </div>
+
+        {/* 5. Deck Tombol Utilitas (2x2 di Mobile, 4 Kolom di Desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* 1. Download */}
+          <button
+            type="button"
+            onClick={handleExportAll}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F0FAF4] hover:bg-[#E4F7EC] border border-[#D0F0DC] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs"
+            title="Unduh seluruh analisis dalam 1 file Excel multi-sheet"
+          >
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center shrink-0">
+              <Download className="w-4 h-4 stroke-[2.5]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">Download</span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">Unduh dokumen</span>
+            </div>
+          </button>
+
+          {/* 2. Import */}
+          <button
+            type="button"
+            onClick={onOpenImport}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F7F3FF] hover:bg-[#EFE8FF] border border-[#E8DDFF] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs"
+            title="Impor file Excel nilai guru mapel ke dalam sesi ini"
+          >
+            <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0">
+              <FolderUp className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">Import</span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">Masukkan data</span>
+            </div>
+          </button>
+
+          {/* 3. Kode Tarik */}
+          <button
+            type="button"
+            onClick={handleGenerateTransferCode}
+            disabled={isGeneratingCode}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F0F8FF] hover:bg-[#E2F2FF] border border-[#D6EEFF] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
+            title="Buat kode 6-digit untuk melanjutkan analisis ini di laptop/HP lain secara instan"
+          >
+            <div className="w-8 h-8 rounded-xl bg-sky-100 border border-sky-200 text-sky-700 flex items-center justify-center shrink-0">
+              <ArrowRightLeft className="w-4 h-4 stroke-[2.2]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">
+                {isGeneratingCode ? 'Membuat...' : 'Kode Tarik'}
+              </span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">Pindah Device</span>
+            </div>
+          </button>
+
+          {/* 4. Ganti Sesi */}
+          <button
+            type="button"
+            onClick={onResetSession}
+            className="p-2.5 sm:p-3 rounded-2xl bg-[#F8FAFC] hover:bg-slate-100 border border-[#E2E8F0] active:scale-[0.98] text-slate-800 flex items-center gap-2.5 transition-all cursor-pointer shadow-2xs"
+            title="Pilih atau beralih ke sesi kelas lain yang pernah dibuat tanpa menghapus data"
+          >
+            <div className="w-8 h-8 rounded-xl bg-slate-200 border border-slate-300 text-slate-700 flex items-center justify-center shrink-0">
+              <RotateCcw className="w-4 h-4 stroke-[2.3]" />
+            </div>
+            <div className="text-left min-w-0">
+              <span className="block text-xs font-black text-slate-900 truncate">Ganti Sesi</span>
+              <span className="block text-[10px] text-slate-500 font-medium truncate">Pilih kelas lain</span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -740,6 +777,135 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
             `Wali Kelas ${session.className}`
           }
         />
+      )}
+
+      {/* ====================================================
+          MODAL KODE TARIK ANALISIS (PINDAH HP ↔ LAPTOP)
+          ==================================================== */}
+      {transferCodeData && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-[fadeIn_150ms_ease-out]"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setTransferCodeData(null);
+              setCopiedCode(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xl text-slate-800 space-y-4">
+            {/* Header */}
+            <div className="flex items-start justify-between pb-3 border-b border-slate-100 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center shrink-0 shadow-xs">
+                  <ArrowRightLeft className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">
+                    Kode Tarik Analisis
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Kelas {session.className} • {session.examType}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setTransferCodeData(null);
+                  setCopiedCode(false);
+                }}
+                className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center cursor-pointer transition-all"
+                title="Tutup dialog"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Display Box for 6-Digit Code */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-sky-50/70 to-slate-50 border-2 border-sky-200/90 text-center space-y-3">
+              <p className="text-[11px] font-black uppercase tracking-wider text-sky-900">
+                Gunakan 6-Digit Kode Ini di Laptop / HP Lain
+              </p>
+
+              {/* Big spaced 6-digit number */}
+              <div className="py-2.5 px-4 bg-white rounded-2xl border border-sky-200/80 shadow-xs inline-block">
+                <span className="font-mono text-3xl sm:text-4xl font-black text-sky-600 tracking-[0.35em] pl-[0.35em] select-all">
+                  {transferCodeData.code}
+                </span>
+              </div>
+
+              {/* Copy Button */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(transferCodeData.code);
+                    setCopiedCode(true);
+                    setTimeout(() => setCopiedCode(false), 2500);
+                  }}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 shadow-xs ${
+                    copiedCode
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-white hover:bg-sky-50 text-sky-700 border border-sky-200'
+                  }`}
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>✓ Kode Berhasil Disalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Salin Kode</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Step Instruction Guide */}
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
+              <p className="font-bold text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span>Cara Membuka di Laptop / PC:</span>
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-slate-600 text-[11px] font-medium leading-relaxed">
+                <li>Buka web Evaluasi Pembelajaran di laptop Anda.</li>
+                <li>
+                  Klik tombol <strong className="text-slate-800">"Buka / Pulihkan Analisis"</strong> di menu atas.
+                </li>
+                <li>
+                  Pilih tab <strong className="text-sky-700">"Tarik Analisis"</strong> dan masukkan kode 6-digit di atas.
+                </li>
+              </ol>
+            </div>
+
+            {/* Meta info: Expiry & light payload */}
+            <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium px-1">
+              <span className="flex items-center gap-1 text-slate-600">
+                <Clock3 className="w-3.5 h-3.5 text-slate-400" />
+                Masa berlaku: 24 Jam
+              </span>
+              <span className="text-emerald-700 font-semibold">Tersimpan di Cloud</span>
+            </div>
+
+            {/* Action button */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setTransferCodeData(null);
+                  setCopiedCode(false);
+                }}
+                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer transition-all shadow-xs"
+              >
+                Selesai / Tutup
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
