@@ -42,6 +42,7 @@ export interface AnalysisSubmissionItem {
   subjectStatuses?: Record<string, SubjectPrintStatus>; // Individual status tracking per subject
   submittedAt: string;
   updatedAt?: string;
+  printedAt?: string;
   firstSubmittedAt?: string;
   isRevisionResubmitted?: boolean;
   lastRevisionResubmittedAt?: string;

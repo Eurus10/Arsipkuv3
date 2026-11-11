@@ -1070,6 +1070,8 @@ export async function updateAnalysisSubmissionStatus(
       status,
       ...(updatedSubjectStatuses ? { subjectStatuses: updatedSubjectStatuses } : {}),
       ...(adminNote !== undefined ? { adminNote } : {}),
+      ...(status === 'telah_diprint' ? { printedAt: now } : {}),
+      ...(status === 'menunggu' ? { printedAt: undefined } : {}),
       updatedAt: now,
       messages: newMessages,
     };
@@ -1110,6 +1112,7 @@ export async function updateAnalysisSubmissionStatus(
       const updateData: Record<string, any> = {
         status,
         updated_at: now,
+        ...(status === 'telah_diprint' ? { printed_at: now } : {}),
         ...(updatedSubjectStatuses ? { subject_statuses: updatedSubjectStatuses } : {}),
         ...(adminNote !== undefined ? { admin_note: adminNote } : {}),
         ...(newMessages.length > 0 ? { messages: newMessages } : {}),
@@ -1127,6 +1130,8 @@ export async function updateAnalysisSubmissionStatus(
       docRef,
       cleanObjectForFirestore({
         status,
+        ...(status === 'telah_diprint' ? { printedAt: now } : {}),
+        ...(status === 'menunggu' ? { printedAt: null } : {}),
         ...(updatedSubjectStatuses ? { subjectStatuses: updatedSubjectStatuses } : {}),
         ...(adminNote !== undefined ? { adminNote } : {}),
         updatedAt: now,

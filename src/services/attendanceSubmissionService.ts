@@ -39,6 +39,7 @@ export interface AttendanceSubmissionItem {
   teacherNote?: string;
   submittedAt: string;
   updatedAt: string;
+  printedAt?: string;
   matrixData?: Record<
     string,
     { effectiveDays?: number; sakit?: number | string; izin?: number | string; alpha?: number | string }
@@ -201,6 +202,11 @@ export async function updateAttendanceSubmissionStatus(
   if (target) {
     target.status = status;
     target.updatedAt = now;
+    if (status === 'telah_diprint') {
+      target.printedAt = now;
+    } else if (status === 'menunggu') {
+      delete target.printedAt;
+    }
     if (adminNote !== undefined) {
       target.adminNote = adminNote;
     }
@@ -235,6 +241,8 @@ export async function updateAttendanceSubmissionStatus(
     const updateData: Record<string, any> = {
       status,
       updatedAt: now,
+      ...(status === 'telah_diprint' ? { printedAt: now } : {}),
+      ...(status === 'menunggu' ? { printedAt: null } : {}),
     };
     if (adminNote !== undefined) {
       updateData.adminNote = adminNote;
