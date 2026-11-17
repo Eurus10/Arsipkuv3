@@ -181,6 +181,100 @@
         }
       },
       "required": ["academicPeriodId", "classId", "additionalInfo"]
+    },
+    "ExamTrackingRecord": {
+      "title": "ExamTrackingRecord",
+      "description": "Status checklist kumpul dan cetak/fotocopy naskah soal per mapel per kelas",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Kunci unik record (session__class__subject)"
+        },
+        "examSessionId": {
+          "type": "string",
+          "description": "ID sesi ujian pendataan soal"
+        },
+        "classId": {
+          "type": "string",
+          "description": "ID kelas (mis. 1A, 2B)"
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "ID mata pelajaran"
+        },
+        "subjectName": {
+          "type": "string",
+          "description": "Nama mata pelajaran"
+        },
+        "teacherName": {
+          "type": "string",
+          "description": "Nama guru pengampu"
+        },
+        "isCollected": {
+          "type": "boolean",
+          "description": "Status sudah dikumpulkan"
+        },
+        "collectedAt": {
+          "type": "string",
+          "description": "Waktu pengumpulan (ISO string)"
+        },
+        "isPrinted": {
+          "type": "boolean",
+          "description": "Status sudah dicetak/fotocopy"
+        },
+        "printedAt": {
+          "type": "string",
+          "description": "Waktu cetak/fotocopy (ISO string)"
+        },
+        "note": {
+          "type": "string",
+          "description": "Catatan tambahan"
+        },
+        "driveUrl": {
+          "type": "string",
+          "description": "Tautan Google Drive opsional"
+        },
+        "driveFileUrl": {
+          "type": "string",
+          "description": "Tautan file Google Drive hasil sinkronisasi"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["drive", "manual"],
+          "description": "Sumber penandaan kumpul"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Waktu pembaruan terakhir (ISO string)"
+        }
+      },
+      "required": ["id", "examSessionId", "classId", "subjectId", "subjectName"]
+    },
+    "ExamTrackingItem": {
+      "title": "ExamTrackingItem",
+      "description": "Entitas legacy tracking naskah soal ujian",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "subject": { "type": "string" },
+        "classLevel": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "examType": { "type": "string" },
+        "schoolYear": { "type": "string" },
+        "semester": { "type": "string" },
+        "isCollected": { "type": "boolean" },
+        "collectedAt": { "type": "string" },
+        "isPrinted": { "type": "boolean" },
+        "printedAt": { "type": "string" },
+        "copiesCount": { "type": "number" },
+        "driveUrl": { "type": "string" },
+        "driveFileUrl": { "type": "string" },
+        "note": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "subject", "classLevel", "teacherName", "examType", "schoolYear", "isCollected", "isPrinted"]
     }
   },
   "firestore": {
@@ -199,6 +293,14 @@
     "/rapor_sts_additional_info/{classKey}": {
       "schema": "RaporAdditionalInfo",
       "description": "Koleksi sinkronisasi catatan guru, absensi, dan ekstrakurikuler siswa per kelas"
+    },
+    "/exam_tracking_records/{recordKey}": {
+      "schema": "ExamTrackingRecord",
+      "description": "Koleksi monitoring status kumpul & cetak soal (Read-only publik, tulis khusus Admin)"
+    },
+    "/exam_trackings/{trackingId}": {
+      "schema": "ExamTrackingItem",
+      "description": "Koleksi legacy tracking soal (Read-only publik, tulis khusus Admin)"
     }
   }
 }

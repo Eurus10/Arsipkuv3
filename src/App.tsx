@@ -212,7 +212,7 @@ export default function App() {
           }
         }
       }
-    } else if (initialTab !== 'dashboard') {
+    } else if (initialTab !== 'dashboard' && initialTab !== 'tracking_soal') {
       const teacherSession = getActiveTeacherSession();
       if (!teacherSession && !isAdminLoggedIn()) {
         openTeacherAuthForTab(initialTab);
@@ -407,9 +407,9 @@ export default function App() {
   }, [templates]);
 
   // Protected navigation handler:
-  // - 'dashboard' is public.
-  // - 'admin' and 'student_db' require Admin Login.
-  // - 'administrasi', 'soal', 'tracking_soal', 'sertifikat', 'rapor' require Teacher Session (or Admin).
+  // - 'dashboard' and 'tracking_soal' (read-only) are public.
+  // - 'admin', 'student_db', and 'academic_settings' require Admin Login.
+  // - 'administrasi', 'soal', 'sertifikat', 'rapor' require Teacher Session (or Admin).
   const handleSelectTab = async (tab: NavTab) => {
     if (tab === 'admin' || tab === 'student_db' || tab === 'academic_settings') {
       if (!isAdmin) {
@@ -445,7 +445,7 @@ export default function App() {
         setIsEraporAuthModalOpen(true);
         return;
       }
-    } else if (tab !== 'dashboard' && !isAdmin) {
+    } else if (tab !== 'dashboard' && tab !== 'tracking_soal' && !isAdmin) {
       // Just-In-Time validation: Periksa apakah sesi guru saat ini masih valid.
       const session = getActiveTeacherSession();
       if (!session) {

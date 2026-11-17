@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lock, Eye, EyeOff, ShieldAlert, Check, X, KeyRound } from 'lucide-react';
-import { loginAdmin } from '../services/auth';
+import { Lock, Eye, EyeOff, ShieldAlert, Check, X } from 'lucide-react';
+import { loginAdmin, loginAdminWithGoogle } from '../services/auth';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -18,6 +18,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,6 +26,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       setPassword('');
       setError(null);
       setShowPassword(false);
+      setIsSubmitting(false);
+      setIsGoogleSubmitting(false);
       // Auto focus password input
       setTimeout(() => {
         inputRef.current?.focus();
@@ -52,9 +55,26 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       } else {
         setError('Kata sandi salah atau gagal autentikasi. Silakan coba lagi.');
       }
-    } catch (err) {
+    } catch {
       setIsSubmitting(false);
       setError('Terjadi kesalahan saat masuk. Silakan coba lagi.');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleSubmitting(true);
+    setError(null);
+    try {
+      const res = await loginAdminWithGoogle(rememberMe);
+      setIsGoogleSubmitting(false);
+      if (res.success) {
+        onSuccess();
+      } else if (res.error) {
+        setError(res.error);
+      }
+    } catch {
+      setIsGoogleSubmitting(false);
+      setError('Gagal masuk dengan akun Google Admin.');
     }
   };
 
@@ -100,7 +120,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         <div className="p-3.5 bg-[#12141D] rounded-2xl border border-[#232838] mb-5 flex items-start gap-3">
           <ShieldAlert className="w-4 h-4 text-sky-400 flex-shrink-0 mt-0.5" />
           <p className="text-xs text-slate-300 leading-relaxed">
-            Menu <strong className="text-amber-400">Pengaturan & Kelola Data</strong> hanya dapat diakses oleh admin untuk mencegah perubahan atau penghapusan data arsip oleh publik.
+            Menu <strong className="text-amber-400">Pengaturan &amp; Kelola Data</strong> hanya dapat diakses oleh admin untuk mencegah perubahan atau penghapusan data arsip oleh publik.
           </p>
         </div>
 
@@ -160,9 +180,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </label>
           </div>
 
-
           {/* Submit Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3">
+          <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
@@ -173,7 +192,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <button
               id="admin-login-submit-btn"
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting}
               className="px-5 py-2.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 rounded-xl shadow-lg shadow-amber-400/20 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
@@ -187,6 +206,43 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </button>
           </div>
         </form>
+
+        {/* Divider & Google Admin Sign-In for Cloud Security */}
+        <div className="mt-5 pt-4 border-t border-[#262C3F]">
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isSubmitting || isGoogleSubmitting}
+            className="w-full py-2.5 px-4 rounded-xl bg-[#12141D] hover:bg-[#1E2333] border border-[#2C334A] text-slate-200 text-xs font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-50"
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="#4285F4"
+                d="M23.745 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-8.97z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 24c3.3 0 6.08-1.09 8.1-2.96l-3.88-3.05c-1.1.74-2.51 1.18-4.22 1.18-3.24 0-5.99-2.19-6.97-5.14H1.02v3.14C3.05 21.2 7.21 24 12 24z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.03 14.03c-.25-.74-.39-1.54-.39-2.36s.14-1.62.39-2.36V6.17H1.02C.37 7.47 0 8.94 0 10.67c0 1.73.37 3.2 1.02 4.5l4.01-3.14z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 4.75c1.8 0 3.41.62 4.68 1.84l3.51-3.51C18.07 1.19 15.3 0 12 0 7.21 0 3.05 2.8 1.02 6.83l4.01 3.14c.98-2.95 3.73-5.22 6.97-5.22z"
+              />
+            </svg>
+            <span>
+              {isGoogleSubmitting
+                ? 'Menghubungkan Akun Google...'
+                : 'Masuk dengan Google Admin (Cloud Sync)'}
+            </span>
+          </button>
+          <p className="mt-2 text-[10px] text-center text-slate-400 leading-relaxed">
+            Direkomendasikan agar perubahan checklist Tracking Soal tersinkron aman ke Firestore.
+          </p>
+        </div>
       </div>
     </div>
   );

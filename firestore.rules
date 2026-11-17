@@ -1,15 +1,168 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public read and write for SDIT Al Fikri digital archives
-    // Allows school admins and teachers to sync without sign-in barriers
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isTrackingAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && (
+          request.auth.token.email == 'sditaf23@gmail.com'
+          || request.auth.token.email == 'sdit.alfikri@gmail.com'
+        );
+    }
+
+    function isValidTrackingRecord(recordKey) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'id',
+          'examSessionId',
+          'classId',
+          'subjectId',
+          'subjectName',
+          'teacherName',
+          'isCollected',
+          'collectedAt',
+          'isPrinted',
+          'printedAt',
+          'note',
+          'driveUrl',
+          'driveFileUrl',
+          'source',
+          'updatedAt'
+        ])
+        && data.keys().hasAll(['id', 'examSessionId', 'classId', 'subjectId', 'subjectName'])
+        && recordKey.size() > 0 && recordKey.size() <= 160
+        && data.id is string && data.id == recordKey
+        && data.examSessionId is string && data.examSessionId.size() > 0 && data.examSessionId.size() <= 100
+        && data.classId is string && data.classId.size() > 0 && data.classId.size() <= 40
+        && data.subjectId is string && data.subjectId.size() > 0 && data.subjectId.size() <= 80
+        && data.subjectName is string && data.subjectName.size() > 0 && data.subjectName.size() <= 120
+        && (!('teacherName' in data) || (data.teacherName is string && data.teacherName.size() <= 120))
+        && (!('isCollected' in data) || data.isCollected is bool)
+        && (!('collectedAt' in data) || (data.collectedAt is string && data.collectedAt.size() <= 64))
+        && (!('isPrinted' in data) || data.isPrinted is bool)
+        && (!('printedAt' in data) || (data.printedAt is string && data.printedAt.size() <= 64))
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500))
+        && (!('driveUrl' in data) || (data.driveUrl is string && data.driveUrl.size() <= 1000))
+        && (!('driveFileUrl' in data) || (data.driveFileUrl is string && data.driveFileUrl.size() <= 1000))
+        && (!('source' in data) || (data.source is string && (data.source == 'drive' || data.source == 'manual')))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    function isValidLegacyExamTracking(trackingId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'id',
+          'subject',
+          'classLevel',
+          'teacherName',
+          'examType',
+          'schoolYear',
+          'semester',
+          'isCollected',
+          'collectedAt',
+          'isPrinted',
+          'printedAt',
+          'copiesCount',
+          'driveUrl',
+          'driveFileUrl',
+          'note',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasAll([
+          'id',
+          'subject',
+          'classLevel',
+          'teacherName',
+          'examType',
+          'schoolYear',
+          'isCollected',
+          'isPrinted'
+        ])
+        && trackingId.size() > 0 && trackingId.size() <= 120
+        && data.id is string && data.id == trackingId
+        && data.subject is string && data.subject.size() > 0 && data.subject.size() <= 120
+        && data.classLevel is string && data.classLevel.size() > 0 && data.classLevel.size() <= 40
+        && data.teacherName is string && data.teacherName.size() <= 120
+        && data.examType is string && data.examType.size() <= 80
+        && data.schoolYear is string && data.schoolYear.size() <= 40
+        && data.isCollected is bool
+        && data.isPrinted is bool
+        && (!('semester' in data) || (data.semester is string && data.semester.size() <= 60))
+        && (!('collectedAt' in data) || (data.collectedAt is string && data.collectedAt.size() <= 64))
+        && (!('printedAt' in data) || (data.printedAt is string && data.printedAt.size() <= 64))
+        && (!('copiesCount' in data) || (data.copiesCount is number && data.copiesCount >= 0 && data.copiesCount <= 5000))
+        && (!('driveUrl' in data) || (data.driveUrl is string && data.driveUrl.size() <= 1000))
+        && (!('driveFileUrl' in data) || (data.driveFileUrl is string && data.driveFileUrl.size() <= 1000))
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 64))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 64));
+    }
+
+    // ===============================================================
+    // Tracking Soal (Strict Public Read-Only, Verified Admin Write)
+    // ===============================================================
+    match /exam_tracking_records/{recordKey} {
+      allow read: if true;
+      allow create, update: if isTrackingAdmin() && isValidTrackingRecord(recordKey);
+      allow delete: if isTrackingAdmin();
+    }
+
+    match /exam_trackings/{trackingId} {
+      allow read: if true;
+      allow create, update: if isTrackingAdmin() && isValidLegacyExamTracking(trackingId);
+      allow delete: if isTrackingAdmin();
+    }
+
+    // ===============================================================
+    // Unrelated School Modules (Preserved to avoid disrupting existing features)
+    // ===============================================================
     match /documents/{documentId} {
       allow read, write: if true;
     }
     match /settings/{settingId} {
       allow read, write: if true;
     }
-    match /{document=**} {
+    match /exam_submissions/{submissionId} {
+      allow read, write: if true;
+    }
+    match /exam_sessions/{sessionId} {
+      allow read, write: if true;
+    }
+    match /analysis_submissions/{submissionId} {
+      allow read, write: if true;
+    }
+    match /analysis_transfers/{transferCode} {
+      allow read, write: if true;
+    }
+    match /attendance_submissions/{submissionId} {
+      allow read, write: if true;
+    }
+    match /rapor_sts_classes/{classKey} {
+      allow read, write: if true;
+    }
+    match /rapor_sts_jenjang_tp/{tpKey} {
+      allow read, write: if true;
+    }
+    match /rapor_sts_settings/{settingKey} {
+      allow read, write: if true;
+    }
+    match /rapor_sts_additional_info/{classKey} {
+      allow read, write: if true;
+    }
+    match /rapor_sts_characters/{classKey} {
+      allow read, write: if true;
+    }
+    match /teacher_notifications/{notifId} {
+      allow read, write: if true;
+    }
+    match /unregistered_teacher_signals/{signalId} {
+      allow read, write: if true;
+    }
+    match /access_tokens/{tokenId} {
       allow read, write: if true;
     }
   }

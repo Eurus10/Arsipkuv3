@@ -32,7 +32,14 @@ import {
   MoreHorizontal,
   Hourglass,
   Lock,
+  Eye,
+  ShieldCheck,
 } from 'lucide-react';
+import {
+  isFirebaseTrackingAdminReady,
+  loginAdminWithGoogle,
+  subscribeToAuth,
+} from '../services/auth';
 import { syncGoogleDriveTracking, SyncDriveResult } from '../services/driveSyncService';
 import {
   ExamTrackingItem,
@@ -153,6 +160,49 @@ const [activeExamSession, setActiveExamSession] =
   const [syncModalTab, setSyncModalTab] = useState<'matched' | 'unmatched' | 'guide'>('matched');
   const [isDriveTransitionOpen, setIsDriveTransitionOpen] = useState<boolean>(false);
   const [isActionDropdownOpen, setIsActionDropdownOpen] = useState<boolean>(false);
+  const [isFirebaseAdminReady, setIsFirebaseAdminReady] = useState<boolean>(() =>
+    isFirebaseTrackingAdminReady()
+  );
+  const [isConnectingGoogleAdmin, setIsConnectingGoogleAdmin] = useState<boolean>(false);
+  const [isGoogleVerifyModalOpen, setIsGoogleVerifyModalOpen] = useState<boolean>(false);
+  const pendingAdminActionRef = useRef<(() => Promise<void> | void) | null>(null);
+
+  // Sync Firebase Admin Auth readiness (needed for Firestore write rules on exam_tracking_records)
+  useEffect(() => {
+    return subscribeToAuth(() => {
+      setIsFirebaseAdminReady(isFirebaseTrackingAdminReady());
+    });
+  }, []);
+
+  const handleConnectGoogleAdmin = async () => {
+    setIsConnectingGoogleAdmin(true);
+    try {
+      const res = await loginAdminWithGoogle(true);
+      if (res.success) {
+        setIsFirebaseAdminReady(isFirebaseTrackingAdminReady());
+        setIsGoogleVerifyModalOpen(false);
+        showFeedback(`✅ Akun Google Admin (${res.email}) terhubung untuk sinkronisasi Firestore.`);
+        const pending = pendingAdminActionRef.current;
+        pendingAdminActionRef.current = null;
+        if (pending) {
+          await pending();
+        }
+      } else if (res.error) {
+        showFeedback(`⚠️ ${res.error}`);
+      }
+    } finally {
+      setIsConnectingGoogleAdmin(false);
+    }
+  };
+
+  const requireFirebaseAdminReady = (action: () => Promise<void> | void): boolean => {
+    if (isFirebaseTrackingAdminReady()) {
+      return true;
+    }
+    pendingAdminActionRef.current = action;
+    setIsGoogleVerifyModalOpen(true);
+    return false;
+  };
 
   // Real-time Firestore sync
   useEffect(() => {
@@ -279,6 +329,9 @@ const [activeExamSession, setActiveExamSession] =
       showFeedback('Hanya Administrator yang dapat mengubah status kumpul.');
       return;
     }
+    if (!requireFirebaseAdminReady(() => handleToggleCollected(c, s))) {
+      return;
+    }
     const recordKey = `${trackingSessionId}__${c.id}__${s.id}`;
     try {
       await toggleTrackingRecordCollected(recordKey, {
@@ -301,6 +354,9 @@ const [activeExamSession, setActiveExamSession] =
   const handleTogglePrinted = async (c: MasterClass, s: { id: string; name: string; teacher?: string }) => {
     if (!isAdmin) {
       showFeedback('Hanya Administrator yang dapat mengubah status cetak.');
+      return;
+    }
+    if (!requireFirebaseAdminReady(() => handleTogglePrinted(c, s))) {
       return;
     }
     const recordKey = `${trackingSessionId}__${c.id}__${s.id}`;
@@ -327,6 +383,9 @@ const [activeExamSession, setActiveExamSession] =
     targetVal: boolean
   ) => {
     if (!isAdmin) return;
+    if (!requireFirebaseAdminReady(() => handleBatchClass(c, field, targetVal))) {
+      return;
+    }
 
     const activeSubjects = c.subjects.filter(
       (subject) =>
@@ -365,6 +424,9 @@ const [activeExamSession, setActiveExamSession] =
   // Clear All Data for New Exam
   const handleConfirmClearAll = async () => {
     if (!isAdmin) return;
+    if (!requireFirebaseAdminReady(() => handleConfirmClearAll())) {
+      return;
+    }
 
     try {
       await clearAllTrackingRecords();
@@ -390,6 +452,7 @@ const [activeExamSession, setActiveExamSession] =
   const handleUpdateMasterClasses = async (
     updated: MasterClass[]
   ) => {
+    if (!isAdmin) return;
     try {
       await updateStoredMasterClasses(
         updated
@@ -412,6 +475,7 @@ const [activeExamSession, setActiveExamSession] =
 
   // Open Edit Drive Modal
   const handleOpenEditDriveModal = () => {
+    if (!isAdmin) return;
     setTempDriveUrlInput(activeDriveFolderUrl);
     setDriveSaveError(null);
     setIsEditDriveModalOpen(true);
@@ -420,6 +484,7 @@ const [activeExamSession, setActiveExamSession] =
   // Save updated Drive folder URL
   const handleSaveDriveUrl = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) return;
     if (!tempDriveUrlInput.trim()) {
       setDriveSaveError('Link Google Drive tidak boleh kosong.');
       return;
@@ -459,6 +524,13 @@ const [activeExamSession, setActiveExamSession] =
   const lastMatchedCountRef = useRef<number>(0);
 
   const handleSyncDrive = async (isSilent: boolean = false) => {
+    if (!isAdmin) return;
+    if (!isFirebaseTrackingAdminReady()) {
+      if (!isSilent) {
+        requireFirebaseAdminReady(() => handleSyncDrive(false));
+      }
+      return;
+    }
     if (!activeDriveFolderUrl) {
       if (!isSilent) {
         showFeedback('Folder Google Drive belum diatur di Pengaturan Admin.');
@@ -515,9 +587,9 @@ const [activeExamSession, setActiveExamSession] =
     }
   };
 
-  // Real-time background sync polling (otomatis tanpa klik tombol)
+  // Real-time background sync polling (khusus Admin terverifikasi Google Admin agar tidak memicu permission-denied)
   useEffect(() => {
-    if (!activeDriveFolderUrl) return;
+    if (!isAdmin || !isFirebaseAdminReady || !activeDriveFolderUrl) return;
 
     // Silent sync 2 seconds after page open
     const initialTimer = setTimeout(() => {
@@ -533,7 +605,7 @@ const [activeExamSession, setActiveExamSession] =
       clearTimeout(initialTimer);
       clearInterval(interval);
     };
-  }, [activeDriveFolderUrl, trackingSessionId, activeExamSession]);
+  }, [isAdmin, isFirebaseAdminReady, activeDriveFolderUrl, trackingSessionId, activeExamSession]);
 
   // Filter classes sequentially for continuous 4-column layout
   const filteredOrderedClasses = useMemo(() => {
@@ -802,8 +874,15 @@ const [activeExamSession, setActiveExamSession] =
                 </div>
               </div>
             ) : (
-              /* Tampilan Publik / Non-Admin: Tombol Masuk Admin & Export Rekap */
+              /* Tampilan Publik / Non-Admin: Strict Read-Only Badge & Tombol Mode Admin */
               <div className="flex flex-wrap items-center gap-2 shrink-0 self-start sm:self-center">
+                <span
+                  title="Pengunjung umum hanya dapat memantau status tracking secara read-only"
+                  className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl inline-flex items-center gap-2 text-xs font-semibold text-slate-600 shadow-xs"
+                >
+                  <Eye className="w-4 h-4 text-sky-600 shrink-0" />
+                  <span>Mode Lihat Saja (Publik)</span>
+                </span>
                 {onRequestLogin && (
                   <button
                     type="button"
@@ -815,20 +894,38 @@ const [activeExamSession, setActiveExamSession] =
                     <span>Mode Admin</span>
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={() => setIsExportModalOpen(true)}
-                  title="Lihat & Cetak Rekapitulasi Monitoring"
-                  className="px-4 py-2.5 bg-white border border-slate-200 hover:border-slate-400 hover:bg-slate-50 rounded-xl sm:rounded-2xl flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 cursor-pointer shadow-xs transition-all duration-200"
-                >
-                  <Download className="w-4 h-4 text-slate-600" />
-                  <span>Lihat &amp; Cetak Rekap</span>
-                </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Admin Cloud Auth Banner (when Admin logged in via password without verified Google Admin) */}
+      {isAdmin && !isFirebaseAdminReady && (
+        <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-3.5 sm:px-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-950">
+                Verifikasi Google Admin Diperlukan untuk Simpan ke Cloud (Firestore)
+              </p>
+              <p className="text-[11px] text-amber-800/90 leading-relaxed">
+                Keamanan Firestore Tracking Soal dikunci khusus Admin terverifikasi. Hubungkan akun Google Admin (<span className="font-semibold">sditaf23@gmail.com</span>) agar perubahan checklist &amp; sinkron Drive tersimpan ke database.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleConnectGoogleAdmin}
+            disabled={isConnectingGoogleAdmin}
+            className="shrink-0 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors cursor-pointer disabled:opacity-50 self-start sm:self-center"
+          >
+            {isConnectingGoogleAdmin ? 'Menghubungkan...' : 'Hubungkan Google Admin'}
+          </button>
+        </div>
+      )}
 
       {/* 5 Statistics Cards Horizontal Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -1501,7 +1598,7 @@ const [activeExamSession, setActiveExamSession] =
 
       {/* Settings Modal with Master Classes & School Years */}
       <TrackingExamSettingsModal
-        isOpen={isSettingsModalOpen}
+        isOpen={isAdmin && isSettingsModalOpen}
         onClose={() =>
           setIsSettingsModalOpen(false)
         }
@@ -1545,7 +1642,7 @@ const [activeExamSession, setActiveExamSession] =
 
       {/* Export & Rekapitulasi Modal */}
       <TrackingExportModal
-        isOpen={isExportModalOpen}
+        isOpen={isAdmin && isExportModalOpen}
         onClose={() =>
           setIsExportModalOpen(false)
         }
@@ -1878,6 +1975,72 @@ const [activeExamSession, setActiveExamSession] =
         folderTitle="Folder Google Drive Pengumpulan Soal"
         onClose={() => setIsDriveTransitionOpen(false)}
       />
+
+      {/* Google Admin Verification Modal before Firestore write */}
+      {isGoogleVerifyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl text-slate-800 space-y-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-100 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Verifikasi Google Admin
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Diperlukan untuk mengubah data Tracking Soal
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  pendingAdminActionRef.current = null;
+                  setIsGoogleVerifyModalOpen(false);
+                }}
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Tutup"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-900 leading-relaxed">
+              Karena keamanan database Tracking Soal kini dikunci khusus Admin terverifikasi, silakan hubungkan akun Google Admin (<strong className="font-bold">sditaf23@gmail.com</strong>) sekali saja agar perubahan Anda langsung tersimpan ke Cloud Firestore.
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  pendingAdminActionRef.current = null;
+                  setIsGoogleVerifyModalOpen(false);
+                }}
+                className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConnectGoogleAdmin}
+                disabled={isConnectingGoogleAdmin}
+                className="px-4 py-2.5 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>
+                  {isConnectingGoogleAdmin ? 'Menghubungkan...' : 'Hubungkan Google Admin'}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

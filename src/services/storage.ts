@@ -9,7 +9,7 @@ import {
   onSnapshot,
   writeBatch,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { auth, db } from './firebase';
 import {
   DocumentItem,
   DEFAULT_SCHOOL_YEARS,
@@ -29,6 +29,53 @@ import {
 import { INITIAL_DOCUMENTS } from '../data/initialData';
 import { MasterClass, MASTER_CLASSES } from '../data/masterExamData';
 import { recordQuotaUsage } from './quotaTracker';
+
+enum TrackingFirestoreOp {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+function isFirestorePermissionDenied(err: unknown): boolean {
+  const code = (err as any)?.code;
+  const msg = err instanceof Error ? err.message : String(err || '');
+  return (
+    code === 'permission-denied' ||
+    msg.toLowerCase().includes('missing or insufficient permissions') ||
+    msg.toLowerCase().includes('permission_denied')
+  );
+}
+
+function throwTrackingPermissionError(
+  err: unknown,
+  operationType: TrackingFirestoreOp,
+  path: string
+): never {
+  const errInfo = {
+    error: err instanceof Error ? err.message : String(err),
+    operationType,
+    path,
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || [],
+    },
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(
+    'Akses Firestore ditolak: hanya Administrator terverifikasi (Google Admin) yang dapat mengubah data Tracking Soal.'
+  );
+}
 
 const LOCAL_STORAGE_KEY = 'sdit_al_fikri_digital_archives_v2_clean';
 const LOCAL_YEARS_KEY = 'sdit_al_fikri_school_years_v2';
@@ -1346,6 +1393,14 @@ export async function setTrackingRecordStatus(
 
     return updated;
   } catch (e) {
+    if (isFirestorePermissionDenied(e)) {
+      saveStoredTrackingRecords(current);
+      throwTrackingPermissionError(
+        e,
+        TrackingFirestoreOp.WRITE,
+        `${FIRESTORE_TRACKING_RECORDS_COLLECTION}/${recordKey}`
+      );
+    }
     console.warn(
       'Cloud save tracking record failed (saved to local cache successfully):',
       e
@@ -1585,6 +1640,14 @@ export async function batchSetClassTrackingStatus(
   try {
     await batch.commit();
   } catch (e) {
+    if (isFirestorePermissionDenied(e)) {
+      saveStoredTrackingRecords(current);
+      throwTrackingPermissionError(
+        e,
+        TrackingFirestoreOp.WRITE,
+        FIRESTORE_TRACKING_RECORDS_COLLECTION
+      );
+    }
     console.warn(
       'Batch cloud commit failed (saved to local cache successfully):',
       e
@@ -1671,6 +1734,14 @@ export async function batchSaveTrackingRecords(
       }
       await batch.commit();
     } catch (err) {
+      if (isFirestorePermissionDenied(err)) {
+        saveStoredTrackingRecords(current);
+        throwTrackingPermissionError(
+          err,
+          TrackingFirestoreOp.WRITE,
+          FIRESTORE_TRACKING_RECORDS_COLLECTION
+        );
+      }
       console.warn('Batch save to Firestore encountered an error (local cache updated):', err);
     }
   }
@@ -1703,6 +1774,14 @@ export async function clearAllTrackingRecords(): Promise<void> {
     saveStoredTrackingRecords(
       previousRecords
     );
+
+    if (isFirestorePermissionDenied(err)) {
+      throwTrackingPermissionError(
+        err,
+        TrackingFirestoreOp.DELETE,
+        FIRESTORE_TRACKING_RECORDS_COLLECTION
+      );
+    }
 
     console.error(
       'Error clearing tracking records from Firestore:',
